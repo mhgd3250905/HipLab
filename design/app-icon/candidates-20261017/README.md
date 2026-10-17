@@ -13,6 +13,8 @@
 
 完整设计理由和原始提示见 [generation-report.md](generation-report.md)，结构化提示见 [prompts.json](prompts.json)，配色说明见 [brand-color-notes.md](brand-color-notes.md)。这些报告与逐张 metadata 保留设计方原文，其中绝对路径指向原工作区；本页相对链接用于在仓库中查看归档图。来源和逐文件 SHA256 见 [archive-manifest.json](archive-manifest.json)。
 
+本目录通过 `.gitattributes` 禁止 Git 自动换行转换，保证原文及清单 SHA 可复核；生成报告末尾的空白行属于保留的原文。
+
 选定后再制作 Adaptive 前景/背景、Monochrome、所需尺寸和系统遮罩预览，并完成 Android 构建、覆盖安装与桌面核对。光栅图不等于矢量源；当前批次未宣称矢量或安卓工程资产已完成。产品设计要求见 [Icon brief](../../../docs/app-icon-brief-2026-10-17.md)。
 
 ## A1 · 舒展精灵 / 石墨底

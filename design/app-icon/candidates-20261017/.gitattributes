@@ -1,0 +1,2 @@
+# Preserve imported originals and their SHA256 across Windows checkouts.
+* -text
