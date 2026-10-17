@@ -2,8 +2,11 @@
 """Pre-recorded voice coaching clips for HipLab (issue #13).
 
 Offline and free: Microsoft neural voices via `edge-tts` (pip install
-edge-tts), post-processed with ffmpeg (trim leading/trailing silence so
-counts land on the beat, EBU R128 loudness -16 LUFS, mono AAC in .m4a).
+edge-tts; also pip install numpy), post-processed with ffmpeg + numpy:
+cut leading/trailing silence only (40 ms lead, 80 ms tail kept, never cut
+inside a line), one fixed gain per clip to -16 LUFS, look-ahead peak limit
+at -2.5 dBFS, mono AAC in .m4a. Check the result with
+tools/voice/audit_voice.py --raw (docs/voice-audit-2026-10-18.md).
 
     # 1) listen to candidate voices (writes a short coaching sample per voice)
     python3 tools/voice/build_voice.py samples --out /tmp/voice-samples
@@ -39,6 +42,7 @@ import voice_lines as L  # noqa: E402
 CONTENT = ROOT / 'assets/hip/hip-content.json'
 OUT = ROOT / 'assets/voice'
 CACHE = ROOT / 'tools/voice/.voice-cache'
+RAW_CACHE = ROOT / 'tools/voice/.raw-cache'
 CHIMES = ROOT / 'assets/voice/chime'
 
 DEFAULT_VOICE = {'zh': 'zh-CN-XiaoxiaoNeural', 'en': 'en-US-JennyNeural'}
@@ -118,63 +122,164 @@ async def _tts(text, voice, rate, mp3):
         await asyncio.sleep(1.5 * (attempt + 1))
 
 
+def _decoded_ms(path):
+    return int(round(len(_decode(path)) / SR * 1000))
+
+
 def _ffprobe_ms(path):
     out = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
                           '-of', 'csv=p=0', str(path)], capture_output=True, text=True).stdout
     return int(round(float(out.strip()) * 1000))
 
 
-TRIM = ('silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.02,'
-        'areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.06,areverse')
+# ── post-processing ──────────────────────────────────────────────────────
+#
+# History (docs/voice-audit-2026-10-18.md): v3 trimmed with silenceremove and
+# normalised with loudnorm "linear" – which silently falls back to *dynamic*
+# mode whenever the linear gain would break the true-peak limit, so volume
+# rode up and down inside a phrase – and single words went through
+# dynaudnorm (a frame-by-frame AGC). Result: −21…−13 LUFS across the set,
+# peaks up to +2.3 dBTP (clipping after AAC), tails as short as 15 ms, and
+# container lengths up to 90 ms longer than the audio.
+#
+# v4: cut only before the first and after the last sound (never inside),
+# keep a short lead and a ~80 ms tail with tiny fades in the silence, one
+# fixed gain per clip to −16 LUFS (measured on the clip looped to ≥ 3 s so
+# single words get a real reading), then a look-ahead limiter at −2.5 dBFS
+# that only touches the odd consonant peak. tools/voice/audit_voice.py gates
+# the result.
+
+SR = 44100
+SILENCE_DB = -50.0   # 10 ms window below this = silence (only at the edges)
+LEAD_S = 0.04        # silence kept before the first sound
+TAIL_S = 0.08        # silence kept after the last sound
+FADE_IN_S = 0.005
+FADE_OUT_S = 0.02
+TARGET_LUFS = -16.0
+LIMIT_DB = -2.5
+PROCESS_VERSION = 'v4.1'
 
 
-def _process(mp3, dst, short):
-    """Trim silence, loudness-normalise, encode mono AAC."""
+def _decode(path):
+    import numpy as np
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-f', 'f32le', '-ac', '1',
+                          '-ar', str(SR), '-'], capture_output=True, check=True).stdout
+    return np.frombuffer(raw, dtype=np.float32).copy()
+
+
+def edge_trim(x):
+    """Cut the silence before the first and after the last sound only."""
+    import numpy as np
+    n = SR // 100
+    k = len(x) // n
+    w = x[:k * n].reshape(k, n)
+    lvl = 20 * np.log10(np.maximum(np.sqrt(np.mean(w ** 2, axis=1)), 1e-9))
+    loud = np.where(lvl > SILENCE_DB)[0]
+    if len(loud) == 0:
+        raise RuntimeError('clip has no audio')
+    a = max(0, loud[0] * n - int(LEAD_S * SR))
+    b = (loud[-1] + 1) * n + int(TAIL_S * SR)
+    y = x[a:b]
+    if b > len(x):  # source tail shorter than TAIL_S: pad with silence
+        y = np.concatenate([y, np.zeros(b - len(x), dtype=np.float32)])
+    fi, fo = int(FADE_IN_S * SR), int(FADE_OUT_S * SR)
+    y[:fi] *= np.linspace(0, 1, fi, dtype=np.float32)
+    y[-fo:] *= np.linspace(1, 0, fo, dtype=np.float32)
+    return y
+
+
+def loop_lufs(wav, seconds):
+    """(integrated LUFS, true peak dBTP) of the clip repeated to ≥ 3 s (EBU R128 gates in
+    400 ms blocks, so a single word measured once reads as nothing)."""
+    loops = max(0, int(3 / max(seconds, .05)))
+    err = subprocess.run(['ffmpeg', '-v', 'info', '-nostats', '-stream_loop', str(loops),
+                          '-i', str(wav), '-af', 'ebur128=peak=true', '-f', 'null', '-'],
+                         capture_output=True, text=True).stderr
+    summ = err[err.rfind('Summary:'):]
+    i = re.search(r'I:\s+(-?[\d.]+) LUFS', summ)
+    p = re.search(r'Peak:\s+(-?[\d.]+|-inf) dBFS', summ)
+    return float(i.group(1)), float(p.group(1)) if p and p.group(1) != '-inf' else -99.0
+
+
+def _process(src, dst):
+    """Edge-trim, one fixed gain to −16 LUFS, peak-limit, encode mono AAC."""
+    y = edge_trim(_decode(src))
     with tempfile.TemporaryDirectory() as td:
         wav = Path(td) / 'a.wav'
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(mp3), '-af', TRIM,
-                        '-ac', '1', '-ar', '44100', str(wav)], check=True)
-        # Two-pass loudnorm is unstable on sub-second clips: use a peak/RMS
-        # gain there instead so single numbers match the phrases.
-        if short:
-            af = 'apad=pad_dur=0.0,dynaudnorm=f=75:g=3:p=0.9,volume=-1.5dB'
-        else:
-            meas = subprocess.run(['ffmpeg', '-v', 'info', '-i', str(wav), '-af',
-                                   'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json',
-                                   '-f', 'null', '-'], capture_output=True, text=True).stderr
-            j = json.loads(meas[meas.rindex('{'):meas.rindex('}') + 1])
-            af = ('loudnorm=I=-16:TP=-1.5:LRA=11:linear=true:'
-                  f"measured_I={j['input_i']}:measured_TP={j['input_tp']}:"
-                  f"measured_LRA={j['input_lra']}:measured_thresh={j['input_thresh']}:"
-                  f"offset={j['target_offset']}")
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(wav), '-af', af,
-                        '-ar', '44100', '-ac', '1', '-c:a', 'aac', '-b:a', '56k',
-                        '-movflags', '+faststart', str(dst)], check=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '1',
+                        '-i', '-', '-c:a', 'pcm_f32le', str(wav)], input=y.tobytes(), check=True)
+        gain = TARGET_LUFS - loop_lufs(wav, len(y) / SR)[0]
+        limit_db = LIMIT_DB
+        # Peak limiting can pull a peaky clip (a hissy final "s") a little
+        # under target and the encoder can add a bit of peak: measure the
+        # encoded clip and correct – still one fixed gain per clip.
+        best = None
+        for _ in range(6):
+            limit = 10 ** (limit_db / 20)
+            # The native AAC encoder at 64 kbit/s quantises the band above
+            # ~12 kHz coarsely and overshoots peaks by ~3 dB on sibilants;
+            # speech has nothing up there, so band-limit before the limiter
+            # and the encoder.
+            af = (f'volume={gain:.2f}dB,lowpass=f=12000:p=2,'
+                  f'alimiter=limit={limit:.4f}:attack=5:release=50:level=0:latency=1')
+            out = Path(td) / f'try{_}.m4a'
+            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(wav), '-af', af,
+                            '-ar', str(SR), '-ac', '1', '-c:a', 'aac', '-b:a', '64k',
+                            '-cutoff', '12000', '-movflags', '+faststart', str(out)], check=True)
+            lufs, tp = loop_lufs(out, len(y) / SR)
+            # score: loudness error, heavily penalising a peak over −1.2 dBTP
+            score = abs(lufs - TARGET_LUFS) + 10 * max(0.0, tp + 1.2)
+            if best is None or score < best[0]:
+                best = (score, out)
+            if abs(lufs - TARGET_LUFS) <= .3 and tp <= -1.2:
+                break
+            if tp > -1.2:
+                limit_db -= tp + 1.6
+            gain += TARGET_LUFS - lufs
+        shutil.copyfile(best[1], dst)
+
+
+def raw_path(text, voice, rate):
+    """Unprocessed edge-tts render (shared with audit_voice.py)."""
+    h = hashlib.sha1(f'{voice}|{rate}|{text}'.encode()).hexdigest()[:16]
+    return RAW_CACHE / f'{h}.mp3'
 
 
 async def synth_all(jobs, concurrency=6):
-    """jobs: list of (text, voice, rate, dst, short)."""
+    """jobs: list of (text, voice, rate, dst). The raw render is cached in
+    .raw-cache (re-processing needs no network), the processed clip in
+    .voice-cache keyed by the processing version."""
     sem = asyncio.Semaphore(concurrency)
     CACHE.mkdir(parents=True, exist_ok=True)
+    RAW_CACHE.mkdir(parents=True, exist_ok=True)
     done = 0
 
-    async def one(text, voice, rate, dst, short):
+    def key(text, voice, rate):
+        return hashlib.sha1(f'{voice}|{rate}|{text}|{PROCESS_VERSION}'.encode()).hexdigest()[:16]
+
+    async def make(text, voice, rate):
         nonlocal done
-        h = hashlib.sha1(f'{voice}|{rate}|{text}|v3'.encode()).hexdigest()[:16]
-        cached = CACHE / f'{h}.m4a'
+        cached = CACHE / f'{key(text, voice, rate)}.m4a'
         if not cached.exists():
+            raw = raw_path(text, voice, rate)
             async with sem:
-                with tempfile.TemporaryDirectory() as td:
-                    mp3 = Path(td) / 'a.mp3'
-                    await _tts(text, voice, rate, mp3)
-                    await asyncio.to_thread(_process, mp3, cached, short)
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(cached, dst)
+                if not raw.exists() or raw.stat().st_size <= 500:
+                    part = raw.with_suffix('.part.mp3')
+                    await _tts(text, voice, rate, part)
+                    os.replace(part, raw)
+                tmp = cached.with_suffix('.tmp.m4a')
+                await asyncio.to_thread(_process, raw, tmp)
+                os.replace(tmp, cached)  # an interrupted build never caches half a clip
         done += 1
         if done % 50 == 0:
-            print(f'  {done}/{len(jobs)}', flush=True)
+            print(f'  {done} unique clips', flush=True)
 
-    await asyncio.gather(*(one(*j) for j in jobs))
+    # the same text can back two keys (e.g. a dose and a duration): make it once
+    unique = {key(t, v, r): (t, v, r) for t, v, r, _ in jobs}
+    await asyncio.gather(*(make(*u) for u in unique.values()))
+    for t, v, r, dst in jobs:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(CACHE / f'{key(t, v, r)}.m4a', dst)
 
 
 # ── chimes (synthesised, no licensing questions) ────────────────────────
@@ -218,11 +323,11 @@ def cmd_build(a):
                 f.unlink()
         for key, pair in lines.items():
             text = pair[idx]
-            short = key.startswith('n.') or len(text) <= 3
-            jobs.append((text, voices[lang], RATE[lang], d / f'{key}.m4a', short))
+            jobs.append((text, voices[lang], RATE[lang], d / f'{key}.m4a'))
     print(f'{len(lines)} lines × 2 languages')
     asyncio.run(synth_all(jobs))
-    clips = {lang: {k: _ffprobe_ms(OUT / lang / f'{k}.m4a') for k in lines}
+    # the length the app schedules with = what actually decodes
+    clips = {lang: {k: _decoded_ms(OUT / lang / f'{k}.m4a') for k in lines}
              for lang in ('zh', 'en')}
     chimes = build_chimes()
     manifest = {
