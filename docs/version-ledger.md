@@ -69,6 +69,14 @@ APK 会被下次构建覆盖，以上 SHA 用于识别本次产物。旧版 APK 
 
 产物和签名材料保存在本机，不代表已备份到远端。Play 商店资料、素材和内容声明已保存，Alpha AAB 平台处理完成；20:59 确认将 15 项更改送审，提交活动回读 **Submission ID 1 / 状态“审核中”**。尚未审核通过或正式上架。详见 [Play 送审记录](play-store-release-2026-10-17.md)，本节不把构建、安装、送审和正式发布互相替代。
 
+## iOS 0.3.2+7 / TestFlight（2026-10-18）
+
+源 `9c2802f1701b3d13d608db6a098548c0cca24d0b`，基线 main `12f1438`；Flutter 3.44.7 stable、Xcode 26.6、SwiftPM。Release Archive 和 App Store 分发验签通过，最终实际上传 IPA 为 `build/ios/ipa/HipLab-XcodeUpload.ipa`，**81,120,270 bytes / SHA256 `d751608eb74508d4115908c3e64da420a28cd56c2a7c7b034828a0ac661caade`**。
+
+北京时间约 01:32 Xcode 显示上传完成；Apple 列表显示上传于 01:36，Build 7 已处理。独立 App `6824011384` / `com.ugk.hiplab`，HipLab Internal 1 个构建、1 名当前账号测试员已邀请，自动分发关闭；**尚未安装验收或正式送审、未发布**。analyze 无问题、117 项测试和 92 文件素材 SHA 通过；同源模拟器 Debug 用于四张原生截图，不能替代 Release 真机结论。详情见[iOS 首轮交付](ios-store-release-2026-10-18.md)。
+
+历史 Mac 0.1.2+3 / `313b484` Release 曾在 iPhone 16 Pro / iOS 26.5 安装运行，用户确认“我打开使用还行”；这只证明当时工程可运行，不覆盖本次 Build 7。原证据在主 worktree 的 `build/mac-preflight/`、`build/mac-device/`，不入 Git。
+
 ## 后续登记模板
 
 新交付在版本表追加一行，并按下列字段记录；未执行项写“未执行”，不能用预计结果填充。

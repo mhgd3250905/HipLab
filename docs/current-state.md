@@ -2,6 +2,8 @@
 
 核对日期：2026-10-18，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
 
+**Mac / iOS 最新补记：** 0.1.2+3 曾在 iPhone 16 Pro / iOS 26.5 安装启动，用户确认能用；之后从最新 main `12f1438` 构建的 **0.3.2（7）已上传并处理完成**，加入 HipLab Internal（当前账号已邀请，未确认安装）。独立 App Store 条目 Apple ID `6824011384`，4 张原生截图已保存；正式审核尚未提交，缺审核联系人及精确 TestFlight Build 的真机验收。后文“未在 Mac 构建”的早期描述保留历史语境，以[本轮 iOS 交付](ios-store-release-2026-10-18.md)为准。
+
 ## App 与设备
 
 | 项目 | 当前状态 |
