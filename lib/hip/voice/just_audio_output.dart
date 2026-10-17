@@ -2,29 +2,48 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:just_audio/just_audio.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import 'voice_queue.dart';
 
 /// Real playback for voice coaching (#13).
 ///
 /// * Voice and chimes are separate players so a tick can sit under a number.
+/// * iOS category is `playback`: the coach is heard with the ring/silent
+///   switch on (a workout follow-along, like a fitness app), and keeps
+///   talking with the screen locked (`UIBackgroundModes: audio`).
 /// * Other apps' music is lowered (ducked) only while a line is playing:
-///   audio focus / an active ducking session is taken right before a line
-///   and released ~0.7 s after it ends.
+///   `duckOthers` is taken right before a line and released ~0.7 s after it
+///   ends; between lines the session mixes with others at full volume.
 /// * During a session a looping silent clip keeps the audio session alive,
 ///   so with iOS `UIBackgroundModes: audio` the app – and its absolute-time
 ///   training clock – keeps running with the screen locked.
+/// * Interruptions are handled here, not by just_audio (its default would
+///   resume a stale line after a call and pause the keep-alive when
+///   headphones are unplugged): a call / Siri / alarm or unplugging the
+///   headphones cuts the line and is reported on [interruptions] so the
+///   player pauses the session; when the interruption ends the session and
+///   keep-alive are re-activated, and the player waits for 继续.
 ///
-/// Needs real-device verification (ducking and lock-screen behaviour are
-/// OS features that tests cannot exercise).
-class JustAudioVoiceOutput implements VoiceOutput {
+/// Needs real-device verification (ducking, silent switch, lock screen and
+/// interruptions are OS features that tests cannot exercise) – see
+/// docs/ios-setup-and-release.md.
+class JustAudioVoiceOutput implements VoiceOutput, InterruptibleVoiceOutput {
   JustAudioVoiceOutput()
     : this._(
-        AudioPlayer(handleAudioSessionActivation: false),
-        AudioPlayer(handleAudioSessionActivation: false),
-        AudioPlayer(handleAudioSessionActivation: false),
+        AudioPlayer(
+          handleAudioSessionActivation: false,
+          handleInterruptions: false,
+        ),
+        AudioPlayer(
+          handleAudioSessionActivation: false,
+          handleInterruptions: false,
+        ),
+        AudioPlayer(
+          handleAudioSessionActivation: false,
+          handleInterruptions: false,
+        ),
         () => AudioSession.instance,
       );
 
@@ -47,6 +66,8 @@ class JustAudioVoiceOutput implements VoiceOutput {
   final AudioPlayer _chime;
   final AudioPlayer _keepAlive;
   final Future<AudioSession> Function() _getSession;
+  final _events = StreamController<AudioInterruption>.broadcast();
+  final _subscriptions = <StreamSubscription<Object?>>[];
   AudioSession? _session;
   Timer? _release;
   bool _ducking = false;
@@ -58,10 +79,12 @@ class JustAudioVoiceOutput implements VoiceOutput {
   Future<void>? _ending;
   Future<void>? _disposal;
   bool _disposed = false;
-  StreamSubscription<AudioInterruptionEvent>? _interruption;
 
   bool _current(int generation) =>
       _began && !_disposed && generation == _sessionGeneration;
+
+  @override
+  Stream<AudioInterruption> get interruptions => _events.stream;
 
   static const _silence = 'assets/voice/chime/silence.m4a';
 
@@ -102,22 +125,90 @@ class JustAudioVoiceOutput implements VoiceOutput {
       _session = s;
       await s.configure(_config(duck: false));
       if (!_current(generation)) return;
-      if (Platform.isIOS) {
-        await s.setActive(true);
-        if (!_current(generation)) return;
-        await _keepAlive.setAsset(_silence);
-        if (!_current(generation)) return;
-        await _keepAlive.setLoopMode(LoopMode.one);
-        if (!_current(generation)) return;
-        await _keepAlive.setVolume(0);
-        if (!_current(generation)) return;
-        unawaited(_keepAlive.play());
+      await _keepAliveOn();
+      if (!_current(generation)) return;
+      if (_subscriptions.isEmpty) {
+        _subscriptions
+          ..add(s.interruptionEventStream.listen(_onInterruption))
+          ..add(s.becomingNoisyEventStream.listen((_) => _onUnplugged()));
       }
-      _interruption ??= s.interruptionEventStream.listen((e) {
-        if (_began && e.begin) unawaited(_voice.stop());
-      });
     } on Object {
       // Audio is best-effort; the visual timer works without it.
+    }
+  }
+
+  /// iOS: activate the session and loop the silent clip. Android keeps Dart
+  /// timers running while the process lives, so nothing to keep alive there.
+  Future<void> _keepAliveOn() async {
+    if (!Platform.isIOS) return;
+    final s = _session;
+    if (s == null) return;
+    await _step(() => s.setActive(true));
+    await _step(() async {
+      if (_keepAlive.audioSource == null) {
+        await _keepAlive.setAsset(_silence);
+        await _keepAlive.setLoopMode(LoopMode.one);
+        await _keepAlive.setVolume(0);
+      }
+    });
+    unawaited(_keepAlive.play().catchError((Object _) {}));
+  }
+
+  /// Runs one platform call; a failure must not skip the calls after it.
+  static Future<void> _step(Future<void> Function() call) async {
+    try {
+      await call();
+    } on Object {
+      /* best effort */
+    }
+  }
+
+  void _onInterruption(AudioInterruptionEvent e) {
+    if (!_began) return;
+    if (e.begin) {
+      // `duck`: another app's short prompt (Android transient focus); the
+      // coach can keep going. Anything else (call, Siri, alarm): stop.
+      if (e.type == AudioInterruptionType.duck) return;
+      _release?.cancel();
+      _generation++;
+      unawaited(_step(_voice.stop));
+      unawaited(_step(_chime.stop));
+      _ducking = false;
+      _events.add(AudioInterruption.began);
+    } else {
+      if (e.type == AudioInterruptionType.duck) return;
+      unawaited(
+        reactivate().then((_) {
+          if (_began && !_events.isClosed) _events.add(AudioInterruption.ended);
+        }),
+      );
+    }
+  }
+
+  void _onUnplugged() {
+    if (!_began) return;
+    _release?.cancel();
+    _generation++;
+    unawaited(_releaseUnpluggedAudio());
+    _events.add(AudioInterruption.unplugged);
+  }
+
+  Future<void> _releaseUnpluggedAudio() async {
+    await _step(_voice.stop);
+    await _step(_chime.stop);
+    await _duck(false);
+  }
+
+  @override
+  Future<void> reactivate() async {
+    await _beginning;
+    if (!_began) return;
+    final s = _session;
+    if (s == null) return;
+    await _step(() => s.configure(_config(duck: false)));
+    _ducking = false;
+    if (Platform.isIOS) {
+      await _keepAliveOn();
     }
   }
 
@@ -137,15 +228,20 @@ class JustAudioVoiceOutput implements VoiceOutput {
     // Invalidate immediately, but let pending native initialization settle
     // before stopping players, so it cannot turn audio back on after end.
     await starting;
-    try {
-      await _voice.stop();
-      await _chime.stop();
-      await _keepAlive.stop();
-      _ducking = false;
-      await _session?.configure(_config(duck: false));
-      await _session?.setActive(false);
-    } on Object {
-      /* ignore */
+    await _step(_voice.stop);
+    await _step(_chime.stop);
+    await _step(_keepAlive.stop);
+    _ducking = false;
+    final s = _session;
+    if (s != null) {
+      await _step(() => s.configure(_config(duck: false)));
+      await _step(
+        () => s.setActive(
+          false,
+          avAudioSessionSetActiveOptions:
+              AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
+        ),
+      );
     }
   }
 
@@ -155,28 +251,31 @@ class JustAudioVoiceOutput implements VoiceOutput {
     final s = _session;
     if (s == null || on == _ducking) return;
     _ducking = on;
-    try {
-      await s.configure(_config(duck: on));
+    if (on) {
+      // Adding duckOthers and (re-)activating lowers other apps' audio.
+      await _step(() => s.configure(_config(duck: true)));
       if (!_current(generation)) return;
-      if (on) {
-        await s.setActive(true);
-      } else if (Platform.isIOS) {
-        // Re-activating without duckOthers lets the music come back up while
-        // the silent keep-alive keeps the session (and the app) running.
-        await s.setActive(
+      await _step(() => s.setActive(true));
+      return;
+    }
+    await _step(() => s.configure(_config(duck: false)));
+    if (Platform.isIOS) {
+      // iOS only lifts the duck when the session deactivates. Pause the
+      // keep-alive first (deactivating with running I/O fails with
+      // "IsBusy"), notify others so the music comes back up, then take the
+      // mixable session and the keep-alive straight back. Each step runs on
+      // its own so one failure can't leave the app without a session.
+      await _step(_keepAlive.pause);
+      await _step(
+        () => s.setActive(
           false,
           avAudioSessionSetActiveOptions:
               AVAudioSessionSetActiveOptions.notifyOthersOnDeactivation,
-        );
-        if (!_current(generation)) return;
-        await s.setActive(true);
-        if (!_current(generation)) return;
-        unawaited(_keepAlive.play());
-      } else {
-        await s.setActive(false);
-      }
-    } on Object {
-      /* ignore */
+        ),
+      );
+      if (_began) await _keepAliveOn();
+    } else {
+      await _step(() => s.setActive(false));
     }
   }
 
@@ -242,7 +341,11 @@ class JustAudioVoiceOutput implements VoiceOutput {
 
   Future<void> _dispose() async {
     await end();
-    await _interruption?.cancel();
+    for (final sub in _subscriptions) {
+      await sub.cancel();
+    }
+    _subscriptions.clear();
+    await _events.close();
     await _voice.dispose();
     await _chime.dispose();
     await _keepAlive.dispose();

@@ -1,0 +1,3 @@
+/* 主屏幕与设置里显示的 App 名称（iOS 本地化）。 */
+"CFBundleDisplayName" = "开胯训练助手";
+"CFBundleName" = "HipLab";
