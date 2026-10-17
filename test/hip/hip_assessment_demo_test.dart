@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -43,12 +44,58 @@ void main() {
       expect(tester.widget<HipDrillArt>(art).fit, BoxFit.contain);
       expect(
         find.descendant(
+          of: find.byType(HipAssessmentPage),
+          matching: find.byType(Scrollable),
+        ),
+        findsNothing,
+      );
+      final heading = tester.getRect(
+        find.byKey(const ValueKey('assessment-question')),
+      );
+      expect(heading.bottom, lessThanOrEqualTo(bounds.top));
+      final option = tester.getRect(find.byKey(const ValueKey('option-2')));
+      final pain = tester.getRect(
+        find.byKey(const ValueKey('assessment-pain')),
+      );
+      expect(option.bottom, lessThanOrEqualTo(pain.top));
+      expect(
+        find.descendant(
           of: demo,
           matching: find.byType(LinearProgressIndicator),
         ),
         findsNothing,
       );
       expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final (size, scale) in [
+    (const Size(320, 568), 1.0),
+    (const Size(360, 740), 1.5),
+  ]) {
+    testWidgets('all six items remain on one screen at $size, text $scale', (
+      tester,
+    ) async {
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await openDemo(tester, size);
+      for (var i = 0; i < 6; i++) {
+        final box = tester.getRect(demo);
+        expect(box.width, closeTo(box.height, .01));
+        final pain = tester.getRect(
+          find.byKey(const ValueKey('assessment-pain')),
+        );
+        for (var score = 0; score < 3; score++) {
+          final rect = tester.getRect(find.byKey(ValueKey('option-$score')));
+          expect(rect.top, greaterThanOrEqualTo(box.bottom));
+          expect(rect.bottom, lessThanOrEqualTo(pain.top));
+        }
+        expect(tester.takeException(), isNull, reason: 'item ${i + 1}');
+        if (i < 5) {
+          await tester.tap(find.byKey(const ValueKey('assessment-skip')));
+          await tester.pumpAndSettle();
+        }
+      }
     });
   }
 

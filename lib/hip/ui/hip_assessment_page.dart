@@ -380,54 +380,42 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _dots() => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      for (var i = 0; i < _items.length; i++)
-        AnimatedContainer(
-          duration: HipMotion.medium,
-          curve: HipMotion.curve,
-          width: i == _index ? 26 : 7,
-          height: 7,
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: i <= _index ? HipColors.jade : HipColors.surfaceHigh,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-    ],
-  );
-
-  String get _stepKey => '${_item.id}-${_side?.name ?? 'one'}';
-
   Widget _itemScreen() {
     final item = _item;
     return Column(
       children: [
         HipTopBar(
-          center: Center(child: _dots()),
+          center: _questionHeading(item),
           trailing: Text(
             '${_index + 1}/${_items.length}',
             style: TextStyle(fontSize: 16, color: HipColors.muted),
           ),
         ),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 520),
-                    child: AspectRatio(aspectRatio: 1, child: _demo(item)),
+                Expanded(
+                  flex: 6,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: AspectRatio(aspectRatio: 1, child: _demo(item)),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                HipFadeSwitcher(
-                  child: KeyedSubtree(
-                    key: ValueKey('$_stepKey-${_needsFollow ? 'f' : 'o'}'),
-                    child: _question(item),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: _guidanceText(item),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: LayoutBuilder(
+                    builder: (context, c) => _needsFollow
+                        ? _followRow(item, height: c.maxHeight)
+                        : _optionRow(item, height: c.maxHeight),
                   ),
                 ),
               ],
@@ -456,7 +444,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
             ),
           ),
         ),
-        if (_side != null) Positioned(right: 14, top: 14, child: _sidePill()),
+        if (_side != null)
+          Positioned(right: 14, bottom: 14, child: _sidePill()),
         Positioned.fill(
           child: Semantics(
             button: true,
@@ -592,8 +581,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _question(AssessmentItem item) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget _questionHeading(AssessmentItem item) => Column(
+    mainAxisSize: MainAxisSize.min,
     children: [
       Text.rich(
         TextSpan(
@@ -617,35 +606,38 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         ),
         key: const ValueKey('assessment-title'),
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 15),
+        style: const TextStyle(fontSize: 13),
       ),
-      if (item.aka != null) ...[
-        const SizedBox(height: 2),
-        Text(
-          item.aka!,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: HipColors.muted),
-        ),
-      ],
-      const SizedBox(height: 6),
+      const SizedBox(height: 3),
       Text(
         _needsFollow ? item.followUpQuestion! : item.question,
         key: const ValueKey('assessment-question'),
         textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 24,
-          height: 1.3,
+          fontSize: 20,
+          height: 1.2,
           fontWeight: FontWeight.w800,
         ),
       ),
-      const SizedBox(height: 6),
+    ],
+  );
+
+  Widget _guidanceText(AssessmentItem item) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (item.aka != null) ...[
+        Text(
+          item.aka!,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: HipColors.muted),
+        ),
+        const SizedBox(height: 3),
+      ],
       Text(
         _needsFollow ? '点一下翘起来的那条腿' : item.cue,
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 14, height: 1.5, color: HipColors.muted),
       ),
-      const SizedBox(height: 14),
-      _needsFollow ? _followRow(item) : _optionRow(item),
     ],
   );
 
@@ -694,90 +686,91 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     );
   }
 
-  Widget _optionRow(AssessmentItem item) => LayoutBuilder(
-    builder: (context, c) {
-      final cardW = (c.maxWidth - 20) / 3;
-      final h = (cardW * 1.4).clamp(150.0, 200.0);
-      return Row(
-        children: [
-          for (final (i, o) in item.options.indexed) ...[
-            if (i > 0) const SizedBox(width: 10),
-            Expanded(
-              child: _choiceCard(
-                key: ValueKey('option-${o.score}'),
-                height: h,
-                selected: _choice == o.score,
-                onTap: () => setState(() => _choice = o.score),
-                image: o.image,
-                focus: _focusOf(item),
-                footer: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    HipLevelBars(
-                      level: o.score + 1,
-                      color: _choice == o.score
-                          ? HipColors.jade
-                          : HipColors.text,
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        o.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.fade,
-                        softWrap: false,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+  Widget _optionRow(AssessmentItem item, {required double height}) =>
+      LayoutBuilder(
+        builder: (context, c) {
+          return Row(
+            children: [
+              for (final (i, o) in item.options.indexed) ...[
+                if (i > 0) const SizedBox(width: 10),
+                Expanded(
+                  child: _choiceCard(
+                    key: ValueKey('option-${o.score}'),
+                    height: height,
+                    selected: _choice == o.score,
+                    onTap: () => setState(() => _choice = o.score),
+                    image: o.image,
+                    focus: _focusOf(item),
+                    footer: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        HipLevelBars(
+                          level: o.score + 1,
                           color: _choice == o.score
                               ? HipColors.jade
                               : HipColors.text,
                         ),
-                      ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            o.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.fade,
+                            softWrap: false,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: _choice == o.score
+                                  ? HipColors.jade
+                                  : HipColors.text,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                semantic: '${o.label}：${o.description}',
-              ),
-            ),
-          ],
-        ],
-      );
-    },
-  );
-
-  Widget _followRow(AssessmentItem item) => LayoutBuilder(
-    builder: (context, c) {
-      final h = ((c.maxWidth - 10) / 2 * 1.05).clamp(150.0, 200.0);
-      return Row(
-        children: [
-          for (final (i, o) in item.followUp.indexed) ...[
-            if (i > 0) const SizedBox(width: 10),
-            Expanded(
-              child: _choiceCard(
-                key: ValueKey('follow-${o.id}'),
-                height: h,
-                selected: _follow == o.id,
-                onTap: () => setState(() => _follow = o.id),
-                image: o.image,
-                focus: _focusOf(item),
-                footer: Text(
-                  o.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: _follow == o.id ? HipColors.jade : HipColors.text,
+                    semantic: '${o.label}：${o.description}',
                   ),
                 ),
-                semantic: o.label,
-              ),
-            ),
-          ],
-        ],
+              ],
+            ],
+          );
+        },
       );
-    },
-  );
+
+  Widget _followRow(AssessmentItem item, {required double height}) =>
+      LayoutBuilder(
+        builder: (context, c) {
+          return Row(
+            children: [
+              for (final (i, o) in item.followUp.indexed) ...[
+                if (i > 0) const SizedBox(width: 10),
+                Expanded(
+                  child: _choiceCard(
+                    key: ValueKey('follow-${o.id}'),
+                    height: height,
+                    selected: _follow == o.id,
+                    onTap: () => setState(() => _follow = o.id),
+                    image: o.image,
+                    focus: _focusOf(item),
+                    footer: Text(
+                      o.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: _follow == o.id
+                            ? HipColors.jade
+                            : HipColors.text,
+                      ),
+                    ),
+                    semantic: o.label,
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
+      );
 
   /// Option card: picture clipped to the rounded shape, footer, and the
   /// stroke painted on top of both; the check badge sits inside the stroke
