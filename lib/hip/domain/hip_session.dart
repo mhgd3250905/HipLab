@@ -53,6 +53,7 @@ class PlanStep {
     required this.seconds,
     required this.sided,
     this.extraSide,
+    this.extraSeconds = 0,
     this.replaced,
     this.tip = '',
     this.alternative,
@@ -64,6 +65,39 @@ class PlanStep {
 
   /// "右边多做一组" when the assessment found an asymmetry.
   final HipSide? extraSide;
+
+  /// Seconds added for the tight side (already included in [seconds]); the
+  /// player gives them to [extraSide] only (D-01): 70 s → right 35 + left 35,
+  /// left tight → 105 s = right 35 + left 70.
+  final int extraSeconds;
+
+  /// Per-side seconds, in play order (right first, 成套训练 编排规则 2), or a
+  /// single segment with a null side for unsided drills.
+  List<(HipSide?, int)> get segments {
+    if (!sided) return [(null, seconds)];
+    final base = seconds - extraSeconds;
+    final right = base ~/ 2 + (extraSide == HipSide.right ? extraSeconds : 0);
+    final left =
+        base - base ~/ 2 + (extraSide == HipSide.left ? extraSeconds : 0);
+    return [(HipSide.right, right), (HipSide.left, left)];
+  }
+
+  PlanStep copyWith({HipDrill? drill, int? seconds, String? replaced}) {
+    final scale = seconds == null || this.seconds == 0
+        ? 1.0
+        : seconds / this.seconds;
+    return PlanStep(
+      drill: drill ?? this.drill,
+      dose: dose,
+      seconds: seconds ?? this.seconds,
+      sided: sided,
+      extraSide: extraSide,
+      extraSeconds: (extraSeconds * scale).round(),
+      replaced: replaced ?? this.replaced,
+      tip: tip,
+      alternative: alternative,
+    );
+  }
 
   /// The original drill when this step was swapped (L1 / gate / lock).
   final String? replaced;
@@ -96,6 +130,7 @@ class TrainingPlanner {
   final HipContent content;
 
   static const durations = [5, 10, 15];
+  static const restSeconds = 15;
 
   /// Picks one routine (or two chained for 15 min) for the scene, preferring
   /// the recommended routine when its length fits within ±3 minutes.
@@ -196,6 +231,7 @@ class TrainingPlanner {
             seconds: s.seconds + (extra != null ? s.seconds ~/ 2 : 0),
             sided: s.sided,
             extraSide: extra,
+            extraSeconds: extra != null ? s.seconds ~/ 2 : 0,
             replaced: replaced,
             tip: s.tip,
             alternative: replaced == null ? alt : null,
@@ -203,6 +239,12 @@ class TrainingPlanner {
         );
       }
     }
-    return TrainingPlan(routines: routines, steps: steps, transitionSeconds: 5);
+    // 15 s between drills: time for the voice preview of the next drill
+    // ("休息 15 秒，下一个…" + key point) and a 3-2-1 lead-in (#13).
+    return TrainingPlan(
+      routines: routines,
+      steps: steps,
+      transitionSeconds: restSeconds,
+    );
   }
 }

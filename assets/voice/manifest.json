@@ -1,0 +1,1529 @@
+{
+ "chimes": {
+  "end": 380,
+  "finish": 700,
+  "silence": 2000,
+  "start": 340,
+  "tick": 70
+ },
+ "clips": {
+  "en": {
+   "a.choose": 4200,
+   "a.cue.butterfly": 3200,
+   "a.cue.deep_squat": 5300,
+   "a.cue.ninety_ninety": 3300,
+   "a.cue.seated_fold": 3300,
+   "a.cue.supine_cross": 5400,
+   "a.cue.thomas": 4300,
+   "a.done": 2835,
+   "a.hold": 1605,
+   "a.intro": 5600,
+   "a.item.butterfly": 1434,
+   "a.item.deep_squat": 1631,
+   "a.item.ninety_ninety": 1653,
+   "a.item.seated_fold": 2065,
+   "a.item.supine_cross": 2017,
+   "a.item.thomas": 1991,
+   "a.left_first": 1107,
+   "a.switch_right": 2952,
+   "cue.control.1": 1707,
+   "cue.control.2": 2024,
+   "cue.extra_left": 1447,
+   "cue.extra_right": 1411,
+   "cue.flexibility.1": 1583,
+   "cue.flexibility.2": 1531,
+   "cue.half_range": 2338,
+   "cue.relax.1": 1449,
+   "cue.relax.2": 1740,
+   "cue.strength.1": 1672,
+   "cue.strength.2": 1141,
+   "dose.01": 1161,
+   "dose.02": 1330,
+   "dose.03": 2070,
+   "dose.04": 1596,
+   "dose.05": 2009,
+   "dose.06": 2530,
+   "dose.07": 1091,
+   "dose.08": 1548,
+   "dose.09": 1325,
+   "dose.10": 1325,
+   "dose.11": 1584,
+   "dose.12": 1371,
+   "dose.13": 1719,
+   "dose.14": 1276,
+   "dose.15": 1146,
+   "dose.16": 1253,
+   "dose.17": 843,
+   "dose.18": 1582,
+   "dose.19": 1116,
+   "dose.20": 1336,
+   "dose.21": 1185,
+   "dose.22": 2070,
+   "dose.23": 1122,
+   "dose.24": 1420,
+   "dose.25": 688,
+   "dose.26": 1371,
+   "dose.27": 1642,
+   "dose.28": 1260,
+   "dose.29": 1612,
+   "dose.30": 1369,
+   "dose.31": 1455,
+   "dose.32": 2558,
+   "drill.glute-max-A": 1368,
+   "drill.h-9090-liftoff": 1692,
+   "drill.h-adductor-rock": 1523,
+   "drill.h-band-hip-ir": 1876,
+   "drill.h-band-leg-out": 1596,
+   "drill.h-butterfly-active": 1397,
+   "drill.h-couch-stretch": 875,
+   "drill.h-hip-gate": 1092,
+   "drill.h-knee-hug": 976,
+   "drill.h-quad-cars": 1295,
+   "drill.h-reverse-clam": 1371,
+   "drill.h-squat": 966,
+   "drill.h-sumo-pry": 1373,
+   "drill.h-supine-twist": 1351,
+   "drill.h-wall-straddle": 782,
+   "drill.hip-flexors-A": 1306,
+   "drill.n-chair-wiper": 1328,
+   "drill.n-half-split": 708,
+   "drill.n-leg-circles": 1352,
+   "drill.n-pelvis-circle": 1443,
+   "drill.n-prone-hip-ext": 1219,
+   "drill.n-prone-ir": 1519,
+   "drill.n-seated-ir-drop": 1069,
+   "drill.n-seated-knee-lift": 1163,
+   "drill.n-seated-squeeze": 1228,
+   "drill.n-slider-lateral": 932,
+   "drill.n-squat-shift": 1313,
+   "drill.n-straddle-fold": 1210,
+   "drill.n-thomas-test": 1329,
+   "drill.n-wide-fold": 1391,
+   "drill.n-windshield": 1496,
+   "drill.o-seated-fig4": 1153,
+   "drill.o-seated-ham": 1241,
+   "drill.o-stand-crossreach": 1156,
+   "drill.o-stand-lunge": 1870,
+   "drill.s-9090": 1303,
+   "drill.s-butterfly": 702,
+   "drill.s-figure4": 1237,
+   "drill.s-frog": 848,
+   "drill.s-kneel-hipflex": 1529,
+   "drill.s-lizard": 910,
+   "drill.s-pigeon": 877,
+   "drill.s-seated-fold": 1194,
+   "drill.t-seated-straddle-lift-1leg": 1759,
+   "drill.w-clamshell": 1256,
+   "drill.w-feet-on-chair-bridge": 1069,
+   "min.1": 675,
+   "min.10": 776,
+   "min.11": 944,
+   "min.12": 819,
+   "min.13": 941,
+   "min.14": 942,
+   "min.15": 922,
+   "min.16": 1055,
+   "min.17": 1073,
+   "min.18": 924,
+   "min.19": 954,
+   "min.2": 726,
+   "min.20": 854,
+   "min.21": 1071,
+   "min.22": 1044,
+   "min.23": 1081,
+   "min.24": 1067,
+   "min.25": 1128,
+   "min.26": 1166,
+   "min.27": 1161,
+   "min.28": 1043,
+   "min.29": 1077,
+   "min.3": 743,
+   "min.30": 806,
+   "min.4": 731,
+   "min.5": 811,
+   "min.6": 907,
+   "min.7": 910,
+   "min.8": 733,
+   "min.9": 819,
+   "n.0": 553,
+   "n.1": 418,
+   "n.10": 433,
+   "n.2": 420,
+   "n.3": 397,
+   "n.4": 421,
+   "n.5": 485,
+   "n.6": 544,
+   "n.7": 546,
+   "n.8": 407,
+   "n.9": 487,
+   "p.each_side": 718,
+   "p.finish": 4700,
+   "p.first": 599,
+   "p.go": 401,
+   "p.go_right": 2378,
+   "p.half": 2191,
+   "p.last": 698,
+   "p.last10": 1082,
+   "p.next": 664,
+   "p.nice": 730,
+   "p.paused": 511,
+   "p.ready": 584,
+   "p.rest": 774,
+   "p.resume": 925,
+   "p.skip": 482,
+   "p.steps": 514,
+   "p.stop": 4500,
+   "p.switch_left": 1271,
+   "p.switch_right": 1236,
+   "p.total": 495,
+   "p.welcome": 829,
+   "point.glute-max-A": 2385,
+   "point.h-9090-liftoff": 3500,
+   "point.h-adductor-rock": 2677,
+   "point.h-band-hip-ir": 2038,
+   "point.h-band-leg-out": 2221,
+   "point.h-butterfly-active": 2966,
+   "point.h-couch-stretch": 2667,
+   "point.h-hip-gate": 2434,
+   "point.h-knee-hug": 1613,
+   "point.h-quad-cars": 3700,
+   "point.h-reverse-clam": 2158,
+   "point.h-squat": 2159,
+   "point.h-sumo-pry": 2675,
+   "point.h-supine-twist": 2715,
+   "point.h-wall-straddle": 2739,
+   "point.hip-flexors-A": 3300,
+   "point.n-chair-wiper": 2492,
+   "point.n-half-split": 3100,
+   "point.n-leg-circles": 2833,
+   "point.n-pelvis-circle": 2597,
+   "point.n-prone-hip-ext": 2916,
+   "point.n-prone-ir": 3300,
+   "point.n-seated-ir-drop": 2067,
+   "point.n-seated-knee-lift": 2179,
+   "point.n-seated-squeeze": 1745,
+   "point.n-slider-lateral": 2382,
+   "point.n-squat-shift": 2156,
+   "point.n-straddle-fold": 2653,
+   "point.n-thomas-test": 2510,
+   "point.n-wide-fold": 2584,
+   "point.n-windshield": 2692,
+   "point.o-seated-fig4": 2793,
+   "point.o-seated-ham": 3200,
+   "point.o-stand-crossreach": 2112,
+   "point.o-stand-lunge": 2914,
+   "point.s-9090": 3500,
+   "point.s-butterfly": 2711,
+   "point.s-figure4": 3100,
+   "point.s-frog": 2824,
+   "point.s-kneel-hipflex": 2230,
+   "point.s-lizard": 2193,
+   "point.s-pigeon": 2865,
+   "point.s-seated-fold": 2217,
+   "point.t-seated-straddle-lift-1leg": 2762,
+   "point.w-clamshell": 2307,
+   "point.w-feet-on-chair-bridge": 1885,
+   "routine.A": 551,
+   "routine.B": 616,
+   "routine.C": 852,
+   "routine.D": 1050,
+   "routine.E": 1338,
+   "routine.F": 975,
+   "routine.M": 688,
+   "sec.10": 865,
+   "sec.14": 1070,
+   "sec.15": 1039,
+   "sec.20": 970,
+   "sec.25": 1189,
+   "sec.27": 1260,
+   "sec.30": 925,
+   "sec.35": 1141,
+   "sec.40": 948,
+   "sec.45": 1150,
+   "sec.5": 875,
+   "sec.50": 952,
+   "sec.54": 1165,
+   "sec.55": 1161,
+   "sec.60": 675,
+   "sec.7": 1011,
+   "sec.70": 947,
+   "sec.75": 1139,
+   "sec.80": 982,
+   "tip.01": 3700,
+   "tip.02": 2933,
+   "tip.03": 3500
+  },
+  "zh": {
+   "a.choose": 2491,
+   "a.cue.butterfly": 3500,
+   "a.cue.deep_squat": 6000,
+   "a.cue.ninety_ninety": 3600,
+   "a.cue.seated_fold": 4200,
+   "a.cue.supine_cross": 5600,
+   "a.cue.thomas": 5100,
+   "a.done": 2289,
+   "a.hold": 1571,
+   "a.intro": 5400,
+   "a.item.butterfly": 1516,
+   "a.item.deep_squat": 1707,
+   "a.item.ninety_ninety": 1681,
+   "a.item.seated_fold": 1876,
+   "a.item.supine_cross": 1652,
+   "a.item.thomas": 1917,
+   "a.left_first": 960,
+   "a.switch_right": 1836,
+   "cue.control.1": 1390,
+   "cue.control.2": 1682,
+   "cue.extra_left": 1186,
+   "cue.extra_right": 1171,
+   "cue.flexibility.1": 1467,
+   "cue.flexibility.2": 1566,
+   "cue.half_range": 2349,
+   "cue.relax.1": 1546,
+   "cue.relax.2": 1758,
+   "cue.strength.1": 1387,
+   "cue.strength.2": 1274,
+   "dose.01": 1113,
+   "dose.02": 1096,
+   "dose.03": 2763,
+   "dose.04": 1248,
+   "dose.05": 1221,
+   "dose.06": 1759,
+   "dose.07": 1091,
+   "dose.08": 1459,
+   "dose.09": 1072,
+   "dose.10": 1072,
+   "dose.11": 1273,
+   "dose.12": 868,
+   "dose.13": 1821,
+   "dose.14": 934,
+   "dose.15": 920,
+   "dose.16": 950,
+   "dose.17": 598,
+   "dose.18": 1277,
+   "dose.19": 934,
+   "dose.20": 874,
+   "dose.21": 1090,
+   "dose.22": 2060,
+   "dose.23": 969,
+   "dose.24": 1450,
+   "dose.25": 544,
+   "dose.26": 868,
+   "dose.27": 1023,
+   "dose.28": 895,
+   "dose.29": 1556,
+   "dose.30": 976,
+   "dose.31": 1076,
+   "dose.32": 1668,
+   "drill.glute-max-A": 965,
+   "drill.h-9090-liftoff": 2051,
+   "drill.h-adductor-rock": 1730,
+   "drill.h-band-hip-ir": 1621,
+   "drill.h-band-leg-out": 1775,
+   "drill.h-butterfly-active": 1584,
+   "drill.h-couch-stretch": 2041,
+   "drill.h-hip-gate": 1410,
+   "drill.h-knee-hug": 846,
+   "drill.h-quad-cars": 1558,
+   "drill.h-reverse-clam": 1317,
+   "drill.h-squat": 894,
+   "drill.h-sumo-pry": 1925,
+   "drill.h-supine-twist": 1239,
+   "drill.h-wall-straddle": 1674,
+   "drill.hip-flexors-A": 2008,
+   "drill.n-chair-wiper": 1666,
+   "drill.n-half-split": 1091,
+   "drill.n-leg-circles": 1275,
+   "drill.n-pelvis-circle": 1278,
+   "drill.n-prone-hip-ext": 1257,
+   "drill.n-prone-ir": 2066,
+   "drill.n-seated-ir-drop": 1671,
+   "drill.n-seated-knee-lift": 1329,
+   "drill.n-seated-squeeze": 1722,
+   "drill.n-slider-lateral": 1104,
+   "drill.n-squat-shift": 1890,
+   "drill.n-straddle-fold": 1541,
+   "drill.n-thomas-test": 2860,
+   "drill.n-wide-fold": 2808,
+   "drill.n-windshield": 2237,
+   "drill.o-seated-fig4": 1289,
+   "drill.o-seated-ham": 1712,
+   "drill.o-stand-crossreach": 1629,
+   "drill.o-stand-lunge": 2085,
+   "drill.s-9090": 1835,
+   "drill.s-butterfly": 720,
+   "drill.s-figure4": 1241,
+   "drill.s-frog": 743,
+   "drill.s-kneel-hipflex": 1461,
+   "drill.s-lizard": 1870,
+   "drill.s-pigeon": 1848,
+   "drill.s-seated-fold": 1106,
+   "drill.t-seated-straddle-lift-1leg": 1743,
+   "drill.w-clamshell": 1258,
+   "drill.w-feet-on-chair-bridge": 1326,
+   "min.1": 667,
+   "min.10": 755,
+   "min.11": 883,
+   "min.12": 871,
+   "min.13": 954,
+   "min.14": 935,
+   "min.15": 890,
+   "min.16": 927,
+   "min.17": 935,
+   "min.18": 917,
+   "min.19": 935,
+   "min.2": 705,
+   "min.20": 808,
+   "min.21": 984,
+   "min.22": 974,
+   "min.23": 1029,
+   "min.24": 1001,
+   "min.25": 1006,
+   "min.26": 996,
+   "min.27": 1025,
+   "min.28": 1002,
+   "min.29": 1020,
+   "min.3": 733,
+   "min.30": 882,
+   "min.4": 735,
+   "min.5": 669,
+   "min.6": 721,
+   "min.7": 733,
+   "min.8": 676,
+   "min.9": 696,
+   "n.0": 350,
+   "n.1": 317,
+   "n.10": 423,
+   "n.2": 350,
+   "n.3": 393,
+   "n.4": 401,
+   "n.5": 341,
+   "n.6": 332,
+   "n.7": 385,
+   "n.8": 334,
+   "n.9": 344,
+   "p.each_side": 572,
+   "p.finish": 4800,
+   "p.first": 865,
+   "p.go": 601,
+   "p.go_right": 1623,
+   "p.half": 1453,
+   "p.last": 1020,
+   "p.last10": 923,
+   "p.next": 655,
+   "p.nice": 536,
+   "p.paused": 776,
+   "p.ready": 484,
+   "p.rest": 564,
+   "p.resume": 556,
+   "p.skip": 546,
+   "p.steps": 655,
+   "p.stop": 5300,
+   "p.switch_left": 681,
+   "p.switch_right": 707,
+   "p.total": 957,
+   "p.welcome": 892,
+   "point.glute-max-A": 2727,
+   "point.h-9090-liftoff": 4000,
+   "point.h-adductor-rock": 3285,
+   "point.h-band-hip-ir": 2098,
+   "point.h-band-leg-out": 2354,
+   "point.h-butterfly-active": 2935,
+   "point.h-couch-stretch": 2920,
+   "point.h-hip-gate": 3300,
+   "point.h-knee-hug": 1935,
+   "point.h-quad-cars": 3900,
+   "point.h-reverse-clam": 2555,
+   "point.h-squat": 2303,
+   "point.h-sumo-pry": 2799,
+   "point.h-supine-twist": 2277,
+   "point.h-wall-straddle": 2977,
+   "point.hip-flexors-A": 2975,
+   "point.n-chair-wiper": 3300,
+   "point.n-half-split": 3300,
+   "point.n-leg-circles": 2711,
+   "point.n-pelvis-circle": 2256,
+   "point.n-prone-hip-ext": 3100,
+   "point.n-prone-ir": 2642,
+   "point.n-seated-ir-drop": 2744,
+   "point.n-seated-knee-lift": 2456,
+   "point.n-seated-squeeze": 2507,
+   "point.n-slider-lateral": 2742,
+   "point.n-squat-shift": 2144,
+   "point.n-straddle-fold": 2748,
+   "point.n-thomas-test": 2882,
+   "point.n-wide-fold": 3400,
+   "point.n-windshield": 2976,
+   "point.o-seated-fig4": 2756,
+   "point.o-seated-ham": 3100,
+   "point.o-stand-crossreach": 3448,
+   "point.o-stand-lunge": 3500,
+   "point.s-9090": 3200,
+   "point.s-butterfly": 3300,
+   "point.s-figure4": 3300,
+   "point.s-frog": 4100,
+   "point.s-kneel-hipflex": 2717,
+   "point.s-lizard": 2530,
+   "point.s-pigeon": 2890,
+   "point.s-seated-fold": 2350,
+   "point.t-seated-straddle-lift-1leg": 2350,
+   "point.w-clamshell": 2641,
+   "point.w-feet-on-chair-bridge": 2547,
+   "routine.A": 706,
+   "routine.B": 620,
+   "routine.C": 932,
+   "routine.D": 858,
+   "routine.E": 1153,
+   "routine.F": 948,
+   "routine.M": 1503,
+   "sec.10": 625,
+   "sec.14": 759,
+   "sec.15": 718,
+   "sec.20": 676,
+   "sec.25": 835,
+   "sec.27": 837,
+   "sec.30": 712,
+   "sec.35": 857,
+   "sec.40": 728,
+   "sec.45": 902,
+   "sec.5": 528,
+   "sec.50": 658,
+   "sec.54": 827,
+   "sec.55": 811,
+   "sec.60": 667,
+   "sec.7": 546,
+   "sec.70": 919,
+   "sec.75": 1021,
+   "sec.80": 989,
+   "tip.01": 3600,
+   "tip.02": 2852,
+   "tip.03": 3111
+  }
+ },
+ "generated_by": "tools/voice/build_voice.py",
+ "lines": {
+  "a.choose": {
+   "en": "Okay. Which picture looks like you? Pick one",
+   "zh": "好，看看你像哪一张，选一个"
+  },
+  "a.cue.butterfly": {
+   "en": "Soles together, sit tall and let the knees drop on their own.",
+   "zh": "脚心对脚心，坐直，让膝盖自己往下落。"
+  },
+  "a.cue.deep_squat": {
+   "en": "Heels down, squat as low as you can and hold for three seconds. Keep a chair nearby.",
+   "zh": "脚跟踩稳，慢慢蹲到最低，停 3 秒。旁边放把椅子，不稳就扶。"
+  },
+  "a.cue.ninety_ninety": {
+   "en": "Both legs at right angles, hands off the floor, sit tall.",
+   "zh": "两条腿都摆成直角，手离开地面，坐直。"
+  },
+  "a.cue.seated_fold": {
+   "en": "Knees straight, fold from the hips and walk your hands down your legs.",
+   "zh": "膝盖别弯，从屁股那里往前折，手顺着腿往前走。"
+  },
+  "a.cue.supine_cross": {
+   "en": "Lift one straight leg and cross it over. Hand on your hip bone, stop as soon as it moves.",
+   "zh": "一条腿伸直抬起来，往另一边跨过去。手按胯骨，胯骨一动就停。"
+  },
+  "a.cue.thomas": {
+   "en": "Hug one knee, let the other leg rest straight, and slide your hand under that knee.",
+   "zh": "抱住一边膝盖，另一条腿放松伸直，把手塞到膝盖下面试试。"
+  },
+  "a.done": {
+   "en": "Check complete. Here are your results",
+   "zh": "自测完成，来看看你的结果"
+  },
+  "a.hold": {
+   "en": "Hold it and notice how it feels",
+   "zh": "保持住，感受一下"
+  },
+  "a.intro": {
+   "en": "Hip check, six moves. Follow each one, then pick the picture that looks most like you.",
+   "zh": "开胯体检，一共 6 项。每项跟着做一遍，再选一张最像你的图。"
+  },
+  "a.item.butterfly": {
+   "en": "Move one: Butterfly",
+   "zh": "第一项，蝴蝶式"
+  },
+  "a.item.deep_squat": {
+   "en": "Move six: Deep squat",
+   "zh": "第六项，深蹲到底"
+  },
+  "a.item.ninety_ninety": {
+   "en": "Move two: Ninety ninety",
+   "zh": "第二项，90 90"
+  },
+  "a.item.seated_fold": {
+   "en": "Move five: Seated forward fold",
+   "zh": "第五项，坐姿体前屈"
+  },
+  "a.item.supine_cross": {
+   "en": "Move four: Lying leg cross",
+   "zh": "第四项，仰卧横跨"
+  },
+  "a.item.thomas": {
+   "en": "Move three: Hip flexor test",
+   "zh": "第三项，屈髋肌测试"
+  },
+  "a.left_first": {
+   "en": "Left side first",
+   "zh": "先测左边"
+  },
+  "a.switch_right": {
+   "en": "Left side saved. Now the right side",
+   "zh": "左边记好了，换右边"
+  },
+  "cue.control.1": {
+   "en": "Slow down, stay in control",
+   "zh": "慢一点，控制住"
+  },
+  "cue.control.2": {
+   "en": "Keep the pelvis still, move from the hip",
+   "zh": "骨盆稳住，只动髋"
+  },
+  "cue.extra_left": {
+   "en": "One extra set on the left",
+   "zh": "左边多做一组"
+  },
+  "cue.extra_right": {
+   "en": "One extra set on the right",
+   "zh": "右边多做一组"
+  },
+  "cue.flexibility.1": {
+   "en": "Breathe out and sink a little deeper",
+   "zh": "呼气，再沉一点"
+  },
+  "cue.flexibility.2": {
+   "en": "Hold still, no bouncing",
+   "zh": "保持住，不要弹震"
+  },
+  "cue.half_range": {
+   "en": "Half the range, only go where it does not hurt",
+   "zh": "幅度减半，只做到不疼的位置"
+  },
+  "cue.relax.1": {
+   "en": "Breathe slowly and relax",
+   "zh": "慢慢呼吸，放松"
+  },
+  "cue.relax.2": {
+   "en": "Shoulders loose, keep breathing",
+   "zh": "肩膀放松，别憋气"
+  },
+  "cue.strength.1": {
+   "en": "Stay steady, keep breathing",
+   "zh": "稳住，别憋气"
+  },
+  "cue.strength.2": {
+   "en": "Breathe out as you push",
+   "zh": "用力的时候呼气"
+  },
+  "dose.01": {
+   "en": "4 circles each way",
+   "zh": "正反各 4 圈"
+  },
+  "dose.02": {
+   "en": "30 seconds each side",
+   "zh": "每侧 30 秒"
+  },
+  "dose.03": {
+   "en": "3 open and 3 close, each side",
+   "zh": "每侧 开 3 次 加 关 3 次"
+  },
+  "dose.04": {
+   "en": "25 seconds each side",
+   "zh": "每侧 25 秒"
+  },
+  "dose.05": {
+   "en": "6 reps, alternating sides",
+   "zh": "左右交替 6 次"
+  },
+  "dose.06": {
+   "en": "3 reps with a 5 second hold, each side",
+   "zh": "每侧 3 次，停 5 秒"
+  },
+  "dose.07": {
+   "en": "6 slow breaths",
+   "zh": "慢呼吸 6 次"
+  },
+  "dose.08": {
+   "en": "8 slow drops side to side",
+   "zh": "左右慢慢倒 8 次"
+  },
+  "dose.09": {
+   "en": "40 seconds each side",
+   "zh": "每侧 40 秒"
+  },
+  "dose.10": {
+   "en": "40 seconds each side",
+   "zh": "每侧 40 秒"
+  },
+  "dose.11": {
+   "en": "6 slow open and close",
+   "zh": "慢开慢合 6 次"
+  },
+  "dose.12": {
+   "en": "hold for 60 seconds",
+   "zh": "停 60 秒"
+  },
+  "dose.13": {
+   "en": "4 circles each way, each side",
+   "zh": "每侧 正反各 4 圈"
+  },
+  "dose.14": {
+   "en": "3 circles each side",
+   "zh": "每侧 3 圈"
+  },
+  "dose.15": {
+   "en": "5 reps each side",
+   "zh": "每侧 5 次"
+  },
+  "dose.16": {
+   "en": "6 reps each side",
+   "zh": "每侧 6 次"
+  },
+  "dose.17": {
+   "en": "6 reps",
+   "zh": "6 次"
+  },
+  "dose.18": {
+   "en": "35 seconds each side",
+   "zh": "每侧 35 秒"
+  },
+  "dose.19": {
+   "en": "8 reps each side",
+   "zh": "每侧 8 次"
+  },
+  "dose.20": {
+   "en": "hold for 40 seconds",
+   "zh": "停 40 秒"
+  },
+  "dose.21": {
+   "en": "3 circles each way",
+   "zh": "正反各 3 圈"
+  },
+  "dose.22": {
+   "en": "3 open and 3 close, each side",
+   "zh": "每侧 开 3 加 关 3"
+  },
+  "dose.23": {
+   "en": "10 reps each side",
+   "zh": "每侧 10 次"
+  },
+  "dose.24": {
+   "en": "3 holds of 10 seconds",
+   "zh": "停 3 次，10 秒"
+  },
+  "dose.25": {
+   "en": "8 reps",
+   "zh": "8 次"
+  },
+  "dose.26": {
+   "en": "hold for 60 seconds",
+   "zh": "停 60 秒"
+  },
+  "dose.27": {
+   "en": "hold for 75 seconds",
+   "zh": "停 75 秒"
+  },
+  "dose.28": {
+   "en": "8 reps side to side",
+   "zh": "左右 8 次"
+  },
+  "dose.29": {
+   "en": "3 holds of 15 seconds",
+   "zh": "停 3 次，15 秒"
+  },
+  "dose.30": {
+   "en": "20 seconds each side",
+   "zh": "每侧 20 秒"
+  },
+  "dose.31": {
+   "en": "15 seconds each side",
+   "zh": "每侧 15 秒"
+  },
+  "dose.32": {
+   "en": "1 reps with a 5 second hold, each side",
+   "zh": "每侧 1 次，停 5 秒"
+  },
+  "drill.glute-max-A": {
+   "en": "Single-leg glute bridge",
+   "zh": "单腿臀桥"
+  },
+  "drill.h-9090-liftoff": {
+   "en": "Ninety-ninety rear-leg lift-off",
+   "zh": "90 90 后腿主动抬起"
+  },
+  "drill.h-adductor-rock": {
+   "en": "Quadruped adductor rock-back",
+   "zh": "四足单腿侧伸后摇"
+  },
+  "drill.h-band-hip-ir": {
+   "en": "Seated band hip internal rotation",
+   "zh": "坐椅弹力带髋内旋"
+  },
+  "drill.h-band-leg-out": {
+   "en": "Supine band leg lower-out",
+   "zh": "仰卧弹力带单腿侧落"
+  },
+  "drill.h-butterfly-active": {
+   "en": "Active supine butterfly",
+   "zh": "仰卧蝴蝶主动开合"
+  },
+  "drill.h-couch-stretch": {
+   "en": "Couch stretch",
+   "zh": "沙发拉伸，后脚搭矮凳"
+  },
+  "drill.h-hip-gate": {
+   "en": "Standing hip gate",
+   "zh": "扶椅站姿开髋门"
+  },
+  "drill.h-knee-hug": {
+   "en": "Supine knee hug",
+   "zh": "仰卧抱膝"
+  },
+  "drill.h-quad-cars": {
+   "en": "Quadruped hip circles",
+   "zh": "四足髋关节画圈"
+  },
+  "drill.h-reverse-clam": {
+   "en": "Side-lying reverse clam",
+   "zh": "侧卧反向蚌式"
+  },
+  "drill.h-squat": {
+   "en": "Bodyweight squat",
+   "zh": "徒手深蹲"
+  },
+  "drill.h-sumo-pry": {
+   "en": "Sumo squat elbow pry",
+   "zh": "相扑深蹲肘推膝停留"
+  },
+  "drill.h-supine-twist": {
+   "en": "Supine bent-knee twist",
+   "zh": "仰卧屈膝扭转"
+  },
+  "drill.h-wall-straddle": {
+   "en": "Wall straddle",
+   "zh": "靠墙仰卧 V 字分腿"
+  },
+  "drill.hip-flexors-A": {
+   "en": "Seated straight-leg lift",
+   "zh": "坐姿直腿抬腿，压缩"
+  },
+  "drill.n-chair-wiper": {
+   "en": "Chair windshield wipers",
+   "zh": "坐椅雨刷，膝内倒"
+  },
+  "drill.n-half-split": {
+   "en": "Half split",
+   "zh": "半跪半劈叉"
+  },
+  "drill.n-leg-circles": {
+   "en": "Supine leg circles",
+   "zh": "仰卧直腿画圈"
+  },
+  "drill.n-pelvis-circle": {
+   "en": "Standing pelvic circles",
+   "zh": "站姿骨盆画圈"
+  },
+  "drill.n-prone-hip-ext": {
+   "en": "Prone bent-knee hip lift",
+   "zh": "俯卧屈膝抬腿"
+  },
+  "drill.n-prone-ir": {
+   "en": "Prone hip internal rotation",
+   "zh": "俯卧小腿外摆，髋内旋"
+  },
+  "drill.n-seated-ir-drop": {
+   "en": "Seated knee drop-in",
+   "zh": "坐姿后撑单膝内倒"
+  },
+  "drill.n-seated-knee-lift": {
+   "en": "Seated knee lift hold",
+   "zh": "坐姿抬膝悬停"
+  },
+  "drill.n-seated-squeeze": {
+   "en": "Seated block squeeze",
+   "zh": "坐姿夹砖，膝内夹"
+  },
+  "drill.n-slider-lateral": {
+   "en": "Lateral slider",
+   "zh": "滑垫侧向滑"
+  },
+  "drill.n-squat-shift": {
+   "en": "Deep squat side shift",
+   "zh": "低位蹲姿左右移重心"
+  },
+  "drill.n-straddle-fold": {
+   "en": "Seated straddle fold",
+   "zh": "坐姿分腿体前屈"
+  },
+  "drill.n-thomas-test": {
+   "en": "Supine single knee hug",
+   "zh": "仰卧单膝抱胸，屈髋肌测试演示"
+  },
+  "drill.n-wide-fold": {
+   "en": "Wide-stance forward fold",
+   "zh": "站姿宽距体前屈，扶椅、扶砖"
+  },
+  "drill.n-windshield": {
+   "en": "Supine windshield wipers",
+   "zh": "仰卧雨刷式，双膝左右倒"
+  },
+  "drill.o-seated-fig4": {
+   "en": "Seated figure four",
+   "zh": "坐姿四字前压"
+  },
+  "drill.o-seated-ham": {
+   "en": "Seated hamstring reach",
+   "zh": "坐姿腘绳肌前伸"
+  },
+  "drill.o-stand-crossreach": {
+   "en": "Standing cross-reach",
+   "zh": "扶椅站姿交叉侧伸"
+  },
+  "drill.o-stand-lunge": {
+   "en": "Standing lunge hip flexor stretch",
+   "zh": "扶椅站姿弓步屈髋拉伸"
+  },
+  "drill.s-9090": {
+   "en": "Ninety-ninety hip switch",
+   "zh": "90 90 坐姿换髋"
+  },
+  "drill.s-butterfly": {
+   "en": "Butterfly",
+   "zh": "蝴蝶式"
+  },
+  "drill.s-figure4": {
+   "en": "Supine figure four",
+   "zh": "仰卧 4 字拉伸"
+  },
+  "drill.s-frog": {
+   "en": "Frog stretch",
+   "zh": "青蛙式"
+  },
+  "drill.s-kneel-hipflex": {
+   "en": "Kneeling hip flexor stretch",
+   "zh": "半跪髋屈肌拉伸"
+  },
+  "drill.s-lizard": {
+   "en": "Lizard lunge",
+   "zh": "蜥蜴式低弓步，扶砖"
+  },
+  "drill.s-pigeon": {
+   "en": "Upright pigeon",
+   "zh": "鸽子式，直立扶砖版"
+  },
+  "drill.s-seated-fold": {
+   "en": "Seated forward fold",
+   "zh": "坐姿体前屈"
+  },
+  "drill.t-seated-straddle-lift-1leg": {
+   "en": "Seated straddle single-leg lift",
+   "zh": "坐姿分腿单腿抬起"
+  },
+  "drill.w-clamshell": {
+   "en": "Side-lying clamshell",
+   "zh": "侧卧蚌式开合"
+  },
+  "drill.w-feet-on-chair-bridge": {
+   "en": "Feet-on-chair bridge",
+   "zh": "脚踩椅面臀桥"
+  },
+  "min.1": {
+   "en": "1 minute",
+   "zh": "1 分钟"
+  },
+  "min.10": {
+   "en": "10 minutes",
+   "zh": "10 分钟"
+  },
+  "min.11": {
+   "en": "11 minutes",
+   "zh": "11 分钟"
+  },
+  "min.12": {
+   "en": "12 minutes",
+   "zh": "12 分钟"
+  },
+  "min.13": {
+   "en": "13 minutes",
+   "zh": "13 分钟"
+  },
+  "min.14": {
+   "en": "14 minutes",
+   "zh": "14 分钟"
+  },
+  "min.15": {
+   "en": "15 minutes",
+   "zh": "15 分钟"
+  },
+  "min.16": {
+   "en": "16 minutes",
+   "zh": "16 分钟"
+  },
+  "min.17": {
+   "en": "17 minutes",
+   "zh": "17 分钟"
+  },
+  "min.18": {
+   "en": "18 minutes",
+   "zh": "18 分钟"
+  },
+  "min.19": {
+   "en": "19 minutes",
+   "zh": "19 分钟"
+  },
+  "min.2": {
+   "en": "2 minutes",
+   "zh": "2 分钟"
+  },
+  "min.20": {
+   "en": "20 minutes",
+   "zh": "20 分钟"
+  },
+  "min.21": {
+   "en": "21 minutes",
+   "zh": "21 分钟"
+  },
+  "min.22": {
+   "en": "22 minutes",
+   "zh": "22 分钟"
+  },
+  "min.23": {
+   "en": "23 minutes",
+   "zh": "23 分钟"
+  },
+  "min.24": {
+   "en": "24 minutes",
+   "zh": "24 分钟"
+  },
+  "min.25": {
+   "en": "25 minutes",
+   "zh": "25 分钟"
+  },
+  "min.26": {
+   "en": "26 minutes",
+   "zh": "26 分钟"
+  },
+  "min.27": {
+   "en": "27 minutes",
+   "zh": "27 分钟"
+  },
+  "min.28": {
+   "en": "28 minutes",
+   "zh": "28 分钟"
+  },
+  "min.29": {
+   "en": "29 minutes",
+   "zh": "29 分钟"
+  },
+  "min.3": {
+   "en": "3 minutes",
+   "zh": "3 分钟"
+  },
+  "min.30": {
+   "en": "30 minutes",
+   "zh": "30 分钟"
+  },
+  "min.4": {
+   "en": "4 minutes",
+   "zh": "4 分钟"
+  },
+  "min.5": {
+   "en": "5 minutes",
+   "zh": "5 分钟"
+  },
+  "min.6": {
+   "en": "6 minutes",
+   "zh": "6 分钟"
+  },
+  "min.7": {
+   "en": "7 minutes",
+   "zh": "7 分钟"
+  },
+  "min.8": {
+   "en": "8 minutes",
+   "zh": "8 分钟"
+  },
+  "min.9": {
+   "en": "9 minutes",
+   "zh": "9 分钟"
+  },
+  "n.0": {
+   "en": "zero",
+   "zh": "零"
+  },
+  "n.1": {
+   "en": "one",
+   "zh": "一"
+  },
+  "n.10": {
+   "en": "ten",
+   "zh": "十"
+  },
+  "n.2": {
+   "en": "two",
+   "zh": "二"
+  },
+  "n.3": {
+   "en": "three",
+   "zh": "三"
+  },
+  "n.4": {
+   "en": "four",
+   "zh": "四"
+  },
+  "n.5": {
+   "en": "five",
+   "zh": "五"
+  },
+  "n.6": {
+   "en": "six",
+   "zh": "六"
+  },
+  "n.7": {
+   "en": "seven",
+   "zh": "七"
+  },
+  "n.8": {
+   "en": "eight",
+   "zh": "八"
+  },
+  "n.9": {
+   "en": "nine",
+   "zh": "九"
+  },
+  "p.each_side": {
+   "en": "each side",
+   "zh": "每侧"
+  },
+  "p.finish": {
+   "en": "Great job, today's session is done. Drink some water and get up slowly.",
+   "zh": "太棒了，今天的训练完成了。记得多喝水，慢慢起身。"
+  },
+  "p.first": {
+   "en": "First up",
+   "zh": "第一个动作"
+  },
+  "p.go": {
+   "en": "Go",
+   "zh": "开始"
+  },
+  "p.go_right": {
+   "en": "Right side first. Go",
+   "zh": "先做右边，开始"
+  },
+  "p.half": {
+   "en": "Halfway there. Hold it",
+   "zh": "过半了，保持住"
+  },
+  "p.last": {
+   "en": "Last one",
+   "zh": "最后一个动作"
+  },
+  "p.last10": {
+   "en": "10 seconds left",
+   "zh": "还剩 10 秒"
+  },
+  "p.next": {
+   "en": "Next up",
+   "zh": "下一个"
+  },
+  "p.nice": {
+   "en": "Nice work",
+   "zh": "很好"
+  },
+  "p.paused": {
+   "en": "Paused",
+   "zh": "已暂停"
+  },
+  "p.ready": {
+   "en": "Get ready",
+   "zh": "准备"
+  },
+  "p.rest": {
+   "en": "Rest for",
+   "zh": "休息"
+  },
+  "p.resume": {
+   "en": "Let's continue",
+   "zh": "继续"
+  },
+  "p.skip": {
+   "en": "Skipped",
+   "zh": "跳过"
+  },
+  "p.steps": {
+   "en": "moves",
+   "zh": "个动作"
+  },
+  "p.stop": {
+   "en": "Stop here. Numbness or a shooting feeling should not happen in practice.",
+   "zh": "先停下来。麻、刺或往下窜的感觉不该出现在练习里。"
+  },
+  "p.switch_left": {
+   "en": "Switch to the left side",
+   "zh": "换左边"
+  },
+  "p.switch_right": {
+   "en": "Switch to the right side",
+   "zh": "换右边"
+  },
+  "p.total": {
+   "en": "about",
+   "zh": "全程大约"
+  },
+  "p.welcome": {
+   "en": "Let's begin",
+   "zh": "开始训练"
+  },
+  "point.glute-max-A": {
+   "en": "One leg up, drive your hips up with your glutes",
+   "zh": "一条腿抬起，用臀部把身体推高"
+  },
+  "point.h-9090-liftoff": {
+   "en": "Sit tall, lift the back knee slowly, then lower it slowly",
+   "zh": "坐直，后腿膝盖慢慢抬离地面，再慢慢放下"
+  },
+  "point.h-adductor-rock": {
+   "en": "One leg out to the side, sit your hips back slowly",
+   "zh": "一条腿向侧面伸直，臀部慢慢往后坐"
+  },
+  "point.h-band-hip-ir": {
+   "en": "Keep the knee still, turn the shin outward",
+   "zh": "膝盖不动，小腿向外转"
+  },
+  "point.h-band-leg-out": {
+   "en": "Keep the leg straight and lower it out to the side",
+   "zh": "腿伸直，慢慢向外侧落下"
+  },
+  "point.h-butterfly-active": {
+   "en": "Soles together, open the knees slowly and bring them back",
+   "zh": "脚心相对，膝盖慢慢打开再收回"
+  },
+  "point.h-couch-stretch": {
+   "en": "Back foot up, squeeze your glutes, hips forward",
+   "zh": "后脚搭高，收紧臀部，髋往前送"
+  },
+  "point.h-hip-gate": {
+   "en": "Hold the chair, lift the knee and circle it open",
+   "zh": "扶住椅子，膝盖抬高，向外画圈打开"
+  },
+  "point.h-knee-hug": {
+   "en": "Hug your knees and breathe slowly",
+   "zh": "双手抱膝，慢慢呼吸"
+  },
+  "point.h-quad-cars": {
+   "en": "On all fours, draw a big circle with the knee, keep the low back still",
+   "zh": "四点跪姿，膝盖画一个尽量大的圈，腰不要动"
+  },
+  "point.h-reverse-clam": {
+   "en": "Knees together, lift the shin up slowly",
+   "zh": "膝盖并拢，小腿慢慢向上抬"
+  },
+  "point.h-squat": {
+   "en": "Heels down, knees track over the toes",
+   "zh": "脚跟踩稳，膝盖对准脚尖"
+  },
+  "point.h-sumo-pry": {
+   "en": "Sit low and gently press the knees out with your elbows",
+   "zh": "蹲低，手肘把膝盖轻轻向外推"
+  },
+  "point.h-supine-twist": {
+   "en": "Drop both knees to one side, shoulders stay down",
+   "zh": "双膝倒向一侧，肩膀贴地"
+  },
+  "point.h-wall-straddle": {
+   "en": "Legs up the wall, let them fall open to the sides",
+   "zh": "腿靠墙，让双腿自然向两侧打开"
+  },
+  "point.hip-flexors-A": {
+   "en": "Sit tall, lift the straight leg, pause, then lower",
+   "zh": "坐直，腿伸直抬起，停一下再放下"
+  },
+  "point.n-chair-wiper": {
+   "en": "Seated, swing the shin out and let the knee fall in",
+   "zh": "坐在椅子上，小腿向外摆，膝盖向内倒"
+  },
+  "point.n-half-split": {
+   "en": "Front leg straight, fold from the hips, hands on the blocks",
+   "zh": "前腿伸直，从髋部往前折，手扶砖"
+  },
+  "point.n-leg-circles": {
+   "en": "Leg straight, draw slow circles, pelvis still",
+   "zh": "腿伸直，慢慢画圈，骨盆不动"
+  },
+  "point.n-pelvis-circle": {
+   "en": "Feet still, draw slow circles with your pelvis",
+   "zh": "双脚不动，骨盆慢慢画圈"
+  },
+  "point.n-prone-hip-ext": {
+   "en": "Lying face down, knee bent, lift the thigh slowly",
+   "zh": "趴着，屈膝，大腿慢慢抬离地面"
+  },
+  "point.n-prone-ir": {
+   "en": "Lying face down, knees bent, let the shins fall outward",
+   "zh": "趴着，屈膝，小腿向外侧摆"
+  },
+  "point.n-seated-ir-drop": {
+   "en": "Hands behind you, drop one knee inward",
+   "zh": "手在身后撑地，一侧膝盖向内倒"
+  },
+  "point.n-seated-knee-lift": {
+   "en": "Sit tall, lift the knee and hold it there",
+   "zh": "坐直，膝盖抬起，悬停住"
+  },
+  "point.n-seated-squeeze": {
+   "en": "Squeeze the block between your knees",
+   "zh": "双膝夹住瑜伽砖，用力夹紧"
+  },
+  "point.n-slider-lateral": {
+   "en": "Slide one foot out to the side and pull it back",
+   "zh": "一只脚向侧面滑出去，再收回来"
+  },
+  "point.n-squat-shift": {
+   "en": "Stay low and shift your weight side to side",
+   "zh": "低蹲，重心慢慢左右移"
+  },
+  "point.n-straddle-fold": {
+   "en": "Sit tall in a straddle and lean forward from the hips",
+   "zh": "分腿坐直，从髋部慢慢往前倾"
+  },
+  "point.n-thomas-test": {
+   "en": "Hug one knee, let the other leg rest straight",
+   "zh": "抱住一边膝盖，另一条腿放松伸直"
+  },
+  "point.n-wide-fold": {
+   "en": "Feet wide, hold the chair, fold from the hips",
+   "zh": "双脚分开，扶住椅子，从髋部往前折"
+  },
+  "point.n-windshield": {
+   "en": "Let both knees fall side to side, shoulders down",
+   "zh": "双膝一起慢慢左右倒，肩膀贴地"
+  },
+  "point.o-seated-fig4": {
+   "en": "Ankle on the knee, keep the back straight and lean forward",
+   "zh": "脚踝搭在膝盖上，背挺直往前压"
+  },
+  "point.o-seated-ham": {
+   "en": "Leg straight, toes up, lean forward with a straight back",
+   "zh": "腿伸直，脚尖勾起，背挺直往前"
+  },
+  "point.o-stand-crossreach": {
+   "en": "Cross one leg behind and reach up and over",
+   "zh": "一条腿交叉到后面，手臂向上向侧面伸"
+  },
+  "point.o-stand-lunge": {
+   "en": "Hold the chair, squeeze the back glute, hips forward",
+   "zh": "扶住椅子，后侧臀部收紧，髋往前推"
+  },
+  "point.s-9090": {
+   "en": "Both legs at right angles, sit tall, then switch sides",
+   "zh": "两条腿都成直角，坐直，再左右换"
+  },
+  "point.s-butterfly": {
+   "en": "Soles together, sit tall, let the knees drop",
+   "zh": "脚心对脚心，坐直，让膝盖自然落下"
+  },
+  "point.s-figure4": {
+   "en": "Ankle over the other knee, pull the legs toward your chest",
+   "zh": "脚踝搭在另一侧膝盖上，把腿拉向胸口"
+  },
+  "point.s-frog": {
+   "en": "Knees wide, toes out, sit your hips back slowly",
+   "zh": "膝盖向两侧打开，脚尖朝外，臀部慢慢往后坐"
+  },
+  "point.s-kneel-hipflex": {
+   "en": "Squeeze the back glute and ease the hips forward",
+   "zh": "后侧臀部收紧，髋慢慢往前推"
+  },
+  "point.s-lizard": {
+   "en": "Front foot outside your hand, sink the hips",
+   "zh": "前脚放在手外侧，髋往下沉"
+  },
+  "point.s-pigeon": {
+   "en": "Stay upright, hands on the blocks, sink the hips",
+   "zh": "上身立直，手扶砖，髋往下沉"
+  },
+  "point.s-seated-fold": {
+   "en": "Knees straight, fold forward from the hips",
+   "zh": "膝盖伸直，从髋部往前折"
+  },
+  "point.t-seated-straddle-lift-1leg": {
+   "en": "Sit tall in a straddle and lift one leg off the floor",
+   "zh": "分腿坐直，一条腿抬离地面"
+  },
+  "point.w-clamshell": {
+   "en": "Heels together, open the knee like a clamshell",
+   "zh": "脚跟并拢，膝盖像贝壳一样打开"
+  },
+  "point.w-feet-on-chair-bridge": {
+   "en": "Feet on the chair, drive your hips up",
+   "zh": "脚踩椅面，用臀部把身体推高"
+  },
+  "routine.A": {
+   "en": "Office",
+   "zh": "办公室"
+  },
+  "routine.B": {
+   "en": "Bedtime",
+   "zh": "睡前"
+  },
+  "routine.C": {
+   "en": "Morning wake-up",
+   "zh": "晨起唤醒"
+  },
+  "routine.D": {
+   "en": "Desk-sitting relief",
+   "zh": "久坐解压"
+  },
+  "routine.E": {
+   "en": "Pre-workout activation",
+   "zh": "训练前激活"
+  },
+  "routine.F": {
+   "en": "Breaking hip opener",
+   "zh": "Breaking 开胯"
+  },
+  "routine.M": {
+   "en": "Chair break",
+   "zh": "久坐提醒 · 椅边"
+  },
+  "sec.10": {
+   "en": "10 seconds",
+   "zh": "10 秒"
+  },
+  "sec.14": {
+   "en": "14 seconds",
+   "zh": "14 秒"
+  },
+  "sec.15": {
+   "en": "15 seconds",
+   "zh": "15 秒"
+  },
+  "sec.20": {
+   "en": "20 seconds",
+   "zh": "20 秒"
+  },
+  "sec.25": {
+   "en": "25 seconds",
+   "zh": "25 秒"
+  },
+  "sec.27": {
+   "en": "27 seconds",
+   "zh": "27 秒"
+  },
+  "sec.30": {
+   "en": "30 seconds",
+   "zh": "30 秒"
+  },
+  "sec.35": {
+   "en": "35 seconds",
+   "zh": "35 秒"
+  },
+  "sec.40": {
+   "en": "40 seconds",
+   "zh": "40 秒"
+  },
+  "sec.45": {
+   "en": "45 seconds",
+   "zh": "45 秒"
+  },
+  "sec.5": {
+   "en": "5 seconds",
+   "zh": "5 秒"
+  },
+  "sec.50": {
+   "en": "50 seconds",
+   "zh": "50 秒"
+  },
+  "sec.54": {
+   "en": "54 seconds",
+   "zh": "54 秒"
+  },
+  "sec.55": {
+   "en": "55 seconds",
+   "zh": "55 秒"
+  },
+  "sec.60": {
+   "en": "1 minute",
+   "zh": "1 分钟"
+  },
+  "sec.7": {
+   "en": "7 seconds",
+   "zh": "7 秒"
+  },
+  "sec.70": {
+   "en": "1 minute 10",
+   "zh": "1 分 10 秒"
+  },
+  "sec.75": {
+   "en": "1 minute 15",
+   "zh": "1 分 15 秒"
+  },
+  "sec.80": {
+   "en": "1 minute 20",
+   "zh": "1 分 20 秒"
+  },
+  "tip.01": {
+   "en": "If your knee complains, just rest the ankle on it and do not lean forward",
+   "zh": "如果膝盖不舒服，只把脚踝搭上，不往前压"
+  },
+  "tip.02": {
+   "en": "No towel? Hold the inner thigh with your hand",
+   "zh": "没有毛巾的话，用手扶住大腿内侧"
+  },
+  "tip.03": {
+   "en": "Rather not move? Hold a lying butterfly instead",
+   "zh": "不想挪位置，也可以换成仰卧蝴蝶停留"
+  }
+ },
+ "rest_seconds": 15,
+ "schema": 1,
+ "texts": {
+  "dose": {
+   "6 次": "dose.17",
+   "8 次": "dose.25",
+   "停 3 次 × 10 秒": "dose.24",
+   "停 3 次 × 15 秒": "dose.29",
+   "停 40 秒": "dose.20",
+   "停 60 秒": "dose.26",
+   "停 60 秒（床头靠墙也可以）": "dose.12",
+   "停 75 秒": "dose.27",
+   "左右 8 次": "dose.28",
+   "左右交替 6 次": "dose.05",
+   "左右慢慢倒 8 次": "dose.08",
+   "慢呼吸 6 次": "dose.07",
+   "慢开慢合 6 次": "dose.11",
+   "正反各 3 圈": "dose.21",
+   "正反各 4 圈": "dose.01",
+   "每侧 1 次 × 停 5 秒": "dose.32",
+   "每侧 10 次": "dose.23",
+   "每侧 15 秒": "dose.31",
+   "每侧 20 秒": "dose.30",
+   "每侧 25 秒": "dose.04",
+   "每侧 3 圈": "dose.14",
+   "每侧 3 次 × 停 5 秒": "dose.06",
+   "每侧 30 秒": "dose.02",
+   "每侧 35 秒": "dose.18",
+   "每侧 40 秒": "dose.09",
+   "每侧 40 秒（用毛巾）": "dose.10",
+   "每侧 5 次": "dose.15",
+   "每侧 6 次": "dose.16",
+   "每侧 8 次": "dose.19",
+   "每侧 开 3 + 关 3": "dose.22",
+   "每侧 开 3 次 + 关 3 次": "dose.03",
+   "每侧 正反各 4 圈": "dose.13"
+  },
+  "tip": {
+   "不想挪位置：换成仰卧蝴蝶停留": "tip.03",
+   "没有毛巾：手扶大腿内侧": "tip.02",
+   "膝不舒服：只把脚踝搭上、不前压": "tip.01"
+  }
+ },
+ "voices": {
+  "en": "en-US-JennyNeural",
+  "zh": "zh-CN-XiaoxiaoNeural"
+ }
+}
