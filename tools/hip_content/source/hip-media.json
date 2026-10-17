@@ -1,5 +1,5 @@
 {
-  "_note": "HipLab HD delivery: 46 source-QA-passed self-rendered training-human-v2 drills plus one dedicated assessment cut. Exact 1080 straight-alpha masters are composed on #101013 by 3D-Body tools/hiplab-render/export_app_delivery.py; Android clips are 1080x1080, true 30fps, H.264/yuv420p CRF18 without audio. Per-item metadata binds the selected source batch, result, alpha frames and delivery SHA. Refresh through tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --poster-size 1080; accepted ready clips are copied without re-encoding, and the assessment cut is cropped separately. No legacy library clips remain selected.",
+  "_note": "HipLab consumes Pose-Hub published release 0.1.0: 46 dark 1080 video/poster pairs pinned by pose-hub.lock.json and tools/pose-hub-manifest.json. Sync only with tools/pose_hub_sync.py, then regenerate the content pack. Per-item pose_hub binds the fixed publication commit, manifest hash, file hashes and spec. Existing identical media retain valid historical production provenance; replaced r2 clips preserve previous provenance in prior_sources. The dedicated supine-cross-demo cut and assessment stills remain HipLab-owned and outside the Pose-Hub lock. tools/sync_drill_media.py is deprecated for normal updates.",
   "videos": {
     "glute-max-A": {
       "background": "#101013",
@@ -23,7 +23,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\glute-max-A\\result.json",
       "source_result_sha256": "07adbbe9ba98ed4e7b15891371acf311c439db0d3c6c600e7ddd3665ceed4732",
       "source_spec_sha256": "6007b68fa0c21070713aa982c23436db283dbe0d4daf028db9b350951ad1835f",
-      "source_video_sha256": "e4e08f7ff72bce4625f556f421dbc5de8532604387467247b812c950d48a2f49"
+      "source_video_sha256": "e4e08f7ff72bce4625f556f421dbc5de8532604387467247b812c950d48a2f49",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "glute-max-A/glute-max-A.dark.1080.mp4",
+          "bytes": 525745,
+          "sha256": "e4e08f7ff72bce4625f556f421dbc5de8532604387467247b812c950d48a2f49"
+        },
+        "poster": {
+          "file": "glute-max-A/glute-max-A.dark.poster.1080.jpg",
+          "bytes": 22329,
+          "sha256": "cf36c53143120b62c720aef9aa9aaf962418f10529db212859dd94ed3cf031dd"
+        },
+        "spec": {
+          "path": "drill-anim/specs/glute-max-A.js",
+          "sha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+        }
+      }
     },
     "h-9090-liftoff": {
       "background": "#101013",
@@ -34,19 +58,55 @@
       "frame_timing": "source",
       "poster_size": 1080,
       "poster_time_seconds": 2.0,
-      "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
-      "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/h-9090-liftoff",
-      "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
-      "source_fps": 30,
-      "source_frames": 240,
-      "source_pixel_ratio": "2",
-      "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/h-9090-liftoff/greenscreen/jobs/h-9090-liftoff/result.json",
-      "source_result_sha256": "b1a5e6d0d5549ac4120493c2663262f40964ad0326d9cdcde2ff90541ebf449b",
+      "prior_sources": [
+        {
+          "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
+          "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/h-9090-liftoff",
+          "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
+          "source_fps": 30,
+          "source_frames": 240,
+          "source_pixel_ratio": "2",
+          "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/h-9090-liftoff/greenscreen/jobs/h-9090-liftoff/result.json",
+          "source_result_sha256": "b1a5e6d0d5549ac4120493c2663262f40964ad0326d9cdcde2ff90541ebf449b",
+          "source_spec_sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc",
+          "source_video_sha256": "c4f47c6e677faf77d42ca4b1eed860d9a2d68858e3df34f39804d2a2af83af2a",
+          "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
+          "source_spec": "tools/drill-anim/specs/h-9090-liftoff-r2.js",
+          "revision": "r2"
+        }
+      ],
+      "source": "Pose-Hub published dark/video release 0.1.0; original rendering provenance is recorded in media/releases/0.1.0.sources.json at the pinned Pose-Hub commit",
+      "source_repository": "mhgd3250905/3D-Pose-Hub",
+      "source_commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+      "source_spec": "drill-anim/specs/h-9090-liftoff-r2.js",
       "source_spec_sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc",
-      "source_video_sha256": "c4f47c6e677faf77d42ca4b1eed860d9a2d68858e3df34f39804d2a2af83af2a",
-      "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
-      "source_spec": "tools/drill-anim/specs/h-9090-liftoff-r2.js",
-      "revision": "r2"
+      "source_video_sha256": "f21385aa8270cfc4cf673232b36863e8efdf91af29ec21b1ab0cfef5c3eca432",
+      "source_fps": 30.0,
+      "source_frames": 240,
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-9090-liftoff/h-9090-liftoff.dark.1080.mp4",
+          "bytes": 808819,
+          "sha256": "f21385aa8270cfc4cf673232b36863e8efdf91af29ec21b1ab0cfef5c3eca432"
+        },
+        "poster": {
+          "file": "h-9090-liftoff/h-9090-liftoff.dark.poster.1080.jpg",
+          "bytes": 23795,
+          "sha256": "cd08dc42e6fccb06b98994478f2cdb36400d855be18f383b56bbd28cd79aa52f"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-9090-liftoff-r2.js",
+          "sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+        }
+      }
     },
     "h-adductor-rock": {
       "background": "#101013",
@@ -70,7 +130,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-adductor-rock\\result.json",
       "source_result_sha256": "f2b6043c811ed5482bc233e1716586222a20cd011976f939f032adc6232acf0a",
       "source_spec_sha256": "4321dea23c008d3b71957080baa73ca5a3c2517e0ea88d43b1259baa465862bf",
-      "source_video_sha256": "217e0ad9e61421fbdd7652d8d649a8b653b3cd3c07c2957b900145507b6a79dc"
+      "source_video_sha256": "217e0ad9e61421fbdd7652d8d649a8b653b3cd3c07c2957b900145507b6a79dc",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-adductor-rock/h-adductor-rock.dark.1080.mp4",
+          "bytes": 1158836,
+          "sha256": "217e0ad9e61421fbdd7652d8d649a8b653b3cd3c07c2957b900145507b6a79dc"
+        },
+        "poster": {
+          "file": "h-adductor-rock/h-adductor-rock.dark.poster.1080.jpg",
+          "bytes": 31021,
+          "sha256": "b17db170723c52865cd1d891cb349b435115f5edeac400fd5dd71b39c86577f8"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-adductor-rock.js",
+          "sha256": "d8d0601eb573cac10093a6d8fe6faec47040fbe22ab269801666b62f3f12eddd"
+        }
+      }
     },
     "h-band-hip-ir": {
       "background": "#101013",
@@ -94,7 +178,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-band-hip-ir\\result.json",
       "source_result_sha256": "ec5bb42023d4a0ad2888e55fd4c946c15a382bd6fe54f202a82941ca74dee28c",
       "source_spec_sha256": "d134251b3768d994ca39527ebde4fef5f18690db6db12e71d82ddbdb21302c87",
-      "source_video_sha256": "8000b4e42fd6320e15419e194748e7a9a9868f1d0c8890ba38e991c3a430ea0d"
+      "source_video_sha256": "8000b4e42fd6320e15419e194748e7a9a9868f1d0c8890ba38e991c3a430ea0d",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-band-hip-ir/h-band-hip-ir.dark.1080.mp4",
+          "bytes": 694294,
+          "sha256": "8000b4e42fd6320e15419e194748e7a9a9868f1d0c8890ba38e991c3a430ea0d"
+        },
+        "poster": {
+          "file": "h-band-hip-ir/h-band-hip-ir.dark.poster.1080.jpg",
+          "bytes": 24587,
+          "sha256": "abe1103d8315635e0d9873146c576f43b0f522d736ac8594f1f2533612adf56d"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-band-hip-ir.js",
+          "sha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+        }
+      }
     },
     "h-band-leg-out": {
       "background": "#101013",
@@ -118,7 +226,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-band-leg-out\\result.json",
       "source_result_sha256": "a4d4a5a7dc920a2c7535307e8926561a82ec47990e2bd1e7738720777c0c4dd5",
       "source_spec_sha256": "e90449c493b01fccfcca0c7d78a5346bad8a0f58be06268f7f7a293e2ca55fba",
-      "source_video_sha256": "4086b29a83f37915744fcef4f84ceb13ccc92cc2fa7db08f92b10f2816d0b042"
+      "source_video_sha256": "4086b29a83f37915744fcef4f84ceb13ccc92cc2fa7db08f92b10f2816d0b042",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-band-leg-out/h-band-leg-out.dark.1080.mp4",
+          "bytes": 1328195,
+          "sha256": "4086b29a83f37915744fcef4f84ceb13ccc92cc2fa7db08f92b10f2816d0b042"
+        },
+        "poster": {
+          "file": "h-band-leg-out/h-band-leg-out.dark.poster.1080.jpg",
+          "bytes": 31058,
+          "sha256": "4a044c9f5553fb5b340515e0b9f83444d23b5828639074313e92d56ee73e7759"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-band-leg-out.js",
+          "sha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+        }
+      }
     },
     "h-butterfly-active": {
       "background": "#101013",
@@ -142,7 +274,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-butterfly-active\\result.json",
       "source_result_sha256": "6d30c5462092f86fbe07437780e7e22a1d28e93943891c1c17e7978c14ec42ed",
       "source_spec_sha256": "8fb9a84c4c40a5fe4c2289cf7f487ac114342411c7856379d4aa346af8a6321c",
-      "source_video_sha256": "ebe4055c3e540d239b5cf379ef3ebbab0c8dbbff8f5308e6ee87caf9bcdc093a"
+      "source_video_sha256": "ebe4055c3e540d239b5cf379ef3ebbab0c8dbbff8f5308e6ee87caf9bcdc093a",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-butterfly-active/h-butterfly-active.dark.1080.mp4",
+          "bytes": 1322973,
+          "sha256": "ebe4055c3e540d239b5cf379ef3ebbab0c8dbbff8f5308e6ee87caf9bcdc093a"
+        },
+        "poster": {
+          "file": "h-butterfly-active/h-butterfly-active.dark.poster.1080.jpg",
+          "bytes": 32443,
+          "sha256": "e679450b6eae73b561a9a36f66be73f4ccac4353cf387c8d9f385a0b34e10fe2"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-butterfly-active.js",
+          "sha256": "58be080dfcac5075cb466e7c990e4b1a171da4bc77fb652a6b8865131ff13bb5"
+        }
+      }
     },
     "h-couch-stretch": {
       "background": "#101013",
@@ -166,7 +322,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-couch-stretch\\result.json",
       "source_result_sha256": "2880510210f181d6c4b5f90ecf80844d481b65ac63f9ae8301b7c7ea97c1c1e7",
       "source_spec_sha256": "eec6e1023596d714a07b7f624b47641e922510373de91495ffaff71169002794",
-      "source_video_sha256": "9df8bb7e4f3cf703906b5be8e7e290f576715743aa386fa322a7991f19980222"
+      "source_video_sha256": "9df8bb7e4f3cf703906b5be8e7e290f576715743aa386fa322a7991f19980222",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-couch-stretch/h-couch-stretch.dark.1080.mp4",
+          "bytes": 864752,
+          "sha256": "9df8bb7e4f3cf703906b5be8e7e290f576715743aa386fa322a7991f19980222"
+        },
+        "poster": {
+          "file": "h-couch-stretch/h-couch-stretch.dark.poster.1080.jpg",
+          "bytes": 26113,
+          "sha256": "9c82e3e2eb549b693d32e1bdcc4434d1e4276884059a56ef1b1956c120236f34"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-couch-stretch.js",
+          "sha256": "717616a1d48eaf389c904c37f71e67ddfeaf1b5a4c4b080c65d920760c186ef5"
+        }
+      }
     },
     "h-hip-gate": {
       "background": "#101013",
@@ -190,7 +370,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-hip-gate\\result.json",
       "source_result_sha256": "da243a99ceb7ab38a6cc3cbedbedc90a0f6a3160e1aa1d68cc49aace680e0d4e",
       "source_spec_sha256": "eecbfd84c6f0f50ac5bb8a96168953ed9b8d3c8da248fa8b4edfe906c3588f9d",
-      "source_video_sha256": "0ca7e5a2f988a33b080096d6a6bd039426f2e221eeb833e50fb586aeee59f547"
+      "source_video_sha256": "0ca7e5a2f988a33b080096d6a6bd039426f2e221eeb833e50fb586aeee59f547",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-hip-gate/h-hip-gate.dark.1080.mp4",
+          "bytes": 755488,
+          "sha256": "0ca7e5a2f988a33b080096d6a6bd039426f2e221eeb833e50fb586aeee59f547"
+        },
+        "poster": {
+          "file": "h-hip-gate/h-hip-gate.dark.poster.1080.jpg",
+          "bytes": 22852,
+          "sha256": "d2afab5e072c565168cd61aa11d154f98e0337286d49c62ba7bbe9491fd2ea62"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-hip-gate.js",
+          "sha256": "f65d09ec9010e2c5aecaea4a0a0bb912b3ef7af8ff3b941e74adea080ae325b6"
+        }
+      }
     },
     "h-knee-hug": {
       "background": "#101013",
@@ -214,7 +418,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-fix-kneehug-20261017-r1\\greenscreen\\jobs\\h-knee-hug\\result.json",
       "source_result_sha256": "c404e7231af72b679ca5848ab5a7c48da761330929e7891b9b16ac6737318e90",
       "source_spec_sha256": "82444356c4da7a726236e1a0f1f688d28f2cf03e64a6e80aebc6c3957ec5fcdb",
-      "source_video_sha256": "c7e92cbddb62e175b3262f6be4617631ab270268cce8f54105983541e8dce590"
+      "source_video_sha256": "c7e92cbddb62e175b3262f6be4617631ab270268cce8f54105983541e8dce590",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-knee-hug/h-knee-hug.dark.1080.mp4",
+          "bytes": 859163,
+          "sha256": "c7e92cbddb62e175b3262f6be4617631ab270268cce8f54105983541e8dce590"
+        },
+        "poster": {
+          "file": "h-knee-hug/h-knee-hug.dark.poster.1080.jpg",
+          "bytes": 26972,
+          "sha256": "f2e59ccd01434b18b6dee1037a449468e0bda42d60511ca138c92d0a409bed08"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-knee-hug-r2.js",
+          "sha256": "73db57f4a968ef93b49cad8dfa07838791f5a2808ae6d1add6b36b3f12ae3e2a"
+        }
+      }
     },
     "h-quad-cars": {
       "background": "#101013",
@@ -225,19 +453,55 @@
       "frame_timing": "source",
       "poster_size": 1080,
       "poster_time_seconds": 2.2,
-      "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
-      "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/h-quad-cars",
-      "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
-      "source_fps": 30,
-      "source_frames": 240,
-      "source_pixel_ratio": "2",
-      "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/h-quad-cars/greenscreen/jobs/h-quad-cars/result.json",
-      "source_result_sha256": "fbaa136b2d9d9e3c6a5c0d3c7f3e2b278542282babbb5829037f2e9193466a39",
+      "prior_sources": [
+        {
+          "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
+          "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/h-quad-cars",
+          "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
+          "source_fps": 30,
+          "source_frames": 240,
+          "source_pixel_ratio": "2",
+          "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/h-quad-cars/greenscreen/jobs/h-quad-cars/result.json",
+          "source_result_sha256": "fbaa136b2d9d9e3c6a5c0d3c7f3e2b278542282babbb5829037f2e9193466a39",
+          "source_spec_sha256": "9daa31fc3d0cb9b4b1007f80b1e697c44e8c47ad52dcf037497104c4ccad4d8b",
+          "source_video_sha256": "b36728711abe8cc977a80e9f55ff987a761ca0d45abaf54fc759182e10933456",
+          "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
+          "source_spec": "tools/drill-anim/specs/h-quad-cars-r2.js",
+          "revision": "r2"
+        }
+      ],
+      "source": "Pose-Hub published dark/video release 0.1.0; original rendering provenance is recorded in media/releases/0.1.0.sources.json at the pinned Pose-Hub commit",
+      "source_repository": "mhgd3250905/3D-Pose-Hub",
+      "source_commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+      "source_spec": "drill-anim/specs/h-quad-cars-r2.js",
       "source_spec_sha256": "9daa31fc3d0cb9b4b1007f80b1e697c44e8c47ad52dcf037497104c4ccad4d8b",
-      "source_video_sha256": "b36728711abe8cc977a80e9f55ff987a761ca0d45abaf54fc759182e10933456",
-      "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
-      "source_spec": "tools/drill-anim/specs/h-quad-cars-r2.js",
-      "revision": "r2"
+      "source_video_sha256": "d95a36a950cb1e0823f606d55a87198070b3508029d8e23c6e0539a428819d51",
+      "source_fps": 30.0,
+      "source_frames": 240,
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-quad-cars/h-quad-cars.dark.1080.mp4",
+          "bytes": 1054053,
+          "sha256": "d95a36a950cb1e0823f606d55a87198070b3508029d8e23c6e0539a428819d51"
+        },
+        "poster": {
+          "file": "h-quad-cars/h-quad-cars.dark.poster.1080.jpg",
+          "bytes": 27594,
+          "sha256": "062eccf6cf312b0a7b9471180be3b7cc2a64c3f9df3587c09ef7d8296714b301"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-quad-cars-r2.js",
+          "sha256": "9daa31fc3d0cb9b4b1007f80b1e697c44e8c47ad52dcf037497104c4ccad4d8b"
+        }
+      }
     },
     "h-reverse-clam": {
       "background": "#101013",
@@ -261,7 +525,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-reverse-clam\\result.json",
       "source_result_sha256": "deb83dff9990eec781c53ada211e35273ae84dfede03322046481bb00fc428d4",
       "source_spec_sha256": "aad01eaaa7e50bf0049a59d785b74e05c7d36f41a391305624099d8ecc8cd324",
-      "source_video_sha256": "9ea969305c226872c3dc9b144e758ed2df9390491b10933e7175c4037f0b8fe8"
+      "source_video_sha256": "9ea969305c226872c3dc9b144e758ed2df9390491b10933e7175c4037f0b8fe8",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-reverse-clam/h-reverse-clam.dark.1080.mp4",
+          "bytes": 979227,
+          "sha256": "9ea969305c226872c3dc9b144e758ed2df9390491b10933e7175c4037f0b8fe8"
+        },
+        "poster": {
+          "file": "h-reverse-clam/h-reverse-clam.dark.poster.1080.jpg",
+          "bytes": 28548,
+          "sha256": "912f4ced0796c93bc14f948676f171511abe692161bc8bbfb956623f8e4b4422"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-reverse-clam.js",
+          "sha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+        }
+      }
     },
     "h-squat": {
       "background": "#101013",
@@ -285,7 +573,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-squat\\result.json",
       "source_result_sha256": "036184a07455d4ec7192de6cd7757994000759ff4bca12ba6544aef5c0e32d78",
       "source_spec_sha256": "181446627e77aaad119eb1c6dd41dd4b23fdd1280321a4d0e2e33ddddf056973",
-      "source_video_sha256": "2f1678a504a15f01dc07d1c8b39527863e26496b18898161910f7060b714dc86"
+      "source_video_sha256": "2f1678a504a15f01dc07d1c8b39527863e26496b18898161910f7060b714dc86",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-squat/h-squat.dark.1080.mp4",
+          "bytes": 654323,
+          "sha256": "2f1678a504a15f01dc07d1c8b39527863e26496b18898161910f7060b714dc86"
+        },
+        "poster": {
+          "file": "h-squat/h-squat.dark.poster.1080.jpg",
+          "bytes": 19276,
+          "sha256": "ed4f1553e7ccaff9c796fe056b3a543d177ffb35a23663b86139b2420492f6f7"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-squat.js",
+          "sha256": "349e5313795134d9554245b07c13ca94c6f9102a4d41c2ed8ae61cd782e1e58d"
+        }
+      }
     },
     "h-sumo-pry": {
       "background": "#101013",
@@ -309,7 +621,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-sumo-pry\\result.json",
       "source_result_sha256": "3e5b40acb2de4c5cb0583f62e510de61531a4b845e09984d272089e4d62fc14d",
       "source_spec_sha256": "f011b9e12c59a512abe7b5051a3b26799ef5af6cf468e3a0471b116786dbd2d0",
-      "source_video_sha256": "8438bf21bfc8c303dd2d2b59d3af749d9ef5acb1eff24951cfbce97d7ca57a9d"
+      "source_video_sha256": "8438bf21bfc8c303dd2d2b59d3af749d9ef5acb1eff24951cfbce97d7ca57a9d",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-sumo-pry/h-sumo-pry.dark.1080.mp4",
+          "bytes": 1014064,
+          "sha256": "8438bf21bfc8c303dd2d2b59d3af749d9ef5acb1eff24951cfbce97d7ca57a9d"
+        },
+        "poster": {
+          "file": "h-sumo-pry/h-sumo-pry.dark.poster.1080.jpg",
+          "bytes": 25631,
+          "sha256": "611d84c88cbc6c693fb5c1f78e3a9382024415504cef9e35cac910a9d69869f8"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-sumo-pry.js",
+          "sha256": "2822e6600f341862bc8491d7e58b35876bddc53c0635a727d69ec270baadac7a"
+        }
+      }
     },
     "h-supine-twist": {
       "background": "#101013",
@@ -333,7 +669,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-fix-twist-20261017-r1\\greenscreen\\jobs\\h-supine-twist\\result.json",
       "source_result_sha256": "8bf4e003559cb2353ee0c51af3862b34a1360430fdf35bef88e6c38850f7fc9e",
       "source_spec_sha256": "727040ab939a60e9f0d37b04ebf1374bd6937d31642af6cd3c29e87fdd2937a5",
-      "source_video_sha256": "fec5e3488c188056a766276b08c8fd4e63d2afa9deb22eb858cdc6dd2361231c"
+      "source_video_sha256": "fec5e3488c188056a766276b08c8fd4e63d2afa9deb22eb858cdc6dd2361231c",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-supine-twist/h-supine-twist.dark.1080.mp4",
+          "bytes": 997969,
+          "sha256": "fec5e3488c188056a766276b08c8fd4e63d2afa9deb22eb858cdc6dd2361231c"
+        },
+        "poster": {
+          "file": "h-supine-twist/h-supine-twist.dark.poster.1080.jpg",
+          "bytes": 25266,
+          "sha256": "f593ff0f2817e331336566a4fb866357ee23cff65d34e101101655fb06ffed77"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-supine-twist-r2.js",
+          "sha256": "14103d9993b464853abb2502345f60bb83c2a52ecfa7ee7456b81d14385a4299"
+        }
+      }
     },
     "h-wall-straddle": {
       "background": "#101013",
@@ -357,7 +717,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\h-wall-straddle\\result.json",
       "source_result_sha256": "2ec874c931da77c8ed923854dbea9dc38f3e1e5aa92a0bf6385f944794f9cc25",
       "source_spec_sha256": "e70ed06747331e1a7515fb9dcdb5cace7c5d0c25f0a7ff3d04104cd693001ad1",
-      "source_video_sha256": "522b96099b2cb495759dce255750cc3906de3f7f62b7127e9ea9684f97ecf1d2"
+      "source_video_sha256": "522b96099b2cb495759dce255750cc3906de3f7f62b7127e9ea9684f97ecf1d2",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "h-wall-straddle/h-wall-straddle.dark.1080.mp4",
+          "bytes": 1257911,
+          "sha256": "522b96099b2cb495759dce255750cc3906de3f7f62b7127e9ea9684f97ecf1d2"
+        },
+        "poster": {
+          "file": "h-wall-straddle/h-wall-straddle.dark.poster.1080.jpg",
+          "bytes": 30655,
+          "sha256": "3a2f3c48e8c6ecdc00ad917223317e5ca6f598f3a38ef56dcdc0ab3e3ba40236"
+        },
+        "spec": {
+          "path": "drill-anim/specs/h-wall-straddle.js",
+          "sha256": "e2119b273d8fc552dbaa2adab7fa09d76103d78b861f46ed1a422f93e911cf28"
+        }
+      }
     },
     "hip-flexors-A": {
       "background": "#101013",
@@ -381,7 +765,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\hip-flexors-A\\result.json",
       "source_result_sha256": "82c0a60c89d9a9ffc09312c8fdbd449eddb3e30bf14c65ba5b82760c9c3abe76",
       "source_spec_sha256": "af84acb2185383b93ded547d66276c723802fc885a1bd3f6907aeca6b0693cc7",
-      "source_video_sha256": "bec90e872e9d3ac1f889cad40593680b6c756e27248a7952672d957c0da991b8"
+      "source_video_sha256": "bec90e872e9d3ac1f889cad40593680b6c756e27248a7952672d957c0da991b8",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "hip-flexors-A/hip-flexors-A.dark.1080.mp4",
+          "bytes": 697235,
+          "sha256": "bec90e872e9d3ac1f889cad40593680b6c756e27248a7952672d957c0da991b8"
+        },
+        "poster": {
+          "file": "hip-flexors-A/hip-flexors-A.dark.poster.1080.jpg",
+          "bytes": 31038,
+          "sha256": "04f58a6201d356ef5d06faad8646fa23c16dafe7fae1c34919d637acd521af23"
+        },
+        "spec": {
+          "path": "drill-anim/specs/hip-flexors-A.js",
+          "sha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+        }
+      }
     },
     "n-chair-wiper": {
       "background": "#101013",
@@ -405,7 +813,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-chair-wiper\\result.json",
       "source_result_sha256": "13b2a2b12817c93ab4b598566fec283f41981dd7c96a33ac2707f75edab9030a",
       "source_spec_sha256": "59099905470e916f0ac5e0a34448b4177910197f50c8ff235e8a42e8eb84c542",
-      "source_video_sha256": "89ed1aeaa261f18566565b7436289d999e391256ce8aa9c93eb7014bd7a1c52f"
+      "source_video_sha256": "89ed1aeaa261f18566565b7436289d999e391256ce8aa9c93eb7014bd7a1c52f",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-chair-wiper/n-chair-wiper.dark.1080.mp4",
+          "bytes": 650817,
+          "sha256": "89ed1aeaa261f18566565b7436289d999e391256ce8aa9c93eb7014bd7a1c52f"
+        },
+        "poster": {
+          "file": "n-chair-wiper/n-chair-wiper.dark.poster.1080.jpg",
+          "bytes": 22763,
+          "sha256": "4fa32cac55ff6763fa32bad6e086469f2558f8fce8e1287915be870c61ce3d6a"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-chair-wiper.js",
+          "sha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+        }
+      }
     },
     "n-half-split": {
       "background": "#101013",
@@ -429,7 +861,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-half-split\\result.json",
       "source_result_sha256": "d2a006bd3926e99931c7e2dfe1b96b3dc63d506cf8631e26a3106a26b2789e61",
       "source_spec_sha256": "71e6d946e2368520a7a198695772eb71ef47849c87063c1acb670060b16874cc",
-      "source_video_sha256": "07531a078d0ff21c312af1d53cd40b4c9c0fdaa52385009d7141a4ce57592430"
+      "source_video_sha256": "07531a078d0ff21c312af1d53cd40b4c9c0fdaa52385009d7141a4ce57592430",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-half-split/n-half-split.dark.1080.mp4",
+          "bytes": 925480,
+          "sha256": "07531a078d0ff21c312af1d53cd40b4c9c0fdaa52385009d7141a4ce57592430"
+        },
+        "poster": {
+          "file": "n-half-split/n-half-split.dark.poster.1080.jpg",
+          "bytes": 27644,
+          "sha256": "e73ac559df64451d0562b2ee16f4916d7702d85c6f40d1dacf1f2c21783ac04a"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-half-split.js",
+          "sha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+        }
+      }
     },
     "n-leg-circles": {
       "background": "#101013",
@@ -453,7 +909,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-leg-circles\\result.json",
       "source_result_sha256": "72eb5f5d6f3eae596fb383dcb9c284e4657cc0377b6dc385471e4dfc32fc466f",
       "source_spec_sha256": "4abae0cb2f1f73b6cc6d84a1a985aa7205cd56dbb6311643c7466c137e7f17af",
-      "source_video_sha256": "26ca853a3e67aaa7f88949a4329b52018b11d580c9e538c9c9fb803efc9fa49b"
+      "source_video_sha256": "26ca853a3e67aaa7f88949a4329b52018b11d580c9e538c9c9fb803efc9fa49b",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-leg-circles/n-leg-circles.dark.1080.mp4",
+          "bytes": 1488748,
+          "sha256": "26ca853a3e67aaa7f88949a4329b52018b11d580c9e538c9c9fb803efc9fa49b"
+        },
+        "poster": {
+          "file": "n-leg-circles/n-leg-circles.dark.poster.1080.jpg",
+          "bytes": 27368,
+          "sha256": "2acd403f9c1e9f0f88f1fdd6d7701327ef6e2fbaf8669ec9dca6def0ef9c1313"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-leg-circles.js",
+          "sha256": "36041116f7706901d5bbebf549c69e12ce6f175548776e0f7ac1ef02db29e013"
+        }
+      }
     },
     "n-pelvis-circle": {
       "background": "#101013",
@@ -477,7 +957,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-pelvis-circle\\result.json",
       "source_result_sha256": "5a7aa6599403058262679a10cec82188417e7ade93274eae4b32f49ec758a632",
       "source_spec_sha256": "2dd7bf2ddba984ac9df44b0ad6068411e3c89af2e69b05bdd2867493804872e3",
-      "source_video_sha256": "2cd6b09af2b364e64100451e552cbe12c339ccf3109f99bf6c1cc0912a138245"
+      "source_video_sha256": "2cd6b09af2b364e64100451e552cbe12c339ccf3109f99bf6c1cc0912a138245",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-pelvis-circle/n-pelvis-circle.dark.1080.mp4",
+          "bytes": 667257,
+          "sha256": "2cd6b09af2b364e64100451e552cbe12c339ccf3109f99bf6c1cc0912a138245"
+        },
+        "poster": {
+          "file": "n-pelvis-circle/n-pelvis-circle.dark.poster.1080.jpg",
+          "bytes": 19964,
+          "sha256": "838358517463e5e42d2f864201898edd750bdc9534f16b8d758ce30c33a964fc"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-pelvis-circle.js",
+          "sha256": "5e1e140167ac622a79c2874e5957b1bb1f12799d26e4950857b36c32e4690381"
+        }
+      }
     },
     "n-prone-hip-ext": {
       "background": "#101013",
@@ -501,7 +1005,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-prone-hip-ext\\result.json",
       "source_result_sha256": "19aedf4bac3e3209f2bfde5ad3639eee1caaeb1825ce2821a2955445c3f88d6f",
       "source_spec_sha256": "76e19185103be81e6ec247a44b23467826c293841a8f90c6d7ea950d698f3e79",
-      "source_video_sha256": "b973a7181f43e2aae5cfa9badb09a8b29cc211a7c9aaa6ac2e589a05f95e6e9d"
+      "source_video_sha256": "b973a7181f43e2aae5cfa9badb09a8b29cc211a7c9aaa6ac2e589a05f95e6e9d",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-prone-hip-ext/n-prone-hip-ext.dark.1080.mp4",
+          "bytes": 758956,
+          "sha256": "b973a7181f43e2aae5cfa9badb09a8b29cc211a7c9aaa6ac2e589a05f95e6e9d"
+        },
+        "poster": {
+          "file": "n-prone-hip-ext/n-prone-hip-ext.dark.poster.1080.jpg",
+          "bytes": 23408,
+          "sha256": "9c249412152305f29702f3575ad3f6c13f6c3ca03659d607894e2e82ad5345fb"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-prone-hip-ext.js",
+          "sha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+        }
+      }
     },
     "n-prone-ir": {
       "background": "#101013",
@@ -525,7 +1053,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-prone-ir\\result.json",
       "source_result_sha256": "6b466c4c72ed1083bb044d22d9021bdd15730a4492120cf60c9599c379d517ee",
       "source_spec_sha256": "ab0c81d9deefd019cb73b7cf2250164fba2870f343c0a2bcfbc0f57f3cad64f8",
-      "source_video_sha256": "6b5d33d75ca5255b7750a97bef33fa6f198a4a81aab78efe0308411903e0a9b3"
+      "source_video_sha256": "6b5d33d75ca5255b7750a97bef33fa6f198a4a81aab78efe0308411903e0a9b3",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-prone-ir/n-prone-ir.dark.1080.mp4",
+          "bytes": 1267666,
+          "sha256": "6b5d33d75ca5255b7750a97bef33fa6f198a4a81aab78efe0308411903e0a9b3"
+        },
+        "poster": {
+          "file": "n-prone-ir/n-prone-ir.dark.poster.1080.jpg",
+          "bytes": 33069,
+          "sha256": "8b2759c053736686f1be58013b1bed033c622d16c6b5552033a3be03824fb879"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-prone-ir.js",
+          "sha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+        }
+      }
     },
     "n-seated-ir-drop": {
       "background": "#101013",
@@ -549,7 +1101,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-seated-ir-drop\\result.json",
       "source_result_sha256": "d886074274246b3c14de75bc1148fbb4448a322eb90c9dc86974c848d6599634",
       "source_spec_sha256": "8aef53bb5b56e956a87826f153da8406f03a34459cef32ace394e9249e956864",
-      "source_video_sha256": "52ccc09fcb5d5b709322d959601ffecc25141ed01dcd64ebf582039fd38ef873"
+      "source_video_sha256": "52ccc09fcb5d5b709322d959601ffecc25141ed01dcd64ebf582039fd38ef873",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-seated-ir-drop/n-seated-ir-drop.dark.1080.mp4",
+          "bytes": 775665,
+          "sha256": "52ccc09fcb5d5b709322d959601ffecc25141ed01dcd64ebf582039fd38ef873"
+        },
+        "poster": {
+          "file": "n-seated-ir-drop/n-seated-ir-drop.dark.poster.1080.jpg",
+          "bytes": 23006,
+          "sha256": "d4c08faaabea401586722966be5b996b5eb578407278515236f1fdf5242fb106"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-seated-ir-drop.js",
+          "sha256": "48e44c56e8c7de96f905d2f572c85368cab18ac313ba2413942c22726c49676a"
+        }
+      }
     },
     "n-seated-knee-lift": {
       "background": "#101013",
@@ -573,7 +1149,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-seated-knee-lift\\result.json",
       "source_result_sha256": "035664842713db91d7ced9dcb417183234e7b9429e84e9271d9b40ac35e00eda",
       "source_spec_sha256": "cb9f610e4cc63aec2c1c689ce83c13e6642ddb5525d8570b692dfd6f0a0a8938",
-      "source_video_sha256": "35cd4186cb14454421d77b6753f3fc4e81c393b77ee5f36708558699475900d9"
+      "source_video_sha256": "35cd4186cb14454421d77b6753f3fc4e81c393b77ee5f36708558699475900d9",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-seated-knee-lift/n-seated-knee-lift.dark.1080.mp4",
+          "bytes": 661146,
+          "sha256": "35cd4186cb14454421d77b6753f3fc4e81c393b77ee5f36708558699475900d9"
+        },
+        "poster": {
+          "file": "n-seated-knee-lift/n-seated-knee-lift.dark.poster.1080.jpg",
+          "bytes": 23856,
+          "sha256": "ca201a89c763467681debf4ab2ee0b0b0fa6bea76d6e66b4de71a437f581c181"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-seated-knee-lift.js",
+          "sha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+        }
+      }
     },
     "n-seated-squeeze": {
       "background": "#101013",
@@ -597,7 +1197,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-seated-squeeze\\result.json",
       "source_result_sha256": "4fac8004e73fc30b6473cd1b9563a0658550bfb59d6fee843ed01dcf772b3e22",
       "source_spec_sha256": "024d00011080906ae880c5a3333e3dae1f5f94b7dc8f4566003e4e60f131e06e",
-      "source_video_sha256": "4852023aa896134973cba44eda1ca1a8db17af0af0c64a46540f36f09bb5ce8b"
+      "source_video_sha256": "4852023aa896134973cba44eda1ca1a8db17af0af0c64a46540f36f09bb5ce8b",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-seated-squeeze/n-seated-squeeze.dark.1080.mp4",
+          "bytes": 599949,
+          "sha256": "4852023aa896134973cba44eda1ca1a8db17af0af0c64a46540f36f09bb5ce8b"
+        },
+        "poster": {
+          "file": "n-seated-squeeze/n-seated-squeeze.dark.poster.1080.jpg",
+          "bytes": 23430,
+          "sha256": "53db7717f6288746a61fe848c051b07f9e1bddff2f1236c77cc8d585eb1f336a"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-seated-squeeze.js",
+          "sha256": "74ba65d71cf733e7929c4cc94595a33b0cf47071dc263552abda354766ea27f1"
+        }
+      }
     },
     "n-slider-lateral": {
       "background": "#101013",
@@ -621,7 +1245,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-slider-lateral\\result.json",
       "source_result_sha256": "29d4d235519ecc9d4de43929020d9d84ca5444cf0f37d120ae0f3bbaae672ed3",
       "source_spec_sha256": "ee6abe6ccdd87a22f6b474215c247c93c75f42f11baf36cb1ad87c393a8a72a0",
-      "source_video_sha256": "76fff5bb5abbdd78b8607b2cabddc4601c399d67e985b2e3a6525438db3786f8"
+      "source_video_sha256": "76fff5bb5abbdd78b8607b2cabddc4601c399d67e985b2e3a6525438db3786f8",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-slider-lateral/n-slider-lateral.dark.1080.mp4",
+          "bytes": 994578,
+          "sha256": "76fff5bb5abbdd78b8607b2cabddc4601c399d67e985b2e3a6525438db3786f8"
+        },
+        "poster": {
+          "file": "n-slider-lateral/n-slider-lateral.dark.poster.1080.jpg",
+          "bytes": 23990,
+          "sha256": "f1158af101fdb6833fe95e9094485f12fb484dc0c23c5e829d2fba361356bcac"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-slider-lateral.js",
+          "sha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+        }
+      }
     },
     "n-squat-shift": {
       "background": "#101013",
@@ -645,7 +1293,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-squat-shift\\result.json",
       "source_result_sha256": "a8317ea19837887823e84f56315aaab11bcec32a4c9c0ff23936230006397419",
       "source_spec_sha256": "df54a66b76eca79c6efeda9ebf963f32a6c2a1c8bfb278ee0b0f2fd4718b8361",
-      "source_video_sha256": "2c8e184b507ebd4656e707b9088e8f36dba924fe2f9e67d43e34a95f821c956b"
+      "source_video_sha256": "2c8e184b507ebd4656e707b9088e8f36dba924fe2f9e67d43e34a95f821c956b",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-squat-shift/n-squat-shift.dark.1080.mp4",
+          "bytes": 960606,
+          "sha256": "2c8e184b507ebd4656e707b9088e8f36dba924fe2f9e67d43e34a95f821c956b"
+        },
+        "poster": {
+          "file": "n-squat-shift/n-squat-shift.dark.poster.1080.jpg",
+          "bytes": 26564,
+          "sha256": "cfa1a8cfb7c0f14d7c32804abc1e07da662fc200548bfde89a3fdd31ad22bf24"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-squat-shift.js",
+          "sha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+        }
+      }
     },
     "n-straddle-fold": {
       "background": "#101013",
@@ -669,7 +1341,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-straddle-fold\\result.json",
       "source_result_sha256": "ef47cf125e277989cc6af86c3b355769b6d7816dd8769206c742ca58514f4aa9",
       "source_spec_sha256": "4abaef7d6c8896cc6ccc3f17fde00e67f14cda5433bb828b64e9389224de515d",
-      "source_video_sha256": "51293ff81b26bba2faab4be530dc2585bd4c617064dd3f3f13b47a2e61d41e11"
+      "source_video_sha256": "51293ff81b26bba2faab4be530dc2585bd4c617064dd3f3f13b47a2e61d41e11",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-straddle-fold/n-straddle-fold.dark.1080.mp4",
+          "bytes": 1152084,
+          "sha256": "51293ff81b26bba2faab4be530dc2585bd4c617064dd3f3f13b47a2e61d41e11"
+        },
+        "poster": {
+          "file": "n-straddle-fold/n-straddle-fold.dark.poster.1080.jpg",
+          "bytes": 29994,
+          "sha256": "171ff13c24b7a418cde55add700b7ed3fc7a0092e4c76366c1f69f61e7e8a497"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-straddle-fold.js",
+          "sha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+        }
+      }
     },
     "n-thomas-test": {
       "background": "#101013",
@@ -693,7 +1389,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-thomas-test\\result.json",
       "source_result_sha256": "2f679ab7dde222b87b2fc8daea8d5827e6a6825aef1393a873bb4644f7710636",
       "source_spec_sha256": "df834a02cf3a2ceae4df61a041d78faae5aeaba096d2c6f94df8416b9ba1e4cf",
-      "source_video_sha256": "ca52f18180a5bab9c72990ebcb4a2e79ed2cc654e59da1baf72d516834daebdf"
+      "source_video_sha256": "ca52f18180a5bab9c72990ebcb4a2e79ed2cc654e59da1baf72d516834daebdf",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-thomas-test/n-thomas-test.dark.1080.mp4",
+          "bytes": 653356,
+          "sha256": "ca52f18180a5bab9c72990ebcb4a2e79ed2cc654e59da1baf72d516834daebdf"
+        },
+        "poster": {
+          "file": "n-thomas-test/n-thomas-test.dark.poster.1080.jpg",
+          "bytes": 21258,
+          "sha256": "186b0009617676530bcd38cabeab9cdba82810d12e2de9ce3575a64957836d1d"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-thomas-test.js",
+          "sha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+        }
+      }
     },
     "n-wide-fold": {
       "background": "#101013",
@@ -717,7 +1437,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-wide-fold\\result.json",
       "source_result_sha256": "b1d3dc7be11b2998548c9efde5093def9fcf539a28c8530fa21cac98ba2b9f24",
       "source_spec_sha256": "e03b80c304c38e29d3f81fd94695d90a9ec669a1254d73c3cac558326d7007f9",
-      "source_video_sha256": "f2c1fe89574669898631667eca9a30e7c267d5272c0e1040144d1d2c18a33af4"
+      "source_video_sha256": "f2c1fe89574669898631667eca9a30e7c267d5272c0e1040144d1d2c18a33af4",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-wide-fold/n-wide-fold.dark.1080.mp4",
+          "bytes": 1338094,
+          "sha256": "f2c1fe89574669898631667eca9a30e7c267d5272c0e1040144d1d2c18a33af4"
+        },
+        "poster": {
+          "file": "n-wide-fold/n-wide-fold.dark.poster.1080.jpg",
+          "bytes": 34617,
+          "sha256": "17ab5ec8d5d333d6e4c546db67f5d10a6705e706a2a8c4a0044cf7c242102ba9"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-wide-fold.js",
+          "sha256": "94f49696bdc8a7464ed3cf1ccaf2180220229da07d1deeccad05aaa8a1834452"
+        }
+      }
     },
     "n-windshield": {
       "background": "#101013",
@@ -741,7 +1485,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\n-windshield\\result.json",
       "source_result_sha256": "7ad155ba07dd9bfc8d535de920ba5b594e2a0b65174fc0b490e466b25a841b53",
       "source_spec_sha256": "b37afa7b88aded84a6c942a7271226619ee0c9757fe7071e62b6a3081699a3dd",
-      "source_video_sha256": "01638d1609543b5a420ed29d459e07ab02c6325373dce57d61cc5be7376c830d"
+      "source_video_sha256": "01638d1609543b5a420ed29d459e07ab02c6325373dce57d61cc5be7376c830d",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "n-windshield/n-windshield.dark.1080.mp4",
+          "bytes": 1335896,
+          "sha256": "01638d1609543b5a420ed29d459e07ab02c6325373dce57d61cc5be7376c830d"
+        },
+        "poster": {
+          "file": "n-windshield/n-windshield.dark.poster.1080.jpg",
+          "bytes": 32792,
+          "sha256": "c3d89cff3fb3f5a559d4b610094bf9d2b3f417a7ec3057fe4a22175841d3166f"
+        },
+        "spec": {
+          "path": "drill-anim/specs/n-windshield.js",
+          "sha256": "10d16b2ccd6c637b95b6f134236e6fa3c6bccc7943f9be72712cdc5b829f3b75"
+        }
+      }
     },
     "o-seated-fig4": {
       "background": "#101013",
@@ -765,7 +1533,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\o-seated-fig4\\result.json",
       "source_result_sha256": "fba6d5cf827b725502cf4a9395bc729b4eac1064b6c1ee39160d025440ba7da3",
       "source_spec_sha256": "358b5f94556707cf09761618b900ba294a89b5fc523843c69b6d2789a43dd4fc",
-      "source_video_sha256": "902070022797b98ba7a5e7d13629544136689f91614440c1d7fdd0110bf4cf9f"
+      "source_video_sha256": "902070022797b98ba7a5e7d13629544136689f91614440c1d7fdd0110bf4cf9f",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "o-seated-fig4/o-seated-fig4.dark.1080.mp4",
+          "bytes": 723632,
+          "sha256": "902070022797b98ba7a5e7d13629544136689f91614440c1d7fdd0110bf4cf9f"
+        },
+        "poster": {
+          "file": "o-seated-fig4/o-seated-fig4.dark.poster.1080.jpg",
+          "bytes": 26834,
+          "sha256": "6d54a7a009317b4e7cdd499890acb949c6e8687ee365393c9be0c3b0f828b495"
+        },
+        "spec": {
+          "path": "drill-anim/specs/o-seated-fig4.js",
+          "sha256": "66a147a7da04a444f705bcd3e2fd23788a1349c533847bba9f1a36ae32a0ac48"
+        }
+      }
     },
     "o-seated-ham": {
       "background": "#101013",
@@ -789,7 +1581,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\o-seated-ham\\result.json",
       "source_result_sha256": "dbf57e55427e5a78a19848f86b079d0691c020149bdd5c5d4296bf7a15694c2b",
       "source_spec_sha256": "d1a541c71c2d62c0696ef0f69ba0eebd64f080e7c5255473acb64e8938003636",
-      "source_video_sha256": "f6eddc0be783981577c1d2301fdc8bebb61914c400ef5d904752f49921cac75d"
+      "source_video_sha256": "f6eddc0be783981577c1d2301fdc8bebb61914c400ef5d904752f49921cac75d",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "o-seated-ham/o-seated-ham.dark.1080.mp4",
+          "bytes": 539357,
+          "sha256": "f6eddc0be783981577c1d2301fdc8bebb61914c400ef5d904752f49921cac75d"
+        },
+        "poster": {
+          "file": "o-seated-ham/o-seated-ham.dark.poster.1080.jpg",
+          "bytes": 21766,
+          "sha256": "d07792ca9408085fff66111cda5d4a8ec083a3a5c68c3b008ba9ac429e4ca55c"
+        },
+        "spec": {
+          "path": "drill-anim/specs/o-seated-ham.js",
+          "sha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+        }
+      }
     },
     "o-stand-crossreach": {
       "background": "#101013",
@@ -813,7 +1629,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\o-stand-crossreach\\result.json",
       "source_result_sha256": "6f22a9ccbc12a137ff10b270c26d188f48b34d976a3e3437260e0b4a40c84bd3",
       "source_spec_sha256": "a13bd15aa65fa7e5ceda10c96f15e5f77127f30eea8a0845b319169305828b2a",
-      "source_video_sha256": "afba0cb54593de3dc07106b675b0ca92668fe4789359c12d172514454b6cfc95"
+      "source_video_sha256": "afba0cb54593de3dc07106b675b0ca92668fe4789359c12d172514454b6cfc95",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "o-stand-crossreach/o-stand-crossreach.dark.1080.mp4",
+          "bytes": 398081,
+          "sha256": "afba0cb54593de3dc07106b675b0ca92668fe4789359c12d172514454b6cfc95"
+        },
+        "poster": {
+          "file": "o-stand-crossreach/o-stand-crossreach.dark.poster.1080.jpg",
+          "bytes": 22144,
+          "sha256": "a88f6e16cfa4e6c0dbeaaa2c5f63808bf2eaa8ad294dfc82fec9d4717870b932"
+        },
+        "spec": {
+          "path": "drill-anim/specs/o-stand-crossreach.js",
+          "sha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+        }
+      }
     },
     "o-stand-lunge": {
       "background": "#101013",
@@ -837,7 +1677,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\o-stand-lunge\\result.json",
       "source_result_sha256": "634cd16baceb997a86e73c435d3bddfa9ce7fe9a3543cdcec6eab1cf7b1db43e",
       "source_spec_sha256": "31bee1bd821dc571ae130e96234dc2bea2bf784d897191532d566cfb12ea3384",
-      "source_video_sha256": "4e726fab301df7b114050a0b928a365a9d046eba870297d366677c86c72371c2"
+      "source_video_sha256": "4e726fab301df7b114050a0b928a365a9d046eba870297d366677c86c72371c2",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "o-stand-lunge/o-stand-lunge.dark.1080.mp4",
+          "bytes": 603092,
+          "sha256": "4e726fab301df7b114050a0b928a365a9d046eba870297d366677c86c72371c2"
+        },
+        "poster": {
+          "file": "o-stand-lunge/o-stand-lunge.dark.poster.1080.jpg",
+          "bytes": 21955,
+          "sha256": "2ae39217fa3993e0a4f5a214f505a4d0a01363ca4642deb504186ba14f70231c"
+        },
+        "spec": {
+          "path": "drill-anim/specs/o-stand-lunge.js",
+          "sha256": "c2f3984febb97819713bbbbea85196498fa6f95c8cb1a5e869cc89e580b4beaa"
+        }
+      }
     },
     "s-9090": {
       "background": "#101013",
@@ -848,19 +1712,55 @@
       "frame_timing": "source",
       "poster_size": 1080,
       "poster_time_seconds": 3.8,
-      "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
-      "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/s-9090",
-      "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
-      "source_fps": 30,
-      "source_frames": 240,
-      "source_pixel_ratio": "2",
-      "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/s-9090/greenscreen/jobs/s-9090/result.json",
-      "source_result_sha256": "4ea8c78c1b9dc431f77c3e9f2b6034ffe50c6c32cc91b2975dd4468434e069d2",
+      "prior_sources": [
+        {
+          "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
+          "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/s-9090",
+          "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
+          "source_fps": 30,
+          "source_frames": 240,
+          "source_pixel_ratio": "2",
+          "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/s-9090/greenscreen/jobs/s-9090/result.json",
+          "source_result_sha256": "4ea8c78c1b9dc431f77c3e9f2b6034ffe50c6c32cc91b2975dd4468434e069d2",
+          "source_spec_sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e",
+          "source_video_sha256": "4cc98ae965a6526c4c5b7cb156a4d6cf5a4e539622310bf6819af32127f0439e",
+          "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
+          "source_spec": "tools/drill-anim/specs/s-9090-r2.js",
+          "revision": "r2"
+        }
+      ],
+      "source": "Pose-Hub published dark/video release 0.1.0; original rendering provenance is recorded in media/releases/0.1.0.sources.json at the pinned Pose-Hub commit",
+      "source_repository": "mhgd3250905/3D-Pose-Hub",
+      "source_commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+      "source_spec": "drill-anim/specs/s-9090-r2.js",
       "source_spec_sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e",
-      "source_video_sha256": "4cc98ae965a6526c4c5b7cb156a4d6cf5a4e539622310bf6819af32127f0439e",
-      "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
-      "source_spec": "tools/drill-anim/specs/s-9090-r2.js",
-      "revision": "r2"
+      "source_video_sha256": "c7900c5c419924ab522b23c1212b4ea60b2b3faff6dd0424179f0be58ab57b87",
+      "source_fps": 30.0,
+      "source_frames": 240,
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-9090/s-9090.dark.1080.mp4",
+          "bytes": 673379,
+          "sha256": "c7900c5c419924ab522b23c1212b4ea60b2b3faff6dd0424179f0be58ab57b87"
+        },
+        "poster": {
+          "file": "s-9090/s-9090.dark.poster.1080.jpg",
+          "bytes": 20957,
+          "sha256": "3bfc3cc8d3725aaf16caf5cf89110faef7d2379c1fa0829db36bfac3f3bc5df1"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-9090-r2.js",
+          "sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e"
+        }
+      }
     },
     "s-butterfly": {
       "background": "#101013",
@@ -884,7 +1784,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\s-butterfly\\result.json",
       "source_result_sha256": "cb11d32871140b845fc34bfc59bfd671b61e49ceb005933e934b6da2c66eeb8b",
       "source_spec_sha256": "dfbcbbe44ccad01264a14d5755e4be4e9bbdff4144b834a5776fae87b07caa8b",
-      "source_video_sha256": "8041c2082e39ba82fc08657061f451d9e16bc1919e9f78e5e633c95f9c930aa8"
+      "source_video_sha256": "8041c2082e39ba82fc08657061f451d9e16bc1919e9f78e5e633c95f9c930aa8",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-butterfly/s-butterfly.dark.1080.mp4",
+          "bytes": 844691,
+          "sha256": "8041c2082e39ba82fc08657061f451d9e16bc1919e9f78e5e633c95f9c930aa8"
+        },
+        "poster": {
+          "file": "s-butterfly/s-butterfly.dark.poster.1080.jpg",
+          "bytes": 26045,
+          "sha256": "a92620b4218ef79afb4454f1c7e23683d7e6ceab90e4e46d9394b62094c9aa89"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-butterfly.js",
+          "sha256": "67b29f53ee83bdc31f5e8b2f5526205b94d814ffbcf771e7cc7c4b9a7564b866"
+        }
+      }
     },
     "s-figure4": {
       "background": "#101013",
@@ -908,7 +1832,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\s-figure4\\result.json",
       "source_result_sha256": "461883fad7f508301d5afcf1814b0a32886ea9d9b6f92b02c10317df1343e03f",
       "source_spec_sha256": "427a7f6fea4fc65c11252e037bed6d74053f861dc6f32ad962b58a93cde0bc3b",
-      "source_video_sha256": "a42121ce21598d7aeaa31fb02008c10114ac23b3b996c22549de35486d824008"
+      "source_video_sha256": "a42121ce21598d7aeaa31fb02008c10114ac23b3b996c22549de35486d824008",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-figure4/s-figure4.dark.1080.mp4",
+          "bytes": 833556,
+          "sha256": "a42121ce21598d7aeaa31fb02008c10114ac23b3b996c22549de35486d824008"
+        },
+        "poster": {
+          "file": "s-figure4/s-figure4.dark.poster.1080.jpg",
+          "bytes": 29236,
+          "sha256": "ea0931d66bbea6e6f7c27977d6263fe4af1c66f6c665610072e156f33cfc4075"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-figure4.js",
+          "sha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+        }
+      }
     },
     "s-frog": {
       "background": "#101013",
@@ -919,19 +1867,55 @@
       "frame_timing": "source",
       "poster_size": 1080,
       "poster_time_seconds": 3.8,
-      "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
-      "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/s-frog",
-      "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
-      "source_fps": 30,
-      "source_frames": 240,
-      "source_pixel_ratio": "2",
-      "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/s-frog/greenscreen/jobs/s-frog/result.json",
-      "source_result_sha256": "1c1ee778500ab71e8edcdb16e6df9cc66431d431d938fb3cf84d6f2dfb7c2ff5",
+      "prior_sources": [
+        {
+          "source": "HipLab media fix 2026-10-17 (3D-Body PR #121, revision tools/drill-anim/revisions/hiplab-media-fix-20261017); exact-alpha re-render composed on #101013",
+          "source_batch": "sandbox:/workspace/work/hiplab-media-fix/batch/s-frog",
+          "source_commit": "8f0ac32af12237dea5251d365cc1d4120ba2768c",
+          "source_fps": 30,
+          "source_frames": 240,
+          "source_pixel_ratio": "2",
+          "source_result": "sandbox:/workspace/work/hiplab-media-fix/batch/s-frog/greenscreen/jobs/s-frog/result.json",
+          "source_result_sha256": "1c1ee778500ab71e8edcdb16e6df9cc66431d431d938fb3cf84d6f2dfb7c2ff5",
+          "source_spec_sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa",
+          "source_video_sha256": "c0c1cb3ffd5e50a6bd8bad0e0c43fbcde53186c68abff11e7a5bb1a7e3e3fac4",
+          "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
+          "source_spec": "tools/drill-anim/specs/s-frog-r2.js",
+          "revision": "r2"
+        }
+      ],
+      "source": "Pose-Hub published dark/video release 0.1.0; original rendering provenance is recorded in media/releases/0.1.0.sources.json at the pinned Pose-Hub commit",
+      "source_repository": "mhgd3250905/3D-Pose-Hub",
+      "source_commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+      "source_spec": "drill-anim/specs/s-frog-r2.js",
       "source_spec_sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa",
-      "source_video_sha256": "c0c1cb3ffd5e50a6bd8bad0e0c43fbcde53186c68abff11e7a5bb1a7e3e3fac4",
-      "render_tooling_commit": "f8b5138fb377ec8cda464cfb08186fd696ca7921",
-      "source_spec": "tools/drill-anim/specs/s-frog-r2.js",
-      "revision": "r2"
+      "source_video_sha256": "3b44392a7d2955d2ea0df3ff41fd3067477ce742d438aa3b280018035a3c1fd7",
+      "source_fps": 30.0,
+      "source_frames": 240,
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-frog/s-frog.dark.1080.mp4",
+          "bytes": 485993,
+          "sha256": "3b44392a7d2955d2ea0df3ff41fd3067477ce742d438aa3b280018035a3c1fd7"
+        },
+        "poster": {
+          "file": "s-frog/s-frog.dark.poster.1080.jpg",
+          "bytes": 18890,
+          "sha256": "39101bc8ab35345b1bf77a3e2bd5aa2d1ed39d1da58ddbb02d7582ce70537f26"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-frog-r2.js",
+          "sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+        }
+      }
     },
     "s-kneel-hipflex": {
       "background": "#101013",
@@ -955,7 +1939,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\s-kneel-hipflex\\result.json",
       "source_result_sha256": "e3ca570707931538ed777bf65295c6aae6d6477bd7b1c9cb7e1fb30205371c93",
       "source_spec_sha256": "174da062e27d66a01ecb7ac013ffb893173f4ab1a9c4bbf1d12be60669dce6be",
-      "source_video_sha256": "6137f61bb11e65bcb22a7977f57ef8772c37df62b214833c9fffb4d909686a33"
+      "source_video_sha256": "6137f61bb11e65bcb22a7977f57ef8772c37df62b214833c9fffb4d909686a33",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-kneel-hipflex/s-kneel-hipflex.dark.1080.mp4",
+          "bytes": 534390,
+          "sha256": "6137f61bb11e65bcb22a7977f57ef8772c37df62b214833c9fffb4d909686a33"
+        },
+        "poster": {
+          "file": "s-kneel-hipflex/s-kneel-hipflex.dark.poster.1080.jpg",
+          "bytes": 21631,
+          "sha256": "ace059917836bef70468684709ff3aee2853ca56b23d2d30d5dab12f642f1147"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-kneel-hipflex.js",
+          "sha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+        }
+      }
     },
     "s-lizard": {
       "background": "#101013",
@@ -979,7 +1987,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\s-lizard\\result.json",
       "source_result_sha256": "9cd7de6dd273ff77340b320f81997934cc2165f65f76b57c8514e7b9ab232aaa",
       "source_spec_sha256": "7ff966dca7450a0ddba71c7389aa8d719caa8c9b66a4ceb5acb3d4532c4236da",
-      "source_video_sha256": "8f57fe9c5506df1466a21b1221a4cefc5ef2274dd4354da40989c6d3b0da5e7e"
+      "source_video_sha256": "8f57fe9c5506df1466a21b1221a4cefc5ef2274dd4354da40989c6d3b0da5e7e",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-lizard/s-lizard.dark.1080.mp4",
+          "bytes": 592900,
+          "sha256": "8f57fe9c5506df1466a21b1221a4cefc5ef2274dd4354da40989c6d3b0da5e7e"
+        },
+        "poster": {
+          "file": "s-lizard/s-lizard.dark.poster.1080.jpg",
+          "bytes": 22185,
+          "sha256": "670d5878cb5921ad0951068ae8f07e0bfbb425e8d90a5839a8ae2e4de8aa1b5c"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-lizard.js",
+          "sha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+        }
+      }
     },
     "s-pigeon": {
       "background": "#101013",
@@ -1003,7 +2035,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\s-pigeon\\result.json",
       "source_result_sha256": "8449f285a7eec3bb64f0bee27709217dfd864f3a495288668e7d72af7f2281ea",
       "source_spec_sha256": "a8771343c295a0b448cc21b8942bf52feb391ba0e28eaeab9a2bcc3de2ba37dc",
-      "source_video_sha256": "5bd391cb1eefbc439d4d292e3bdd53f2472157ab4719f89818b81f37cdc86c55"
+      "source_video_sha256": "5bd391cb1eefbc439d4d292e3bdd53f2472157ab4719f89818b81f37cdc86c55",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-pigeon/s-pigeon.dark.1080.mp4",
+          "bytes": 323714,
+          "sha256": "5bd391cb1eefbc439d4d292e3bdd53f2472157ab4719f89818b81f37cdc86c55"
+        },
+        "poster": {
+          "file": "s-pigeon/s-pigeon.dark.poster.1080.jpg",
+          "bytes": 18383,
+          "sha256": "1ccba09e0d240e7d5994dd47d6be878f1b2856494e98de9104254c7bfd8f9356"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-pigeon.js",
+          "sha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+        }
+      }
     },
     "s-seated-fold": {
       "background": "#101013",
@@ -1027,7 +2083,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-fix-fold-20261017-r3\\greenscreen\\jobs\\s-seated-fold\\result.json",
       "source_result_sha256": "2317fc59555031e421df38929536ee22d8915edc180d2b6f7daa8d3e2e56d7ff",
       "source_spec_sha256": "be79551f5e0c87c50c52327179338b6e235fcf7aee09b1ce098e0af363d586fb",
-      "source_video_sha256": "2ad3b2995029ada22ffffcdce998a4c7519735d46d6bfac021c67447bd580692"
+      "source_video_sha256": "2ad3b2995029ada22ffffcdce998a4c7519735d46d6bfac021c67447bd580692",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "s-seated-fold/s-seated-fold.dark.1080.mp4",
+          "bytes": 566020,
+          "sha256": "2ad3b2995029ada22ffffcdce998a4c7519735d46d6bfac021c67447bd580692"
+        },
+        "poster": {
+          "file": "s-seated-fold/s-seated-fold.dark.poster.1080.jpg",
+          "bytes": 19809,
+          "sha256": "826b88baae06df533646fc030ab423fbeafae7f8efda6b01e008a791b0cc0cb0"
+        },
+        "spec": {
+          "path": "drill-anim/specs/s-seated-fold-r3.js",
+          "sha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+        }
+      }
     },
     "supine-cross-demo": {
       "assessment_cut_parent_video_sha256": "26ca853a3e67aaa7f88949a4329b52018b11d580c9e538c9c9fb803efc9fa49b",
@@ -1080,7 +2160,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\t-seated-straddle-lift-1leg\\result.json",
       "source_result_sha256": "a3f77765c604922699cad4f3c95f4b4007c69176ef4743162d34daf1bec42fd7",
       "source_spec_sha256": "4228e1827d02a9409d1a14ed2c2bc3c6a811cf67a53900375c5f3cf409cc74ee",
-      "source_video_sha256": "048b38a2a5f84d869876c2e0c77b00144e74d8fd07fff681e14a1c8579ef1246"
+      "source_video_sha256": "048b38a2a5f84d869876c2e0c77b00144e74d8fd07fff681e14a1c8579ef1246",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.dark.1080.mp4",
+          "bytes": 1079072,
+          "sha256": "048b38a2a5f84d869876c2e0c77b00144e74d8fd07fff681e14a1c8579ef1246"
+        },
+        "poster": {
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.dark.poster.1080.jpg",
+          "bytes": 24028,
+          "sha256": "9a599f599ea174e54afb2eeca4a3a30a3dd5ef84de811e14f5ad88bf1cd94254"
+        },
+        "spec": {
+          "path": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+          "sha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+        }
+      }
     },
     "w-clamshell": {
       "background": "#101013",
@@ -1104,7 +2208,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\w-clamshell\\result.json",
       "source_result_sha256": "ad543f2a0d0de91a6e34d0eee2dfc962977f736b89b8dc527e98ca1b6a9b8253",
       "source_spec_sha256": "5fb462bb04c3c0d3476224d1a09760a7eea50c089ece81c1c288654e5428a893",
-      "source_video_sha256": "168e4af225c6a6ed6eda2a884ed25e9c00d87f3e12d21c83e6051f5e91f1a05e"
+      "source_video_sha256": "168e4af225c6a6ed6eda2a884ed25e9c00d87f3e12d21c83e6051f5e91f1a05e",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "w-clamshell/w-clamshell.dark.1080.mp4",
+          "bytes": 874874,
+          "sha256": "168e4af225c6a6ed6eda2a884ed25e9c00d87f3e12d21c83e6051f5e91f1a05e"
+        },
+        "poster": {
+          "file": "w-clamshell/w-clamshell.dark.poster.1080.jpg",
+          "bytes": 26128,
+          "sha256": "e6741c8b2e02c15e9ebcc317c3f1095ccd93b211cca264459f273276707f6bc9"
+        },
+        "spec": {
+          "path": "drill-anim/specs/w-clamshell.js",
+          "sha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+        }
+      }
     },
     "w-feet-on-chair-bridge": {
       "background": "#101013",
@@ -1128,7 +2256,31 @@
       "source_result": "E:\\AII-3D\\3D-Body\\output\\hiplab-hd-20261017\\greenscreen\\jobs\\w-feet-on-chair-bridge\\result.json",
       "source_result_sha256": "697d20d787c426b8dc6f9884ef236bd3c7754c4d9feda245d7c5fa0f8eadada0",
       "source_spec_sha256": "b4d6df21fd52e8ddccc0de81b94476dfc645fcadfdcbe4f013ba4c4548ed07b8",
-      "source_video_sha256": "c19929b14f9e18a2b9cda0a22c08d4adc72dfb422c46bc627dd4263689549a93"
+      "source_video_sha256": "c19929b14f9e18a2b9cda0a22c08d4adc72dfb422c46bc627dd4263689549a93",
+      "pose_hub": {
+        "repository": "mhgd3250905/3D-Pose-Hub",
+        "version": "0.1.0",
+        "commit": "ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8",
+        "manifest": "tools/pose-hub-manifest.json",
+        "manifest_sha256": "dd7622a1ff443b425686179a32772a592fd21da09cf3dd7d28788d2048c64a43",
+        "published_at": "2026-10-17T16:17:10Z",
+        "archive_sha256": "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990",
+        "provenance": "media/releases/0.1.0.sources.json",
+        "video": {
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.dark.1080.mp4",
+          "bytes": 695757,
+          "sha256": "c19929b14f9e18a2b9cda0a22c08d4adc72dfb422c46bc627dd4263689549a93"
+        },
+        "poster": {
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.dark.poster.1080.jpg",
+          "bytes": 23966,
+          "sha256": "96ac724a3274100fab41897350ea29ea9fe2abf5db8e942786aa07369d98a7c6"
+        },
+        "spec": {
+          "path": "drill-anim/specs/w-feet-on-chair-bridge.js",
+          "sha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+        }
+      }
     }
   }
 }

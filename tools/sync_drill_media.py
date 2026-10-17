@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED for HipLab media updates: use tools/pose_hub_sync.py with pose-hub.lock.json.
+# Retained for historical 3D-Body deliveries and dedicated local demo cuts only.
 """Sync drill clips from 3D-Body into HipLab and regenerate the content pack.
 
 The drill animations are authored and rendered in the 3D-Body repository

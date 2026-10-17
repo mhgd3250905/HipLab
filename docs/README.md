@@ -32,3 +32,77 @@
 | [早期 MVP 设计](hiplab-mvp-2026-10-16.md) | 从 3D-Body 变体拆仓前的设计背景 |
 
 逐条媒体来源以 [hip-media.json](../tools/hip_content/source/hip-media.json) 为准；[hip-content.json](../assets/hip/hip-content.json) 是生成结果。APK、截图、运行日志与设备数据备份在 Git 忽略目录内；文档中的本机路径不代表这些文件已备份到 GitHub。
+
+## 新机器拉素材（Mac / Windows）
+
+先拉取 HipLab 的最新 `main`，以下命令均在仓库根目录执行。`pose-hub.lock.json` 和 `tools/pose-hub-manifest.json` 已随主线保存，固定 Pose-Hub **v0.1.0**；新机器直接使用这两个文件，不另取最新版 manifest。两端统一 **Flutter 3.44.7 stable**；Mac 不修改 lock、版本号或依赖，后续素材升级由 Windows 维护。
+
+从公开的 [Google Drive v0.1.0 ZIP](https://drive.google.com/file/d/1cukDvVPetojCo-j0zXlP2zC6Wf5rNJB0/view?usp=drivesdk) 下载 `pose-hub-media-v0.1.0.zip`，保存到仓库中的 `build/pose-hub/v0.1.0/`。也可从 [版本分发文件夹](https://drive.google.com/drive/folders/1oNykkilki_VFEGQepDm3IbAdcpw2Zazy) 获取同名文件。使用浏览器下载即可，不需要安装额外下载工具。
+
+ZIP 必须恰为 **40,153,961 bytes**，SHA-256 必须为：
+
+```text
+99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990
+```
+
+Mac：先执行下面的校验与解压。任一断言失败会立即停止，不能跳过校验继续解压或同步。
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+import hashlib
+import zipfile
+archive = Path("build/pose-hub/v0.1.0/pose-hub-media-v0.1.0.zip")
+assert archive.stat().st_size == 40153961, "ZIP size mismatch"
+assert hashlib.sha256(archive.read_bytes()).hexdigest() == "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990", "ZIP SHA-256 mismatch"
+with zipfile.ZipFile(archive) as bundle:
+    bundle.extractall("build/pose-hub/v0.1.0/extracted")
+print("ZIP verified and extracted")
+PY
+```
+
+然后按顺序执行；每条命令退出码为 0 后再执行下一条：
+
+```bash
+python3 tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --dry-run
+python3 tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted
+python3 tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --check
+python3 tools/hip_content/build_hip_content.py
+flutter --version
+flutter pub get --enforce-lockfile
+flutter analyze
+flutter test --concurrency=1
+```
+
+Windows PowerShell：同样先通过浏览器把 ZIP 放到上述位置，再执行校验与解压：
+
+```powershell
+@'
+from pathlib import Path
+import hashlib
+import zipfile
+archive = Path("build/pose-hub/v0.1.0/pose-hub-media-v0.1.0.zip")
+assert archive.stat().st_size == 40153961, "ZIP size mismatch"
+assert hashlib.sha256(archive.read_bytes()).hexdigest() == "99c6013c4f137e426112db8f46832f2ad2f433ffbd72ff7f1e13670a62867990", "ZIP SHA-256 mismatch"
+with zipfile.ZipFile(archive) as bundle:
+    bundle.extractall("build/pose-hub/v0.1.0/extracted")
+print("ZIP verified and extracted")
+'@ | python -
+```
+
+确认上一条成功后，逐条执行：
+
+```powershell
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --dry-run
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --check
+python tools/hip_content/build_hip_content.py
+flutter --version
+flutter pub get --enforce-lockfile
+flutter analyze
+flutter test --concurrency=1
+```
+
+ZIP 根目录直接包含动作 ID 文件夹，例如 `glute-max-A/`，没有额外的 `v0.1.0/` 层。因此 `--from-dir` 必须指向 `build/pose-hub/v0.1.0/extracted` 本身，不能再加版本子目录。ZIP 内没有 manifest；同步工具读取仓库已提交的冻结 manifest。`build/` 已被 Git 忽略，ZIP 和解压目录不提交。
+
+此包只含 46 个动作的 dark 视频和封面，共 92 个文件。`supine-cross-demo` 为 HipLab 自有剪辑，自测 still 保留既有 `assets/hip/assessment/`，light 素材尚未发布；三者均不在此 ZIP 或当前 lock 中，不删除现有资源，浅色主题继续使用深色舞台素材。首次同步用于恢复已冻结的构建资源，不改变素材版本或 ID；`--check` 必须退出 0，内容重生成后如有意外差异，应先核对来源，Mac 不自行修改 lock 或升级依赖。
