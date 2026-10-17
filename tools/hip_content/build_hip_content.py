@@ -269,8 +269,8 @@ def assessment():
                 'cue': '脚跟踩稳，慢慢蹲到最低，停 3 秒。旁边放把椅子，不稳就扶。', 'demo_drill': 'h-squat',
                 'seconds': 12, 'sided': False, 'directions': ['flexion', 'abduction'], 'glow': '髋部',
                 'options': [
-                    opt(0, '紧', '大腿到水平附近就下不去', assess_img('deep-squat-c')),
-                    opt(1, '一般', '脚跟抬起或要扶东西', assess_img('deep-squat-b')),
+                    opt(0, '紧', '只能半蹲，大腿还高于水平', assess_img('deep-squat-c')),
+                    opt(1, '一般', '大腿接近水平，还不能蹲到底', assess_img('deep-squat-b')),
                     opt(2, '松', '蹲到底，脚跟贴地', assess_img('deep-squat-a')),
                 ],
             },
