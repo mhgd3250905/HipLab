@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- WebView plays bundled assets through a loopback HTTP server. Android
+         requires INTERNET for these local sockets; no remote service is used. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="开胯训练助手"

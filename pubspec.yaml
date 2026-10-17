@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 0.1.2+3
+version: 0.2.0+4
 
 environment:
   sdk: ^3.12.2
