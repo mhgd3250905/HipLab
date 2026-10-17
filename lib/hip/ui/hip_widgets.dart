@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -129,6 +130,128 @@ class HipThumb extends StatelessWidget {
         ? thumb
         : SizedBox.square(dimension: size, child: thumb);
   }
+}
+
+/// Hero tag of a drill's picture (home art ↔ player video area).
+Object hipDrillHeroTag(HipDrill d) => 'drill-art-${d.id}';
+
+/// Shared-element hero for pictures (round 2 #4): a drill or pose image that
+/// flies between pages (home art → player video area, hip-check thumbnail →
+/// the check's demo). During the flight a static stand-in ([flight]) is drawn
+/// — never a live video view — cross-fading from one page's picture to the
+/// other's while the corner radius morphs between the two.
+class HipArtHero extends StatelessWidget {
+  const HipArtHero({
+    super.key,
+    required this.tag,
+    required this.radius,
+    required this.flight,
+    required this.child,
+  });
+  final Object tag;
+  final double radius;
+  final Widget flight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Hero(
+    tag: tag,
+    flightShuttleBuilder: _shuttle,
+    child: _HeroPayload(radius: radius, flight: flight, child: child),
+  );
+
+  static Widget _shuttle(
+    BuildContext context,
+    Animation<double> animation,
+    HeroFlightDirection direction,
+    BuildContext fromContext,
+    BuildContext toContext,
+  ) {
+    _HeroPayload of(BuildContext c) => (c.widget as Hero).child as _HeroPayload;
+    // [animation] is the pushed route's: 0 = the page below, 1 = the page
+    // on top, in both directions.
+    final top = of(
+      direction == HeroFlightDirection.push ? toContext : fromContext,
+    );
+    final below = of(
+      direction == HeroFlightDirection.push ? fromContext : toContext,
+    );
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        final t = animation.value;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(
+            lerpDouble(below.radius, top.radius, t)!,
+          ),
+          child: ColoredBox(
+            color: HipColors.mediaBackdrop,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                below.flight,
+                Opacity(opacity: t.clamp(0.0, 1.0), child: top.flight),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeroPayload extends StatelessWidget {
+  const _HeroPayload({
+    required this.radius,
+    required this.flight,
+    required this.child,
+  });
+  final double radius;
+  final Widget flight;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+/// Shared-element hero for a title: the two pages' texts cross-fade inside
+/// the flying box, scaled to fit it.
+class HipTextHero extends StatelessWidget {
+  const HipTextHero({super.key, required this.tag, required this.child});
+  final Object tag;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Hero(
+    tag: tag,
+    flightShuttleBuilder: (context, animation, direction, from, to) {
+      final top =
+          (direction == HeroFlightDirection.push ? to : from).widget as Hero;
+      final below =
+          (direction == HeroFlightDirection.push ? from : to).widget as Hero;
+      Widget fit(Widget w, Alignment a) =>
+          FittedBox(fit: BoxFit.scaleDown, alignment: a, child: w);
+      return Material(
+        type: MaterialType.transparency,
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            final t = animation.value.clamp(0.0, 1.0);
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(
+                  opacity: 1 - t,
+                  child: fit(below.child, Alignment.centerLeft),
+                ),
+                Opacity(opacity: t, child: fit(top.child, Alignment.center)),
+              ],
+            );
+          },
+        ),
+      );
+    },
+    child: child,
+  );
 }
 
 /// Shows the [focus] part of a square still (fractions of the image) filling

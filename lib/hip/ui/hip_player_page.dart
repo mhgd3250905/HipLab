@@ -472,9 +472,14 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                 expand: true,
                 child: KeyedSubtree(
                   key: ValueKey('art-${shown.drill.id}'),
-                  child: HipDrillArt(
-                    drill: shown.drill,
-                    play: work && !_paused,
+                  child: HipArtHero(
+                    tag: hipDrillHeroTag(shown.drill),
+                    radius: 28,
+                    flight: HipDrillArt(drill: shown.drill),
+                    child: HipDrillArt(
+                      drill: shown.drill,
+                      play: work && !_paused,
+                    ),
                   ),
                 ),
               ),

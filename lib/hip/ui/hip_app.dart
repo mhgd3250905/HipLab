@@ -887,10 +887,22 @@ class _HipHomeState extends State<HipHome> {
                             child: HipThumb(
                               size: 40,
                               radius: 10,
-                              child: HipDrillArt(
-                                drill: s.drill,
-                                showPendingLabel: false,
-                              ),
+                              // The first move's thumbnail flies into the
+                              // player's video area (and back on close).
+                              child: s == plan.steps.first
+                                  ? HipArtHero(
+                                      tag: hipDrillHeroTag(s.drill),
+                                      radius: 10,
+                                      flight: HipDrillArt(drill: s.drill),
+                                      child: HipDrillArt(
+                                        drill: s.drill,
+                                        showPendingLabel: false,
+                                      ),
+                                    )
+                                  : HipDrillArt(
+                                      drill: s.drill,
+                                      showPendingLabel: false,
+                                    ),
                             ),
                           ),
                       ],

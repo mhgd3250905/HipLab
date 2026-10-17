@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
@@ -356,5 +357,65 @@ void main() {
       },
       variant: TargetPlatformVariant.only(TargetPlatform.iOS),
     );
+  });
+
+  group('shared elements', () {
+    Set<Object> heroTags(WidgetTester tester) => {
+      for (final e in find.byType(Hero, skipOffstage: false).evaluate())
+        (e.widget as Hero).tag,
+    };
+
+    testWidgets('home art flies into the player video area', (tester) async {
+      final store = await pumpApp(tester);
+      final first = store.todayPlan!.steps.first.drill;
+      final tag = hipDrillHeroTag(first);
+      expect(heroTags(tester), contains(tag));
+      await tester.tap(find.byKey(const ValueKey('start-today')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60));
+      // Mid-flight: the shuttle (a static stand-in) is in the overlay.
+      expect(
+        find.descendant(
+          of: find.byType(Overlay).first,
+          matching: find.byType(ClipRRect),
+        ),
+        findsWidgets,
+      );
+      await tester.pumpAndSettle();
+      final player = find.byKey(const ValueKey('player-ring'));
+      expect(player, findsOneWidget);
+      expect(
+        find.byWidgetPredicate((w) => w is Hero && w.tag == tag),
+        findsWidgets,
+      );
+      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('hip-check row thumbnail and title fly into the check', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.tap(find.byKey(const ValueKey('tab-1')));
+      await tester.pumpAndSettle();
+      final item = content.rules.items.first;
+      final tags = heroTags(tester);
+      expect(tags, contains(hipAssessmentHeroTag(item)));
+      expect(tags, contains(hipAssessmentTitleTag(item)));
+      await tester.tap(find.byKey(const ValueKey('assessment-start')));
+      await tester.pumpAndSettle();
+      final now = {
+        for (final e in find.byType(Hero).evaluate()) (e.widget as Hero).tag,
+      };
+      expect(now, contains(hipAssessmentHeroTag(item)));
+      expect(now, contains(hipAssessmentTitleTag(item)));
+      // Back out: flies back to its row without errors.
+      await tester.tap(find.byType(HipCircleButton).first);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('intro-item-butterfly')),
+        findsOneWidget,
+      );
+    });
   });
 }

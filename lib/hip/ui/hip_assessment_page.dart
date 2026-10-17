@@ -27,6 +27,14 @@ const hipAssessmentFocus = <String, Rect>{
   'deep_squat': Rect.fromLTRB(.23, .17, .76, .86),
 };
 
+/// Hero tags shared by the 自测 tab and the check page.
+Object hipAssessmentHeroTag(AssessmentItem item) => 'assess-art-${item.id}';
+Object hipAssessmentTitleTag(AssessmentItem item) => 'assess-title-${item.id}';
+
+Widget _thumbArt(AssessmentItem item, String? still) => still == null
+    ? const HipPendingArt()
+    : HipFocusImage(asset: still, focus: _focusOf(item));
+
 Rect _focusOf(AssessmentItem item) =>
     hipAssessmentFocus[item.id] ?? const Rect.fromLTRB(.15, .15, .85, .85);
 
@@ -122,9 +130,13 @@ class HipAssessmentIntro extends StatelessWidget {
           HipThumb(
             size: 58,
             radius: 13,
-            child: still == null
-                ? const HipPendingArt()
-                : HipFocusImage(asset: still, focus: _focusOf(item)),
+            // Flies into the check's demo area (and back to its row).
+            child: HipArtHero(
+              tag: hipAssessmentHeroTag(item),
+              radius: 13,
+              flight: _thumbArt(item, still),
+              child: _thumbArt(item, still),
+            ),
           ),
           const SizedBox(width: 12),
           Container(
@@ -149,13 +161,17 @@ class HipAssessmentIntro extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                HipTextHero(
+                  tag: hipAssessmentTitleTag(item),
+                  child: Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 1),
@@ -500,15 +516,24 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
         expand: true,
         child: KeyedSubtree(
           key: ValueKey('demo-${item.id}'),
-          child: demo != null && demo.mediaStatus != HipMediaStatus.pending
-              ? HipDrillArt(
-                  drill: demo,
-                  play: true,
-                  mirror: _side == HipSide.right,
-                )
-              : fallback != null
-              ? Image.asset(fallback, fit: BoxFit.cover)
-              : const HipPendingArt(label: '动画待渲染'),
+          child: HipArtHero(
+            tag: hipAssessmentHeroTag(item),
+            radius: 26,
+            flight: demo != null && demo.mediaStatus != HipMediaStatus.pending
+                ? HipDrillArt(drill: demo, mirror: _side == HipSide.right)
+                : fallback != null
+                ? Image.asset(fallback, fit: BoxFit.cover)
+                : const HipPendingArt(),
+            child: demo != null && demo.mediaStatus != HipMediaStatus.pending
+                ? HipDrillArt(
+                    drill: demo,
+                    play: true,
+                    mirror: _side == HipSide.right,
+                  )
+                : fallback != null
+                ? Image.asset(fallback, fit: BoxFit.cover)
+                : const HipPendingArt(label: '动画待渲染'),
+          ),
         ),
       ),
     );
@@ -613,32 +638,42 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
     ),
   );
 
+  /// The first item's title flies in from its row in the list. Only the
+  /// first: later steps swap their question block in place, and a hero
+  /// tag must never exist twice while an outgoing block fades.
+  Widget _titleHero(AssessmentItem item, Widget title) => _index == 0
+      ? HipTextHero(tag: hipAssessmentTitleTag(item), child: title)
+      : title;
+
   Widget _question(AssessmentItem item) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: item.title,
-              style: TextStyle(
-                color: HipColors.jade,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (_side != null)
+      _titleHero(
+        item,
+        Text.rich(
+          TextSpan(
+            children: [
               TextSpan(
-                text: _side == HipSide.left ? ' · 左边' : ' · 右边',
+                text: item.title,
                 style: TextStyle(
                   color: HipColors.jade,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-          ],
+              if (_side != null)
+                TextSpan(
+                  text: _side == HipSide.left ? ' · 左边' : ' · 右边',
+                  style: TextStyle(
+                    color: HipColors.jade,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
+          key: const ValueKey('assessment-title'),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 15),
         ),
-        key: const ValueKey('assessment-title'),
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 15),
       ),
       if (item.aka != null) ...[
         const SizedBox(height: 2),
