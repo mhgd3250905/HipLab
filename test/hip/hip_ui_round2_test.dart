@@ -9,6 +9,7 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
@@ -166,5 +167,65 @@ void main() {
                 .painter!
             as HipIconPainter;
     expect(painter.color, const Color(0xff3ccfa4));
+  });
+
+  testWidgets('no Material icons remain on the main screens', (tester) async {
+    await pumpApp(tester);
+    expect(find.byType(Icon), findsNothing);
+    expect(find.byType(HipIcon), findsWidgets);
+    for (final tab in [1, 2]) {
+      await tester.tap(find.byKey(ValueKey('tab-$tab')));
+      await tester.pumpAndSettle();
+      expect(find.byType(Icon), findsNothing, reason: 'tab $tab');
+    }
+    await tester.tap(find.byKey(const ValueKey('tab-0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('start-today')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
+    expect(find.byType(Icon), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('player-pause')));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('countdown ring draws no dot at 0 % and an arc later', (
+    tester,
+  ) async {
+    HipColors.palette = HipPalette.dark;
+    final key = GlobalKey();
+    Future<List<int>> topPixel(double progress) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: RepaintBoundary(
+              key: key,
+              child: HipCountdownRing(
+                progress: progress,
+                label: '30',
+                size: 100,
+                color: const Color(0xff00ff00),
+              ),
+            ),
+          ),
+        ),
+      );
+      return (await tester.runAsync(() async {
+        final b =
+            key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = await b.toImage();
+        final bytes = (await image.toByteData())!.buffer.asUint8List();
+        // Just right of 12 o'clock on the ring (radius 44.4, stroke 5.2).
+        const x = 53, y = 6;
+        final i = (y * 100 + x) * 4;
+        image.dispose();
+        return bytes.sublist(i, i + 4);
+      }))!;
+    }
+
+    final empty = await topPixel(0);
+    expect(empty[1], lessThan(80), reason: 'no green dot at the top at 0 %');
+    final started = await topPixel(.5);
+    expect(started[1], greaterThan(60), reason: 'arc tail at the top');
   });
 }

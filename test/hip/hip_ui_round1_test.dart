@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
@@ -56,39 +57,50 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('#1 option cards and media paint their stroke above the picture', (
-    tester,
-  ) async {
-    await pumpApp(tester);
-    await openAssessment(tester);
-    await choose(tester, 2);
-    // Every picture area is a HipMediaFrame whose border is a foreground
-    // decoration (drawn over the clipped content), and the check badge is
-    // laid out inside the frame.
-    final selected = find.descendant(
-      of: find.byKey(const ValueKey('option-2')),
-      matching: find.byType(HipMediaFrame),
-    );
-    expect(selected, findsOneWidget);
-    final box = tester.widget<AnimatedContainer>(
-      find.descendant(of: selected, matching: find.byType(AnimatedContainer)).first,
-    );
-    final fg = box.foregroundDecoration! as BoxDecoration;
-    final border = fg.border! as Border;
-    expect(border.top.color, HipColors.jade);
-    expect(border.top.strokeAlign, BorderSide.strokeAlignInside);
-    final frameRect = tester.getRect(selected);
-    final badge = tester.getRect(
-      find.descendant(of: selected, matching: find.byIcon(Icons.check_rounded)),
-    );
-    expect(frameRect.deflate(border.top.width).contains(badge.topRight), isTrue);
-    // The demo video area uses the same frame.
-    expect(find.byKey(const ValueKey('assessment-demo')), findsOneWidget);
-    expect(
-      tester.widget(find.byKey(const ValueKey('assessment-demo'))),
-      isA<HipMediaFrame>(),
-    );
-  });
+  testWidgets(
+    '#1 option cards and media paint their stroke above the picture',
+    (tester) async {
+      await pumpApp(tester);
+      await openAssessment(tester);
+      await choose(tester, 2);
+      // Every picture area is a HipMediaFrame whose border is a foreground
+      // decoration (drawn over the clipped content), and the check badge is
+      // laid out inside the frame.
+      final selected = find.descendant(
+        of: find.byKey(const ValueKey('option-2')),
+        matching: find.byType(HipMediaFrame),
+      );
+      expect(selected, findsOneWidget);
+      final box = tester.widget<AnimatedContainer>(
+        find
+            .descendant(of: selected, matching: find.byType(AnimatedContainer))
+            .first,
+      );
+      final fg = box.foregroundDecoration! as BoxDecoration;
+      final border = fg.border! as Border;
+      expect(border.top.color, HipColors.jade);
+      expect(border.top.strokeAlign, BorderSide.strokeAlignInside);
+      final frameRect = tester.getRect(selected);
+      final badge = tester.getRect(
+        find.descendant(
+          of: selected,
+          matching: find.byWidgetPredicate(
+            (w) => w is HipIcon && w.glyph == HipGlyph.check,
+          ),
+        ),
+      );
+      expect(
+        frameRect.deflate(border.top.width).contains(badge.topRight),
+        isTrue,
+      );
+      // The demo video area uses the same frame.
+      expect(find.byKey(const ValueKey('assessment-demo')), findsOneWidget);
+      expect(
+        tester.widget(find.byKey(const ValueKey('assessment-demo'))),
+        isA<HipMediaFrame>(),
+      );
+    },
+  );
 
   testWidgets('#2 the hip check lists all six moves with what each looks at', (
     tester,
@@ -139,11 +151,18 @@ void main() {
         await openAssessment(tester);
         for (var n = 0; n < 9; n++) {
           // The bottom bar never overlaps the scrolling content.
-          final bar = tester.getRect(find.byKey(const ValueKey('assessment-next')));
-          final pain = tester.getRect(find.byKey(const ValueKey('assessment-pain')));
+          final bar = tester.getRect(
+            find.byKey(const ValueKey('assessment-next')),
+          );
+          final pain = tester.getRect(
+            find.byKey(const ValueKey('assessment-pain')),
+          );
           expect(pain.bottom, lessThanOrEqualTo(bar.top + .5));
           await choose(tester, 1);
-          if (find.byKey(const ValueKey('follow-front')).evaluate().isNotEmpty) {
+          if (find
+              .byKey(const ValueKey('follow-front'))
+              .evaluate()
+              .isNotEmpty) {
             break;
           }
           await tester.tap(find.byKey(const ValueKey('assessment-next')));
@@ -155,39 +174,41 @@ void main() {
     );
   }
 
-  testWidgets('#5 sided items: the first 下一项 clearly switches to the right side', (
-    tester,
-  ) async {
-    await pumpApp(tester);
-    await openAssessment(tester);
-    await choose(tester, 2);
-    await tester.tap(find.byKey(const ValueKey('assessment-next')));
-    await tester.pumpAndSettle();
-    // 90/90, left side: the button says what happens next.
-    expect(find.text('记下左边，测右边'), findsOneWidget);
-    await choose(tester, 2);
-    await tester.tap(find.byKey(const ValueKey('assessment-next')));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('现在测右边'), findsOneWidget);
-    expect(find.text('左边记好了'), findsOneWidget);
-    await tester.pumpAndSettle();
-    expect(find.text('下一项'), findsOneWidget);
-    expect(find.text('2/6'), findsOneWidget);
-  });
+  testWidgets(
+    '#5 sided items: the first 下一项 clearly switches to the right side',
+    (tester) async {
+      await pumpApp(tester);
+      await openAssessment(tester);
+      await choose(tester, 2);
+      await tester.tap(find.byKey(const ValueKey('assessment-next')));
+      await tester.pumpAndSettle();
+      // 90/90, left side: the button says what happens next.
+      expect(find.text('记下左边，测右边'), findsOneWidget);
+      await choose(tester, 2);
+      await tester.tap(find.byKey(const ValueKey('assessment-next')));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('现在测右边'), findsOneWidget);
+      expect(find.text('左边记好了'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('下一项'), findsOneWidget);
+      expect(find.text('2/6'), findsOneWidget);
+    },
+  );
 
-  testWidgets('#5 a double tap on 下一项 records one answer, never skips an item', (
-    tester,
-  ) async {
-    await pumpApp(tester);
-    await openAssessment(tester);
-    await choose(tester, 2);
-    final next = find.byKey(const ValueKey('assessment-next'));
-    await tester.tap(next);
-    await tester.tap(next, warnIfMissed: false);
-    await tester.pumpAndSettle();
-    expect(find.text('2/6'), findsOneWidget);
-    expect(find.text('记下左边，测右边'), findsOneWidget);
-  });
+  testWidgets(
+    '#5 a double tap on 下一项 records one answer, never skips an item',
+    (tester) async {
+      await pumpApp(tester);
+      await openAssessment(tester);
+      await choose(tester, 2);
+      final next = find.byKey(const ValueKey('assessment-next'));
+      await tester.tap(next);
+      await tester.tap(next, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      expect(find.text('2/6'), findsOneWidget);
+      expect(find.text('记下左边，测右边'), findsOneWidget);
+    },
+  );
 
   testWidgets('#7 result title sits in the close-button row', (tester) async {
     await pumpApp(tester);
@@ -204,12 +225,13 @@ void main() {
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.
     final card = tester.getRect(find.byKey(const ValueKey('route-card')));
-    for (final e in find
-        .descendant(
-          of: find.byKey(const ValueKey('route-card')),
-          matching: find.byType(HipMediaFrame),
-        )
-        .evaluate()) {
+    for (final e
+        in find
+            .descendant(
+              of: find.byKey(const ValueKey('route-card')),
+              matching: find.byType(HipMediaFrame),
+            )
+            .evaluate()) {
       final r = tester.getRect(find.byWidget(e.widget));
       expect(card.contains(r.bottomRight - const Offset(.5, .5)), isTrue);
     }
@@ -255,7 +277,12 @@ void main() {
     expect(store.theme, HipThemeChoice.light);
     expect(HipColors.palette, HipPalette.light);
     final scaffold = tester.widget<Material>(
-      find.descendant(of: find.byType(Scaffold).first, matching: find.byType(Material)).first,
+      find
+          .descendant(
+            of: find.byType(Scaffold).first,
+            matching: find.byType(Material),
+          )
+          .first,
     );
     expect(scaffold.color, HipPalette.light.background);
     // The tab and scroll position survive the switch.
@@ -268,25 +295,26 @@ void main() {
     expect(store.toJson()['theme'], 'system');
   });
 
-  testWidgets('#13 voice settings persist (voice / chimes / language / volume)', (
-    tester,
-  ) async {
-    final store = await pumpApp(tester);
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('voice-preview')),
-      200,
-    );
-    await tester.tap(find.byKey(const ValueKey('chime-switch')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(ValueKey('voice-lang-${VoiceLanguage.en}')));
-    await tester.pumpAndSettle();
-    expect(store.voice.chimes, isFalse);
-    expect(store.voice.voice, isTrue);
-    expect(store.voice.language, VoiceLanguage.en);
-    final saved = store.toJson()['voice'] as Map;
-    expect(saved['language'], 'en');
-    expect(saved['chimes'], false);
-  });
+  testWidgets(
+    '#13 voice settings persist (voice / chimes / language / volume)',
+    (tester) async {
+      final store = await pumpApp(tester);
+      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('voice-preview')),
+        200,
+      );
+      await tester.tap(find.byKey(const ValueKey('chime-switch')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey('voice-lang-${VoiceLanguage.en}')));
+      await tester.pumpAndSettle();
+      expect(store.voice.chimes, isFalse);
+      expect(store.voice.voice, isTrue);
+      expect(store.voice.language, VoiceLanguage.en);
+      final saved = store.toJson()['voice'] as Map;
+      expect(saved['language'], 'en');
+      expect(saved['chimes'], false);
+    },
+  );
 }

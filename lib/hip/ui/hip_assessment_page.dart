@@ -11,6 +11,7 @@ import '../domain/hip_session.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
+import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -75,7 +76,7 @@ class HipAssessmentIntro extends StatelessWidget {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Icon(Icons.radar_rounded, size: 18, color: HipColors.jade),
+                  HipIcon(HipGlyph.radar, size: 18, color: HipColors.jade),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -93,7 +94,7 @@ class HipAssessmentIntro extends StatelessWidget {
           child: HipPrimaryButton(
             key: const ValueKey('assessment-start'),
             label: store.blocked ? '先问问医生再来' : '开始自测',
-            icon: Icons.play_arrow_rounded,
+            icon: HipGlyph.play,
             onPressed: store.blocked ? null : onStart,
           ),
         ),
@@ -457,11 +458,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
       key: const ValueKey('assessment-demo'),
       radius: 26,
       overlays: [
-        Positioned(
-          left: 14,
-          top: 14,
-          child: _pill(Icons.repeat_rounded, '跟着做一遍'),
-        ),
+        Positioned(left: 14, top: 14, child: _pill(HipGlyph.loop, '跟着做一遍')),
         if (_side != null) Positioned(right: 14, top: 14, child: _sidePill()),
         Positioned(
           left: 24,
@@ -519,7 +516,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle_rounded, color: HipColors.jade, size: 22),
+              HipIcon(
+                HipGlyph.checkCircle,
+                filled: true,
+                color: HipColors.jade,
+                size: 22,
+              ),
               const SizedBox(width: 6),
               const Text(
                 '左边记好了',
@@ -564,7 +566,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (s == HipSide.left && _side == HipSide.right) ...[
-                  Icon(Icons.check_rounded, size: 14, color: HipColors.jade),
+                  HipIcon(
+                    HipGlyph.check,
+                    size: 14,
+                    strokeWidth: 2.4,
+                    color: HipColors.jade,
+                  ),
                   const SizedBox(width: 2),
                 ],
                 Text(
@@ -582,7 +589,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
     ),
   );
 
-  Widget _pill(IconData icon, String text) => Container(
+  Widget _pill(HipGlyph icon, String text) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
       color: Colors.black.withValues(alpha: .45),
@@ -592,7 +599,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.white70),
+        HipIcon(icon, size: 16, color: Colors.white70),
         const SizedBox(width: 5),
         Text(text, style: const TextStyle(fontSize: 13, color: Colors.white)),
       ],
@@ -671,7 +678,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
               TextButton.icon(
                 key: const ValueKey('assessment-pain'),
                 onPressed: () => _record(const SideAnswer.pain()),
-                icon: Icon(Icons.bolt_rounded, color: HipColors.pain, size: 18),
+                icon: HipIcon(HipGlyph.bolt, color: HipColors.pain, size: 18),
                 label: Text('做的时候疼', style: TextStyle(color: HipColors.pain)),
               ),
               Text('·', style: TextStyle(color: HipColors.faint)),
@@ -693,7 +700,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                 : last
                 ? '看结果'
                 : '下一项',
-            trailing: Icons.chevron_right_rounded,
+            trailing: HipGlyph.chevronRight,
             onPressed: _canNext ? _next : null,
           ),
         ],
@@ -836,9 +843,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                     color: HipColors.jade,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.check_rounded,
-                    size: 17,
+                  child: HipIcon(
+                    HipGlyph.check,
+                    size: 16,
+                    strokeWidth: 2.6,
                     color: HipColors.onJade,
                   ),
                 ),
@@ -958,7 +966,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                 HipPrimaryButton(
                   key: const ValueKey('result-start'),
                   label: '开始这条路线',
-                  icon: Icons.play_arrow_rounded,
+                  icon: HipGlyph.play,
                   onPressed: () => _start(plan),
                 ),
               ],

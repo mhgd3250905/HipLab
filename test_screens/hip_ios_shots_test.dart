@@ -13,8 +13,8 @@ import 'dart:ui' as ui;
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_assessment.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
-import 'package:hiplab/hip/domain/hip_settings.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -66,7 +66,12 @@ Future<void> _shot(WidgetTester tester, String name) async {
 
 void main() {
   final content = loadContent();
-  setUpAll(_loadFonts);
+  setUpAll(() async {
+    await _loadFonts();
+    // The test renderer cannot blur BoxShadow; drop shadows rather than show
+    // hard offset shelves that never appear on a device.
+    HipColors.flatShadows = true;
+  });
 
   Future<HipStore> boot(
     WidgetTester tester, {

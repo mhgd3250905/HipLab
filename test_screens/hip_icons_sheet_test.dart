@@ -4,7 +4,9 @@
 //
 //   flutter test --no-pub test_screens/hip_icons_sheet_test.dart
 //
-// Output: test/_shots/icons-sheet.png (git-ignored).
+// Output: test/_shots/icons-sheet.png and test/_shots/components-{dark,light}.png
+// (the countdown ring at several points, the start button, round buttons
+// and segmented controls in both themes). Git-ignored.
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -13,7 +15,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
+import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 Future<void> _loadFonts() async {
   final bytes = File('assets/fonts/NotoSansSC.ttf').readAsBytesSync();
@@ -179,5 +183,140 @@ void main() {
         ..createSync(recursive: true)
         ..writeAsBytesSync(data!.buffer.asUint8List());
     });
+  });
+
+  testWidgets('components sheet', (tester) async {
+    HipColors.flatShadows = true; // the test renderer cannot blur shadows
+    tester.view.physicalSize = const Size(700, 520);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Widget panel(HipPalette p) {
+      return Container(
+        color: p.background,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '组件 · ${p.isDark ? '深色' : '浅色'}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: p.text,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                for (final (v, work) in [
+                  (0.0, true),
+                  (.35, true),
+                  (.8, true),
+                  (.5, false),
+                ]) ...[
+                  HipCountdownRing(
+                    progress: v,
+                    label: '${(30 * (1 - v)).round()}',
+                    caption: work ? '秒' : '准备',
+                    size: 130,
+                    color: work ? p.jade : p.jade.withValues(alpha: .5),
+                  ),
+                  const SizedBox(width: 18),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                HipCircleButton(
+                  icon: HipGlyph.pause,
+                  size: 64,
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 14),
+                HipCircleButton(
+                  icon: HipGlyph.skipNext,
+                  size: 64,
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 14),
+                HipCircleButton(icon: HipGlyph.close, onPressed: () {}),
+                const SizedBox(width: 30),
+                Container(
+                  width: 190,
+                  height: 170,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: HipPalette.dark.surface,
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: HipStartButton(onTap: () {}, stage: HipPalette.dark),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                SizedBox(
+                  width: 280,
+                  child: HipSegmented<int>(
+                    values: const [5, 10, 15],
+                    selected: 10,
+                    onChanged: (_) {},
+                    standalone: true,
+                    height: 74,
+                    radius: 22,
+                    inset: 5,
+                    itemBuilder: (v, fg, t) =>
+                        Text('$v 分', style: TextStyle(fontSize: 18, color: fg)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 300,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: p.surface,
+                    borderRadius: BorderRadius.circular(22),
+                    border: p.isDark ? Border.all(color: p.line) : null,
+                  ),
+                  child: HipSegmented<String>(
+                    values: const ['跟随系统', '浅色', '深色'],
+                    selected: '浅色',
+                    label: (v) => v,
+                    onChanged: (_) {},
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // One pump per theme: widgets read HipColors while building and laying
+    // out, so each sheet renders alone (stitched by the caller).
+    for (final p in [HipPalette.dark, HipPalette.light]) {
+      HipColors.palette = p;
+      await tester.pumpWidget(
+        MaterialApp(
+          key: ValueKey(p.brightness),
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(fontFamily: hipFontFamily),
+          home: Material(child: RepaintBoundary(child: panel(p))),
+        ),
+      );
+      await tester.pump();
+      await tester.runAsync(() async {
+        final boundary =
+            find.byType(RepaintBoundary).first.evaluate().first.renderObject!
+                as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 2);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        File('test/_shots/components-${p.isDark ? 'dark' : 'light'}.png')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(data!.buffer.asUint8List());
+      });
+    }
   });
 }

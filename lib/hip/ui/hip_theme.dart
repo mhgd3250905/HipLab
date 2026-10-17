@@ -139,6 +139,15 @@ class HipPalette {
 abstract final class HipColors {
   static HipPalette palette = HipPalette.dark;
 
+  /// Screenshot harness only: the flutter_tester renderer draws BoxShadow
+  /// without its blur (a hard offset copy of the shape), which would make
+  /// review screenshots show harsh shelves that never appear on a device.
+  /// test_screens/ sets this to drop blurred shadows; the app never does.
+  static bool flatShadows = false;
+
+  /// [s] unless [flatShadows] is set.
+  static List<BoxShadow>? shadows(List<BoxShadow>? s) => flatShadows ? null : s;
+
   static bool get isDark => palette.isDark;
   static Color get background => palette.background;
   static Color get surface => palette.surface;
@@ -161,7 +170,9 @@ abstract final class HipColors {
   static Color get thumbHighlight => palette.thumbHighlight;
 
   /// Lift for a raised thumb: a tight contact shadow plus a soft ambient one.
-  static List<BoxShadow> get thumbShadow => palette.isDark
+  static List<BoxShadow> get thumbShadow => flatShadows
+      ? const []
+      : palette.isDark
       ? const [
           BoxShadow(
             color: Color(0x66000000),
@@ -189,7 +200,7 @@ abstract final class HipColors {
 
   /// Soft elevation for cards: none on dark (strokes carry the shape), a
   /// faint two-layer shadow on light.
-  static List<BoxShadow>? get cardShadow => palette.isDark
+  static List<BoxShadow>? get cardShadow => palette.isDark || flatShadows
       ? null
       : [
           BoxShadow(
