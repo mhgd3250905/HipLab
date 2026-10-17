@@ -15,6 +15,7 @@ import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
 import 'hip_assessment_page.dart';
 import 'hip_player_page.dart';
+import 'hip_segmented.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -985,95 +986,55 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  Widget _segment<T>({
-    required List<T> values,
-    required T selected,
-    required Widget Function(T, bool) build,
-    required ValueChanged<T> onTap,
-    required String keyPrefix,
-  }) => HipPanel(
-    padding: const EdgeInsets.all(6),
-    child: SizedBox(
-      height: 62,
-      child: Row(
-        children: [
-          for (final v in values)
-            Expanded(
-              child: GestureDetector(
-                key: ValueKey('$keyPrefix-$v'),
-                onTap: () => onTap(v),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 160),
-                  decoration: BoxDecoration(
-                    color: v == selected
-                        ? HipColors.jade.withValues(alpha: .14)
-                        : null,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: v == selected
-                          ? HipColors.jade
-                          : const Color(0x00000000),
-                    ),
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: build(v, v == selected),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _durationPicker() => _segment<int>(
+  /// The two home pickers share one control style (round 2 #1): the control
+  /// is its own card (radius 22, like its neighbours) and the thumb is
+  /// concentric with it (22 − 5 = 17).
+  Widget _durationPicker() => HipSegmented<int>(
     keyPrefix: 'minutes',
+    standalone: true,
+    height: 74,
+    radius: 22,
+    inset: 5,
     values: TrainingPlanner.durations,
     selected: store.minutes,
-    onTap: (v) => store.choose(minutes: v),
-    build: (v, on) => Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    onChanged: (v) => store.choose(minutes: v),
+    itemBuilder: (v, fg, t) => Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           '$v',
           style: TextStyle(
             fontSize: 22,
+            height: 1.15,
             fontWeight: FontWeight.w700,
-            color: on ? HipColors.jade : HipColors.text,
+            color: Color.lerp(HipColors.text, fg, t),
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
-        Text(
-          '分',
-          style: TextStyle(
-            fontSize: 11,
-            color: on ? HipColors.jade : HipColors.muted,
-          ),
-        ),
+        Text('分', style: TextStyle(fontSize: 11, height: 1.3, color: fg)),
       ],
     ),
   );
 
-  Widget _scenePicker() => _segment<HipScene>(
+  Widget _scenePicker() => HipSegmented<HipScene>(
     keyPrefix: 'scene',
+    standalone: true,
+    height: 74,
+    radius: 22,
+    inset: 5,
     values: HipScene.values,
     selected: store.scene,
-    onTap: (v) => store.choose(scene: v),
-    build: (v, on) => Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    onChanged: (v) => store.choose(scene: v),
+    itemBuilder: (v, fg, t) => Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           v == HipScene.chair ? Icons.chair_alt_outlined : Icons.home_outlined,
-          color: on ? HipColors.jade : HipColors.muted,
+          size: 22,
+          color: fg,
         ),
-        const SizedBox(height: 2),
-        Text(
-          v.zh,
-          style: TextStyle(
-            fontSize: 11,
-            color: on ? HipColors.jade : HipColors.muted,
-          ),
-        ),
+        const SizedBox(height: 3),
+        Text(v.zh, style: TextStyle(fontSize: 11, height: 1.3, color: fg)),
       ],
     ),
   );
@@ -1323,74 +1284,6 @@ String reminderLabel(ReminderSettings r) =>
     r.enabled ? '每 ${r.intervalMinutes} 分钟' : '关闭';
 
 // ───────────────────────── settings: voice + appearance ─────────────────────
-
-/// A compact segmented control used in settings.
-class HipSegmented<T> extends StatelessWidget {
-  const HipSegmented({
-    super.key,
-    required this.values,
-    required this.selected,
-    required this.label,
-    required this.onChanged,
-    this.keyPrefix = 'seg',
-  });
-  final List<T> values;
-  final T selected;
-  final String Function(T) label;
-  final ValueChanged<T> onChanged;
-  final String keyPrefix;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(4),
-    decoration: BoxDecoration(
-      color: HipColors.surfaceHigh,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Row(
-      children: [
-        for (final v in values)
-          Expanded(
-            child: GestureDetector(
-              key: ValueKey('$keyPrefix-$v'),
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onChanged(v),
-              child: AnimatedContainer(
-                duration: HipMotion.fast,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: v == selected ? HipColors.surface : null,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: v == selected && !HipColors.isDark
-                      ? const [
-                          BoxShadow(color: Color(0x14000000), blurRadius: 6),
-                        ]
-                      : null,
-                  border: v == selected && HipColors.isDark
-                      ? Border.all(color: HipColors.line)
-                      : null,
-                ),
-                child: Text(
-                  label(v),
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: v == selected
-                        ? FontWeight.w700
-                        : FontWeight.w500,
-                    color: v == selected ? HipColors.text : HipColors.muted,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
 
 Widget _settingsHeader(IconData icon, String title, {String? hint}) => Padding(
   padding: const EdgeInsets.only(bottom: 10),
