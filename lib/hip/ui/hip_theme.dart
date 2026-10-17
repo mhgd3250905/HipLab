@@ -242,6 +242,12 @@ abstract final class HipMotion {
   /// Bottom tab switch.
   static const tab = Duration(milliseconds: 300);
 
+  /// Bottom sheets rise from the bottom on the page timing.
+  static const sheet = AnimationStyle(
+    duration: page,
+    reverseDuration: pageReverse,
+  );
+
   /// Material 3 emphasized easing: quick start, long gentle settle.
   static const Curve emphasized = Curves.easeInOutCubicEmphasized;
   static const Curve emphasizedDecelerate = Cubic(0.05, 0.7, 0.1, 1.0);
@@ -331,10 +337,18 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
   );
 }
 
-/// Android-style page transition: fade + 4% rise, no white flash. Used for
-/// every pushed page so route changes read the same across the app (#12).
+/// Fallback for any plain [PageRoute] (the app pushes `HipRoute`s, see
+/// hip_routes.dart): the same horizontal push — in from the right on the
+/// emphasized curves, no white flash. iOS keeps Cupertino's (edge swipe).
 class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   const HipPageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => HipMotion.page;
+
+  @override
+  Duration get reverseTransitionDuration => HipMotion.pageReverse;
+
   @override
   Widget buildTransitions<T>(
     PageRoute<T> route,
@@ -345,18 +359,15 @@ class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   ) {
     final curved = CurvedAnimation(
       parent: animation,
-      curve: HipMotion.curve,
-      reverseCurve: Curves.easeInCubic,
+      curve: HipMotion.emphasizedDecelerate,
+      reverseCurve: HipMotion.emphasizedAccelerate.flipped,
     );
-    return FadeTransition(
-      opacity: curved,
-      child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0, .04),
-          end: Offset.zero,
-        ).animate(curved),
-        child: child,
-      ),
+    return SlideTransition(
+      position: Tween(
+        begin: const Offset(1, 0),
+        end: Offset.zero,
+      ).animate(curved),
+      child: child,
     );
   }
 }

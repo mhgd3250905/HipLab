@@ -231,6 +231,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     setState(() {});
     final kind = await showModalBottomSheet<PainKind>(
       context: context,
+      sheetAnimationStyle: HipMotion.sheet,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),

@@ -16,6 +16,7 @@ import '../voice/voice_library.dart';
 import 'hip_assessment_page.dart';
 import 'hip_icons.dart';
 import 'hip_player_page.dart';
+import 'hip_routes.dart';
 import 'hip_segmented.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
@@ -519,28 +520,48 @@ class HipHome extends StatefulWidget {
 class _HipHomeState extends State<HipHome> {
   int _tab = 0;
   final _startKey = GlobalKey();
+  final _assessKey = GlobalKey();
+  final _hipTileKey = GlobalKey();
+  int _tabDir = 1;
   HipStore get store => widget.store;
 
   void _selectTab(int i) {
     if (i == _tab) return;
-    setState(() => _tab = i);
+    setState(() {
+      _tabDir = i > _tab ? 1 : -1;
+      _tab = i;
+    });
   }
 
-  Future<void> _startPlan(TrainingPlan plan) async {
+  /// The player grows out of the 开始 button (container transform); from
+  /// the assessment result, which has already closed, it rises.
+  Future<void> _startPlan(TrainingPlan plan, {BuildContext? from}) async {
+    Widget page(BuildContext _) => HipPlayerPage(store: store, plan: plan);
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) => HipPlayerPage(store: store, plan: plan),
-      ),
+      from == null
+          ? HipRoute.rise<void>(page)
+          : HipRoute.expandFrom<void>(
+              from,
+              page,
+              radius: 52,
+              color: HipPalette.dark.jade,
+            ),
     );
   }
 
-  Future<void> _startAssessment() async {
+  /// The check grows out of whatever started it: the 开始自测 button or
+  /// the 我的髋部 tile.
+  Future<void> _startAssessment({
+    BuildContext? from,
+    double radius = 28,
+    Color? color,
+  }) async {
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) =>
-            HipAssessmentPage(store: store, onStartPlan: _startPlan),
+      HipRoute.expandFrom<void>(
+        from ?? _assessKey.currentContext,
+        (_) => HipAssessmentPage(store: store, onStartPlan: _startPlan),
+        radius: radius,
+        color: color ?? HipColors.jade,
       ),
     );
   }
@@ -549,12 +570,17 @@ class _HipHomeState extends State<HipHome> {
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
       bottom: false,
-      child: HipFadeSwitcher(
-        offset: .015,
+      child: HipTabSwitcher(
+        index: _tab,
+        direction: _tabDir,
         child: KeyedSubtree(
           key: ValueKey('tab-body-$_tab'),
           child: switch (_tab) {
-            1 => HipAssessmentIntro(store: store, onStart: _startAssessment),
+            1 => HipAssessmentIntro(
+              store: store,
+              startKey: _assessKey,
+              onStart: _startAssessment,
+            ),
             2 => HipProgressPage(store: store),
             _ => _today(),
           },
@@ -719,9 +745,14 @@ class _HipHomeState extends State<HipHome> {
               Expanded(
                 child: GestureDetector(
                   onTap: result == null
-                      ? _startAssessment
+                      ? () => _startAssessment(
+                          from: _hipTileKey.currentContext,
+                          radius: 22,
+                          color: HipColors.surface,
+                        )
                       : () => _selectTab(2),
                   child: HipPanel(
+                    key: _hipTileKey,
                     padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -875,7 +906,9 @@ class _HipHomeState extends State<HipHome> {
                 key: _startKey,
                 buttonKey: const ValueKey('start-today'),
                 stage: stage,
-                onTap: plan.steps.isEmpty ? null : () => _startPlan(plan),
+                onTap: plan.steps.isEmpty
+                    ? null
+                    : () => _startPlan(plan, from: _startKey.currentContext),
               ),
             ),
           ],
@@ -901,8 +934,8 @@ class _HipHomeState extends State<HipHome> {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => HipOnboarding(store: store, review: true),
+              HipRoute.push<void>(
+                (_) => HipOnboarding(store: store, review: true),
               ),
             ),
             child: const Text('重新选择安全提示'),
@@ -1097,6 +1130,7 @@ class HipProgressPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final result = store.latestResult;
     final reminder = store.reminder;
+    final tileKey = GlobalObjectKey(store);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
@@ -1210,6 +1244,7 @@ class HipProgressPage extends StatelessWidget {
                 ),
               ],
               ListTile(
+                key: tileKey,
                 contentPadding: const EdgeInsets.only(left: 34, right: 8),
                 title: const Text('2 分钟椅边放松'),
                 trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
@@ -1217,9 +1252,11 @@ class HipProgressPage extends StatelessWidget {
                   final plan = store.microPlan;
                   if (plan == null) return;
                   Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      fullscreenDialog: true,
-                      builder: (_) => HipPlayerPage(store: store, plan: plan),
+                    HipRoute.expandFrom<void>(
+                      tileKey.currentContext,
+                      (_) => HipPlayerPage(store: store, plan: plan),
+                      radius: 12,
+                      color: HipColors.surfaceHigh,
                     ),
                   );
                 },
@@ -1239,8 +1276,8 @@ class HipProgressPage extends StatelessWidget {
             title: const Text('重新看安全提示'),
             trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => HipOnboarding(store: store, review: true),
+              HipRoute.push<void>(
+                (_) => HipOnboarding(store: store, review: true),
               ),
             ),
           ),

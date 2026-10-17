@@ -45,9 +45,13 @@ class HipAssessmentIntro extends StatelessWidget {
     super.key,
     required this.store,
     required this.onStart,
+    this.startKey,
   });
   final HipStore store;
   final VoidCallback onStart;
+
+  /// On the start button, so the check can grow out of it.
+  final GlobalKey? startKey;
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +95,14 @@ class HipAssessmentIntro extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-          child: HipPrimaryButton(
-            key: const ValueKey('assessment-start'),
-            label: store.blocked ? '先问问医生再来' : '开始自测',
-            icon: HipGlyph.play,
-            onPressed: store.blocked ? null : onStart,
+          child: KeyedSubtree(
+            key: startKey,
+            child: HipPrimaryButton(
+              key: const ValueKey('assessment-start'),
+              label: store.blocked ? '先问问医生再来' : '开始自测',
+              icon: HipGlyph.play,
+              onPressed: store.blocked ? null : onStart,
+            ),
           ),
         ),
       ],
@@ -994,6 +1001,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
     final store = widget.store;
     final routine = await showModalBottomSheet<HipRoutine>(
       context: context,
+      sheetAnimationStyle: HipMotion.sheet,
       builder: (context) => SafeArea(
         child: ListView(
           shrinkWrap: true,

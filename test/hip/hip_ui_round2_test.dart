@@ -7,6 +7,7 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
+import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
@@ -246,5 +247,114 @@ void main() {
       find.descendant(of: row, matching: find.byType(HipThumb)),
     );
     expect(thumb.radius, panel.radius - panel.padding.left);
+  });
+
+  group('page transitions', () {
+    HipRoute<dynamic> topRoute(WidgetTester tester) {
+      HipRoute<dynamic>? top;
+      Navigator.of(tester.element(find.byType(Scaffold).last)).popUntil((r) {
+        top ??= r is HipRoute ? r : null;
+        return true;
+      });
+      return top!;
+    }
+
+    testWidgets('开始 grows the player out of the button; home sinks back', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      final button = tester.getRect(find.byKey(const ValueKey('start-today')));
+      await tester.tap(find.byKey(const ValueKey('start-today')));
+      await tester.pump();
+      await tester.pump(HipMotion.expand ~/ 4);
+      final route = topRoute(tester);
+      expect(route.transition, HipTransition.expand);
+      expect(route.origin!.center.dx, closeTo(button.center.dx, 2));
+      expect(route.transitionDuration, HipMotion.expand);
+      // The covered home answers (scale + dim), not a plain fade.
+      expect(find.byType(HipCoveredTransition), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('tabs slide toward the tapped side', (tester) async {
+      await pumpApp(tester);
+      double incomingDx() {
+        final slide = tester.widget<SlideTransition>(
+          find
+              .ancestor(
+                of: find.byKey(const ValueKey('tab-body-2')),
+                matching: find.byType(SlideTransition),
+              )
+              .first,
+        );
+        return slide.position.value.dx;
+      }
+
+      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(incomingDx(), greaterThan(0)); // from the right
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('tab-0')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 40));
+      final incoming = tester.widget<SlideTransition>(
+        find
+            .ancestor(
+              of: find.byKey(const ValueKey('tab-body-0')),
+              matching: find.byType(SlideTransition),
+            )
+            .first,
+      );
+      expect(incoming.position.value.dx, lessThan(0)); // from the left
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+      'drill-down pages push from the right and swipe back on iOS',
+      (tester) async {
+        await pumpApp(tester);
+        await tester.tap(find.byKey(const ValueKey('tab-2')));
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(find.text('重新看安全提示'), 200);
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('重新看安全提示'));
+        await tester.pump();
+        await tester.pump(HipMotion.page ~/ 3);
+        expect(find.byType(HipOnboarding), findsOneWidget);
+        final route =
+            ModalRoute.of(tester.element(find.byType(HipOnboarding)))!
+                as HipRoute;
+        expect(route.transition, HipTransition.push);
+        // Mid-flight the new page is still partly off to the right.
+        final slide = tester.widget<SlideTransition>(
+          find
+              .ancestor(
+                of: find.byType(HipOnboarding),
+                matching: find.byType(SlideTransition),
+              )
+              .first,
+        );
+        expect(slide.position.value.dx, greaterThan(0));
+        await tester.pumpAndSettle();
+        expect(find.byType(HipOnboarding), findsOneWidget);
+        // Edge swipe back.
+        final gesture = await tester.startGesture(const Offset(5, 400));
+        await gesture.moveBy(const Offset(20, 0));
+        await gesture.moveBy(const Offset(280, 0));
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(find.byType(HipOnboarding), findsNothing);
+        expect(
+          find.byKey(const ValueKey('appearance-settings')),
+          findsOneWidget,
+        );
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
   });
 }
