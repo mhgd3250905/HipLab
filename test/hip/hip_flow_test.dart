@@ -1,7 +1,9 @@
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -201,6 +203,73 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('player-stop-home')));
     await tester.pumpAndSettle();
     expect(find.text('现在还麻吗？'), findsOneWidget);
+  });
+
+  testWidgets('progress opens offline privacy policy and copies public URL', (
+    tester,
+  ) async {
+    String? copiedUrl;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedUrl = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      },
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      );
+    });
+    await pumpApp(
+      tester,
+      seed: (s) {
+        s.safety = {'pregnancy': false, 'surgery': false, 'acute': false};
+        s.identity = HipIdentity.office;
+      },
+    );
+    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await tester.pumpAndSettle();
+    final entry = find.byKey(const ValueKey('privacy-policy'));
+    await tester.scrollUntilVisible(
+      entry,
+      200,
+      scrollable: find.descendant(
+        of: find.byType(HipProgressPage),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.byType(HipPrivacyPage), findsOneWidget);
+    expect(find.text('开胯训练助手 HipLab'), findsOneWidget);
+    expect(find.textContaining('不收集、上传、出售'), findsOneWidget);
+
+    final copy = find.byKey(const ValueKey('copy-privacy-url'));
+    await tester.scrollUntilVisible(
+      copy,
+      400,
+      scrollable: find
+          .descendant(
+            of: find.byType(HipPrivacyPage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(copy);
+    await tester.pumpAndSettle();
+    await tester.tap(copy);
+    await tester.pumpAndSettle();
+    expect(copiedUrl, HipPrivacyPage.policyUrl);
+    expect(find.text('已复制隐私政策链接'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.byType(HipPrivacyPage), findsNothing);
   });
 
   testWidgets('progress tab: reminder switch persists (schedule recorded)', (
