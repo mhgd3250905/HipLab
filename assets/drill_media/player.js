@@ -37,7 +37,9 @@ function revealFirstFrame(generation) {
   if (generation !== frameGeneration || hasFrame || disposed || !active ||
       document.hidden || video.paused || video.readyState < 2) return;
   hasFrame = true;
-  video.classList.add('shown');
+  // The video already renders opaquely underneath Flutter's poster. Only
+  // the host fades that poster: starting a CSS fade here races the native
+  // compositor and can reveal an empty/dim frame between the two fades.
   frameRequest = rafRequest = null;
   emit('first-frame');
 }
@@ -140,10 +142,11 @@ window.__drillMediaSnapshot = () => ({id,active,disposed,hasFrame,mediaReady,pos
   error:video.error?.code || null});
 // HipLab clips are hip-<id> (lower case). Copied from 3D-Body@a83a0f4
 // app/assets/drill_media/player.js. HipLab changes: this id rule; and
-// (2026-10-17, round 1 #3) no `poster` attribute and the <video> stays
-// invisible until its first frame is composited – the Flutter host covers it
-// with the same poster – so Android's grey play/pause placeholder can never
-// show; object-fit/position and a theme variant folder come from the host.
+// (2026-10-17, round 1 #3) no `poster` attribute: the Flutter host covers the
+// video with its poster until a composited frame is available. The video
+// itself stays opaque, so the host is the only place that cross-fades.
+// Native media controls are suppressed by CSS. Object-fit/position and a
+// theme variant folder come from the host.
 // (2026-10-17, iOS) muted set as a property for WebKit autoplay, no PiP /
 // AirPlay / start-button overlay, and playback resumes after the page was
 // hidden (app background, screen lock) while the host still wants it.
