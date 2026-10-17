@@ -6,6 +6,8 @@
 - App 名：开胯训练助手（iOS `CFBundleName` 为 HipLab）
 - Flutter 3.47.x（Dart ^3.12.2），只支持 Android / iOS，只做中文、深色
 
+本地接手与验证记录见 [2026-10-17 接手基线](docs/project-takeover-2026-10-17.md)，包含实际测试结果、SDK 差异、已确认问题与后续顺序。
+
 ## 构建
 
 ```bash
