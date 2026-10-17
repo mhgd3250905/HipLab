@@ -284,13 +284,14 @@ def main():
     ap.add_argument('--label', default='')
     ap.add_argument('--lang', choices=['zh', 'en'], action='append',
                     help='audit one language (repeatable); default both')
+    ap.add_argument('--shard', default='1/1', help='I/N: audit every N-th clip (slow machines)')
     ap.add_argument('--merge', nargs='+', metavar='JSON',
                     help='only merge per-language --json outputs into one report')
     a = ap.parse_args()
     langs = tuple(a.lang or ('zh', 'en'))
     if a.merge:
         rows = [r for f in a.merge for r in json.loads(Path(f).read_text())['clips']]
-        return report(rows, a)
+        sys.exit(report(rows, a))
     base = Path(a.dir)
     m = json.loads((base / 'manifest.json').read_text())
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -303,7 +304,7 @@ def main():
             if a.raw:
                 jobs.append((text, m['voices'][lang], B.RATE[lang],
                              raw_path(text, m['voices'][lang], B.RATE[lang])))
-    if a.raw:
+    if a.raw and any(not j[3].exists() for j in jobs):
         env = {k: v for k, v in os.environ.items()
                if k.lower() not in ('http_proxy', 'https_proxy', 'all_proxy')}
         os.environ.clear()
@@ -320,21 +321,26 @@ def main():
                 continue
             raw = raw_path(text, m['voices'][lang], B.RATE[lang]) if a.raw else None
             work.append((path, text, lang, m['clips'][lang].get(key), raw))
+    si, sn = (int(v) for v in a.shard.split('/'))
+    work = work[si - 1::sn]
     with ThreadPoolExecutor(max(2, os.cpu_count() or 2)) as ex:
         rows += list(ex.map(lambda w: audit_clip(*w), work))
-    # set-wide check: speaking rate against the median of the language
-    for lang in langs:
-        rs = [r for r in rows if r['lang'] == lang and 's_per_unit' in r]
-        med = float(np.median([r['s_per_unit'] for r in rs if r['units'] >= 3]))
-        for r in rs:
-            if r['s_per_unit'] < RATE_MIN * med:
-                r['fails'].append(f"too short for its text ({r['s_per_unit']} s/syll vs median "
-                                  f'{med:.3f})')
-    report(rows, a)
+    sys.exit(report(rows, a))
 
 
 def report(rows, a):
     langs = sorted({r['lang'] for r in rows}, reverse=True)
+    # set-wide check: speaking rate against the median of the language
+    for lang in langs:
+        rs = [r for r in rows if r['lang'] == lang and 's_per_unit' in r]
+        if len(rs) < 20:
+            continue
+        med = float(np.median([r['s_per_unit'] for r in rs if r['units'] >= 3]))
+        for r in rs:
+            r['fails'] = [f for f in r['fails'] if not f.startswith('too short')]
+            if r['s_per_unit'] < RATE_MIN * med:
+                r['fails'].append(f"too short for its text ({r['s_per_unit']} s/syll vs median "
+                                  f'{med:.3f})')
     bad = [r for r in rows if r['fails']]
     summary = {'label': a.label, 'clips': len(rows), 'failing': len(bad),
                'by_lang': {lang: sum(1 for r in bad if r['lang'] == lang) for lang in langs}}
@@ -364,7 +370,7 @@ def report(rows, a):
                      f"{r.get('speech_ms', '')} | {r.get('raw_speech_ms', '')} | {r.get('tail_ms', '')} | "
                      f"{r.get('lufs', '')} | {r.get('true_peak', '')} | {'; '.join(r['fails'])} |")
         Path(a.md).write_text('\n'.join(L) + '\n')
-    sys.exit(1 if bad else 0)
+    return 1 if bad else 0
 
 
 if __name__ == '__main__':
