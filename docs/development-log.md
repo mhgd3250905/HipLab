@@ -16,6 +16,7 @@
 | 2026-10-17 / 用户验收 | 用户在 Android 0.1.2+3 更新后确认“测试通过了”；已将反馈记入当前状态、版本与验证台账，版本号和已安装 APK 保持 | 本聊天用户反馈；本轮仅台账更新 |
 | 2026-10-17 / 第一轮修改 | 按用户 14 条问题在 `feat/polish-round1` 完成 1/2/3/4/5/7/9(UI)/11/12/13/14 与 D-01；收尾修掉 360 宽 × 字号 1.5 首页卡溢出，iOS 加后台音频，Android 选屏幕常亮（前台服务列 D-10 待办）；决定保留 15 秒语音休息，5 分钟套 A 显示 6 分钟待确认（D-12）；analyze 无问题、82 项测试通过；媒体问题 6/8/10 在 `fix/motion-media` | [验证台账](verification.md)末节、[事项台账](development-roadmap.md) D-01/D-10/D-12；PR 见 GitHub |
 | 2026-10-17 / iOS 版本 | 给第一轮两个 PR 打 tag（`round1-app-v1`、`round1-media-v1`），从 #7 切 `feat/ios` 并合入 #8（无冲突）；完成 iOS 工程身份（中英显示名、仅 iPhone 竖屏、zh-Hans 开发区域）、同源站姿开髋 AppIcon 与跟随系统启动页、playback + 按句 ducking + 来电/Siri/拔耳机自动暂停、WKWebView 示范锁屏回来继续、安全区测试与截图；决定沿用 SwiftPM（不加 Podfile）、保留 WebView 不换 video_player、仅支持 iPhone；analyze 无问题、104 项测试通过，未在 Mac 构建或真机验证 | [iOS 说明](ios-setup-and-release.md)、[验证台账](verification.md)末节、D-07/D-13；tag `ios-v0.1`–`ios-v0.6`，PR #9 |
+| 2026-10-18 / 第二轮 UI 打磨 | 按用户截图反馈在 `feat/polish-round2`（基于 `feat/ios` `313b484`）完成：统一分段控件（内嵌轨道 + 同心圆角滑块、弹性滑动、无描边选中）；自绘 32 个图标替换全部 Material 图标（24 栅格、1.75 笔画、描边/填充两态），开始按钮与倒计时环重做（0% 不再画灰点）；缩略图去掉双层边框改同心圆角裁切；按方位的页面过渡（容器展开 / 右推 / 上升 / Tab 按索引滑动，被覆盖页反向视差缩放变暗，iOS 左缘右滑返回保留）与共享元素 Hero；顺手统一自测选项卡选中态。决定：不加动画依赖，自研 `HipRoute`；截图测试渲染器画不出阴影模糊，截图时用 `HipColors.flatShadows` 关掉阴影。analyze 无问题、116 项测试通过；未在真机看动画流畅度与 iOS 返回手势 | [验证台账](verification.md)末节、[对比图](images/polish-round2/compare.jpg)、D-14；PR 见 GitHub |
 
 ## 后续检查点模板
 
