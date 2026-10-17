@@ -26,8 +26,142 @@ class HipMediaPolicy extends InheritedWidget {
       old.videoEnabled != videoEnabled;
 }
 
-/// A drill's picture: looping video when one exists in the repo, a rendered
-/// still (prototype art) when one exists, otherwise a "待渲染" placeholder.
+/// Theme-matched drill media (#14). The bundled clips are rendered on the
+/// dark `#101013` stage. When light-stage versions are bundled as
+/// `assets/drill_media/light/hip-<id>.{jpg,mp4}` they are used in the light
+/// theme automatically; until then both themes show the dark stage, framed
+/// as a media tile.
+abstract final class HipMediaVariants {
+  /// Asset keys present in the bundle (filled once at startup).
+  static Set<String> assets = const {};
+
+  static String? lightPoster(String? poster) {
+    if (poster == null || !poster.startsWith('assets/drill_media/')) {
+      return null;
+    }
+    final light = poster.replaceFirst(
+      'assets/drill_media/',
+      'assets/drill_media/light/',
+    );
+    return assets.contains(light) ? light : null;
+  }
+
+  static bool hasLightVideo(String? video) =>
+      video != null &&
+      assets.contains(
+        video.replaceFirst('assets/drill_media/', 'assets/drill_media/light/'),
+      );
+}
+
+/// A rounded media box whose border is painted *over* the clipped content,
+/// so neither the picture nor a badge can hide the stroke or the corners
+/// (#1). Use for every picture / video area.
+class HipMediaFrame extends StatelessWidget {
+  const HipMediaFrame({
+    super.key,
+    required this.child,
+    this.radius = 22,
+    this.borderColor,
+    this.borderWidth = 1,
+    this.color,
+    this.shadow,
+    this.overlays = const [],
+  });
+  final Widget child;
+  final double radius;
+  final Color? borderColor;
+  final double borderWidth;
+  final Color? color;
+  final List<BoxShadow>? shadow;
+
+  /// Laid out inside the border (badges, pills); never on top of the stroke.
+  final List<Widget> overlays;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = BorderRadius.circular(radius);
+    return AnimatedContainer(
+      duration: HipMotion.fast,
+      curve: HipMotion.curve,
+      decoration: BoxDecoration(
+        color: color ?? HipColors.mediaBackdrop,
+        borderRadius: r,
+        boxShadow: shadow,
+      ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: r,
+        border: Border.all(
+          color: borderColor ?? HipColors.line,
+          width: borderWidth,
+          strokeAlign: BorderSide.strokeAlignInside,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: r,
+        child: overlays.isEmpty
+            ? child
+            : Stack(fit: StackFit.expand, children: [child, ...overlays]),
+      ),
+    );
+  }
+}
+
+/// Shows the [focus] part of a square still (fractions of the image) filling
+/// the box with a small margin, so thumbnails of different poses are framed
+/// alike (#2): same subject size, centred, no stray backdrop strips.
+class HipFocusImage extends StatelessWidget {
+  const HipFocusImage({
+    super.key,
+    required this.asset,
+    required this.focus,
+    this.margin = .1,
+    this.aspect = 1,
+  });
+  final String asset;
+  final Rect focus;
+  final double margin;
+
+  /// Width / height of the source image.
+  final double aspect;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, c) {
+      final w = c.maxWidth, h = c.maxHeight;
+      // Displayed image size so that the focus rect fits with the margin.
+      final fw = focus.width * aspect, fh = focus.height;
+      final scale = math.min(w / fw, h / fh) * (1 - margin * 2);
+      final imgH = scale, imgW = scale * aspect;
+      final cx = focus.center.dx * imgW, cy = focus.center.dy * imgH;
+      var left = w / 2 - cx, top = h / 2 - cy;
+      // Never reveal an edge of the picture (centre it if it is smaller).
+      left = imgW < w ? (w - imgW) / 2 : left.clamp(w - imgW, 0.0).toDouble();
+      top = imgH < h ? (h - imgH) / 2 : top.clamp(h - imgH, 0.0).toDouble();
+      return ClipRect(
+        child: Stack(
+          children: [
+            Positioned(
+              left: left,
+              top: top,
+              width: imgW,
+              height: imgH,
+              child: Image.asset(
+                asset,
+                fit: BoxFit.fill,
+                gaplessPlayback: true,
+                errorBuilder: (_, _, _) => const HipPendingArt(),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// A drill's picture: its poster at once, the looping clip faded in over it
+/// only after the clip's first frame is on screen (#3/#12) — no black box,
+/// no native play/pause placeholder, no jump between poster and video.
 class HipDrillArt extends StatefulWidget {
   const HipDrillArt({
     super.key,
@@ -36,12 +170,19 @@ class HipDrillArt extends StatefulWidget {
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
     this.alignment = Alignment.center,
+    this.mirror = false,
   });
   final HipDrill drill;
+
+  /// Loop the clip (when the drill has one and video is enabled). Turning
+  /// this off pauses on the current frame instead of tearing the view down.
   final bool play;
   final BoxFit fit;
   final bool showPendingLabel;
   final Alignment alignment;
+
+  /// Flip horizontally (the other side of a sided move).
+  final bool mirror;
 
   @override
   State<HipDrillArt> createState() => _HipDrillArtState();
@@ -50,9 +191,9 @@ class HipDrillArt extends StatefulWidget {
 class _HipDrillArtState extends State<HipDrillArt> {
   DrillMediaController? _controller;
   DrillMedia? _media;
+  bool _shown = false;
 
-  bool _wantsVideo(BuildContext context) =>
-      widget.play &&
+  bool _videoAllowed(BuildContext context) =>
       widget.drill.mediaStatus == HipMediaStatus.video &&
       HipMediaPolicy.of(context);
 
@@ -65,12 +206,25 @@ class _HipDrillArtState extends State<HipDrillArt> {
   @override
   void didUpdateWidget(HipDrillArt old) {
     super.didUpdateWidget(old);
-    if (old.drill.id != widget.drill.id || old.play != widget.play) {
-      _controller?.dispose();
-      _controller = null;
-      _media = null;
+    if (old.drill.id != widget.drill.id) {
+      _teardown();
       _sync();
+    } else if (old.play != widget.play) {
+      _sync();
+      final c = _controller;
+      if (c != null) {
+        if (widget.play && !c.wantsPlay) c.toggle();
+        if (!widget.play && c.wantsPlay) c.pause();
+      }
     }
+  }
+
+  void _teardown() {
+    _controller?.removeListener(_onMedia);
+    _controller?.dispose();
+    _controller = null;
+    _media = null;
+    _shown = false;
   }
 
   /// Every clip (`assets/drill_media/hip-<id>.mp4`) carries its loop length in
@@ -78,7 +232,9 @@ class _HipDrillArtState extends State<HipDrillArt> {
   static DrillMedia? _ownMedia(HipDrill d) {
     final video = d.video, poster = d.poster, seconds = d.duration;
     if (video == null || poster == null || seconds == null) return null;
-    final m = RegExp(r'^assets/drill_media/(hip-[a-z0-9]+(?:-[a-z0-9]+)*)\.mp4$').firstMatch(video);
+    final m = RegExp(
+      r'^assets/drill_media/(hip-[a-z0-9]+(?:-[a-z0-9]+)*)\.mp4$',
+    ).firstMatch(video);
     if (m == null || poster != 'assets/drill_media/${m[1]}.jpg') return null;
     return DrillMedia(
       id: m[1]!,
@@ -90,55 +246,111 @@ class _HipDrillArtState extends State<HipDrillArt> {
   }
 
   void _sync() {
-    if (!_wantsVideo(context) || _controller != null) return;
+    // The web view is created once the clip should play and then kept: a
+    // pause keeps the frame, so resuming never flashes.
+    if (!widget.play || !_videoAllowed(context) || _controller != null) return;
     final own = _ownMedia(widget.drill);
     if (own == null) return;
-    final controller = _controller = DrillMediaController();
+    final controller = _controller = DrillMediaController()
+      ..addListener(_onMedia);
     _media = own;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _controller == controller) controller.toggle();
+      if (mounted && _controller == controller && widget.play) {
+        controller.toggle();
+      }
     });
+  }
+
+  void _onMedia() {
+    final c = _controller;
+    if (c == null || !mounted) return;
+    final shown = c.hasFrame && !c.failed;
+    if (shown != _shown) setState(() => _shown = shown);
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _teardown();
     super.dispose();
   }
 
+  String? get _poster =>
+      (HipColors.isDark
+          ? null
+          : HipMediaVariants.lightPoster(widget.drill.poster)) ??
+      widget.drill.poster;
+
   @override
   Widget build(BuildContext context) {
-    final d = widget.drill;
-    final poster = d.poster;
-    final still = poster == null
+    final poster = _poster;
+    Widget still = poster == null
         ? HipPendingArt(label: widget.showPendingLabel ? '动画待渲染' : null)
         : Image.asset(
             poster,
             fit: widget.fit,
             alignment: widget.alignment,
+            gaplessPlayback: true,
+            frameBuilder: (context, child, frame, sync) => sync
+                ? child
+                : AnimatedOpacity(
+                    opacity: frame == null ? 0 : 1,
+                    duration: HipMotion.fast,
+                    child: child,
+                  ),
             errorBuilder: (_, _, _) => const HipPendingArt(label: '动画待渲染'),
           );
     final media = _media;
     final controller = _controller;
-    if (media == null || controller == null) return still;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        still,
-        DrillMediaPlatformView(
-          key: ValueKey(d.id),
-          media: media,
-          controller: controller,
-          labels: const {
-            'title': '动作示范',
-            'play': '播放',
-            'pause': '暂停',
-            'error': '示范加载失败',
-            'disabled': '示范已暂停',
-          },
-        ),
-      ],
-    );
+    Widget out;
+    if (media == null || controller == null) {
+      out = still;
+    } else {
+      out = Stack(
+        fit: StackFit.expand,
+        children: [
+          DrillMediaPlatformView(
+            key: ValueKey(widget.drill.id),
+            media: media,
+            controller: controller,
+            fit: widget.fit == BoxFit.contain ? 'contain' : 'cover',
+            align: widget.alignment,
+            variant:
+                !HipColors.isDark &&
+                    HipMediaVariants.hasLightVideo(widget.drill.video)
+                ? 'light'
+                : null,
+            labels: const {
+              'title': '动作示范',
+              'play': '播放',
+              'pause': '暂停',
+              'error': '示范加载失败',
+              'disabled': '示范已暂停',
+            },
+          ),
+          // The poster stays on top until the clip has a frame, then fades.
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _shown ? 0 : 1,
+              duration: HipMotion.medium,
+              curve: Curves.easeOut,
+              child: still,
+            ),
+          ),
+        ],
+      );
+    }
+    if (widget.mirror) {
+      out = Transform.flip(flipX: true, child: out);
+    }
+    return ColoredBox(color: HipColors.mediaBackdrop, child: out);
+  }
+}
+
+/// Warms the image cache for the posters a screen is about to show (the next
+/// drill, the next assessment item) so they appear on the first frame.
+void hipPrecache(BuildContext context, Iterable<String?> assets) {
+  for (final a in assets) {
+    if (a != null) precacheImage(AssetImage(a), context).ignore();
   }
 }
 
@@ -148,11 +360,14 @@ class HipPendingArt extends StatelessWidget {
   final String? label;
   @override
   Widget build(BuildContext context) => DecoratedBox(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       gradient: RadialGradient(
-        center: Alignment(0, -.1),
+        center: const Alignment(0, -.1),
         radius: .9,
-        colors: [Color(0xff1d2a27), HipColors.surface],
+        colors: [
+          Color.lerp(HipColors.surface, HipColors.jade, .1)!,
+          HipColors.surface,
+        ],
       ),
     ),
     child: LayoutBuilder(
@@ -170,18 +385,144 @@ class HipPendingArt extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: HipColors.background.withValues(alpha: .6),
+                  color: HipColors.scrim,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   label!,
-                  style: const TextStyle(fontSize: 11, color: HipColors.muted),
+                  style: TextStyle(fontSize: 11, color: HipColors.muted),
                 ),
               ),
             ),
         ],
       ),
     ),
+  );
+}
+
+/// One row: back/close button, the page title in the same row, an optional
+/// trailing widget (#7). Every page with a close or back button uses it.
+class HipTopBar extends StatelessWidget {
+  const HipTopBar({
+    super.key,
+    this.title,
+    this.subtitle,
+    this.center,
+    this.trailing,
+    this.onClose,
+    this.icon = Icons.close_rounded,
+    this.tooltip = '关闭',
+  });
+  final String? title;
+  final String? subtitle;
+
+  /// Centred content instead of a title (e.g. progress dots).
+  final Widget? center;
+  final Widget? trailing;
+  final VoidCallback? onClose;
+  final IconData icon;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Row(
+        children: [
+          HipCircleButton(
+            icon: icon,
+            tooltip: tooltip,
+            onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child:
+                center ??
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          color: HipColors.jade,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    if (title != null)
+                      Text(
+                        title!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          height: 1.25,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                  ],
+                ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 44,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: trailing ?? const SizedBox(),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Cross-fade with a short rise; the standard step / state transition (#12).
+class HipFadeSwitcher extends StatelessWidget {
+  const HipFadeSwitcher({
+    super.key,
+    required this.child,
+    this.duration = HipMotion.medium,
+    this.offset = .03,
+    this.alignment = Alignment.topCenter,
+    this.expand = false,
+  });
+  final Widget child;
+  final Duration duration;
+  final double offset;
+  final AlignmentGeometry alignment;
+
+  /// Fill the parent (media areas); otherwise size to the child.
+  final bool expand;
+
+  @override
+  Widget build(BuildContext context) => AnimatedSwitcher(
+    duration: duration,
+    switchInCurve: HipMotion.curve,
+    switchOutCurve: Curves.easeIn,
+    layoutBuilder: (current, previous) => Stack(
+      alignment: alignment,
+      fit: expand ? StackFit.expand : StackFit.loose,
+      children: [...previous, ?current],
+    ),
+    transitionBuilder: (child, animation) => FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween(
+          begin: Offset(0, offset),
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
+      ),
+    ),
+    child: child,
   );
 }
 
@@ -226,7 +567,14 @@ class HipRadar extends StatelessWidget {
           children: [
             Positioned.fill(
               child: CustomPaint(
-                painter: _RadarPainter(values, highlight, warn, r, compact),
+                painter: _RadarPainter(
+                  values,
+                  highlight,
+                  warn,
+                  r,
+                  compact,
+                  HipColors.palette,
+                ),
               ),
             ),
             for (var i = 0; i < order.length; i++)
@@ -267,12 +615,20 @@ class HipRadar extends StatelessWidget {
 }
 
 class _RadarPainter extends CustomPainter {
-  _RadarPainter(this.values, this.highlight, this.warn, this.r, this.compact);
+  _RadarPainter(
+    this.values,
+    this.highlight,
+    this.warn,
+    this.r,
+    this.compact,
+    this.p,
+  );
   final Map<HipDirection, double> values;
   final Set<HipDirection> highlight;
   final Set<HipDirection> warn;
   final double r;
   final bool compact;
+  final HipPalette p;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -284,7 +640,7 @@ class _RadarPainter extends CustomPainter {
 
     final grid = Paint()
       ..style = PaintingStyle.stroke
-      ..color = HipColors.line
+      ..color = p.line
       ..strokeWidth = compact ? .8 : 1;
     for (final f in [.25, .5, .75, 1.0]) {
       canvas.drawPath(
@@ -302,7 +658,7 @@ class _RadarPainter extends CustomPainter {
     final shape = Path()..addPolygon(pts, true);
     canvas.drawPath(
       shape,
-      Paint()..color = HipColors.jade.withValues(alpha: .18),
+      Paint()..color = p.jade.withValues(alpha: p.isDark ? .18 : .14),
     );
     canvas.drawPath(
       shape,
@@ -310,22 +666,25 @@ class _RadarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = compact ? 1.4 : 2.2
         ..strokeJoin = StrokeJoin.round
-        ..color = HipColors.jade,
+        ..color = p.jade,
     );
     for (var i = 0; i < 6; i++) {
       final d = HipRadar.order[i];
       final color = warn.contains(d)
-          ? HipColors.pain
+          ? p.pain
           : highlight.contains(d)
-          ? HipColors.tight
-          : HipColors.jade;
+          ? p.tight
+          : p.jade;
       canvas.drawCircle(pts[i], compact ? 2.4 : 4.5, Paint()..color = color);
     }
   }
 
   @override
   bool shouldRepaint(_RadarPainter old) =>
-      old.values != values || old.highlight != highlight;
+      old.values != values ||
+      old.highlight != highlight ||
+      old.warn != warn ||
+      old.p != p;
 }
 
 /// Countdown ring used by the player and assessment timers.
@@ -336,27 +695,39 @@ class HipCountdownRing extends StatelessWidget {
     required this.label,
     this.caption,
     this.size = 150,
+    this.color,
   });
   final double progress;
   final String label;
   final String? caption;
   final double size;
+  final Color? color;
   @override
   Widget build(BuildContext context) => SizedBox.square(
     dimension: size,
     child: CustomPaint(
-      painter: _RingPainter(progress.clamp(0, 1)),
+      painter: _RingPainter(
+        progress.clamp(0, 1),
+        HipColors.surfaceHigh,
+        color ?? HipColors.jade,
+      ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: size * .36,
-                fontWeight: FontWeight.w700,
-                height: 1,
-                fontFeatures: const [FontFeature.tabularFigures()],
+            AnimatedSwitcher(
+              duration: HipMotion.fast,
+              transitionBuilder: (child, a) =>
+                  FadeTransition(opacity: a, child: child),
+              child: Text(
+                label,
+                key: ValueKey(label),
+                style: TextStyle(
+                  fontSize: size * .36,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
             if (caption != null)
@@ -372,8 +743,10 @@ class HipCountdownRing extends StatelessWidget {
 }
 
 class _RingPainter extends CustomPainter {
-  _RingPainter(this.progress);
+  _RingPainter(this.progress, this.track, this.color);
   final double progress;
+  final Color track;
+  final Color color;
   @override
   void paint(Canvas canvas, Size size) {
     final stroke = size.width * .065;
@@ -386,7 +759,7 @@ class _RingPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
-        ..color = HipColors.surfaceHigh,
+        ..color = track,
     );
     canvas.drawArc(
       rect,
@@ -397,12 +770,13 @@ class _RingPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.round
-        ..color = HipColors.jade,
+        ..color = color,
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.progress != progress;
+  bool shouldRepaint(_RingPainter old) =>
+      old.progress != progress || old.track != track || old.color != color;
 }
 
 class HipPrimaryButton extends StatelessWidget {
@@ -421,14 +795,17 @@ class HipPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
     height: 56,
-    child: DecoratedBox(
+    child: AnimatedContainer(
+      duration: HipMotion.fast,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         boxShadow: onPressed == null
             ? null
             : [
                 BoxShadow(
-                  color: HipColors.jade.withValues(alpha: .28),
+                  color: HipColors.jade.withValues(
+                    alpha: HipColors.isDark ? .28 : .22,
+                  ),
                   blurRadius: 24,
                   offset: const Offset(0, 6),
                 ),
@@ -438,8 +815,9 @@ class HipPrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: HipColors.jade,
-          foregroundColor: const Color(0xff07261d),
+          foregroundColor: HipColors.onJade,
           disabledBackgroundColor: HipColors.surfaceHigh,
+          disabledForegroundColor: HipColors.faint,
           shape: const StadiumBorder(),
           textStyle: const TextStyle(
             fontFamily: hipFontFamily,
@@ -447,21 +825,51 @@ class HipPrimaryButton extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 22),
-              const SizedBox(width: 6),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 22),
+                const SizedBox(width: 6),
+              ],
+              Text(label),
+              if (trailing != null) ...[
+                const SizedBox(width: 6),
+                Icon(trailing, size: 22),
+              ],
             ],
-            Text(label),
-            if (trailing != null) ...[
-              const SizedBox(width: 6),
-              Icon(trailing, size: 22),
-            ],
-          ],
+          ),
         ),
       ),
+    ),
+  );
+}
+
+/// Stadium outline button paired with [HipPrimaryButton].
+class HipSecondaryButton extends StatelessWidget {
+  const HipSecondaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+  final String label;
+  final VoidCallback? onPressed;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 56,
+    width: double.infinity,
+    child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: HipColors.text,
+        backgroundColor: HipColors.surface,
+        side: BorderSide(color: HipColors.line),
+        shape: const StadiumBorder(),
+        textStyle: const TextStyle(fontFamily: hipFontFamily, fontSize: 18),
+      ),
+      child: Text(label),
     ),
   );
 }
@@ -503,19 +911,27 @@ class HipPanel extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
+    this.radius = 22,
   });
   final Widget child;
   final EdgeInsets padding;
   final Color? borderColor;
+  final double radius;
   @override
-  Widget build(BuildContext context) => Material(
-    color: HipColors.surface,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(22),
-      side: BorderSide(color: borderColor ?? HipColors.line),
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(radius),
+      boxShadow: HipColors.cardShadow,
     ),
-    clipBehavior: Clip.antiAlias,
-    child: Padding(padding: padding, child: child),
+    child: Material(
+      color: HipColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+        side: BorderSide(color: borderColor ?? HipColors.line),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(padding: padding, child: child),
+    ),
   );
 }
 

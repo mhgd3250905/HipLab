@@ -230,6 +230,8 @@ class AssessmentItem {
     this.followUp = const [],
     this.dancerNote,
     this.demoMedia,
+    this.aka,
+    this.area = '',
   });
   final String id;
   final int order;
@@ -246,6 +248,13 @@ class AssessmentItem {
   final String? followUpQuestion;
   final List<AssessmentFollowUpOption> followUp;
   final String? dancerNote;
+
+  /// Clinical / alternative name shown under the plain title (屈髋肌测试 →
+  /// "又称托马斯测试（Thomas test）…").
+  final String? aka;
+
+  /// Body area the item looks at (content key `glow`), e.g. 髋前侧.
+  final String area;
 
   /// Optional demo clip of its own (e.g. the cross-over part of
   /// n-leg-circles); otherwise the demo is [demoDrill]'s loop.
@@ -291,9 +300,13 @@ class AssessmentItem {
             ),
       ],
       dancerNote: j['note_for_dancer'] as String?,
+      aka: j['aka'] as String?,
+      area: j['glow'] as String? ?? '',
       demoMedia: j['demo_media'] == null
           ? null
-          : HipDrill.fromJson(Map<String, dynamic>.from(j['demo_media'] as Map)),
+          : HipDrill.fromJson(
+              Map<String, dynamic>.from(j['demo_media'] as Map),
+            ),
     );
   }
 }

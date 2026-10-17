@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
+import '../../core/platform/screen_awake.dart';
 import 'package:flutter/material.dart';
 
 import '../control/hip_store.dart';
@@ -7,13 +9,41 @@ import '../domain/hip_assessment.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_session.dart';
+import '../voice/hip_voice.dart';
+import '../voice/session_engine.dart';
+import '../voice/session_script.dart';
+import '../voice/voice_queue.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
-enum _Phase { work, transition, done, stopped }
+/// Active (pause-excluded) seconds since the session started, from the wall
+/// clock – never from counting timer ticks (#13: robust to dropped frames
+/// and throttled timers).
+class _ActiveClock {
+  final DateTime _start = clock.now();
+  Duration _pausedTotal = Duration.zero;
+  DateTime? _pausedAt;
 
-/// Full-screen follow-along player: animation, countdown ring, side switch,
-/// pause / skip, one subtitle line, no arrows. Pain walks the ladder.
+  bool get paused => _pausedAt != null;
+
+  double get t {
+    final now = _pausedAt ?? clock.now();
+    return (now.difference(_start) - _pausedTotal).inMicroseconds / 1e6;
+  }
+
+  void pause() => _pausedAt ??= clock.now();
+
+  void resume() {
+    final at = _pausedAt;
+    if (at == null) return;
+    _pausedTotal += clock.now().difference(at);
+    _pausedAt = null;
+  }
+}
+
+/// Full-screen follow-along player: the drill, a countdown ring, side
+/// switch, pause / skip, one subtitle line and full voice coaching.
+/// Pain walks the ladder.
 class HipPlayerPage extends StatefulWidget {
   const HipPlayerPage({super.key, required this.store, required this.plan});
   final HipStore store;
@@ -23,98 +53,138 @@ class HipPlayerPage extends StatefulWidget {
 }
 
 class _HipPlayerPageState extends State<HipPlayerPage> {
-  late final List<PlanStep> _steps = [...widget.plan.steps];
   late final SessionPainLadder _ladder = SessionPainLadder(
     widget.store.content,
   );
-  int _index = 0;
-  late int _total = _steps.first.seconds;
-  late int _left = _total;
-  int _transitionLeft = 0;
-  bool _paused = false;
-  _Phase _phase = _Phase.work;
+  final _clock = _ActiveClock();
+  late HipVoice _voice;
+  late VoiceQueue _queue;
+  late SessionEngine _engine;
+  bool _ready = false;
+  bool _stopped = false;
+  bool _finished = false;
   String? _ladderCue;
-  int _completed = 0;
+  String? _subtitle;
   Timer? _ticker;
-
-  PlanStep get _step => _steps[_index];
-  PlanStep? get _next => _index + 1 < _steps.length ? _steps[_index + 1] : null;
+  int _shownSecond = -1;
+  SessionPhase? _shownPhase;
 
   @override
-  void initState() {
-    super.initState();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_ready) return;
+    _ready = true;
+    _voice = HipVoice.of(context);
+    _queue = _voice.queue();
+    _engine = SessionEngine(
+      script: _voice.script(
+        routineIds: [for (final r in widget.plan.routines) r.id],
+        restSeconds: widget.plan.transitionSeconds,
+      ),
+      steps: widget.plan.steps,
+    );
+    if (_voice.settings.voice || _voice.settings.chimes) {
+      unawaited(_voice.output.begin());
+    }
+    ScreenAwake.acquire();
+    _ticker = Timer.periodic(const Duration(milliseconds: 100), (_) => _tick());
+    _tick();
   }
 
   @override
   void dispose() {
+    if (_ready) ScreenAwake.release();
     _ticker?.cancel();
+    _queue.cancelAll(_clock.t);
+    unawaited(_voice.output.end());
     super.dispose();
   }
 
+  List<PlanStep> get _steps => _engine.steps;
+  SessionPhase get _phase => _engine.phase;
+  PlanStep get _step => _steps[_engine.stepIndex];
+  PlanStep? get _next {
+    final i = _phase.isWork || _phase.kind == PhaseKind.switchSide
+        ? _phase.step + 1
+        : _phase.step;
+    return i < _steps.length && i > _phase.step ? _steps[i] : null;
+  }
+
+  bool get _paused => _clock.paused;
+
   void _tick() {
-    if (_paused || !mounted) return;
-    setState(() {
-      switch (_phase) {
-        case _Phase.work:
-          _left--;
-          if (_left <= 0) _finishStep();
-        case _Phase.transition:
-          _transitionLeft--;
-          if (_transitionLeft <= 0) _startStep(_index + 1);
-        case _Phase.done || _Phase.stopped:
-          break;
+    if (!mounted || _paused || _stopped) return;
+    final t = _clock.t;
+    for (final f in _engine.update(t)) {
+      _queue.submit(f.cue, t);
+      final sub = f.cue.subtitle;
+      if (sub != null) _subtitle = sub;
+    }
+    _queue.tick(t);
+    if (!identical(_engine.phase, _shownPhase)) {
+      if (_engine.phase.step != _shownPhase?.step) {
+        // A new drill: drop the previous drill's ladder note / tip line.
+        _ladderCue = null;
+        _subtitle = null;
       }
-    });
-  }
-
-  void _finishStep() {
-    _completed++;
-    if (_next == null) {
-      _phase = _Phase.done;
-      widget.store.completeSession(_ladder);
-      return;
+      _precacheNext();
     }
-    _phase = _Phase.transition;
-    _transitionLeft = widget.plan.transitionSeconds;
-  }
-
-  void _startStep(int i, {int? seconds}) {
-    if (i >= _steps.length) {
-      _phase = _Phase.done;
-      widget.store.completeSession(_ladder);
-      return;
+    if (_engine.done && !_stopped) _complete();
+    final second = _engine.secondsLeft(t);
+    if (second != _shownSecond || !identical(_engine.phase, _shownPhase)) {
+      setState(() {
+        _shownSecond = second;
+        _shownPhase = _engine.phase;
+      });
     }
-    _index = i;
-    _total = seconds ?? _steps[i].seconds;
-    _left = _total;
-    _phase = _Phase.work;
-    if (seconds == null) _ladderCue = null;
   }
 
-  void _skip() => setState(() {
-    if (_phase == _Phase.transition) {
-      _startStep(_index + 1);
+  void _precacheNext() {
+    final i = _phase.step + 1;
+    if (i >= _steps.length) return;
+    hipPrecache(context, [_steps[i].drill.poster]);
+  }
+
+  void _complete() {
+    if (_finished) return;
+    _finished = true;
+    widget.store.completeSession(_ladder);
+  }
+
+  void _togglePause() {
+    final t = _clock.t;
+    if (_paused) {
+      _clock.resume();
+      _queue.submit(
+        const VoiceCue(0, ['p.resume'], CuePriority.call),
+        _clock.t,
+      );
     } else {
-      _finishStep();
+      _queue.cancelAll(t);
+      _queue.submit(const VoiceCue(0, ['p.paused'], CuePriority.call), t);
+      _clock.pause();
     }
-  });
-
-  /// Side for sided drills: right first, then left (成套训练 编排规则 2).
-  HipSide? get _side {
-    if (!_step.sided || _phase != _Phase.work) return null;
-    return _left > _total / 2 ? HipSide.right : HipSide.left;
+    setState(() {});
   }
 
-  int get _secondsToSwitch => (_left - (_total / 2).floor()).clamp(0, _total);
+  void _skip() {
+    final t = _clock.t;
+    _queue.cancelAll(t);
+    _engine.skip(t);
+    _subtitle = null;
+    _tick();
+    setState(() {});
+  }
 
   String get _cue {
     if (_ladderCue != null) return _ladderCue!;
-    if (_step.extraSide != null) {
-      return '${_step.extraSide == HipSide.right ? '右' : '左'}边多做一组';
+    if (_subtitle != null) return _subtitle!;
+    final s = _step;
+    if (s.extraSide != null) {
+      return '${s.extraSide == HipSide.right ? '右' : '左'}边多做一组';
     }
-    if (_step.tip.isNotEmpty) return _step.tip;
-    final m = _step.drill.methods.first;
+    if (s.tip.isNotEmpty) return s.tip;
+    final m = s.drill.methods.first;
     return switch (m) {
       HipMethod.relax => '慢慢呼吸，放松',
       HipMethod.flexibility => '呼气，再沉一点',
@@ -125,13 +195,14 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
 
   Future<void> _pain({required bool afterStep}) async {
     final wasPaused = _paused;
-    setState(() => _paused = true);
+    _queue.cancelAll(_clock.t);
+    _clock.pause();
+    setState(() {});
     final kind = await showModalBottomSheet<PainKind>(
       context: context,
-      backgroundColor: HipColors.surface,
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -172,71 +243,83 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
     if (!mounted) return;
     if (kind == null) {
-      setState(() => _paused = wasPaused);
+      if (!wasPaused) _clock.resume();
+      setState(() {});
       return;
     }
-    final target = afterStep ? _steps[_index] : _step;
+    final current = _phase.step.clamp(0, _steps.length - 1);
+    final targetIndex = afterStep ? current - 1 : current;
+    final target = _steps[targetIndex.clamp(0, _steps.length - 1)];
     final action = _ladder.report(
       target.drill.id,
       kind,
       alternative: target.alternative,
     );
+    _clock.resume();
+    final t = _clock.t;
     setState(() {
-      _paused = false;
       _ladderCue = action.cue;
-      _apply(action, target, afterStep: afterStep);
+      _apply(action, target, afterStep: afterStep, t: t);
     });
     if (action.type == PainActionType.endSession) {
       await widget.store.recordNerve(action.direction!);
     }
   }
 
-  void _apply(PainAction action, PlanStep target, {required bool afterStep}) {
+  void _apply(
+    PainAction action,
+    PlanStep target, {
+    required bool afterStep,
+    required double t,
+  }) {
+    final i = _phase.step.clamp(0, _steps.length);
     switch (action.type) {
       case PainActionType.endSession:
-        _phase = _Phase.stopped;
+        _stopped = true;
+        _queue.cancelAll(t);
+        _queue.submit(const VoiceCue(0, ['p.stop'], CuePriority.call), t);
+        _engine.finish(t);
       case PainActionType.reduceAmplitude:
         // Half the range and half the time; after a finished drill this only
         // shortens the drill's later appearances.
         if (!afterStep) {
-          _startStep(_index, seconds: (target.seconds / 2).ceil());
+          final rest = _steps.sublist(i + 1);
+          _engine.replaceFrom(i, [
+            _steps[i].copyWith(seconds: (target.seconds / 2).ceil()),
+            ...rest,
+          ], t);
+          _queue.submit(
+            const VoiceCue(0, ['cue.half_range'], CuePriority.info),
+            t,
+          );
         }
       case PainActionType.substitute:
         final alt = widget.store.content.drill(action.substituteId!);
-        PlanStep swap(PlanStep s) => PlanStep(
-          drill: alt,
-          dose: s.dose,
-          seconds: s.seconds,
-          sided: s.sided,
-          extraSide: s.extraSide,
-          replaced: s.drill.id,
-        );
-        for (var i = afterStep ? _index + 1 : _index; i < _steps.length; i++) {
-          if (_steps[i].drill.id == target.drill.id) {
-            _steps[i] = swap(_steps[i]);
-          }
-        }
-        if (!afterStep) _startStep(_index, seconds: _steps[_index].seconds);
+        final updated = [
+          for (final s in _steps.sublist(i))
+            s.drill.id == target.drill.id
+                ? s.copyWith(drill: alt, replaced: s.drill.id)
+                : s,
+        ];
+        _engine.replaceFrom(i, updated, t, withRest: afterStep);
       case PainActionType.skipDirection:
         final dir = action.direction!;
-        final from = _index + 1;
-        _steps.removeWhere(
-          (s) =>
-              _steps.indexOf(s) >= from &&
-              s.drill.directions.first == dir &&
-              !s.drill.isRelax,
-        );
-        if (!afterStep) {
-          _completed++;
-          _startStep(_index + 1);
-        }
+        final from = afterStep ? i : i + 1;
+        final kept = [
+          for (final s in _steps.sublist(from.clamp(0, _steps.length)))
+            if (!(s.drill.directions.first == dir && !s.drill.isRelax)) s,
+        ];
+        if (!afterStep) _engine.completed++;
+        _engine.replaceFrom(from, kept, t, withRest: kept.isNotEmpty);
+        if (_engine.done) _complete();
     }
   }
 
   Future<void> _close() async {
     _ticker?.cancel();
-    if (_phase != _Phase.done) {
-      if (_completed > 0) {
+    _queue.cancelAll(_clock.t);
+    if (!_finished && !_stopped) {
+      if (_engine.completed > 0) {
         await widget.store.completeSession(_ladder);
       } else {
         await widget.store.recordLadder(_ladder);
@@ -253,193 +336,167 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     },
     child: Scaffold(
       body: SafeArea(
-        child: switch (_phase) {
-          _Phase.done => _finished(),
-          _Phase.stopped => _stopped(),
-          _ => _playing(),
-        },
+        child: HipFadeSwitcher(
+          child: _stopped
+              ? KeyedSubtree(
+                  key: const ValueKey('stopped'),
+                  child: _stoppedView(),
+                )
+              : _engine.done
+              ? KeyedSubtree(
+                  key: const ValueKey('done'),
+                  child: _finishedView(),
+                )
+              : KeyedSubtree(key: const ValueKey('play'), child: _playing()),
+        ),
       ),
     ),
   );
 
   Widget _playing() {
-    final transition = _phase == _Phase.transition;
-    final shown = transition ? (_next ?? _step) : _step;
-    final side = _side;
+    final phase = _phase;
+    final t = _clock.t;
+    final work = phase.isWork;
+    final shown = _step;
+    final side = work || phase.kind == PhaseKind.switchSide ? phase.side : null;
+    final left = _engine.secondsLeft(t);
+    final progress = phase.seconds == 0
+        ? 0.0
+        : _engine.elapsedIn(t) / phase.seconds;
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 20, 4),
-          child: Row(
+        HipTopBar(
+          tooltip: '结束',
+          onClose: _close,
+          center: Row(
             children: [
-              HipCircleButton(
-                icon: Icons.close_rounded,
-                tooltip: '结束',
-                onPressed: _close,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Row(
-                  children: [
-                    for (var i = 0; i < _steps.length; i++)
-                      Expanded(
-                        child: Container(
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(horizontal: 2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2),
-                            color: i < _index || (i == _index && transition)
-                                ? HipColors.text.withValues(alpha: .75)
-                                : i == _index
-                                ? HipColors.jade
-                                : HipColors.surfaceHigh,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '${_index + 1}/${_steps.length}',
-                style: const TextStyle(color: HipColors.muted, fontSize: 15),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 44,
-          child: side == null
-              ? null
-              : Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
+              for (var i = 0; i < _steps.length; i++)
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: HipMotion.medium,
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: HipColors.surface,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final s in [HipSide.left, HipSide.right])
-                          Container(
-                            width: 52,
-                            height: 30,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: s == side ? HipColors.jade : null,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Text(
-                              s == HipSide.left ? '左' : '右',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: s == side
-                                    ? const Color(0xff07261d)
-                                    : HipColors.muted,
-                              ),
-                            ),
-                          ),
-                        if (side == HipSide.right) ...[
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.swap_horiz_rounded,
-                            size: 16,
-                            color: HipColors.muted,
-                          ),
-                          Text(
-                            ' $_secondsToSwitch 秒后换边  ',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: HipColors.muted,
-                            ),
-                          ),
-                        ],
-                      ],
+                      borderRadius: BorderRadius.circular(2),
+                      color: i < phase.step
+                          ? HipColors.text.withValues(alpha: .7)
+                          : i == phase.step && work
+                          ? HipColors.jade
+                          : i == phase.step
+                          ? HipColors.jade.withValues(alpha: .45)
+                          : HipColors.surfaceHigh,
                     ),
                   ),
                 ),
+            ],
+          ),
+          trailing: Text(
+            '${(phase.step + 1).clamp(1, _steps.length)}/${_steps.length}',
+            style: TextStyle(color: HipColors.muted, fontSize: 15),
+          ),
         ),
         Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              HipDrillArt(
-                drill: shown.drill,
-                play: !transition && !_paused,
-                fit: BoxFit.cover,
-              ),
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: 120,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0x000c0d0f), HipColors.background],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(left: 16, top: 8, child: _areaChip(shown.drill)),
-              if (!transition)
-                Positioned(
-                  right: 16,
-                  top: 8,
-                  child: TextButton.icon(
-                    key: const ValueKey('player-pain'),
-                    style: TextButton.styleFrom(
-                      backgroundColor: HipColors.background.withValues(
-                        alpha: .6,
-                      ),
-                      shape: const StadiumBorder(
-                        side: BorderSide(color: HipColors.line),
-                      ),
-                    ),
-                    onPressed: () => _pain(afterStep: false),
-                    icon: const Icon(
-                      Icons.bolt_rounded,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: HipMediaFrame(
+              radius: 28,
+              overlays: [
+                Positioned(left: 14, top: 14, child: _areaChip(shown.drill)),
+                if (work)
+                  Positioned(
+                    right: 14,
+                    top: 14,
+                    child: _mediaButton(
+                      key: const ValueKey('player-pain'),
+                      icon: Icons.bolt_rounded,
+                      label: '疼',
                       color: HipColors.pain,
-                      size: 16,
-                    ),
-                    label: const Text(
-                      '疼',
-                      style: TextStyle(color: HipColors.pain),
+                      onTap: () => _pain(afterStep: false),
                     ),
                   ),
+                // Side indicator rides on the media, so unsided drills keep
+                // no empty row (#9) and nothing shifts between drills.
+                if (side != null && work)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 16,
+                    child: Center(child: _sideIndicator(side, phase)),
+                  ),
+                Positioned.fill(
+                  child: AnimatedSwitcher(
+                    duration: HipMotion.medium,
+                    child: work
+                        ? const SizedBox.expand()
+                        : SizedBox.expand(
+                            key: ValueKey(
+                              'overlay-${phase.kind}-${phase.step}',
+                            ),
+                            child: _phaseOverlay(phase, left),
+                          ),
+                  ),
                 ),
-              if (transition) Positioned.fill(child: _transitionOverlay()),
-            ],
+              ],
+              child: HipFadeSwitcher(
+                duration: HipMotion.slow,
+                offset: 0,
+                expand: true,
+                child: KeyedSubtree(
+                  key: ValueKey('art-${shown.drill.id}'),
+                  child: HipDrillArt(
+                    drill: shown.drill,
+                    play: work && !_paused,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
-        Text(
-          shown.drill.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+        const SizedBox(height: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: AnimatedSwitcher(
+            duration: HipMotion.medium,
+            child: Text(
+              shown.drill.name,
+              key: ValueKey(shown.drill.id),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             color: HipColors.surface,
             borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: HipColors.line),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.volume_up_rounded,
+              Icon(
+                _voice.settings.voice
+                    ? Icons.volume_up_rounded
+                    : Icons.subtitles_outlined,
                 size: 16,
                 color: HipColors.jade,
               ),
               const SizedBox(width: 6),
-              Text(
-                transition ? '准备下一个' : _cue,
-                style: const TextStyle(fontSize: 14),
+              Flexible(
+                child: AnimatedSwitcher(
+                  duration: HipMotion.fast,
+                  child: Text(
+                    _subtitleText(phase),
+                    key: ValueKey(_subtitleText(phase)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
               ),
             ],
           ),
@@ -453,16 +510,15 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               icon: _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
               size: 64,
               tooltip: _paused ? '继续' : '暂停',
-              onPressed: () => setState(() => _paused = !_paused),
+              onPressed: _togglePause,
             ),
             const SizedBox(width: 26),
             HipCountdownRing(
-              progress: transition
-                  ? 1 - _transitionLeft / widget.plan.transitionSeconds
-                  : (_total - _left) / _total,
-              label: '${transition ? _transitionLeft : _left}',
-              caption: '秒',
+              progress: progress,
+              label: '$left',
+              caption: _paused ? '已暂停' : '秒',
               size: 140,
+              color: work ? HipColors.jade : HipColors.muted,
             ),
             const SizedBox(width: 26),
             HipCircleButton(
@@ -475,28 +531,122 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ],
         ),
         const SizedBox(height: 14),
-        if (!transition && _next != null) _nextCard(_next!),
+        // Fixed height whether or not there is a next drill: no jump.
+        SizedBox(
+          height: 74,
+          child: AnimatedOpacity(
+            duration: HipMotion.medium,
+            opacity: work && _next != null ? 1 : 0,
+            child: _next == null ? const SizedBox() : _nextCard(_next!),
+          ),
+        ),
         const SizedBox(height: 10),
       ],
     );
   }
 
-  Widget _areaChip(HipDrill d) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+  String _subtitleText(SessionPhase phase) => switch (phase.kind) {
+    PhaseKind.prep => '准备开始',
+    PhaseKind.rest => _ladderCue ?? '休息一下，准备下一个',
+    PhaseKind.switchSide => phase.side == HipSide.left ? '换左边' : '换右边',
+    _ => _cue,
+  };
+
+  Widget _sideIndicator(HipSide side, SessionPhase phase) => Container(
+    key: const ValueKey('side-indicator'),
+    padding: const EdgeInsets.all(4),
     decoration: BoxDecoration(
-      color: HipColors.background.withValues(alpha: .6),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: HipColors.line),
+      color: Colors.black.withValues(alpha: .5),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: Colors.white.withValues(alpha: .1)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const CircleAvatar(radius: 4, backgroundColor: HipColors.glow),
-        const SizedBox(width: 6),
-        Text(_areaOf(d.directions.first), style: const TextStyle(fontSize: 13)),
+        // Right first, then left (成套训练 编排规则 2).
+        for (final s in [HipSide.right, HipSide.left])
+          AnimatedContainer(
+            duration: HipMotion.medium,
+            width: 56,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: s == side ? HipColors.jade : null,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (s == HipSide.right && side == HipSide.left)
+                  Icon(Icons.check_rounded, size: 14, color: HipColors.jade),
+                Text(
+                  s == HipSide.left ? '左' : '右',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: s == side ? HipColors.onJade : Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     ),
   );
+
+  Widget _mediaButton({
+    required Key key,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) => Material(
+    color: Colors.black.withValues(alpha: .45),
+    shape: StadiumBorder(
+      side: BorderSide(color: Colors.white.withValues(alpha: .12)),
+    ),
+    child: InkWell(
+      key: key,
+      customBorder: const StadiumBorder(),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(color: color, fontSize: 14)),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  Widget _areaChip(HipDrill d) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.black.withValues(alpha: .45),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.white.withValues(alpha: .12)),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircleAvatar(radius: 4, backgroundColor: HipPalette.dark.glow),
+        const SizedBox(width: 6),
+        Text(
+          _areaLabel(d),
+          style: const TextStyle(fontSize: 13, color: Colors.white),
+        ),
+      ],
+    ),
+  );
+
+  /// Area label on the media. Drills that work the hip in many directions
+  /// (e.g. 四足髋关节画圈, 6 directions) are labelled as the joint, not by
+  /// their first direction (#8 label part).
+  static String _areaLabel(HipDrill d) =>
+      d.directions.length >= 3 ? '髋关节周围' : _areaOf(d.directions.first);
 
   static String _areaOf(HipDirection d) => switch (d) {
     HipDirection.flexion => '大腿后侧',
@@ -507,50 +657,95 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     HipDirection.externalRotation => '臀部 · 髋外旋',
   };
 
-  Widget _transitionOverlay() => ColoredBox(
-    color: HipColors.background.withValues(alpha: .72),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          '刚才「${_steps[_index].drill.name}」感觉怎么样？',
-          style: const TextStyle(fontSize: 16, color: HipColors.muted),
-        ),
-        const SizedBox(height: 16),
-        Row(
+  /// Prep / rest / side-switch layer over the (paused) drill picture.
+  Widget _phaseOverlay(SessionPhase phase, int left) {
+    final step = _step;
+    final title = switch (phase.kind) {
+      PhaseKind.prep => '准备开始',
+      PhaseKind.rest => phase.step == _steps.length - 1 ? '最后一个' : '休息 · 下一个',
+      PhaseKind.switchSide => phase.side == HipSide.left ? '换左边' : '换右边',
+      _ => '',
+    };
+    return ColoredBox(
+      color: Colors.black.withValues(alpha: .62),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            for (final (key, label, color) in [
-              ('ok', '舒服', HipColors.jade),
-              ('tight', '有点紧', HipColors.text),
-              ('pain', '疼', HipColors.pain),
-            ]) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: OutlinedButton(
-                  key: ValueKey('feel-$key'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: color,
-                    side: BorderSide(color: color.withValues(alpha: .5)),
-                    minimumSize: const Size(92, 52),
-                    shape: const StadiumBorder(),
-                  ),
-                  onPressed: () {
-                    if (key == 'pain') {
-                      _pain(afterStep: true);
-                    } else {
-                      setState(() => _startStep(_index + 1));
-                    }
-                  },
-                  child: Text(label, style: const TextStyle(fontSize: 16)),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: phase.kind == PhaseKind.switchSide ? 30 : 15,
+                fontWeight: phase.kind == PhaseKind.switchSide
+                    ? FontWeight.w800
+                    : FontWeight.w600,
+                color: phase.kind == PhaseKind.switchSide
+                    ? Colors.white
+                    : HipPalette.dark.jade,
+              ),
+            ),
+            if (phase.kind != PhaseKind.switchSide) ...[
+              const SizedBox(height: 8),
+              Text(
+                step.drill.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
                 ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                step.dose,
+                style: const TextStyle(fontSize: 15, color: Colors.white70),
+              ),
+            ],
+            if (phase.kind == PhaseKind.rest && phase.step > 0) ...[
+              const SizedBox(height: 22),
+              Text(
+                '刚才「${_steps[phase.step - 1].drill.name}」感觉怎么样？',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14, color: Colors.white70),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  for (final (key, label, color) in [
+                    ('ok', '舒服', HipPalette.dark.jade),
+                    ('tight', '有点紧', Colors.white),
+                    ('pain', '疼', HipPalette.dark.pain),
+                  ])
+                    OutlinedButton(
+                      key: ValueKey('feel-$key'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: color,
+                        side: BorderSide(color: color.withValues(alpha: .55)),
+                        minimumSize: const Size(88, 48),
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: () {
+                        if (key == 'pain') {
+                          _pain(afterStep: true);
+                        } else {
+                          _skip(); // ready: start the next drill now
+                        }
+                      },
+                      child: Text(label, style: const TextStyle(fontSize: 16)),
+                    ),
+                ],
               ),
             ],
           ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 
   Widget _nextCard(PlanStep next) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -558,19 +753,21 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          Container(
+          SizedBox(
             width: 52,
             height: 52,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-            child: HipDrillArt(drill: next.drill, showPendingLabel: false),
+            child: HipMediaFrame(
+              radius: 12,
+              child: HipDrillArt(drill: next.drill, showPendingLabel: false),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '下一个',
                   style: TextStyle(fontSize: 12, color: HipColors.muted),
                 ),
@@ -588,7 +785,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ),
           Text(
             mmss(next.seconds),
-            style: const TextStyle(fontSize: 15, color: HipColors.muted),
+            style: TextStyle(fontSize: 15, color: HipColors.muted),
           ),
           const SizedBox(width: 6),
         ],
@@ -596,12 +793,22 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
-  Widget _finished() => Padding(
+  Widget _finishedView() => Padding(
     padding: const EdgeInsets.all(24),
     child: Column(
       children: [
         const Spacer(),
-        const Icon(Icons.check_circle_rounded, size: 88, color: HipColors.jade),
+        TweenAnimationBuilder<double>(
+          tween: Tween(begin: .6, end: 1),
+          duration: HipMotion.slow,
+          curve: Curves.easeOutBack,
+          builder: (_, v, child) => Transform.scale(scale: v, child: child),
+          child: Icon(
+            Icons.check_circle_rounded,
+            size: 88,
+            color: HipColors.jade,
+          ),
+        ),
         const SizedBox(height: 16),
         const Text(
           '今天练完了',
@@ -610,7 +817,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         const SizedBox(height: 8),
         Text(
           '连续 ${widget.store.streak} 天',
-          style: const TextStyle(fontSize: 18, color: HipColors.muted),
+          style: TextStyle(fontSize: 18, color: HipColors.muted),
         ),
         const Spacer(),
         HipPrimaryButton(
@@ -622,23 +829,19 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
-  Widget _stopped() => Padding(
+  Widget _stoppedView() => Padding(
     padding: const EdgeInsets.all(24),
     child: Column(
       children: [
         const Spacer(),
-        const Icon(
-          Icons.pan_tool_alt_rounded,
-          size: 80,
-          color: HipColors.tight,
-        ),
+        Icon(Icons.pan_tool_alt_rounded, size: 80, color: HipColors.tight),
         const SizedBox(height: 16),
         const Text(
           '先停下来',
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 12),
-        const Text(
+        Text(
           '麻、刺或往下窜的感觉不该出现在练习里。\n建议问问医生或专业人士。',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 16, height: 1.5, color: HipColors.muted),

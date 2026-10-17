@@ -18,6 +18,14 @@ dependencies:
   webview_flutter: 4.14.1
   webview_flutter_android: 4.14.1
   webview_flutter_wkwebview: 3.26.2
+  # Voice coaching (lib/hip/voice/): pre-recorded clips, ducking, background.
+  just_audio: 0.10.6
+  audio_session: 0.2.4
+  # Session clock that widget tests can fake (package:clock).
+  clock: ^1.1.2
+  # Keeps the screen on during a session so auto-lock never suspends the
+  # training clock / voice (Android has no foreground service yet).
+  wakelock_plus: 1.8.1
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +38,11 @@ flutter:
     - assets/hip/
     - assets/hip/posters/
     - assets/hip/assessment/
+    - assets/hip/onboarding/
+    - assets/voice/
+    - assets/voice/zh/
+    - assets/voice/en/
+    - assets/voice/chime/
     - assets/drill_media/
     - assets/licenses/
   fonts:

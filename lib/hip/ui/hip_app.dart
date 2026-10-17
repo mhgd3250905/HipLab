@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7,6 +9,10 @@ import '../data/hip_content_loader.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_progress.dart';
 import '../domain/hip_session.dart';
+import '../voice/hip_voice.dart';
+import '../voice/just_audio_output.dart';
+import '../voice/session_script.dart';
+import '../voice/voice_library.dart';
 import 'hip_assessment_page.dart';
 import 'hip_player_page.dart';
 import 'hip_theme.dart';
@@ -16,31 +22,96 @@ const hipAppName = '开胯训练助手';
 
 /// Root of the HipLab app (entry: lib/main.dart).
 class HipApp extends StatefulWidget {
-  const HipApp({super.key, this.store, this.videoEnabled = true});
+  const HipApp({super.key, this.store, this.videoEnabled = true, this.voice});
 
   /// Injected in tests; otherwise loaded from assets + SharedPreferences.
   final HipStore? store;
   final bool videoEnabled;
+
+  /// Injected in tests; otherwise real playback (silent when video is off,
+  /// i.e. in widget tests).
+  final HipVoice? voice;
 
   @override
   State<HipApp> createState() => _HipAppState();
 }
 
 class _HipAppState extends State<HipApp> {
-  late Future<HipStore> _loading = _load();
+  late Future<(HipStore, HipVoice)> _loading = _load();
 
-  Future<HipStore> _load() async {
-    if (widget.store != null) return widget.store!;
-    final store = HipStore(content: await loadHipContent());
-    await store.initialize();
-    return store;
+  Future<(HipStore, HipVoice)> _load() async {
+    final store = widget.store ?? HipStore(content: await loadHipContent());
+    if (widget.store == null) await store.initialize();
+    try {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      HipMediaVariants.assets = manifest.listAssets().toSet();
+    } on Object {
+      HipMediaVariants.assets = const {};
+    }
+    HipVoice voice;
+    if (widget.voice != null) {
+      voice = widget.voice!;
+    } else if (!widget.videoEnabled) {
+      voice = HipVoice.silent;
+    } else {
+      voice = HipVoice(
+        lib: await VoiceLibrary.load(),
+        output: JustAudioVoiceOutput(),
+        settingsOf: () => store.voice,
+      );
+    }
+    return (store, voice);
   }
 
+  static ThemeMode _mode(HipThemeChoice c) => switch (c) {
+    HipThemeChoice.light => ThemeMode.light,
+    HipThemeChoice.dark => ThemeMode.dark,
+    HipThemeChoice.system => ThemeMode.system,
+  };
+
   @override
-  Widget build(BuildContext context) => MaterialApp(
+  Widget build(BuildContext context) => FutureBuilder<(HipStore, HipVoice)>(
+    future: _loading,
+    builder: (context, snap) {
+      final loaded = snap.data;
+      if (loaded == null) {
+        return _shell(
+          ThemeMode.system,
+          snap.hasError
+              ? Scaffold(
+                  body: Center(
+                    child: TextButton(
+                      onPressed: () => setState(() => _loading = _load()),
+                      child: const Text('读取失败，点一下重试'),
+                    ),
+                  ),
+                )
+              : const Scaffold(body: SizedBox.expand()),
+        );
+      }
+      final (store, voice) = loaded;
+      return ListenableBuilder(
+        listenable: store,
+        builder: (context, _) => HipVoiceScope(
+          voice: voice,
+          child: _shell(
+            _mode(store.theme),
+            store.onboarded
+                ? HipHome(store: store)
+                : HipOnboarding(store: store),
+          ),
+        ),
+      );
+    },
+  );
+
+  Widget _shell(ThemeMode mode, Widget home) => MaterialApp(
     title: hipAppName,
     debugShowCheckedModeBanner: false,
-    theme: hipTheme(),
+    theme: hipTheme(HipPalette.light),
+    darkTheme: hipTheme(HipPalette.dark),
+    themeMode: mode,
+    themeAnimationDuration: Duration.zero,
     locale: const Locale('zh'),
     supportedLocales: const [Locale('zh')],
     localizationsDelegates: const [
@@ -48,37 +119,56 @@ class _HipAppState extends State<HipApp> {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: const Color(0x00000000),
-        systemNavigationBarColor: HipColors.background,
-      ),
+    builder: (context, child) => _PaletteScope(
       child: HipMediaPolicy(videoEnabled: widget.videoEnabled, child: child!),
     ),
-    home: FutureBuilder<HipStore>(
-      future: _loading,
-      builder: (context, snap) {
-        if (snap.hasError) {
-          return Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () => setState(() => _loading = _load()),
-                child: const Text('读取失败，点一下重试'),
-              ),
-            ),
-          );
-        }
-        final store = snap.data;
-        if (store == null) return const Scaffold(body: SizedBox.expand());
-        return ListenableBuilder(
-          listenable: store,
-          builder: (context, _) => store.onboarded
-              ? HipHome(store: store)
-              : HipOnboarding(store: store),
-        );
-      },
-    ),
+    home: home,
   );
+}
+
+/// Points [HipColors] at the palette of the theme in effect and, when it
+/// changes (settings or the system switching light/dark), rebuilds every
+/// widget below in the same frame — pages, sheets and pushed routes keep
+/// their state (#14).
+class _PaletteScope extends StatefulWidget {
+  const _PaletteScope({required this.child});
+  final Widget child;
+  @override
+  State<_PaletteScope> createState() => _PaletteScopeState();
+}
+
+class _PaletteScopeState extends State<_PaletteScope> {
+  Brightness? _applied;
+
+  static void _rebuildAll(Element e) {
+    e.markNeedsBuild();
+    e.visitChildren(_rebuildAll);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final b = Theme.of(context).brightness;
+    if (b != _applied) {
+      final first = _applied == null;
+      _applied = b;
+      HipColors.palette = b == Brightness.dark
+          ? HipPalette.dark
+          : HipPalette.light;
+      if (!first) (context as Element).visitChildren(_rebuildAll);
+    }
+    final p = HipColors.palette;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: (p.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+          .copyWith(
+            statusBarColor: const Color(0x00000000),
+            systemNavigationBarColor: p.background,
+            systemNavigationBarIconBrightness: p.isDark
+                ? Brightness.light
+                : Brightness.dark,
+          ),
+      child: widget.child,
+    );
+  }
 }
 
 // ───────────────────────── first launch: 3 safety cards + identity ─────────
@@ -96,6 +186,7 @@ class HipOnboarding extends StatefulWidget {
 class _HipOnboardingState extends State<HipOnboarding> {
   final _answers = <String, bool>{};
   int _index = 0;
+  bool _busy = false;
 
   List<SafetyCard> get _cards => widget.store.content.safetyCards;
   bool get _onIdentity => _index >= _cards.length;
@@ -106,16 +197,35 @@ class _HipOnboardingState extends State<HipOnboarding> {
     'personal_injury': Icons.personal_injury_rounded,
   };
 
+  /// Hero art per card and theme: `assets/hip/onboarding/<id>-<dark|light>.webp`
+  /// (tools/onboarding_art/import_onboarding_art.py; swap set A↔B there).
+  static String heroAsset(String cardId, {required bool dark}) =>
+      'assets/hip/onboarding/$cardId-${dark ? 'dark' : 'light'}.webp';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    hipPrecache(context, [
+      for (final c in _cards) heroAsset(c.id, dark: HipColors.isDark),
+    ]);
+  }
+
   Future<void> _answer(bool yes) async {
-    _answers[_cards[_index].id] = yes;
-    if (_index == _cards.length - 1) {
-      await widget.store.setSafety(_answers);
-      if (widget.review && mounted) {
-        Navigator.of(context).pop();
-        return;
+    if (_busy) return;
+    _busy = true;
+    try {
+      _answers[_cards[_index].id] = yes;
+      if (_index == _cards.length - 1) {
+        await widget.store.setSafety(_answers);
+        if (widget.review && mounted) {
+          Navigator.of(context).pop();
+          return;
+        }
       }
+      if (mounted) setState(() => _index++);
+    } finally {
+      _busy = false;
     }
-    setState(() => _index++);
   }
 
   @override
@@ -124,8 +234,13 @@ class _HipOnboardingState extends State<HipOnboarding> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          child: _onIdentity ? _identity(blocked) : _safetyCard(),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+          child: HipFadeSwitcher(
+            child: KeyedSubtree(
+              key: ValueKey(_onIdentity ? 'identity' : 'card'),
+              child: _onIdentity ? _identity(blocked) : _safetyCard(),
+            ),
+          ),
         ),
       ),
     );
@@ -133,6 +248,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
 
   Widget _safetyCard() {
     final card = _cards[_index];
+    final hero = heroAsset(card.id, dark: HipColors.isDark);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -140,9 +256,10 @@ class _HipOnboardingState extends State<HipOnboarding> {
           children: [
             for (var i = 0; i < _cards.length; i++)
               Expanded(
-                child: Container(
+                child: AnimatedContainer(
+                  duration: HipMotion.medium,
                   height: 4,
-                  margin: const EdgeInsets.only(right: 6),
+                  margin: EdgeInsets.only(right: i < _cards.length - 1 ? 6 : 0),
                   decoration: BoxDecoration(
                     color: i <= _index ? HipColors.jade : HipColors.surfaceHigh,
                     borderRadius: BorderRadius.circular(2),
@@ -151,78 +268,104 @@ class _HipOnboardingState extends State<HipOnboarding> {
               ),
           ],
         ),
-        const SizedBox(height: 28),
-        const Text(
-          '开始之前',
-          style: TextStyle(
-            fontSize: 15,
-            color: HipColors.jade,
-            fontWeight: FontWeight.w600,
-          ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Text(
+              '开始之前 · 安全确认',
+              style: TextStyle(
+                fontSize: 14,
+                color: HipColors.jade,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${_index + 1} / ${_cards.length}',
+              style: TextStyle(fontSize: 14, color: HipColors.muted),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
-        const Text(
-          '你现在有这种情况吗？',
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        // Large hero visual (4:3 art) at the top; on short screens it gives
+        // way first, the question and buttons always stay whole.
         Expanded(
-          child: HipPanel(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 132,
-                  height: 132,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        HipColors.jade.withValues(alpha: .28),
-                        HipColors.jade.withValues(alpha: 0),
-                      ],
+          child: LayoutBuilder(
+            builder: (context, c) {
+              // As tall as a square when there is room (cropping the 4:3
+              // art's empty sides), never shorter than the art's own 4:3.
+              final h = c.maxHeight.clamp(0.0, c.maxWidth).toDouble();
+              return Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: c.maxWidth,
+                  height: h,
+                  child: HipMediaFrame(
+                    key: const ValueKey('onboarding-hero'),
+                    radius: 28,
+                    color: HipColors.surface,
+                    borderColor: HipColors.isDark
+                        ? HipColors.line
+                        : const Color(0x00000000),
+                    shadow: HipColors.cardShadow,
+                    child: HipFadeSwitcher(
+                      duration: HipMotion.slow,
+                      offset: 0,
+                      expand: true,
+                      child: Image.asset(
+                        hero,
+                        key: ValueKey(hero),
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, _, _) => _heroPlaceholder(card),
+                      ),
                     ),
                   ),
-                  child: Icon(
-                    _icons[card.icon] ?? Icons.info_outline,
-                    size: 72,
-                    color: HipColors.jade,
-                  ),
                 ),
-                const SizedBox(height: 28),
-                Text(
-                  card.title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 21,
-                    height: 1.45,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 22),
+        HipFadeSwitcher(
+          alignment: AlignmentDirectional.bottomStart,
+          child: Column(
+            key: ValueKey(card.id),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '你现在有这种情况吗？',
+                style: TextStyle(fontSize: 15, color: HipColors.muted),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                card.title,
+                style: const TextStyle(
+                  fontSize: 23,
+                  height: 1.4,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '如实选就好。选“有”也可以浏览动作，只是先不安排训练。',
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: HipColors.muted,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
         Row(
           children: [
             Expanded(
-              child: SizedBox(
-                height: 56,
-                child: OutlinedButton(
-                  key: const ValueKey('safety-yes'),
-                  onPressed: () => _answer(true),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: HipColors.text,
-                    side: const BorderSide(color: HipColors.line),
-                    shape: const StadiumBorder(),
-                    textStyle: const TextStyle(
-                      fontFamily: hipFontFamily,
-                      fontSize: 18,
-                    ),
-                  ),
-                  child: const Text('有'),
-                ),
+              child: HipSecondaryButton(
+                key: const ValueKey('safety-yes'),
+                label: '有',
+                onPressed: () => _answer(true),
               ),
             ),
             const SizedBox(width: 12),
@@ -236,7 +379,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
           ],
         ),
         const SizedBox(height: 14),
-        const Text(
+        Text(
           '这是运动练习，不能替代医生的建议。',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12, color: HipColors.faint),
@@ -245,26 +388,46 @@ class _HipOnboardingState extends State<HipOnboarding> {
     );
   }
 
+  /// Shown only if the art is missing from the bundle.
+  Widget _heroPlaceholder(SafetyCard card) => DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: RadialGradient(
+        radius: .9,
+        colors: [HipColors.jade.withValues(alpha: .25), HipColors.surface],
+      ),
+    ),
+    child: Center(
+      child: Icon(
+        _icons[card.icon] ?? Icons.info_outline,
+        size: 96,
+        color: HipColors.jade,
+      ),
+    ),
+  );
+
   Widget _identity(bool blocked) {
     const choices = [
-      (HipIdentity.office, Icons.chair_alt_rounded),
-      (HipIdentity.dancer, Icons.sports_gymnastics_rounded),
-      (HipIdentity.other, Icons.person_rounded),
+      (HipIdentity.office, Icons.chair_alt_rounded, '久坐上班，髋前侧和臀部发紧'),
+      (
+        HipIdentity.dancer,
+        Icons.sports_gymnastics_rounded,
+        '跳舞 / Breaking，要开胯和控制',
+      ),
+      (HipIdentity.other, Icons.person_rounded, '想让髋更灵活、更舒服'),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListView(
       children: [
         if (blocked) ...[
           HipPanel(
             borderColor: HipColors.tight.withValues(alpha: .5),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.medical_information_outlined,
                   color: HipColors.tight,
                 ),
-                SizedBox(width: 12),
-                Expanded(
+                const SizedBox(width: 12),
+                const Expanded(
                   child: Text(
                     '先问问医生或专业人士，再开始练习。你可以先看看动作。',
                     style: TextStyle(fontSize: 15, height: 1.4),
@@ -276,50 +439,69 @@ class _HipOnboardingState extends State<HipOnboarding> {
           const SizedBox(height: 20),
         ],
         const SizedBox(height: 12),
+        Text(
+          '最后一步',
+          style: TextStyle(
+            fontSize: 14,
+            color: HipColors.jade,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
         const Text(
           '你是哪一种？',
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 20),
-        for (final (id, icon) in choices) ...[
-          Material(
-            color: HipColors.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-              side: const BorderSide(color: HipColors.line),
-            ),
+        for (final (id, icon, line) in choices) ...[
+          HipPanel(
+            padding: EdgeInsets.zero,
             child: InkWell(
               key: ValueKey('identity-${id.id}'),
-              borderRadius: BorderRadius.circular(22),
               onTap: () => widget.store.setIdentity(id),
-              child: SizedBox(
-                height: 104,
+              child: Padding(
+                padding: const EdgeInsets.all(18),
                 child: Row(
                   children: [
-                    const SizedBox(width: 20),
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
                         color: HipColors.jade.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: Icon(icon, size: 36, color: HipColors.jade),
+                      child: Icon(icon, size: 32, color: HipColors.jade),
                     ),
-                    const SizedBox(width: 18),
-                    Text(
-                      id.zh,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            id.zh,
+                            style: const TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            line,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: HipColors.muted,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    Icon(Icons.chevron_right_rounded, color: HipColors.faint),
                   ],
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
         ],
       ],
     );
@@ -362,17 +544,23 @@ class _HipHomeState extends State<HipHome> {
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
       bottom: false,
-      child: switch (_tab) {
-        1 => HipAssessmentIntro(store: store, onStart: _startAssessment),
-        2 => HipProgressPage(store: store),
-        _ => _today(),
-      },
+      child: HipFadeSwitcher(
+        offset: .015,
+        child: KeyedSubtree(
+          key: ValueKey('tab-body-$_tab'),
+          child: switch (_tab) {
+            1 => HipAssessmentIntro(store: store, onStart: _startAssessment),
+            2 => HipProgressPage(store: store),
+            _ => _today(),
+          },
+        ),
+      ),
     ),
     bottomNavigationBar: _nav(),
   );
 
   Widget _nav() => Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       border: Border(top: BorderSide(color: HipColors.line)),
     ),
     child: SafeArea(
@@ -433,10 +621,7 @@ class _HipHomeState extends State<HipHome> {
                 children: [
                   Text(
                     '周${_weekdays[now.weekday - 1]} · ${now.month} 月 ${now.day} 日',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: HipColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 13, color: HipColors.muted),
                   ),
                   const SizedBox(height: 2),
                   const Text(
@@ -454,7 +639,7 @@ class _HipHomeState extends State<HipHome> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.local_fire_department_outlined,
                     size: 18,
                     color: HipColors.tight,
@@ -489,7 +674,9 @@ class _HipHomeState extends State<HipHome> {
         ),
         const SizedBox(height: 14),
         SizedBox(
-          height: 150,
+          // Grows with the system text size: 150 at ×1.0, ~165 at ×1.5, so
+          // the label + caption lines never squeeze the radar/icon out.
+          height: 120 + MediaQuery.textScalerOf(context).scale(30),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -505,7 +692,7 @@ class _HipHomeState extends State<HipHome> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '我的髋部',
                           style: TextStyle(
                             fontSize: 13,
@@ -514,24 +701,29 @@ class _HipHomeState extends State<HipHome> {
                         ),
                         Expanded(
                           child: result == null
-                              ? const Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.radar_rounded,
-                                        size: 40,
-                                        color: HipColors.jade,
-                                      ),
-                                      SizedBox(height: 6),
-                                      Text(
-                                        '3 分半自测',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
+                              ? Center(
+                                  // Scales down instead of overflowing when
+                                  // a very large text size outgrows the tile.
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.radar_rounded,
+                                          size: 40,
+                                          color: HipColors.jade,
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(height: 6),
+                                        Text(
+                                          '3 分半自测',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 )
                               : Center(
@@ -560,139 +752,148 @@ class _HipHomeState extends State<HipHome> {
     final hero =
         plan.steps.where((s) => s.drill.poster != null).firstOrNull?.drill ??
         first;
-    return Container(
+    // The hero stays a dark "stage" in both themes: the renders are dark,
+    // and a dark tile on the light page reads as media, not as a grey card.
+    const stage = HipPalette.dark;
+    return SizedBox(
       height: 350,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: HipColors.surface,
-        borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: HipColors.line),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (hero != null)
+      child: HipMediaFrame(
+        radius: 26,
+        color: stage.surface,
+        borderColor: HipColors.isDark ? stage.line : const Color(0x00000000),
+        shadow: HipColors.cardShadow,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hero != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                height: 280,
+                child: HipDrillArt(
+                  drill: hero,
+                  alignment: const Alignment(0, -.2),
+                ),
+              ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: [.45, .8],
+                  colors: [stage.surface.withValues(alpha: 0), stage.surface],
+                ),
+              ),
+            ),
             Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 280,
-              child: HipDrillArt(
-                drill: hero,
-                alignment: const Alignment(0, -.2),
-              ),
+              left: 14,
+              top: 14,
+              child: _chip(Icons.repeat_rounded, '预览'),
             ),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: [.45, .8],
-                colors: [Color(0x0016171a), HipColors.surface],
-              ),
-            ),
-          ),
-          Positioned(
-            left: 14,
-            top: 14,
-            child: _chip(Icons.repeat_rounded, '预览'),
-          ),
-          Positioned(
-            left: 20,
-            right: 130,
-            bottom: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  plan.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${plan.minutes} 分钟 · ${plan.steps.length} 个动作',
-                  style: const TextStyle(fontSize: 14, color: HipColors.muted),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    for (final s in plan.steps.take(4))
-                      Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.only(right: 6),
-                        clipBehavior: Clip.antiAlias,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: HipColors.line),
-                        ),
-                        child: HipDrillArt(
-                          drill: s.drill,
-                          showPendingLabel: false,
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            right: 18,
-            bottom: 26,
-            child: Semantics(
-              button: true,
-              label: '开始',
-              child: GestureDetector(
-                key: const ValueKey('start-today'),
-                onTap: plan.steps.isEmpty ? null : () => _startPlan(plan),
-                child: Container(
-                  width: 104,
-                  height: 104,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: HipColors.jade,
-                    boxShadow: [
-                      BoxShadow(
-                        color: HipColors.jade.withValues(alpha: .45),
-                        blurRadius: 30,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                    border: Border.all(
-                      color: HipColors.jade.withValues(alpha: .35),
-                      width: 6,
-                      strokeAlign: 1,
+            Positioned(
+              left: 20,
+              right: 130,
+              bottom: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plan.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                      color: stage.text,
                     ),
                   ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.play_arrow_rounded,
-                        size: 40,
-                        color: Color(0xff07261d),
-                      ),
-                      Text(
-                        '开始',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xff07261d),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${plan.minutes} 分钟 · ${plan.steps.length} 个动作',
+                    style: TextStyle(fontSize: 14, color: stage.muted),
+                  ),
+                  const SizedBox(height: 10),
+                  LayoutBuilder(
+                    builder: (context, c) => Row(
+                      children: [
+                        for (final s in plan.steps.take(
+                          ((c.maxWidth + 6) / 46).floor().clamp(0, 4),
+                        ))
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: HipMediaFrame(
+                                radius: 10,
+                                borderColor: stage.line,
+                                child: HipDrillArt(
+                                  drill: s.drill,
+                                  showPendingLabel: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              right: 18,
+              bottom: 26,
+              child: Semantics(
+                button: true,
+                label: '开始',
+                child: GestureDetector(
+                  key: const ValueKey('start-today'),
+                  onTap: plan.steps.isEmpty ? null : () => _startPlan(plan),
+                  child: Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: stage.jade,
+                      boxShadow: [
+                        BoxShadow(
+                          color: stage.jade.withValues(alpha: .45),
+                          blurRadius: 30,
+                          spreadRadius: 2,
                         ),
+                      ],
+                      border: Border.all(
+                        color: stage.jade.withValues(alpha: .35),
+                        width: 6,
+                        strokeAlign: 1,
                       ),
-                    ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          size: 40,
+                          color: stage.onJade,
+                        ),
+                        Text(
+                          '开始',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: stage.onJade,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -704,7 +905,7 @@ class _HipHomeState extends State<HipHome> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.medical_information_outlined,
             size: 48,
             color: HipColors.tight,
@@ -755,7 +956,7 @@ class _HipHomeState extends State<HipHome> {
     borderColor: HipColors.tight.withValues(alpha: .5),
     child: Row(
       children: [
-        const Icon(Icons.info_outline_rounded, color: HipColors.tight),
+        Icon(Icons.info_outline_rounded, color: HipColors.tight),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -770,19 +971,16 @@ class _HipHomeState extends State<HipHome> {
   Widget _chip(IconData icon, String text) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
-      color: HipColors.background.withValues(alpha: .55),
+      color: Colors.black.withValues(alpha: .45),
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: HipColors.line),
+      border: Border.all(color: Colors.white.withValues(alpha: .12)),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: HipColors.muted),
+        Icon(icon, size: 14, color: Colors.white70),
         const SizedBox(width: 4),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 12, color: HipColors.muted),
-        ),
+        Text(text, style: const TextStyle(fontSize: 12, color: Colors.white70)),
       ],
     ),
   );
@@ -817,7 +1015,10 @@ class _HipHomeState extends State<HipHome> {
                           : const Color(0x00000000),
                     ),
                   ),
-                  child: build(v, v == selected),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: build(v, v == selected),
+                  ),
                 ),
               ),
             ),
@@ -882,7 +1083,7 @@ class _HipHomeState extends State<HipHome> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
             Icon(
               Icons.local_fire_department_outlined,
@@ -894,21 +1095,27 @@ class _HipHomeState extends State<HipHome> {
           ],
         ),
         const SizedBox(height: 4),
-        Text.rich(
-          TextSpan(
-            children: [
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
               TextSpan(
-                text: '${store.streak}',
-                style: const TextStyle(
-                  fontSize: 38,
-                  fontWeight: FontWeight.w800,
-                ),
+                children: [
+                  TextSpan(
+                    text: '${store.streak}',
+                    style: const TextStyle(
+                      fontSize: 38,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' 天',
+                    style: TextStyle(fontSize: 15, color: HipColors.muted),
+                  ),
+                ],
               ),
-              const TextSpan(
-                text: ' 天',
-                style: TextStyle(fontSize: 15, color: HipColors.muted),
-              ),
-            ],
+            ),
           ),
         ),
         const Spacer(),
@@ -958,7 +1165,7 @@ class HipProgressPage extends StatelessWidget {
         HipPanel(
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.local_fire_department_outlined,
                 color: HipColors.tight,
               ),
@@ -973,7 +1180,7 @@ class HipProgressPage extends StatelessWidget {
               const Spacer(),
               Text(
                 '共 ${store.doneDays.length} 天',
-                style: const TextStyle(color: HipColors.muted),
+                style: TextStyle(color: HipColors.muted),
               ),
             ],
           ),
@@ -985,14 +1192,11 @@ class HipProgressPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text(
-                      '最近一次自测',
-                      style: TextStyle(color: HipColors.muted),
-                    ),
+                    Text('最近一次自测', style: TextStyle(color: HipColors.muted)),
                     const Spacer(),
                     Text(
                       '${result.level.name} · ${result.total}/12',
-                      style: const TextStyle(color: HipColors.jade),
+                      style: TextStyle(color: HipColors.jade),
                     ),
                   ],
                 ),
@@ -1015,7 +1219,7 @@ class HipProgressPage extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.event_seat_outlined, color: HipColors.jade),
+                  Icon(Icons.event_seat_outlined, color: HipColors.jade),
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
@@ -1057,7 +1261,7 @@ class HipProgressPage extends StatelessWidget {
                     store.reminders.deliversNotifications
                         ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00 提醒，点开直接做 2 分钟椅边放松'
                         : '已记下提醒时间。系统通知将在接入通知组件后生效；现在可以在首页随时开始 2 分钟椅边放松。',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: HipColors.muted,
                       height: 1.4,
@@ -1084,10 +1288,14 @@ class HipProgressPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        HipVoiceSettingsPanel(store: store),
+        const SizedBox(height: 12),
+        HipAppearancePanel(store: store),
+        const SizedBox(height: 12),
         HipPanel(
           padding: EdgeInsets.zero,
           child: ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.health_and_safety_outlined,
               color: HipColors.jade,
             ),
@@ -1101,7 +1309,7 @@ class HipProgressPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           '这是运动练习，不能替代医生的建议。',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12, color: HipColors.faint),
@@ -1113,3 +1321,235 @@ class HipProgressPage extends StatelessWidget {
 
 String reminderLabel(ReminderSettings r) =>
     r.enabled ? '每 ${r.intervalMinutes} 分钟' : '关闭';
+
+// ───────────────────────── settings: voice + appearance ─────────────────────
+
+/// A compact segmented control used in settings.
+class HipSegmented<T> extends StatelessWidget {
+  const HipSegmented({
+    super.key,
+    required this.values,
+    required this.selected,
+    required this.label,
+    required this.onChanged,
+    this.keyPrefix = 'seg',
+  });
+  final List<T> values;
+  final T selected;
+  final String Function(T) label;
+  final ValueChanged<T> onChanged;
+  final String keyPrefix;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: HipColors.surfaceHigh,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      children: [
+        for (final v in values)
+          Expanded(
+            child: GestureDetector(
+              key: ValueKey('$keyPrefix-$v'),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onChanged(v),
+              child: AnimatedContainer(
+                duration: HipMotion.fast,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: v == selected ? HipColors.surface : null,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: v == selected && !HipColors.isDark
+                      ? const [
+                          BoxShadow(color: Color(0x14000000), blurRadius: 6),
+                        ]
+                      : null,
+                  border: v == selected && HipColors.isDark
+                      ? Border.all(color: HipColors.line)
+                      : null,
+                ),
+                child: Text(
+                  label(v),
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: v == selected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    color: v == selected ? HipColors.text : HipColors.muted,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+Widget _settingsHeader(IconData icon, String title, {String? hint}) => Padding(
+  padding: const EdgeInsets.only(bottom: 10),
+  child: Row(
+    children: [
+      Icon(icon, color: HipColors.jade),
+      const SizedBox(width: 10),
+      Expanded(
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+        ),
+      ),
+      if (hint != null)
+        Text(hint, style: TextStyle(fontSize: 12, color: HipColors.muted)),
+    ],
+  ),
+);
+
+/// 语音播报: voice on/off, chimes on/off, language, volume, preview (#13).
+class HipVoiceSettingsPanel extends StatelessWidget {
+  const HipVoiceSettingsPanel({super.key, required this.store});
+  final HipStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    final v = store.voice;
+    return HipPanel(
+      key: const ValueKey('voice-settings'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _settingsHeader(Icons.record_voice_over_outlined, '语音播报'),
+          _switchRow(
+            key: const ValueKey('voice-switch'),
+            title: '人声口令',
+            subtitle: '动作预告、倒数、换边、要点提醒',
+            value: v.voice,
+            onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
+          ),
+          _switchRow(
+            key: const ValueKey('chime-switch'),
+            title: '提示音',
+            subtitle: '开始、结束和倒数的“滴”声',
+            value: v.chimes,
+            onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
+          ),
+          const SizedBox(height: 8),
+          Text('语言', style: TextStyle(fontSize: 13, color: HipColors.muted)),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: HipSegmented<VoiceLanguage>(
+              keyPrefix: 'voice-lang',
+              values: VoiceLanguage.values,
+              selected: v.language,
+              label: (l) => l.label,
+              onChanged: (l) => store.setVoice(v.copyWith(language: l)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(Icons.volume_down_rounded, color: HipColors.muted),
+              Expanded(
+                child: Slider(
+                  key: const ValueKey('voice-volume'),
+                  value: v.volume,
+                  onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
+                ),
+              ),
+              Icon(Icons.volume_up_rounded, color: HipColors.muted),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              key: const ValueKey('voice-preview'),
+              onPressed: v.voice || v.chimes ? () => _preview(context) : null,
+              icon: const Icon(Icons.play_circle_outline_rounded),
+              label: const Text('试听'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _preview(BuildContext context) {
+    final voice = HipVoice.of(context);
+    final q = voice.queue();
+    unawaited(voice.output.begin());
+    final cues = [
+      const VoiceCue(0, ['p.ready'], CuePriority.call),
+      for (var k = 3; k >= 1; k--)
+        VoiceCue(4.0 - k, ['chime.tick', 'n.$k'], CuePriority.count),
+      const VoiceCue(4, ['chime.start', 'p.go'], CuePriority.call),
+    ];
+    final start = DateTime.now();
+    var i = 0;
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      final t = DateTime.now().difference(start).inMilliseconds / 1000;
+      while (i < cues.length && cues[i].at <= t) {
+        q.submit(cues[i++], t);
+      }
+      q.tick(t);
+      if (i >= cues.length && t > 6) timer.cancel();
+    });
+  }
+
+  Widget _switchRow({
+    required Key key,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 15)),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 12, color: HipColors.muted),
+              ),
+            ],
+          ),
+        ),
+        Switch(key: key, value: value, onChanged: onChanged),
+      ],
+    ),
+  );
+}
+
+/// 外观: 跟随系统 / 浅色 / 深色 (#14).
+class HipAppearancePanel extends StatelessWidget {
+  const HipAppearancePanel({super.key, required this.store});
+  final HipStore store;
+  @override
+  Widget build(BuildContext context) => HipPanel(
+    key: const ValueKey('appearance-settings'),
+    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _settingsHeader(Icons.contrast_rounded, '外观'),
+        HipSegmented<HipThemeChoice>(
+          keyPrefix: 'theme',
+          values: HipThemeChoice.values,
+          selected: store.theme,
+          label: (c) => c.zh,
+          onChanged: store.setTheme,
+        ),
+      ],
+    ),
+  );
+}

@@ -31,6 +31,7 @@ function revealFirstFrame(generation) {
   if (generation !== frameGeneration || hasFrame || disposed || !active ||
       document.hidden || video.paused || video.readyState < 2) return;
   hasFrame = true;
+  video.classList.add('shown');
   frameRequest = rafRequest = null;
   emit('first-frame');
 }
@@ -123,6 +124,15 @@ window.__drillMediaSnapshot = () => ({id,active,disposed,hasFrame,mediaReady,pos
   time:video.currentTime,duration:video.duration,readyState:video.readyState,
   error:video.error?.code || null});
 // HipLab clips are hip-<id> (lower case). Copied from 3D-Body@a83a0f4
-// app/assets/drill_media/player.js; only this id rule differs.
+// app/assets/drill_media/player.js. HipLab changes: this id rule; and
+// (2026-10-17, round 1 #3) no `poster` attribute and the <video> stays
+// invisible until its first frame is composited – the Flutter host covers it
+// with the same poster – so Android's grey play/pause placeholder can never
+// show; object-fit/position and a theme variant folder come from the host.
+const fit = params.get('fit') === 'cover' ? 'cover' : 'contain';
+const pos = /^\d{1,3}% \d{1,3}%$/.test(params.get('pos') || '') ? params.get('pos') : '50% 50%';
+const variant = params.get('variant') === 'light' ? 'light/' : '';
+video.style.objectFit = fit;
+video.style.objectPosition = pos;
 if (!/^hip-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id || '')) emit('error');
-else { video.poster=`${id}.jpg`; video.src=`${id}.mp4`; }
+else { video.src=`${variant}${id}.mp4`; }
