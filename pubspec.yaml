@@ -1,0 +1,38 @@
+name: hiplab
+description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
+publish_to: 'none'
+version: 0.1.1+2
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Material/Cupertino localizations for the zh locale (date pickers, a11y labels).
+  flutter_localizations:
+    sdk: flutter
+  # On-device state (lib/core/storage/local_state_storage.dart).
+  shared_preferences: 2.5.6
+  # Drill clip player (lib/core/media/media_view_native.dart).
+  webview_flutter: 4.14.1
+  webview_flutter_android: 4.14.1
+  webview_flutter_wkwebview: 3.26.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/hip/
+    - assets/hip/posters/
+    - assets/hip/assessment/
+    - assets/drill_media/
+    - assets/licenses/
+  fonts:
+    - family: NotoSansSC
+      fonts:
+        - asset: assets/fonts/NotoSansSC.ttf

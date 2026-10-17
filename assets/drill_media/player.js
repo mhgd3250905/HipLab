@@ -1,0 +1,128 @@
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+const requestedPosterTime = Number(params.get('posterTime') || 0);
+const video = document.querySelector('#video');
+let active = params.get('active') !== 'false';
+let disposed = false;
+let playGeneration = 0;
+let hasFrame = false;
+let frameGeneration = 0;
+let frameRequest = null;
+let rafRequest = null;
+let mediaReady = false;
+let initialSeekPending = false;
+let initialSeekStarted = false;
+let posterTime = 0;
+let pendingPlay = false;
+const emit = type => {
+  if (disposed) return;
+  const event = {source:'drill-media', type, id, playing:!video.paused,
+    time:video.currentTime, duration:Number.isFinite(video.duration)?video.duration:0};
+  if (window.DrillMediaHost) window.DrillMediaHost.postMessage(JSON.stringify(event));
+  else parent.postMessage(event, location.origin);
+};
+function cancelFirstFrame() {
+  ++frameGeneration;
+  if (frameRequest !== null) video.cancelVideoFrameCallback?.(frameRequest);
+  if (rafRequest !== null) cancelAnimationFrame(rafRequest);
+  frameRequest = rafRequest = null;
+}
+function revealFirstFrame(generation) {
+  if (generation !== frameGeneration || hasFrame || disposed || !active ||
+      document.hidden || video.paused || video.readyState < 2) return;
+  hasFrame = true;
+  frameRequest = rafRequest = null;
+  emit('first-frame');
+}
+function watchFirstFrame() {
+  if (hasFrame || disposed || !active || document.hidden) return;
+  cancelFirstFrame();
+  const generation = frameGeneration;
+  if (typeof video.requestVideoFrameCallback === 'function') {
+    // Metadata and `play` do not prove a frame reached the compositor.
+    frameRequest = video.requestVideoFrameCallback(() => {
+      frameRequest = null;
+      revealFirstFrame(generation);
+    });
+  }
+}
+function fallbackFirstFrame() {
+  if (typeof video.requestVideoFrameCallback === 'function' || hasFrame ||
+      disposed || !active || document.hidden || video.paused) return;
+  cancelFirstFrame();
+  const generation = frameGeneration;
+  // Old WebViews: `playing` confirms available data; allow a paint between
+  // two animation frames before retiring the host's opaque poster.
+  rafRequest = requestAnimationFrame(() => {
+    if (generation !== frameGeneration || disposed) return;
+    rafRequest = requestAnimationFrame(() => revealFirstFrame(generation));
+  });
+}
+function stop() { ++playGeneration; pendingPlay=false; cancelFirstFrame(); video.pause(); }
+async function begin() {
+  if (!active || disposed || document.hidden) return;
+  if (!mediaReady) { pendingPlay=true; return; }
+  pendingPlay=false;
+  const generation = ++playGeneration;
+  watchFirstFrame();
+  try {
+    await video.play();
+    if (generation === playGeneration) fallbackFirstFrame();
+  } catch (error) {
+    if (generation === playGeneration) cancelFirstFrame();
+    if (error.name !== 'AbortError' && generation === playGeneration && active && !disposed) emit('error');
+  }
+}
+function signalReady() {
+  if (disposed || mediaReady) return;
+  initialSeekPending=false;
+  mediaReady=true;
+  emit('ready');
+  if (pendingPlay) void begin();
+}
+video.addEventListener('loadedmetadata', () => {
+  if (disposed || initialSeekStarted) return;
+  initialSeekStarted=true;
+  const duration = Number.isFinite(video.duration) ? video.duration : 0;
+  posterTime = Number.isFinite(requestedPosterTime)
+    ? Math.min(Math.max(0, requestedPosterTime), Math.max(0, duration - 1 / 30)) : 0;
+  if (posterTime === 0) { signalReady(); return; }
+  // Preserve the approved poster pose. Playback is not ready until the
+  // initial seek completes, and the host still covers this prepared frame.
+  initialSeekPending=true;
+  try { video.currentTime=posterTime; } catch { emit('error'); }
+});
+video.addEventListener('playing', fallbackFirstFrame);
+video.addEventListener('error', () => { cancelFirstFrame(); emit('error'); });
+for (const type of ['play','pause']) video.addEventListener(type, () => {
+  if (mediaReady) emit('state');
+});
+video.addEventListener('seeked', () => {
+  if (initialSeekPending) { signalReady(); return; }
+  if (mediaReady) emit('state');
+});
+window.drillMediaCommand = command => {
+  if (disposed || !command) return;
+  if (command.type === 'play') void begin();
+  if (command.type === 'pause') stop();
+  if (command.type === 'active') {
+    active = command.value === true;
+    if (!active) stop();
+  }
+  if (command.type === 'dispose') {
+    stop(); disposed=true; video.removeAttribute('src'); video.load();
+  }
+};
+window.addEventListener('message', event => {
+  if (event.origin === location.origin && event.source === parent &&
+      event.data?.source === 'drill-media-host') window.drillMediaCommand(event.data.command);
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+window.addEventListener('pagehide', stop);
+window.__drillMediaSnapshot = () => ({id,active,disposed,hasFrame,mediaReady,posterTime,playing:!video.paused,
+  time:video.currentTime,duration:video.duration,readyState:video.readyState,
+  error:video.error?.code || null});
+// HipLab clips are hip-<id> (lower case). Copied from 3D-Body@a83a0f4
+// app/assets/drill_media/player.js; only this id rule differs.
+if (!/^hip-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id || '')) emit('error');
+else { video.poster=`${id}.jpg`; video.src=`${id}.mp4`; }
