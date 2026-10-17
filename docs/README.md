@@ -1,6 +1,6 @@
 # HipLab 文档与开发台账
 
-本目录是 `E:\AII-3D\3D-Hip` 后续 main 主线开发的文档入口。当前可运行的 Android 版本为 **0.1.1+2**；应用成果仍在待合并分支上，远端 main 尚未集成。事实快照日期：2026-10-17，北京时间。
+本目录是主仓库 `mhgd3250905/HipLab`、本地 `E:\AII-3D\3D-Hip` 的文档入口，后续以 `main` 为开发基线。当前可运行的 Android 版本为 **0.1.1+2**；App、高清素材和台账已通过 #2、#1 集成至 main。事实快照日期：2026-10-17，北京时间。
 
 | 文档 | 用途 | 何时更新 |
 |---|---|---|
@@ -23,6 +23,7 @@
 | [媒体初始审计](media-audit-2026-10-17.md) | 制作前缺片、静帧和清晰度问题 |
 | [本地高清制作](local-hd-render-2026-10-17.md) | 4080、PR #119、46 项选版、绿幕/透明母帧与制作过程 |
 | [Android 实机记录](android-first-run-2026-10-17.md) | 首次安装及 0.1.1+2 保留数据更新、真机播放证据 |
+| [主线集成审核](mainline-integration-2026-10-17.md) | #2、#1 固定版本审核、合并身份和本地对齐 |
 | [早期 MVP 设计](hiplab-mvp-2026-10-16.md) | 从 3D-Body 变体拆仓前的设计背景 |
 
 逐条媒体来源以 [hip-media.json](../tools/hip_content/source/hip-media.json) 为准；[hip-content.json](../assets/hip/hip-content.json) 是生成结果。APK、截图、运行日志与设备数据备份在 Git 忽略目录内；文档中的本机路径不代表这些文件已备份到 GitHub。
