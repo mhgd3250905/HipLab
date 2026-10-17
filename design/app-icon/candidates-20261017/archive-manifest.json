@@ -1,0 +1,98 @@
+{
+  "kind": "hiplab-icon-design-candidates",
+  "created_date": "2026-10-17",
+  "source_thread": "01a04bb9-51db-73f0-bdb0-712d5e8f9705",
+  "source_directory": "E:\\AII\\ugk-icons\\output\\hiplab-icon-candidates-20261017",
+  "copy_mode": "original bytes, no image edits or resampling",
+  "selected_candidate": null,
+  "installed_in_app": false,
+  "files": [
+    {
+      "file": "A1-stretch-sprite-graphite.png",
+      "bytes": 1293249,
+      "sha256": "040c6cab5bee98b7a87e8ed18778967dfa60f71ed1bc8db4a194e8271fa72d68",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "A2-stretch-sprite-ivory.png",
+      "bytes": 1249635,
+      "sha256": "341f6a43e6612037d4883a560a6712f1ef1953991265a80af583e07369317215",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "B1-otter-graphite.png",
+      "bytes": 1253708,
+      "sha256": "4f6f3f54dc3ac32191ec57291861d5d0a211782dc3845fadeebb893dff5aedc4",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "B2-otter-ivory.png",
+      "bytes": 1258229,
+      "sha256": "30698c8752f99a0a5a38f6531fc094ca7358b2f85a87a321701c0ca3014a6372",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "C1-sprout-graphite.png",
+      "bytes": 1279349,
+      "sha256": "a14d975add15dc75c8af505dd5808e45c22de2c931a83b51f60bf091453e810f",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "C2-sprout-ivory.png",
+      "bytes": 1230491,
+      "sha256": "e9d43d34c8a7614312b543d4eba35588f176f5e61012a30f4de3770fff7ef92e",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "file": "A1-metadata.json",
+      "bytes": 500,
+      "sha256": "b3b85b68224cfc4bb9a763ccb810227c0376d70b8a66c140175a93ef3177a3ad"
+    },
+    {
+      "file": "A2-metadata.json",
+      "bytes": 497,
+      "sha256": "ace4933b2b354b028b489ee60c4057b23ba211ee501430c2ed6135df1a59be78"
+    },
+    {
+      "file": "B1-metadata.json",
+      "bytes": 604,
+      "sha256": "fd3799ad86784915a74610b079960348d85943d3d24d7ec2db97eaa292bb45a9"
+    },
+    {
+      "file": "B2-metadata.json",
+      "bytes": 601,
+      "sha256": "4efb2b4ed4d5cf519883ea85496aa4bbccc6010b22e1c9fffe87ded368388d97"
+    },
+    {
+      "file": "C1-metadata.json",
+      "bytes": 1119,
+      "sha256": "c88585f84283e8904e4bdb2bac4e3ec69f16b3bb49002ec8f342fb09c53f1e34"
+    },
+    {
+      "file": "C2-metadata.json",
+      "bytes": 1116,
+      "sha256": "19eea83b121030d1fdeda9fdb9f691082ebb222717dccf7809759435ff0e3495"
+    },
+    {
+      "file": "generation-report.md",
+      "bytes": 28751,
+      "sha256": "f0f5726229327a7464c764a2e34d8354864859476b417b6a6e8d101cec70c74d"
+    },
+    {
+      "file": "brand-color-notes.md",
+      "bytes": 1416,
+      "sha256": "828b97e43453578effcebf0a9cc12d35eef9d9a1c98df5467cfdd88359eddd2a"
+    },
+    {
+      "file": "prompts.json",
+      "bytes": 27573,
+      "sha256": "e29f3e3478073a8af795a742b4f2723a3b2b193592089142329f06940dd7f37c"
+    }
+  ]
+}

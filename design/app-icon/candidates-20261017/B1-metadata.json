@@ -1,0 +1,13 @@
+{
+  "label": "B1",
+  "file": "B1-otter-graphite.png",
+  "source_path": "C:/Users/29485/.codex/generated_images/01a1487f-c7a1-7e51-ad88-f5d287b19d98/exec-375b3d35-a282-40f2-afea-370e3555054c.png",
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1253708,
+  "provider": "built-in image_gen.imagegen; provider name not exposed",
+  "model": "not exposed by tool response",
+  "constraint_delivery": "main-prompt constraints",
+  "generation_count": 1,
+  "delivery": "Copied native result as-is; no resampling, post-processing or replacement. Exact prompt and constraint text are in prompts.json, candidate B1."
+}

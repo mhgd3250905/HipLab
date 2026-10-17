@@ -1,0 +1,14 @@
+{
+  "label": "C2",
+  "file": "E:/AII/ugk-icons/output/hiplab-icon-candidates-20261017/C2-sprout-ivory.png",
+  "source_path": "C:/Users/29485/.codex/generated_images/01a1487f-e4d7-7470-aa56-fffead7b92d9/exec-0da8ff9c-ec06-40ec-aa85-769d549efd3d.png",
+  "width": 1254,
+  "height": 1254,
+  "bytes": 1230491,
+  "provider": "Built-in image_gen tool",
+  "model": "未显示（工具返回未提供模型名称）",
+  "constraint_delivery": "main-prompt constraints",
+  "constraint_text": "Use no text, letters, watermark, border, frame, card, presentation mask, medical cross, anatomical pelvis, bones, unclothed human anatomy, exercise equipment, instructional pose diagram, extra subject, scenery, fragile lines, sharp tips, narrow gaps, unnecessary outlines, tiny details, decorative marks, photorealistic material, metal, glass, dramatic bevel, glossy hotspot, deep occlusion, extrusion, strong three-dimensional rendering, or external cast shadow. Keep the background solid and uniform, with no texture, halo, vignette, or lighting variation.",
+  "generation_count": 1,
+  "post_processing": "无；仅原样复制"
+}
