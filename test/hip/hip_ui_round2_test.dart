@@ -1,10 +1,12 @@
 // Round-2 UI polish (2026-10-18): segmented control, the custom icon set,
 // clean thumbnails, directional page transitions and shared-element heroes.
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 
@@ -101,5 +103,68 @@ void main() {
       await tester.pumpAndSettle();
       expect(store.minutes, 15);
     });
+  });
+
+  testWidgets('every glyph paints in both states, inside the 24 grid', (
+    tester,
+  ) async {
+    final key = GlobalKey();
+    for (final g in HipGlyph.values) {
+      for (final filled in [false, true]) {
+        await tester.pumpWidget(
+          Center(
+            child: RepaintBoundary(
+              key: key,
+              child: HipIcon(
+                g,
+                size: 48,
+                filled: filled,
+                color: const Color(0xff000000),
+              ),
+            ),
+          ),
+        );
+        final ink = await tester.runAsync(() async {
+          final boundary =
+              key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+          final image = await boundary.toImage();
+          final data = await image.toByteData();
+          final bytes = data!.buffer.asUint8List();
+          var painted = 0, edge = 0;
+          for (var y = 0; y < 48; y++) {
+            for (var x = 0; x < 48; x++) {
+              if (bytes[(y * 48 + x) * 4 + 3] > 40) {
+                painted++;
+                // Outside the 1-unit (2 px) outer margin of the grid.
+                if (x < 2 || y < 2 || x > 45 || y > 45) edge++;
+              }
+            }
+          }
+          image.dispose();
+          return (painted, edge);
+        });
+        expect(ink!.$1, greaterThan(40), reason: '$g filled=$filled is blank');
+        expect(ink.$2, 0, reason: '$g filled=$filled bleeds out of the grid');
+      }
+    }
+    // Ambient IconTheme colour and size are honoured (drop-in for Icon).
+    await tester.pumpWidget(
+      const IconTheme(
+        data: IconThemeData(size: 30, color: Color(0xff3ccfa4)),
+        child: Center(child: HipIcon(HipGlyph.play)),
+      ),
+    );
+    expect(tester.getSize(find.byType(HipIcon)), const Size(30, 30));
+    final painter =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(HipIcon),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter!
+            as HipIconPainter;
+    expect(painter.color, const Color(0xff3ccfa4));
   });
 }
