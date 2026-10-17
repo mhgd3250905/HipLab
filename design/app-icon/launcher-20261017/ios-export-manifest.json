@@ -1,0 +1,87 @@
+{
+  "source": "design/app-icon/launcher-20261017/foreground-source.png",
+  "source_sha256": "7a47256ed07228d8bf5d845fe95be027854835fd5eecc7648fc05a1954d16356",
+  "background": "#101316",
+  "fill_ratio": 0.8888888888888888,
+  "alpha_threshold": 8,
+  "launch_point_size": 120,
+  "files": [
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+      "pixels": "1024x1024",
+      "mode": "RGB",
+      "bytes": 218883,
+      "sha256": "e496f12403728f2bf42791db5fc25a8b02d81c0a36fe89ec95e4329630343372"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-40.png",
+      "pixels": "40x40",
+      "mode": "RGB",
+      "bytes": 1700,
+      "sha256": "f7be33a225d20ac5dedc78d2b1ec17c154f3520c3d78dcad30036a2a0e9bd392"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-60.png",
+      "pixels": "60x60",
+      "mode": "RGB",
+      "bytes": 2938,
+      "sha256": "063231a039899aff3a046ebefafe61370057a64bd7abacea314081b9324ecddb"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-58.png",
+      "pixels": "58x58",
+      "mode": "RGB",
+      "bytes": 2793,
+      "sha256": "16e5177cc91952117eee811bf74fdd0807d22c37b0e5591f434b7e47b830df1b"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-87.png",
+      "pixels": "87x87",
+      "mode": "RGB",
+      "bytes": 4843,
+      "sha256": "045e07ab6185144663569f1a03037ce0f5cdefb01928d8fff401328059812625"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-80.png",
+      "pixels": "80x80",
+      "mode": "RGB",
+      "bytes": 4277,
+      "sha256": "071a50e6cef3f31b41c12a1116ebc6679168ec51974e677427e0454c9737a684"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-120.png",
+      "pixels": "120x120",
+      "mode": "RGB",
+      "bytes": 7602,
+      "sha256": "009b71088fad2c751cdd269285d224f8e8a37937865f187d4051c059f4ab3197"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-180.png",
+      "pixels": "180x180",
+      "mode": "RGB",
+      "bytes": 13466,
+      "sha256": "cd6a3e9ffcefc8ea29d37931c7a7da4047fc68108beb0411f2cec1907277c12d"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png",
+      "pixels": "120x120",
+      "mode": "RGBA",
+      "bytes": 10513,
+      "sha256": "fc68cf17c1d149bee58588cc2931ab0779fbe0a17d5b7d6def75f336cb3b54d7"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png",
+      "pixels": "240x240",
+      "mode": "RGBA",
+      "bytes": 28395,
+      "sha256": "2eed3441a51c882e80f317821e4ca9944badd9b314bfa9c76b4822eaf4d0d0f2"
+    },
+    {
+      "file": "ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png",
+      "pixels": "360x360",
+      "mode": "RGBA",
+      "bytes": 53230,
+      "sha256": "44d184d9af7ab55defd46df0d03d0f94627f75c93af3969f0043ee379c9c6800"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
 import 'hip_assessment_page.dart';
 import 'hip_player_page.dart';
+import 'hip_privacy_page.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -1305,6 +1306,20 @@ class HipProgressPage extends StatelessWidget {
               MaterialPageRoute<void>(
                 builder: (_) => HipOnboarding(store: store, review: true),
               ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        HipPanel(
+          padding: EdgeInsets.zero,
+          child: ListTile(
+            key: const ValueKey('privacy-policy'),
+            leading: Icon(Icons.privacy_tip_outlined, color: HipColors.jade),
+            title: const Text('隐私政策'),
+            subtitle: const Text('离线阅读 · 数据保存在设备上'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const HipPrivacyPage()),
             ),
           ),
         ),

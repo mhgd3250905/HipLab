@@ -21,6 +21,32 @@ abstract class VoiceOutput {
   set volume(double v);
 }
 
+/// What the OS did to the app's audio mid-session.
+enum AudioInterruption {
+  /// A phone/FaceTime call, Siri, an alarm or another app took the audio
+  /// session: the session should pause (a follow-along can't continue
+  /// while the user is on the phone).
+  began,
+
+  /// The interruption is over and the audio session is active again.
+  /// The session stays paused until the user taps 继续.
+  ended,
+
+  /// Headphones / Bluetooth audio went away ("becoming noisy"): pause so
+  /// the coach doesn't suddenly talk out of the speaker.
+  unplugged,
+}
+
+/// Optional extra of a [VoiceOutput]: OS audio interruptions and a way to
+/// take the audio session back when the user resumes.
+abstract class InterruptibleVoiceOutput {
+  Stream<AudioInterruption> get interruptions;
+
+  /// Re-activate the audio session (and the iOS background keep-alive)
+  /// after a pause; safe to call when nothing was interrupted.
+  Future<void> reactivate();
+}
+
 /// Silent output (voice and chimes off, or widget tests).
 class MutedVoiceOutput implements VoiceOutput {
   const MutedVoiceOutput();

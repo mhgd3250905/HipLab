@@ -3,9 +3,12 @@
 // (no #101013 box before the clip loads), fit/align/variant passed to the
 // page so the clip matches the Flutter poster that covers it until the
 // first frame; nothing is drawn by the host until the web view exists.
+// iOS (2026-10-17): WKWebView has inline playback with no user action
+// required (already here), back/forward swipe off, inspectable in debug.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -81,6 +84,12 @@ class _MediaNativeState extends State<DrillMediaPlatformView> {
       final platform = view.platform;
       if (platform is AndroidWebViewController) {
         await platform.setMediaPlaybackRequiresUserGesture(false);
+      }
+      if (platform is WebKitWebViewController) {
+        // iOS: no edge-swipe history navigation inside the clip, and Safari
+        // Web Inspector can attach to debug builds on the Mac.
+        await platform.setAllowsBackForwardNavigationGestures(false);
+        await platform.setInspectable(kDebugMode);
       }
       if (!mounted) return;
       await view.setBackgroundColor(const Color(0x00000000));

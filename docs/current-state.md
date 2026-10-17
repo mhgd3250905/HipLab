@@ -12,7 +12,7 @@
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 用户验收 | 2026-10-17，用户确认本次 Android 0.1.2+3 更新测试通过 |
 | 验证设备 | 2602BRT18C，Android 16 / API 36，arm64 |
-| 产品范围 | 中文、离线；main 为深色。`feat/polish-round1`（待合并）加入浅色/深色/跟随系统主题和中英语音播报；Android 已运行，iOS 尚未构建与实机验证 |
+| 产品范围 | 中文、离线；main 为深色。`feat/polish-round1`（待合并）加入浅色/深色/跟随系统主题和中英语音播报；Android 已运行；iOS 配置在 `feat/ios`（静态验证完成），尚未在 Mac 构建与实机验证 |
 | 动作素材 | 46 项动作全视频（45 MVP + 1 备选），另有 1 条专用自测剪辑，共 47 对视频/封面，均为 1080 |
 | 自测素材 | 6 项自测均解析为视频；20 张评分静图保持原样，并未升级为 1080 |
 | 运行验证 | 构建、覆盖安装、冷启动和一条原生 WebView 视频播放通过；数据文件逐字节保持 |
@@ -52,6 +52,12 @@
 
 用户 14 条问题中，本分支完成 1（全 App 媒体圆角框）、2（自测首页重排）、3（视频首帧占位不闪）、4（「托马斯测试」改「屈髋肌测试」+ 大字体不重叠）、5（分侧项明确「现在测右边」、防重复点击）、7（标题并入顶栏）、9（无分侧动作不留空行；脚部渲染另修）、11（引导页专属主视觉 A 套）、12（统一过渡动效与预加载）、13（中英语音播报，edge-tts Xiaoxiao / Jenny 预生成 244+244 条）、14（浅色/深色/跟随系统）及 D-01 紧侧加练。问题 6、8、10 与 9 的脚部朝向属于媒体重做，在 `fix/motion-media` 分支。尚未打包安装到手机，未做真机验收。
 
+## iOS 版本（2026-10-17，分支 `feat/ios`，PR #9 待合并）
+
+`feat/ios` 从 `feat/polish-round1`（#7，tag `round1-app-v1` → `44db1fe`）切出，合入 `fix/motion-media`（#8，tag `round1-media-v1` → `0d07587`，无冲突，`hip-content.json` 重新生成无差异），因此包含第一轮全部成果。iOS 里程碑 tag：`ios-v0.1-config`（工程身份）、`ios-v0.2-icon-launch`（图标与启动页）、`ios-v0.3-audio`（音频会话与中断）、`ios-v0.4-video`（WKWebView 示范）、`ios-v0.5-safearea`（安全区截图自查）、`ios-v0.6-docs`（说明与台账）。
+
+Bundle ID `com.ugk.hiplab`、iOS 15.0、仅 iPhone 竖屏、中英显示名、SwiftPM（无 Podfile），站姿开髋 AppIcon、跟随系统的启动页，playback + 按句 duckOthers、中断自动暂停，WKWebView 示范锁屏回来继续。只做了静态检查与 iOS 目标平台 widget 测试，**未在 Mac/Xcode 构建，未上真机**；Mac 步骤与真机确认清单见 [iOS 运行与上架说明](ios-setup-and-release.md)。
+
 ## 当前限制
 
-main 上紧侧加练计时缺陷仍在，修复在 `feat/polish-round1` 待合并；系统通知、iOS 图标、正式发布签名、iOS 验证和 CI 尚未完成。Android 彩色图标已实机验证，单色图层未做手机主题切换验证。完整事项和验收要求统一维护在[开发事项台账](development-roadmap.md)，不继续把已完成的缺片或 Android 占位图标作为当前待办。
+main 上紧侧加练计时缺陷仍在，修复在 `feat/polish-round1` 待合并；iOS 图标与工程配置在 `feat/ios` 待合并；系统通知、正式发布签名、iOS 构建与真机验证和 CI 尚未完成。Android 彩色图标已实机验证，单色图层未做手机主题切换验证。完整事项和验收要求统一维护在[开发事项台账](development-roadmap.md)，不继续把已完成的缺片或 Android 占位图标作为当前待办。
