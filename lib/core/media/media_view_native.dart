@@ -1,5 +1,8 @@
 // Copied from 3D-Body@a83a0f4 (branch feat/hiplab-flavor) `app/lib/platform/drill_media/media_view_native.dart`.
-// Only the import paths changed.
+// Changed in HipLab 2026-10-17 (round 1 #3/#12): transparent web view
+// (no #101013 box before the clip loads), fit/align/variant passed to the
+// page so the clip matches the Flutter poster that covers it until the
+// first frame; nothing is drawn by the host until the web view exists.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -17,10 +20,21 @@ class DrillMediaPlatformView extends StatefulWidget {
     required this.media,
     required this.controller,
     required this.labels,
+    this.fit = 'contain',
+    this.align = Alignment.center,
+    this.variant,
   });
   final DrillMedia media;
   final DrillMediaController controller;
   final Map<String, String> labels;
+
+  /// CSS object-fit of the clip ('contain' | 'cover'); matches the poster's
+  /// BoxFit so the poster → video hand-over does not jump.
+  final String fit;
+  final Alignment align;
+
+  /// 'light' → play `light/<id>.mp4` (theme-matched render), else default.
+  final String? variant;
   @override
   State<DrillMediaPlatformView> createState() => _MediaNativeState();
 }
@@ -69,7 +83,7 @@ class _MediaNativeState extends State<DrillMediaPlatformView> {
         await platform.setMediaPlaybackRequiresUserGesture(false);
       }
       if (!mounted) return;
-      await view.setBackgroundColor(const Color(0xff101013));
+      await view.setBackgroundColor(const Color(0x00000000));
       await view.enableZoom(false);
       await view.addJavaScriptChannel(
         'DrillMediaHost',
@@ -109,6 +123,11 @@ class _MediaNativeState extends State<DrillMediaPlatformView> {
                 'posterTime': widget.media.posterTime.toString(),
                 'labels': jsonEncode(widget.labels),
                 'active': widget.controller.active.toString(),
+                'fit': widget.fit,
+                'pos':
+                    '${((widget.align.x + 1) * 50).round()}% '
+                    '${((widget.align.y + 1) * 50).round()}%',
+                'variant': ?widget.variant,
               },
             ),
       );
@@ -134,7 +153,7 @@ class _MediaNativeState extends State<DrillMediaPlatformView> {
   @override
   Widget build(BuildContext context) {
     final view = _webView;
-    if (view == null) return const ColoredBox(color: Color(0xff101013));
+    if (view == null) return const SizedBox.expand();
     return WebViewWidget(controller: view);
   }
 
