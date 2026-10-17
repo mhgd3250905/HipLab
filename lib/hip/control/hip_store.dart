@@ -8,6 +8,8 @@ import '../domain/hip_models.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_progress.dart';
 import '../domain/hip_session.dart';
+import '../domain/hip_settings.dart';
+import '../voice/voice_queue.dart';
 
 /// All HipLab state lives on the device under one key (kept distinct from
 /// FlareLab's `LearningStore` key from the time both shared one project).
@@ -42,6 +44,12 @@ class HipStore extends ChangeNotifier {
   bool askNumbness = false;
   int minutes = 10;
   HipScene scene = HipScene.home;
+
+  /// 外观: 跟随系统 / 浅色 / 深色 (#14).
+  HipThemeChoice theme = HipThemeChoice.system;
+
+  /// 语音播报 (#13).
+  VoiceSettings voice = const VoiceSettings();
 
   bool get onboarded => safety != null && identity != null;
   bool get blocked => safety?.values.any((v) => v) ?? false;
@@ -127,6 +135,12 @@ class HipStore extends ChangeNotifier {
         ? j['minutes'] as int
         : 10;
     scene = j['scene'] == 'chair' ? HipScene.chair : HipScene.home;
+    theme = HipThemeChoice.byId(j['theme'] as String?);
+    if (j['voice'] is Map) {
+      voice = VoiceSettings.fromJson(
+        Map<String, dynamic>.from(j['voice'] as Map),
+      );
+    }
   }
 
   Map<String, Object?> toJson() => {
@@ -148,6 +162,8 @@ class HipStore extends ChangeNotifier {
     'askNumbness': askNumbness,
     'minutes': minutes,
     'scene': scene.id,
+    'theme': theme.id,
+    'voice': voice.toJson(),
   };
 
   Future<void> _save() async {
@@ -202,6 +218,16 @@ class HipStore extends ChangeNotifier {
 
   Future<void> answerNumbness({required bool stillNumb}) {
     askNumbness = stillNumb;
+    return _save();
+  }
+
+  Future<void> setTheme(HipThemeChoice value) {
+    theme = value;
+    return _save();
+  }
+
+  Future<void> setVoice(VoiceSettings value) {
+    voice = value;
     return _save();
   }
 
