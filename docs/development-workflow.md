@@ -1,29 +1,26 @@
 # 主线开发工作流
 
-本工作目录 `E:\AII-3D\3D-Hip` 用于后续 HipLab main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态；台账不会自动替代 GitHub 合并。
+本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，本工作目录 `E:\AII-3D\3D-Hip` 用于后续 main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态。
 
-## 首次主线集成
+## 主线基线与更新
 
-当前成果在 `codex/project-takeover`，不要从仍为初始化提交的 main 另做一份 App。先完成 HipLab #2 → `feat/initial-migration`，再由 #1 → main 的审核合并。若 #1 先合并，先调整 #2 目标到 main，重新核对差异。合并由仓库主人完成或另行明确授权；本次文档整理没有执行合并。
+2026-10-17 已按用户明确授权完成 HipLab #2 → `feat/initial-migration`、#1 → main 的审核合并，首次业务集成提交 `656ee28`，来源与验证见[集成记录](mainline-integration-2026-10-17.md)。本地 main 已跟踪 origin/main，App 与制作成果不再停留在迁移分支。
 
-本地 fetch 已改为 `+refs/heads/*:refs/remotes/origin/*`，可正常看到 `origin/main`。确认 GitHub 合并完成、工作区干净后，更新主线：
+本地 fetch 为 `+refs/heads/*:refs/remotes/origin/*`。工作区干净时更新主线：
 
 ```powershell
 git status --short --branch
 git fetch origin
 git log -5 --oneline origin/main
-# 首次没有本地 main 时执行：
-git switch --track origin/main
-# 以后已有本地 main 时执行：
-# git switch main
+git switch main
 git pull --ff-only
 ```
 
-切换前确认 main 确实包含当前应用成果；不要 reset、丢弃未提交工作或强推。合并后回读 PR 状态与 main SHA，更新当前状态和 D-02。
+不要 reset、丢弃未提交工作或强推；如 `--ff-only` 失败，先检查本地与远端分叉，不自动覆盖任何一方。合并后回读 PR 状态与 main SHA并更新台账。
 
 ## 日常开发
 
-从同步后的 main 建功能/修复分支，按事项 ID 记录目标与验收条件。遵循 [AGENTS.md](../AGENTS.md) 的分支 + PR 约定；“在这里进行 main 主线开发”表示工作围绕主线持续集成，不自动改变主人审核合并的边界。
+从同步后的 main 建功能/修复分支，按事项 ID 记录目标与验收条件。遵循 [AGENTS.md](../AGENTS.md) 的分支 + PR 约定，由仓库主人审核合并或按其明确授权由代理执行。已有明确授权不重复询问，执行前仍核对目标和版本。
 
 Dart 改动完成后运行 analyze 和 test，必要时做真机验证。当前本机解析缓存已可运行：
 

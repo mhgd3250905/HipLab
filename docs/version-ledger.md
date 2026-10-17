@@ -7,7 +7,7 @@
 | 0.1.0+1 | 2026-10-17 | Android debug 首次安装、启动通过 | 原迁移基线 `2865ed7`，首次安全引导截图；[首次运行记录](android-first-run-2026-10-17.md)下半部分 |
 | **0.1.1+2** | **2026-10-17 13:15** | **Android debug 保留数据覆盖安装、冷启动、视频播放通过** | 应用提交 `35f2a977530bdcc6ab7e7caa9aa1d76dfe0bc53d`；46 动作 + 1 自测剪辑、47 张封面升级至 1080；[更新记录](android-first-run-2026-10-17.md)上半部分 |
 
-两版均非商店发布。0.1.1+2 尚在 [HipLab #2](https://github.com/mhgd3250905/HipLab/pull/2)，没有将手机已安装等同于 main 已合并。
+两版均非商店发布。0.1.1+2 已通过 [HipLab #2](https://github.com/mhgd3250905/HipLab/pull/2)、[HipLab #1](https://github.com/mhgd3250905/HipLab/pull/1) 集成至 main（首次业务集成 `656ee28`）；合并未改应用文件，也未重建或重新安装 APK，手机安装基线仍为 `35f2a97`。详见[集成记录](mainline-integration-2026-10-17.md)。
 
 ## 0.1.1+2 产物身份
 

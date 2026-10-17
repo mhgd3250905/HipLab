@@ -19,17 +19,17 @@
 
 ## Git 与主线集成
 
-本工作目录是今后 HipLab 主线开发入口。**远端 main 尚未包含当前 App**；不要切回旧 main 后把其状态误认成最新成果。台账创建时分支为 `codex/project-takeover`，应用代码基线为 `35f2a97`，文档继续提交在同一分支。
+**`mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是后续开发基线。** 按用户“审核合并、保存提交 push 对齐到最新”的明确授权，已将接手分支通过 #2、#1 合入 main；本机已建立跟踪 `origin/main` 的本地 main。应用代码基线仍为已安装的 `35f2a97`，本轮未修改应用代码或重新安装。
 
 | 对象 | 2026-10-17 核对结果 |
 |---|---|
-| HipLab `main` | `f983950e505fce01b16aeb1d329c65da21e7ac02`，仍为仓库初始化提交 |
-| [HipLab #1](https://github.com/mhgd3250905/HipLab/pull/1) | OPEN，`feat/initial-migration` → `main`，源 `2865ed7` |
-| [HipLab #2](https://github.com/mhgd3250905/HipLab/pull/2) | OPEN / draft，`codex/project-takeover` → `feat/initial-migration`；高清 App 与本台账所在 PR |
+| HipLab `main` | 已包含 App、高清素材与台账；首次业务集成提交 `656ee28daf1a0335f28c28fd2ac802e8dd20b6b7`，后续文档提交继续在其上集成 |
+| [HipLab #1](https://github.com/mhgd3250905/HipLab/pull/1) | MERGED，`feat/initial-migration` → `main`，2026-10-17 13:59:40，merge `656ee28` |
+| [HipLab #2](https://github.com/mhgd3250905/HipLab/pull/2) | MERGED，`codex/project-takeover` → `feat/initial-migration`，2026-10-17 13:59:14，merge `e52b3c2` |
 | [3D-Body #119](https://github.com/mhgd3250905/3D-Body/pull/119) | 已合并，2026-10-17 10:29，merge `ae81d96f271a18129abbf6afc7064cfd9dd1d8c3` |
 | [3D-Body #120](https://github.com/mhgd3250905/3D-Body/pull/120) | OPEN / draft，制作工具与修订规格 → `master`，源 `f8b5138` |
 
-本地原先只抓取 `feat/initial-migration`，现已改为抓取所有远端分支并取得 `origin/main`；没有切换分支或代为合并。下一步由仓库主人审核，将 #2 合入迁移分支，再把 #1 合入 main；若先合并 #1，应先调整 #2 目标并复核差异。完成后再从更新后的 main 继续开发，见[工作流](development-workflow.md)。PR 状态是上述日期快照，操作前回读 GitHub。
+本地原先只抓取 `feat/initial-migration`，现已改为抓取所有远端分支。合并前后核验源 SHA、目标 SHA 和完整文件树，main 集成结果与已审核版本一致；原接手分支保留。细节见[主线集成审核](mainline-integration-2026-10-17.md)，日常更新见[工作流](development-workflow.md)。PR 状态是上述日期快照，操作前回读 GitHub。
 
 ## 本机环境和素材位置
 
