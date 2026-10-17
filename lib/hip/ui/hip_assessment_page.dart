@@ -860,16 +860,11 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
         child: HipMediaFrame(
           radius: 22,
           color: HipColors.surface,
+          // A calm 2 px accent edge (no glow halo) plus the tinted footer
+          // and the check badge carry the selection.
           borderColor: selected ? HipColors.jade : HipColors.line,
-          borderWidth: selected ? 2.5 : 1,
-          shadow: selected
-              ? [
-                  BoxShadow(
-                    color: HipColors.jade.withValues(alpha: .28),
-                    blurRadius: 18,
-                  ),
-                ]
-              : HipColors.cardShadow,
+          borderWidth: selected ? 2 : 1,
+          shadow: HipColors.cardShadow,
           overlays: [
             Positioned(
               right: 9,
@@ -1153,7 +1148,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                   const SizedBox(width: 12),
                   HipThumb(
                     size: 96,
-                    radius: 14,
+                    radius: 10,
                     child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),
                 ],
@@ -1166,7 +1161,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                   for (final p in steps.skip(1).take(4)) ...[
                     HipThumb(
                       size: 48,
-                      radius: 12,
+                      radius: 10,
                       child: HipDrillArt(
                         drill: p.drill,
                         showPendingLabel: false,
