@@ -20,10 +20,13 @@ Usage (from the repository root):
   python3 tools/sync_drill_media.py                               # default ../3D-Body checkout
   python3 tools/sync_drill_media.py --threed-body ~/src/3D-Body   # another checkout
   python3 tools/sync_drill_media.py --out D:/renders/out --ids n-prone-ir s-pigeon
+  python3 tools/sync_drill_media.py --size 1080 --crf 18 --poster-size 1080 --force
+                                                                  # replace existing app clips in HD
   python3 tools/sync_drill_media.py --library                     # also refresh the FlareLab
                                                                   # library clips listed with "asset"
 
 Needs ffmpeg and ffprobe on PATH.
+Frame timing is preserved from the source; low-FPS renders are not duplicated to 30 FPS.
 """
 import argparse
 import csv
@@ -58,20 +61,21 @@ def duration(path):
     return float(out.decode().strip())
 
 
-def encode(src, dst, ss=None, to=None):
+def encode(src, dst, ss=None, to=None, *, size=720, crf=27):
     cmd = ['ffmpeg', '-y', '-loglevel', 'error']
     if ss is not None:
         cmd += ['-ss', str(ss)]
     if to is not None:
         cmd += ['-to', str(to)]
-    cmd += ['-i', src, '-an', '-vf', 'scale=720:720:flags=lanczos,fps=30', '-c:v', 'libx264',
-            '-preset', 'slow', '-crf', '27', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', dst]
+    cmd += ['-i', src, '-an', '-vf', f'scale={size}:{size}:flags=lanczos',
+            '-fps_mode', 'passthrough', '-c:v', 'libx264',
+            '-preset', 'slow', '-crf', str(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', dst]
     run(cmd)
 
 
-def poster(src, t, dst):
+def poster(src, t, dst, *, size=540):
     run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{t:.3f}', '-i', src, '-frames:v', '1',
-         '-vf', 'scale=540:540:flags=lanczos', '-q:v', '4', dst])
+         '-vf', f'scale={size}:{size}:flags=lanczos', '-q:v', '4', dst])
 
 
 def still_at(specs, drill_id):
@@ -114,7 +118,44 @@ def update_csv(rendered_ids, dry):
     return changed
 
 
-def main():
+def image_size(value):
+    try:
+        size = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError('size must be an even integer between 128 and 4096')
+    if not 128 <= size <= 4096 or size % 2:
+        raise argparse.ArgumentTypeError('size must be an even integer between 128 and 4096')
+    return size
+
+
+def crf_value(value):
+    try:
+        crf = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError('CRF must be an integer between 0 and 51')
+    if not 0 <= crf <= 51:
+        raise argparse.ArgumentTypeError('CRF must be an integer between 0 and 51')
+    return crf
+
+
+def video_metadata(previous, secs, pt, source, encoded, args):
+    # Keeping an existing video must not relabel it with a different render batch.
+    metadata = {} if encoded else dict(previous or {})
+    metadata.update(duration_seconds=secs, poster_time_seconds=pt,
+                    source=source if encoded else metadata.get('source') or source)
+    if encoded:
+        metadata.update(encode_size=args.size, encode_crf=args.crf,
+                        poster_size=args.poster_size, frame_timing='source')
+        for name in ('source_commit', 'source_batch', 'source_pixel_ratio'):
+            value = getattr(args, name)
+            if value is not None:
+                metadata[name] = value
+    else:
+        metadata['poster_size'] = args.poster_size
+    return metadata
+
+
+def parse_args(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--threed-body', default=os.path.join(ROOT, '..', '3D-Body'),
                     help='3D-Body checkout (default: ../3D-Body next to this repository)')
@@ -122,10 +163,26 @@ def main():
     ap.add_argument('--specs', help='drill-anim specs, for poster times (default: <3D-Body>/tools/drill-anim/specs)')
     ap.add_argument('--ids', nargs='*', help='only these drill ids')
     ap.add_argument('--force', action='store_true', help='re-encode even when the app copy is newer')
+    ap.add_argument('--size', type=image_size, default=720,
+                    help='square video size in pixels (even, 128-4096; default: 720); use --force to replace existing clips')
+    ap.add_argument('--crf', type=crf_value, default=27,
+                    help='H.264 CRF (0-51, lower is better; default: 27); use --force to replace existing clips')
+    ap.add_argument('--poster-size', type=image_size, default=540,
+                    help='square poster size in pixels (even, 128-4096; default: 540)')
+    ap.add_argument('--source-commit', help='source Git commit recorded for newly encoded clips')
+    ap.add_argument('--source-batch', help='render batch identity recorded for newly encoded clips')
+    ap.add_argument('--source-pixel-ratio', help='source pixel ratio (for example 2), recorded for newly encoded clips')
     ap.add_argument('--library', action='store_true',
                     help='also copy the FlareLab library clips listed with "asset" from <3D-Body>/app/assets/drill_media')
     ap.add_argument('--dry-run', action='store_true', help='report only; change nothing')
-    a = ap.parse_args()
+    return ap.parse_args(argv)
+
+
+def main(argv=None):
+    a = parse_args(argv)
+
+    print(f'video {a.size}x{a.size}, H.264 CRF {a.crf}, source frame timing; '
+          f'poster {a.poster_size}x{a.poster_size}')
 
     tb = os.path.abspath(a.threed_body)
     out = os.path.abspath(a.out or os.path.join(tb, 'tools', 'drill-anim', 'out'))
@@ -158,13 +215,12 @@ def main():
         if a.dry_run:
             continue
         if stale:
-            encode(src, mp4)
+            encode(src, mp4, size=a.size, crf=a.crf)
         secs = round(duration(mp4), 2)
         pt = round(min(still_at(specs, drill_id), secs - 0.1), 2)
-        poster(mp4, pt, jpg)
-        old = videos.get(drill_id, {}).get('source')
-        videos[drill_id] = {'duration_seconds': secs, 'poster_time_seconds': pt,
-                            'source': old if old and not stale else f'3D-Body tools/drill-anim specs/{drill_id}.js, glow-B'}
+        poster(mp4, pt, jpg, size=a.poster_size)
+        videos[drill_id] = video_metadata(videos.get(drill_id), secs, pt,
+            f'3D-Body tools/drill-anim specs/{drill_id}.js, glow-B', stale, a)
 
     for key, (drill_id, start, end, pt) in DEMO_CUTS.items():
         if drill_id not in rendered:
@@ -174,10 +230,10 @@ def main():
             continue
         src = os.path.join(out, drill_id + '.mp4')
         mp4, jpg = os.path.join(DM, f'hip-{key}.mp4'), os.path.join(DM, f'hip-{key}.jpg')
-        encode(src, mp4, start, end)
-        poster(mp4, pt, jpg)
-        videos[key] = {'duration_seconds': round(duration(mp4), 2), 'poster_time_seconds': pt,
-                       'source': f'cut from {drill_id} {start}-{end} s'}
+        encode(src, mp4, start, end, size=a.size, crf=a.crf)
+        poster(mp4, pt, jpg, size=a.poster_size)
+        videos[key] = video_metadata(videos.get(key), round(duration(mp4), 2), pt,
+                                     f'cut from {drill_id} {start}-{end} s', True, a)
 
     if a.library:
         lib = os.path.join(tb, 'app', 'assets', 'drill_media')

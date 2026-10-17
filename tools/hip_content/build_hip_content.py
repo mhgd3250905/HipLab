@@ -327,7 +327,7 @@ def main():
         'assessment': assessment(),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, 'w', encoding='utf-8') as f:
+    with open(OUT, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(data, f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write('\n')
     media = {}
