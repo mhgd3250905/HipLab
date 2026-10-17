@@ -4,7 +4,7 @@
 
 已保留旧 feat/ios 主工作区和证据，从最新 main `12f1438` 开 `ios/store-release-032`。新增 iOS 专属隐私披露/链接回归，源 `9c2802f`；未改版本、依赖或素材。117 项测试、analyze、92 资源 SHA 和 Release Archive 通过。因旧 Hip Interlude 已有不同 Bundle ID 的构建，新建独立 HipLab 条目；专用分发 profile 配合已有证书验签，Xcode 上传 0.3.2（7）成功，Apple 已处理完成，加入内部组并邀请当前账号，自动分发关闭。
 
-[PR #11](https://github.com/mhgd3250905/HipLab/pull/11) 将 iOS 隐私/支持页发布到 gh-pages，HTTP 200 核验完成；商店四张新规格原生截图已保存。正式审核联系人缺失，且本次 TestFlight 精确 Build 尚无真机验收，未发布隐私标签、未提交正式审核或公开发布。旧 0.1.2+3 iPhone 16 Pro / iOS 26.5 可运行及用户确认作为历史证据保留。详见[iOS 交付记录](ios-store-release-2026-10-18.md)。
+[PR #11](https://github.com/mhgd3250905/HipLab/pull/11) 将 iOS 隐私/支持页发布到 gh-pages，HTTP 200 核验完成；商店四张新规格原生截图已保存。随后复用同一账号中经 HipLab 支持身份匹配的本人既有审核联系人，正式/Beta 联系人与正式版本 Build 7 关联保存成功，独立页面回读通过。精确 TestFlight Build 尚无真机验收（devicectl 显示设备不可连接），未发布隐私标签、未提交正式审核或公开发布。旧 0.1.2+3 iPhone 16 Pro / iOS 26.5 可运行及用户确认作为历史证据保留。详见[iOS 交付记录](ios-store-release-2026-10-18.md)。
 
 只记有意义的结果和决策，完整事实分别归当前状态、版本、验证和事项台账。时间均为北京时间。
 
