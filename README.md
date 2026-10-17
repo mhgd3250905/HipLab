@@ -4,7 +4,7 @@
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`
 - App 名：开胯训练助手（iOS `CFBundleName` 为 HipLab）
-- Dart ^3.12.2；本机已验证 Flutter 3.44.7，原迁移 PR 声明 3.47.7，团队 SDK 尚待统一。只支持 Android / iOS，目前中文、深色
+- Dart ^3.12.2；本机已验证 Flutter 3.44.7，原迁移 PR 声明 3.47.7，团队 SDK 尚待统一。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
 后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。台账快照日期为 2026-10-17。
 
@@ -24,7 +24,8 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 flutter pub get
 flutter analyze
 flutter test                                   # 单元 + 界面流程 + 资源边界测试
-flutter test test_screens/hip_shots_test.dart  # 可选：4 张 390×844 截图 → test/_shots/hip/（不提交）
+flutter test test_screens/hip_shots_test.dart  # 可选：界面截图 → test/_shots/hip/（不提交）
+python3 tools/voice/build_voice.py             # 重新生成语音（edge-tts，需联网）→ assets/voice/
 
 flutter run
 flutter build apk --release                    # → com.ugk.hiplab
@@ -41,11 +42,14 @@ lib/main.dart                  入口
 lib/hip/domain/                纯规则（自测计分、今日训练、疼痛阶梯、连续天数、提醒时间表），全部单测
 lib/hip/control/hip_store.dart 本地持久化（SharedPreferences，单 key hiplab.state.v1）
 lib/hip/ui/                    安全图卡/身份 → 首页 → 自测 → 结果 → 跟练播放器 → 进度/设置
-lib/core/                      从 3D-Body 复制来的公共代码（见下表）
+lib/hip/voice/                 语音播报：会话阶段/台词时间线、播放队列、just_audio 输出（ducking、iOS 后台保活）
+lib/core/                      从 3D-Body 复制来的公共代码（见下表）；lib/core/platform/screen_awake.dart 会话期间屏幕常亮
 assets/hip/hip-content.json    内容包（脚本生成，不要手改）
 assets/hip/posters/            历史原型静帧（当前 46 项动作均已接入视频）
 assets/hip/assessment/         自测对比图（20 张）
-assets/drill_media/            动作成片 hip-<id>.mp4 + .jpg，以及 WebView 播放器 player.html/js/css
+assets/drill_media/            动作成片 hip-<id>.mp4 + .jpg，以及 WebView 播放器 player.html/js/css；light/ 放浅色版后自动用于浅色主题
+assets/hip/onboarding/         引导页三问主视觉（深/浅各 3 张；换 B 套：tools/onboarding_art/import_onboarding_art.py <目录> B）
+assets/voice/                  预生成语音 zh/ en/ chime/ + manifest.json（tools/voice/ 生成）
 assets/fonts/NotoSansSC.ttf    字体（OFL）
 tools/hip_content/             内容包生成脚本 + 第 0 阶段源文件（动作表 csv、成套训练 md、自测设计 md、hip-media.json）
 tools/sync_drill_media.py      从 3D-Body drill-anim 同步成片并重生成内容包
@@ -103,4 +107,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。当前优先处理紧侧加练计时分配缺陷和全量真机体验验收；系统通知、正式发布签名、iOS、CI 与主题适配仍待推进。主线集成、46 项动作高清交付、Android 正式图标与 0.1.2+3 安装已完成。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一轮修改（主题、语音、自测与引导页重做、紧侧加练修复）在 `feat/polish-round1` 待合并，之后优先真机验收与 Android 锁屏前台服务（D-10）；系统通知、正式发布签名、iOS、CI 仍待推进。主线集成、46 项动作高清交付、Android 正式图标与 0.1.2+3 安装已完成。
