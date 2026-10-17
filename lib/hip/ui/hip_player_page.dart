@@ -66,6 +66,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   String? _ladderCue;
   String? _subtitle;
   Timer? _ticker;
+  StreamSubscription<AudioInterruption>? _interruptions;
   int _shownSecond = -1;
   SessionPhase? _shownPhase;
 
@@ -86,6 +87,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     if (_voice.settings.voice || _voice.settings.chimes) {
       unawaited(_voice.output.begin());
     }
+    if (_voice.output case final InterruptibleVoiceOutput out) {
+      _interruptions = out.interruptions.listen(_onInterruption);
+    }
     ScreenAwake.acquire();
     _ticker = Timer.periodic(const Duration(milliseconds: 100), (_) => _tick());
     _tick();
@@ -95,6 +99,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   void dispose() {
     if (_ready) ScreenAwake.release();
     _ticker?.cancel();
+    unawaited(_interruptions?.cancel());
     _queue.cancelAll(_clock.t);
     unawaited(_voice.output.end());
     super.dispose();
@@ -151,9 +156,25 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     widget.store.completeSession(_ladder);
   }
 
+  /// A call, Siri, an alarm or unplugged headphones (iOS / Android audio
+  /// session): pause silently so nothing is missed; the user resumes with
+  /// 继续 once they are back. The interruption ending does not auto-resume.
+  void _onInterruption(AudioInterruption e) {
+    if (!mounted || _stopped || _engine.done) return;
+    if (e == AudioInterruption.ended || _paused) return;
+    _queue.cancelAll(_clock.t);
+    _clock.pause();
+    setState(() {});
+  }
+
   void _togglePause() {
     final t = _clock.t;
     if (_paused) {
+      if (_voice.output case final InterruptibleVoiceOutput out) {
+        // Take the audio session back in case an interruption ended
+        // without telling us (iOS does not always send the end event).
+        unawaited(out.reactivate());
+      }
       _clock.resume();
       _queue.submit(
         const VoiceCue(0, ['p.resume'], CuePriority.call),
