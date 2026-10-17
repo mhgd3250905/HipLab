@@ -1,0 +1,102 @@
+{
+  "_note": "HipLab drill media. Keys are content drill ids; files live at assets/drill_media/<asset>.mp4/.jpg (asset defaults to hip-<id lower-case>). Phase-1 renders come from 3D-Body tools/drill-anim (scheme B); two drills reuse FlareLab library clips. Refresh with tools/sync_drill_media.py.",
+  "videos": {
+    "glute-max-A": {
+      "asset": "hip-glute-max-a",
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 1.0,
+      "source": "3D-Body app/assets/drill_media/glute-max-A.mp4 (FlareLab 51-drill library, training-human-v2-20261013), copied unchanged"
+    },
+    "hip-flexors-A": {
+      "asset": "hip-flexors-a",
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 1.0,
+      "source": "3D-Body app/assets/drill_media/hip-flexors-A.mp4 (FlareLab 51-drill library, training-human-v2-20261013), copied unchanged"
+    },
+    "n-chair-wiper": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-chair-wiper.js, glow-B, --pr 0.75"
+    },
+    "n-half-split": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 3.0,
+      "source": "drill-anim specs/n-half-split.js, glow-B, --pr 0.75"
+    },
+    "n-leg-circles": {
+      "duration_seconds": 12.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-leg-circles.js, glow-B, --pr 0.75"
+    },
+    "n-pelvis-circle": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 1.1,
+      "source": "drill-anim specs/n-pelvis-circle.js, glow-B, --pr 0.75"
+    },
+    "n-prone-hip-ext": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-prone-hip-ext.js, glow-B, --pr 0.75"
+    },
+    "n-prone-ir": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-prone-ir.js, glow-B, --pr 0.75"
+    },
+    "n-seated-ir-drop": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.2,
+      "source": "drill-anim specs/n-seated-ir-drop.js, glow-B, --pr 0.75"
+    },
+    "n-seated-knee-lift": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-seated-knee-lift.js, glow-B, --pr 0.75"
+    },
+    "n-seated-squeeze": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-seated-squeeze.js, glow-B, --pr 0.75"
+    },
+    "n-slider-lateral": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.0,
+      "source": "drill-anim specs/n-slider-lateral.js, glow-B, --pr 0.75"
+    },
+    "n-squat-shift": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.2,
+      "source": "drill-anim specs/n-squat-shift.js, glow-B, --pr 0.75"
+    },
+    "n-straddle-fold": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 3.0,
+      "source": "drill-anim specs/n-straddle-fold.js, glow-B, --pr 0.75"
+    },
+    "n-thomas-test": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.5,
+      "source": "drill-anim specs/n-thomas-test.js, glow-B, --pr 0.75"
+    },
+    "n-wide-fold": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 3.0,
+      "source": "drill-anim specs/n-wide-fold.js, glow-B, --pr 0.75"
+    },
+    "n-windshield": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 2.2,
+      "source": "drill-anim specs/n-windshield.js, glow-B, --pr 0.75"
+    },
+    "s-butterfly": {
+      "duration_seconds": 8.0,
+      "poster_time_seconds": 3.8,
+      "source": "drill-anim specs/s-butterfly.js, glow-B, --pr 0.75"
+    },
+    "supine-cross-demo": {
+      "duration_seconds": 4.8,
+      "poster_time_seconds": 2.6,
+      "source": "cut from n-leg-circles 7.2-12 s"
+    }
+  }
+}

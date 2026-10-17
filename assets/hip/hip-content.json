@@ -1,0 +1,2292 @@
+{
+ "assessment": {
+  "adduction_focus_drills": [
+   "o-stand-crossreach",
+   "h-supine-twist",
+   "n-seated-squeeze"
+  ],
+  "dancer_unlock_total": 10,
+  "items": [
+   {
+    "cue": "脚心对脚心，坐直，让膝盖自己往下落。",
+    "demo_drill": "s-butterfly",
+    "directions": [
+     "abduction",
+     "external_rotation"
+    ],
+    "glow": "大腿内侧",
+    "id": "butterfly",
+    "options": [
+     {
+      "description": "膝盖明显高于脚踝",
+      "image": "assets/hip/assessment/butterfly-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "膝盖和脚踝差不多高",
+      "image": "assets/hip/assessment/butterfly-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "膝盖低于脚踝、接近地面",
+      "image": "assets/hip/assessment/butterfly-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 1,
+    "question": "膝盖多高？",
+    "seconds": 12,
+    "sided": false,
+    "title": "蝴蝶式"
+   },
+   {
+    "cue": "两条腿都摆成直角，手离开地面，坐直。",
+    "demo_drill": "s-9090",
+    "directions": [
+     "external_rotation",
+     "internal_rotation"
+    ],
+    "follow_up": {
+     "options": [
+      {
+       "back": 1,
+       "front": 0,
+       "id": "front",
+       "image": "assets/hip/assessment/9090-front.webp",
+       "label": "前面那条腿"
+      },
+      {
+       "back": 0,
+       "front": 1,
+       "id": "back",
+       "image": "assets/hip/assessment/9090-back.webp",
+       "label": "后面那条腿"
+      }
+     ],
+     "question": "哪条腿的膝盖翘？"
+    },
+    "glow": "髋部",
+    "id": "ninety_ninety",
+    "options": [
+     {
+      "description": "有一个膝盖明显翘起来",
+      "image": "assets/hip/assessment/9090-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "要用手撑或后仰才坐得住",
+      "image": "assets/hip/assessment/9090-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "手离地也能坐直，两膝贴地",
+      "image": "assets/hip/assessment/9090-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 2,
+    "question": "能坐直吗？",
+    "seconds": 15,
+    "sided": true,
+    "title": "90/90"
+   },
+   {
+    "cue": "抱住一边膝盖，另一条腿放松伸直，把手塞到膝盖下面试试。",
+    "demo_drill": "n-thomas-test",
+    "directions": [
+     "extension"
+    ],
+    "glow": "髋前侧",
+    "id": "thomas",
+    "note_for_dancer": "这项和托马斯全旋没关系，但髋前侧松不松，会影响你的 L 撑。",
+    "options": [
+     {
+      "description": "拳头能塞进去，或大腿抬起",
+      "image": "assets/hip/assessment/thomas-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "手掌能塞进去",
+      "image": "assets/hip/assessment/thomas-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "手塞不进去，整条腿贴地",
+      "image": "assets/hip/assessment/thomas-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 3,
+    "question": "膝窝能塞进什么？",
+    "seconds": 15,
+    "sided": true,
+    "title": "托马斯测试"
+   },
+   {
+    "cue": "一条腿伸直抬起来，往另一边跨过去。手按胯骨，胯骨一动就停。",
+    "demo_drill": "n-leg-circles",
+    "demo_media": {
+     "cautions": [],
+     "directions": [],
+     "id": "n-leg-circles#supine-cross-demo",
+     "level": "beginner",
+     "media": {
+      "duration_seconds": 4.8,
+      "poster": "assets/drill_media/hip-supine-cross-demo.jpg",
+      "poster_time_seconds": 2.6,
+      "status": "video",
+      "video": "assets/drill_media/hip-supine-cross-demo.mp4"
+     },
+     "methods": [],
+     "mvp": false,
+     "name": "仰卧单腿横跨（演示）",
+     "scenes": []
+    },
+    "directions": [
+     "adduction"
+    ],
+    "glow": "髋外侧",
+    "id": "supine_cross",
+    "options": [
+     {
+      "description": "没到另一条腿上方，胯骨就翻了",
+      "image": "assets/hip/assessment/supine-cross-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "刚好到另一条腿正上方",
+      "image": "assets/hip/assessment/supine-cross-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "越过另一条腿外侧一个脚掌",
+      "image": "assets/hip/assessment/supine-cross-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 4,
+    "question": "脚能跨多远？",
+    "seconds": 15,
+    "sided": true,
+    "title": "仰卧横跨"
+   },
+   {
+    "cue": "膝盖别弯，从屁股那里往前折，手顺着腿往前走。",
+    "demo_drill": "s-seated-fold",
+    "directions": [
+     "flexion"
+    ],
+    "glow": "大腿后侧",
+    "id": "seated_fold",
+    "options": [
+     {
+      "description": "手只到膝盖附近",
+      "image": "assets/hip/assessment/seated-fold-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "手到小腿或脚踝",
+      "image": "assets/hip/assessment/seated-fold-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "摸到脚尖或更远",
+      "image": "assets/hip/assessment/seated-fold-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 5,
+    "question": "手摸到哪里？",
+    "seconds": 12,
+    "sided": false,
+    "title": "坐姿体前屈"
+   },
+   {
+    "cue": "脚跟踩稳，慢慢蹲到最低，停 3 秒。旁边放把椅子，不稳就扶。",
+    "demo_drill": "h-squat",
+    "directions": [
+     "flexion",
+     "abduction"
+    ],
+    "glow": "髋部",
+    "id": "deep_squat",
+    "options": [
+     {
+      "description": "大腿到水平附近就下不去",
+      "image": "assets/hip/assessment/deep-squat-c.webp",
+      "label": "紧",
+      "score": 0
+     },
+     {
+      "description": "脚跟抬起或要扶东西",
+      "image": "assets/hip/assessment/deep-squat-b.webp",
+      "label": "一般",
+      "score": 1
+     },
+     {
+      "description": "蹲到底，脚跟贴地",
+      "image": "assets/hip/assessment/deep-squat-a.webp",
+      "label": "松",
+      "score": 2
+     }
+    ],
+    "order": 6,
+    "question": "能蹲多深？",
+    "seconds": 12,
+    "sided": false,
+    "title": "深蹲到底"
+   }
+  ],
+  "level_bands": [
+   {
+    "level": 1,
+    "max": 5,
+    "min": 0,
+    "mix": {
+     "control": 15,
+     "flexibility": 50,
+     "relax": 30,
+     "strength": 5
+    },
+    "name": "入门"
+   },
+   {
+    "level": 2,
+    "max": 9,
+    "min": 6,
+    "mix": {
+     "control": 25,
+     "flexibility": 40,
+     "relax": 20,
+     "strength": 15
+    },
+    "name": "基础"
+   },
+   {
+    "level": 3,
+    "max": 12,
+    "min": 10,
+    "mix": {
+     "control": 35,
+     "flexibility": 30,
+     "relax": 10,
+     "strength": 25
+    },
+    "name": "进阶"
+   }
+  ],
+  "radar_map": {
+   "0": 25,
+   "1": 60,
+   "2": 90
+  },
+  "recommendations": {
+   "dancer": {
+    "abduction": {
+     "route": "Breaking 开胯 · 分腿（风车 / 托马斯腿部绕环）",
+     "routine": "F"
+    },
+    "adduction": {
+     "route": "Breaking 开胯 · 髋外侧",
+     "routine": "F"
+    },
+    "extension": {
+     "route": "Breaking 开胯 · 先补髋前侧（L 撑）",
+     "routine": "F"
+    },
+    "external_rotation": {
+     "route": "Breaking 开胯 · 分腿",
+     "routine": "F"
+    },
+    "flexion": {
+     "route": "Breaking 开胯 · 压缩（L 撑 / V 撑）",
+     "routine": "F"
+    },
+    "internal_rotation": {
+     "route": "Breaking 开胯 · 内旋补强",
+     "routine": "F"
+    }
+   },
+   "office": {
+    "abduction": {
+     "route": "盘腿自如 → 横叉",
+     "routine": "B"
+    },
+    "adduction": {
+     "route": "髋外侧放松",
+     "routine": "A"
+    },
+    "extension": {
+     "route": "久坐解压（髋前侧）",
+     "routine": "D"
+    },
+    "external_rotation": {
+     "route": "盘腿自如",
+     "routine": "B"
+    },
+    "flexion": {
+     "route": "深蹲到底",
+     "routine": "E"
+    },
+    "internal_rotation": {
+     "route": "内旋补强",
+     "routine": "D"
+    }
+   }
+  },
+  "skip_score": 1,
+  "tie_priority": [
+   "extension",
+   "internal_rotation",
+   "abduction",
+   "flexion",
+   "external_rotation",
+   "adduction"
+  ],
+  "weights": {
+   "abduction": [
+    [
+     "butterfly",
+     "score",
+     0.7
+    ],
+    [
+     "deep_squat",
+     "score",
+     0.3
+    ]
+   ],
+   "adduction": [
+    [
+     "supine_cross",
+     "score",
+     1.0
+    ]
+   ],
+   "extension": [
+    [
+     "thomas",
+     "score",
+     1.0
+    ]
+   ],
+   "external_rotation": [
+    [
+     "ninety_ninety",
+     "front",
+     0.6
+    ],
+    [
+     "butterfly",
+     "score",
+     0.4
+    ]
+   ],
+   "flexion": [
+    [
+     "seated_fold",
+     "score",
+     0.6
+    ],
+    [
+     "deep_squat",
+     "score",
+     0.4
+    ]
+   ],
+   "internal_rotation": [
+    [
+     "ninety_ninety",
+     "back",
+     1.0
+    ]
+   ]
+  }
+ },
+ "directions": [
+  {
+   "area": "大腿后侧",
+   "id": "flexion",
+   "radar": "屈",
+   "zh": "屈"
+  },
+  {
+   "area": "髋前侧",
+   "id": "extension",
+   "radar": "伸",
+   "zh": "伸"
+  },
+  {
+   "area": "大腿内侧",
+   "id": "abduction",
+   "radar": "外展",
+   "zh": "外展"
+  },
+  {
+   "area": "髋外侧",
+   "id": "adduction",
+   "radar": "内收",
+   "zh": "内收"
+  },
+  {
+   "area": "髋内旋",
+   "id": "internal_rotation",
+   "radar": "内旋",
+   "zh": "内旋"
+  },
+  {
+   "area": "髋外旋",
+   "id": "external_rotation",
+   "radar": "外旋",
+   "zh": "外旋"
+  }
+ ],
+ "drills": [
+  {
+   "alternative": "h-reverse-clam",
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "h-9090-liftoff",
+   "level": "advanced",
+   "media": {
+    "poster": "assets/hip/posters/h-9090-liftoff.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "90/90 后腿主动抬起",
+   "note": "内旋主动控制的主力动作",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "abduction",
+    "flexion"
+   ],
+   "id": "h-adductor-rock",
+   "level": "beginner",
+   "media": {
+    "poster": "assets/hip/posters/h-adductor-rock.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "四足单腿侧伸后摇",
+   "note": "内收肌（大腿内侧）拉长",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "h-band-hip-ir",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": true,
+   "name": "坐椅弹力带髋内旋",
+   "note": "需弹力带；无带可徒手做",
+   "scenes": [
+    "chair"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "内收肌根"
+   ],
+   "directions": [
+    "abduction"
+   ],
+   "id": "h-band-leg-out",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "仰卧弹力带单腿侧落",
+   "note": "可用毛巾代替弹力带",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "内收肌根"
+   ],
+   "directions": [
+    "external_rotation",
+    "abduction",
+    "adduction"
+   ],
+   "id": "h-butterfly-active",
+   "level": "beginner",
+   "media": {
+    "poster": "assets/hip/posters/h-butterfly-active.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "仰卧蝴蝶主动开合",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "s-kneel-hipflex",
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝",
+    "腰"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "h-couch-stretch",
+   "level": "advanced",
+   "media": {
+    "poster": "assets/hip/posters/h-couch-stretch.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "沙发拉伸（后脚搭矮凳）",
+   "note": "入门替代：s-kneel-hipflex",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [],
+   "directions": [
+    "external_rotation",
+    "internal_rotation",
+    "abduction",
+    "flexion"
+   ],
+   "id": "h-hip-gate",
+   "level": "beginner",
+   "media": {
+    "poster": "assets/hip/posters/h-hip-gate.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "扶椅站姿开髋门",
+   "note": "",
+   "scenes": [
+    "chair"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "h-hip-gate",
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "flexion",
+    "extension",
+    "abduction",
+    "adduction",
+    "internal_rotation",
+    "external_rotation"
+   ],
+   "id": "h-quad-cars",
+   "level": "advanced",
+   "media": {
+    "poster": "assets/hip/posters/h-quad-cars.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "四足髋关节画圈",
+   "note": "6 方向全覆盖",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "h-reverse-clam",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "control",
+    "strength"
+   ],
+   "mvp": true,
+   "name": "侧卧反向蚌式",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "h-squat",
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "膝",
+    "髋前侧夹痛"
+   ],
+   "directions": [
+    "abduction",
+    "external_rotation",
+    "flexion"
+   ],
+   "id": "h-sumo-pry",
+   "level": "advanced",
+   "media": {
+    "poster": "assets/hip/posters/h-sumo-pry.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "相扑深蹲肘推膝停留",
+   "note": "站立动作，不需要垫子",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片）",
+   "cautions": [
+    "内收肌根"
+   ],
+   "directions": [
+    "abduction"
+   ],
+   "id": "h-wall-straddle",
+   "level": "beginner",
+   "media": {
+    "poster": "assets/hip/posters/h-wall-straddle.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "relax",
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "靠墙仰卧 V 字分腿",
+   "note": "横叉入门",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#113",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "髋前侧夹痛"
+   ],
+   "directions": [
+    "flexion"
+   ],
+   "id": "h-knee-hug",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "relax"
+   ],
+   "mvp": true,
+   "name": "仰卧抱膝",
+   "note": "睡前套核心",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#111",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "adduction",
+    "internal_rotation"
+   ],
+   "id": "h-supine-twist",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "relax"
+   ],
+   "mvp": true,
+   "name": "仰卧屈膝扭转",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#111",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "flexion"
+   ],
+   "id": "h-squat",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": true,
+   "name": "徒手深蹲",
+   "note": "自测⑥演示底稿",
+   "scenes": [
+    "home"
+   ],
+   "source": "PR#111",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [],
+   "directions": [
+    "flexion"
+   ],
+   "id": "hip-flexors-A",
+   "level": "advanced",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-flexors-a.jpg",
+    "poster_time_seconds": 1.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-flexors-a.mp4"
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "坐姿直腿抬腿（压缩）",
+   "note": "L 撑 / 托马斯压缩核心",
+   "scenes": [
+    "home"
+   ],
+   "source": "A/B/C库",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "w-feet-on-chair-bridge",
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "glute-max-A",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-glute-max-a.jpg",
+    "poster_time_seconds": 1.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-glute-max-a.mp4"
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": true,
+   "name": "单腿臀桥",
+   "note": "久坐“臀部失忆”主力",
+   "scenes": [
+    "home"
+   ],
+   "source": "A/B/C库",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有旧版成片（spec 已更新，需重渲）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "external_rotation",
+    "internal_rotation"
+   ],
+   "id": "s-9090",
+   "level": "beginner",
+   "media": {
+    "poster": "assets/hip/posters/s-9090.webp",
+    "status": "poster",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "90/90 坐姿换髋",
+   "note": "自测②演示底稿；另有 s-9090-switch 换边旧版",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "内收肌根"
+   ],
+   "directions": [
+    "external_rotation",
+    "abduction"
+   ],
+   "id": "s-butterfly",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-butterfly.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-butterfly.mp4"
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "蝴蝶式",
+   "note": "自测①演示底稿",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有旧版成片（spec 已更新，需重渲）",
+   "cautions": [],
+   "directions": [
+    "external_rotation"
+   ],
+   "id": "s-figure4",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "relax",
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "仰卧 4 字拉伸",
+   "note": "膝不受扭力，常作膝不适时的替代",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "膝",
+    "内收肌根"
+   ],
+   "directions": [
+    "abduction",
+    "external_rotation"
+   ],
+   "id": "s-frog",
+   "level": "advanced",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "青蛙式",
+   "note": "宽膝婴儿式的可做替代",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "膝",
+    "腰"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "s-kneel-hipflex",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "半跪髋屈肌拉伸",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "o-stand-lunge",
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [],
+   "directions": [
+    "extension",
+    "abduction"
+   ],
+   "id": "s-lizard",
+   "level": "advanced",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "蜥蜴式低弓步（扶砖）",
+   "note": "需瑜伽砖（可用厚书代替）",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": "s-figure4",
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "external_rotation",
+    "extension"
+   ],
+   "id": "s-pigeon",
+   "level": "advanced",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "鸽子式（直立扶砖版）",
+   "note": "前趴版会穿模，只用直立版",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "flexion"
+   ],
+   "id": "s-seated-fold",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "坐姿体前屈",
+   "note": "自测⑤演示底稿",
+   "scenes": [
+    "home"
+   ],
+   "source": "S 档拉伸",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "external_rotation"
+   ],
+   "id": "o-seated-fig4",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "坐姿四字前压",
+   "note": "“椅上 4 字拉伸”已有",
+   "scenes": [
+    "chair"
+   ],
+   "source": "O 办公室",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "cautions": [],
+   "directions": [
+    "flexion"
+   ],
+   "id": "o-seated-ham",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "坐姿腘绳肌前伸",
+   "note": "",
+   "scenes": [
+    "chair"
+   ],
+   "source": "O 办公室",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "o-stand-lunge",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "扶椅站姿弓步屈髋拉伸",
+   "note": "",
+   "scenes": [
+    "chair"
+   ],
+   "source": "O 办公室",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "cautions": [],
+   "directions": [
+    "adduction"
+   ],
+   "id": "o-stand-crossreach",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "扶椅站姿交叉侧伸",
+   "note": "拉髋外侧（臀中肌）；MVP 唯一的内收柔韧",
+   "scenes": [
+    "chair"
+   ],
+   "source": "O 办公室",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [],
+   "directions": [
+    "external_rotation",
+    "abduction"
+   ],
+   "id": "w-clamshell",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": true,
+   "name": "侧卧蚌式开合",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "W 久坐发力",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "cautions": [],
+   "directions": [
+    "extension"
+   ],
+   "id": "w-feet-on-chair-bridge",
+   "level": "beginner",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": false,
+   "name": "脚踩椅面臀桥",
+   "note": "",
+   "scenes": [
+    "home"
+   ],
+   "source": "W 久坐发力",
+   "tier": "备选"
+  },
+  {
+   "alternative": "n-leg-circles",
+   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "cautions": [],
+   "directions": [
+    "abduction",
+    "flexion"
+   ],
+   "id": "t-seated-straddle-lift-1leg",
+   "level": "advanced",
+   "media": {
+    "poster": null,
+    "status": "pending",
+    "video": null
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "坐姿分腿单腿抬起",
+   "note": "舞者路线；导流 FlareLab",
+   "scenes": [
+    "home"
+   ],
+   "source": "T 托马斯库",
+   "tier": "MVP"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "n-seated-ir-drop",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-seated-ir-drop.jpg",
+    "poster_time_seconds": 2.2,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-seated-ir-drop.mp4"
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "坐姿后撑单膝内倒",
+   "note": "第 1 阶段替换 n-9090-ir-lean（90/90 内旋侧前倾两轮修不干净：手撑不到垫面、躯干弯曲超 45°）；后撑坐姿、双脚宽踩，一侧膝向内落地，同样练内旋末端柔韧",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [],
+   "directions": [
+    "internal_rotation",
+    "external_rotation"
+   ],
+   "id": "n-windshield",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-windshield.jpg",
+    "poster_time_seconds": 2.2,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-windshield.mp4"
+   },
+   "methods": [
+    "relax",
+    "control"
+   ],
+   "mvp": true,
+   "name": "仰卧雨刷式（双膝左右倒）",
+   "note": "穿模风险：低；和 h-supine-twist 同一套仰卧底盘；手掌朝下放垫旁，避开“手放肚子 + touch 吸附”导致浏览器崩溃的已知问题",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "n-chair-wiper",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-chair-wiper.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-chair-wiper.mp4"
+   },
+   "methods": [
+    "relax"
+   ],
+   "mvp": true,
+   "name": "坐椅雨刷（膝内倒）",
+   "note": "穿模风险：低；坐姿 + 椅子道具已成熟（o-* 系列）；只动小腿外摆，双膝不接触",
+   "scenes": [
+    "chair"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "internal_rotation"
+   ],
+   "id": "n-prone-ir",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-prone-ir.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-prone-ir.mp4"
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "俯卧小腿外摆（髋内旋）",
+   "note": "穿模风险：低–中；俯卧底盘复用 h-cobra；双小腿外摆时脚踝要互不交叉，需检查两小腿在中线附近不相交",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": "o-seated-ham",
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝",
+    "腰"
+   ],
+   "directions": [
+    "flexion"
+   ],
+   "id": "n-half-split",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-half-split.jpg",
+    "poster_time_seconds": 3.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-half-split.mp4"
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "半跪半劈叉",
+   "note": "穿模风险：中；前倾需从髋折叠，躯干弯曲 <45°；手必须用瑜伽砖接住（同 s-lizard 的处理），否则长手臂够不到地面",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "n-prone-hip-ext",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-prone-hip-ext.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-prone-hip-ext.mp4"
+   },
+   "methods": [
+    "control",
+    "strength"
+   ],
+   "mvp": true,
+   "name": "俯卧屈膝抬腿",
+   "note": "穿模风险：低；俯卧底盘成熟；髋伸展只需 10–15°，远离 -35° 限位",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": "h-adductor-rock",
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝",
+    "内收肌根"
+   ],
+   "directions": [
+    "abduction"
+   ],
+   "id": "n-slider-lateral",
+   "level": "advanced",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-slider-lateral.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-slider-lateral.mp4"
+   },
+   "methods": [
+    "flexibility",
+    "control"
+   ],
+   "mvp": true,
+   "name": "滑垫侧向滑",
+   "note": "穿模风险：中；需新增滑垫道具和“脚底沿地面滑动”的约束；外展角预计 35–45°，在模型范围内",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "abduction",
+    "flexion"
+   ],
+   "id": "n-wide-fold",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-wide-fold.jpg",
+    "poster_time_seconds": 3.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-wide-fold.mp4"
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "站姿宽距体前屈（扶椅/扶砖）",
+   "note": "穿模风险：中；躯干弯曲 <45°，必须以髋折叠为主；手扶椅面避免长手臂够地",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "内收肌根",
+    "腰"
+   ],
+   "directions": [
+    "abduction",
+    "flexion"
+   ],
+   "id": "n-straddle-fold",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-straddle-fold.jpg",
+    "poster_time_seconds": 3.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-straddle-fold.mp4"
+   },
+   "methods": [
+    "flexibility"
+   ],
+   "mvp": true,
+   "name": "坐姿分腿体前屈",
+   "note": "穿模风险：中低；复用 t-seated-straddle-* 的分腿坐姿；只做到上身前倾 30° 左右，不做贴地（贴地会超出躯干弯曲限制）",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [],
+   "directions": [
+    "flexion"
+   ],
+   "id": "n-seated-knee-lift",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-seated-knee-lift.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-seated-knee-lift.mp4"
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "坐姿抬膝悬停",
+   "note": "穿模风险：低；坐姿 + 椅子已成熟；大腿离开椅面需检查大腿和座面不穿插",
+   "scenes": [
+    "chair"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [],
+   "directions": [
+    "flexion",
+    "extension",
+    "abduction",
+    "adduction"
+   ],
+   "id": "n-pelvis-circle",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-pelvis-circle.jpg",
+    "poster_time_seconds": 1.1,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-pelvis-circle.mp4"
+   },
+   "methods": [
+    "relax"
+   ],
+   "mvp": true,
+   "name": "站姿骨盆画圈",
+   "note": "穿模风险：低；双脚固定，只动骨盆，幅度小",
+   "scenes": [
+    "chair"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [],
+   "directions": [
+    "adduction"
+   ],
+   "id": "n-seated-squeeze",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-seated-squeeze.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-seated-squeeze.mp4"
+   },
+   "methods": [
+    "strength"
+   ],
+   "mvp": true,
+   "name": "坐姿夹砖（膝内夹）",
+   "note": "第 1 阶段改为双膝夹瑜伽砖等长内收（原“拳头在两膝间 + 手在膝外侧外推”两轮修不干净：手掌陷进大腿）；外推半边待做弹力圈版本",
+   "scenes": [
+    "chair"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "膝"
+   ],
+   "directions": [
+    "abduction",
+    "flexion"
+   ],
+   "id": "n-squat-shift",
+   "level": "advanced",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-squat-shift.jpg",
+    "poster_time_seconds": 2.2,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-squat-shift.mp4"
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "低位蹲姿左右移重心",
+   "note": "穿模风险：中；髋屈曲接近 110–120°，离 135° 限位不远；需逐帧查大腿与腹部、小腿与大腿后侧的贴合",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "腰"
+   ],
+   "directions": [
+    "flexion",
+    "abduction",
+    "adduction"
+   ],
+   "id": "n-leg-circles",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 12.0,
+    "poster": "assets/drill_media/hip-n-leg-circles.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-leg-circles.mp4"
+   },
+   "methods": [
+    "control"
+   ],
+   "mvp": true,
+   "name": "仰卧直腿画圈",
+   "note": "穿模风险：低；仰卧直腿，髋屈 45–70°，远离限位；对侧腿平放；同一 spec 加\"向对侧横跨\"片段，兼作自测④（内收）演示底稿",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  },
+  {
+   "alternative": null,
+   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "cautions": [
+    "髋前侧夹痛"
+   ],
+   "directions": [
+    "extension"
+   ],
+   "id": "n-thomas-test",
+   "level": "beginner",
+   "media": {
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-n-thomas-test.jpg",
+    "poster_time_seconds": 2.5,
+    "status": "video",
+    "video": "assets/drill_media/hip-n-thomas-test.mp4"
+   },
+   "methods": [
+    "relax"
+   ],
+   "mvp": true,
+   "name": "仰卧单膝抱胸（托马斯测试演示）",
+   "note": "穿模风险：低；h-knee-hug 的单腿版本；需额外出 3 张对比图（伸直腿贴地 / 膝窝离地 / 大腿翘起）",
+   "scenes": [
+    "home"
+   ],
+   "source": "新增",
+   "tier": "新增P0"
+  }
+ ],
+ "generated_by": "tools/hip_content/build_hip_content.py",
+ "routines": [
+  {
+   "audience": "久坐上班族；工位上做，不躺不坐地",
+   "id": "A",
+   "kind": "routine",
+   "name": "办公室 5 分钟",
+   "scene": "chair",
+   "seconds": 300,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "正反各 4 圈",
+     "drill": "n-pelvis-circle",
+     "seconds": 40,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 30 秒",
+     "drill": "o-stand-lunge",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 开 3 次 + 关 3 次",
+     "drill": "h-hip-gate",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 25 秒",
+     "drill": "o-seated-fig4",
+     "seconds": 50,
+     "sided": true,
+     "tip": "膝不舒服：只把脚踝搭上、不前压"
+    },
+    {
+     "alternative": null,
+     "dose": "左右交替 6 次",
+     "drill": "n-chair-wiper",
+     "seconds": 25,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 3 次 × 停 5 秒",
+     "drill": "n-seated-knee-lift",
+     "seconds": 40,
+     "sided": true,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "所有人；全程躺着，越做越慢；只有最后一个动作要挪到墙边（不想挪就换成仰卧蝴蝶停留）",
+   "id": "B",
+   "kind": "routine",
+   "name": "睡前 8 分钟",
+   "scene": "home",
+   "seconds": 480,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "慢呼吸 6 次",
+     "drill": "h-knee-hug",
+     "seconds": 45,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "左右慢慢倒 8 次",
+     "drill": "n-windshield",
+     "seconds": 45,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 40 秒",
+     "drill": "s-figure4",
+     "seconds": 80,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 40 秒（用毛巾）",
+     "drill": "h-band-leg-out",
+     "seconds": 80,
+     "sided": true,
+     "tip": "没有毛巾：手扶大腿内侧"
+    },
+    {
+     "alternative": null,
+     "dose": "慢开慢合 6 次",
+     "drill": "h-butterfly-active",
+     "seconds": 60,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 40 秒",
+     "drill": "h-supine-twist",
+     "seconds": 80,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "停 60 秒（床头靠墙也可以）",
+     "drill": "h-wall-straddle",
+     "seconds": 60,
+     "sided": false,
+     "tip": "不想挪位置：换成仰卧蝴蝶停留"
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "所有人；以主动控制为主，把髋\"叫醒\"",
+   "id": "C",
+   "kind": "routine",
+   "name": "晨起唤醒 6 分钟",
+   "scene": "home",
+   "seconds": 360,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "每侧 正反各 4 圈",
+     "drill": "n-leg-circles",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "h-hip-gate",
+     "dose": "每侧 3 圈",
+     "drill": "h-quad-cars",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 5 次",
+     "drill": "h-adductor-rock",
+     "seconds": 50,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 30 秒",
+     "drill": "s-kneel-hipflex",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "w-feet-on-chair-bridge",
+     "dose": "每侧 6 次",
+     "drill": "glute-max-A",
+     "seconds": 55,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "6 次",
+     "drill": "h-squat",
+     "seconds": 40,
+     "sided": false,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "上班族下班后；重点髋前侧 + 臀部 + 内旋",
+   "id": "D",
+   "kind": "routine",
+   "name": "久坐解压 10 分钟",
+   "scene": "home",
+   "seconds": 600,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "每侧 40 秒",
+     "drill": "s-kneel-hipflex",
+     "seconds": 80,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "o-stand-lunge",
+     "dose": "每侧 35 秒",
+     "drill": "s-lizard",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 35 秒",
+     "drill": "s-9090",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 30 秒",
+     "drill": "n-seated-ir-drop",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 8 次",
+     "drill": "h-reverse-clam",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 8 次",
+     "drill": "glute-max-A",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "s-figure4",
+     "dose": "每侧 35 秒",
+     "drill": "s-pigeon",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "慢呼吸 6 次",
+     "drill": "h-knee-hug",
+     "seconds": 40,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "停 40 秒",
+     "drill": "s-seated-fold",
+     "seconds": 40,
+     "sided": false,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "跑步 / 健身 / 跳舞之前；不做长时间静态拉伸",
+   "id": "E",
+   "kind": "routine",
+   "name": "训练前激活 7 分钟",
+   "scene": "home",
+   "seconds": 420,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "正反各 3 圈",
+     "drill": "n-pelvis-circle",
+     "seconds": 30,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 开 3 + 关 3",
+     "drill": "h-hip-gate",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "n-leg-circles",
+     "dose": "每侧 3 圈",
+     "drill": "h-quad-cars",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 10 次",
+     "drill": "w-clamshell",
+     "seconds": 60,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 8 次",
+     "drill": "glute-max-A",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": "h-squat",
+     "dose": "停 3 次 × 10 秒",
+     "drill": "h-sumo-pry",
+     "seconds": 50,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "8 次",
+     "drill": "h-squat",
+     "seconds": 50,
+     "sided": false,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "舞者；面向 L 撑 / 风车 / 托马斯腿部绕环",
+   "id": "F",
+   "kind": "routine",
+   "name": "Breaking 开胯 12 分钟",
+   "scene": "home",
+   "seconds": 720,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "每侧 3 圈",
+     "drill": "h-quad-cars",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "停 60 秒",
+     "drill": "s-frog",
+     "seconds": 60,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": "h-adductor-rock",
+     "dose": "每侧 6 次",
+     "drill": "n-slider-lateral",
+     "seconds": 80,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "停 75 秒",
+     "drill": "n-straddle-fold",
+     "seconds": 75,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": "n-leg-circles",
+     "dose": "每侧 6 次",
+     "drill": "t-seated-straddle-lift-1leg",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "8 次",
+     "drill": "hip-flexors-A",
+     "seconds": 50,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": "h-reverse-clam",
+     "dose": "每侧 6 次",
+     "drill": "h-9090-liftoff",
+     "seconds": 70,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "左右 8 次",
+     "drill": "n-squat-shift",
+     "seconds": 60,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 40 秒",
+     "drill": "n-half-split",
+     "seconds": 80,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "停 3 次 × 15 秒",
+     "drill": "h-sumo-pry",
+     "seconds": 60,
+     "sided": false,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  },
+  {
+   "audience": "提醒弹出后一键进入；站起来就能做",
+   "id": "M",
+   "kind": "micro",
+   "name": "久坐提醒 · 椅边 2 分钟",
+   "scene": "chair",
+   "seconds": 120,
+   "steps": [
+    {
+     "alternative": null,
+     "dose": "正反各 3 圈",
+     "drill": "n-pelvis-circle",
+     "seconds": 20,
+     "sided": false,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 20 秒",
+     "drill": "o-stand-lunge",
+     "seconds": 40,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 15 秒",
+     "drill": "o-seated-fig4",
+     "seconds": 30,
+     "sided": true,
+     "tip": ""
+    },
+    {
+     "alternative": null,
+     "dose": "每侧 1 次 × 停 5 秒",
+     "drill": "n-seated-knee-lift",
+     "seconds": 15,
+     "sided": true,
+     "tip": ""
+    }
+   ],
+   "transition_seconds": 5
+  }
+ ],
+ "safety_cards": [
+  {
+   "icon": "pregnant_woman",
+   "id": "pregnancy",
+   "title": "孕期或产后 6 个月内"
+  },
+  {
+   "icon": "healing",
+   "id": "surgery",
+   "title": "髋、膝、腰做过手术或关节置换，或医生让你限制活动"
+  },
+  {
+   "icon": "personal_injury",
+   "id": "acute",
+   "title": "最近摔伤、扭伤，或髋部、腰部、大腿正在疼、肿"
+  }
+ ],
+ "schema_version": 1
+}

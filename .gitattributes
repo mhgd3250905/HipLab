@@ -1,0 +1,9 @@
+* text=auto
+# Keep generated content packs and media bytes intact across platforms.
+*.json -text
+*.png binary
+*.jpg binary
+*.webp binary
+*.mp4 binary
+*.ttf binary
+assets/licenses/** -text
