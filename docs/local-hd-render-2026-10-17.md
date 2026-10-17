@@ -90,3 +90,19 @@ python tools/sync_drill_media.py --threed-body E:/AII-3D/3D-Body-worktrees/hipla
 ```
 
 绿幕制作与 App 深浅模式的播放器接入是不同步骤，本轮没有改变手机已安装 App 的视频或模式。
+
+## 性能核对与优化
+
+用户询问 4080 利用情况后，已用 `nvidia-smi` 复核实际适配器为 RTX 4080 Laptop GPU、显存 12,282 MiB；核对时瞬时 GPU 利用率 32%。GPU 探针与当前同一浏览器渲染入口均使用 NVIDIA ANGLE/D3D11。现有流程仍有 CPU 动作求解、逐帧 PNG 合成和软件编码阶段，整体速度不能只按 GPU 算力推算。
+
+实际日志：`s-pigeon` 渲染 43 秒、合成 79 秒、总计 173.2 秒；`o-seated-fig4` 渲染 95 秒、合成 97 秒、总计 255.7 秒。最近 6 条素材的 HQ 导出从 QA 文件时间到结果完成约 50–82 秒，占整条 17%–31%；其中重复缩放、摆放、PNG 保存约 42–70 秒。该拆分含文件时间戳估算，不能当作精确 profiler 采样。
+
+新增 `composite_alpha_parallel.py` 使用 4 线程处理相互独立的合成帧，3D 仍最多两路、每路 jobs=1，保留逐帧动作求解的原 warm start。最终版固定 24 帧对比：串行 8.9395 秒、并行 2.8577 秒，合成阶段约 3.13 倍；PNG、placement 与 edge JSON 逐字节一致，RAW 未改变，实际 `-1:0` 空调用、still 与非零边缘检查相同。该收益只代表此合成基准，不等同整条生产提速倍数。
+
+并行合成器另存每个 range 独立原子缓存清单，绑定工具、源规格、placement、原始帧与成品 PNG 的 SHA；失败不发布清单。后续可据此安全复用透明 PNG，避免重复压缩。完整基准证据位于批次 `perf-tests/alpha-threads-20261017-115436/report.json`。
+
+已新增并接入 `export_greenscreen_fast.py`：先验证完整缓存清单及当前全部输入/输出 SHA，再复制既有透明 PNG 至独立暂存文件，避免重复缩放和压缩；缓存缺失、损坏或不匹配则明确记录未复用并回退原计算。旧版绿幕、HQ 导出器及已发布成片保持冻结，按各自原配方验证。新混合清单为 `greenscreen/delivery-manifest-fast.json`。
+
+完整 240 帧 `s-pigeon` 的隔离副本实测：并行合成墙钟 26.95 秒；导出含全输入验证、编码、完整解码、原颜色 QA 和全部透明帧交付共 10.58 秒，缓存验证 0.227 秒。原同条日志合成 79 秒、HQ 导出约 50.3 秒。新视频和全部 240 张透明 PNG 与原发布 HQ 的 SHA 逐个相同；视频 SHA `0d3b34430028ffdebbeeb9b5c45735e3f4f8a55a3cad66fea0f14099f971a29c`。证据位于 `perf-tests/fast-export-20261017-v1/timings.json`。原生产视频未被重复制作或替换；此比较仅覆盖后处理阶段。
+
+两项优化由后续新启动的 worker 自动采用；已运行 worker 继续原流程。仍保留 1080/真实 30fps/4:4:4 与所有原 QA 阈值，动作求解及相机轨迹不变。
