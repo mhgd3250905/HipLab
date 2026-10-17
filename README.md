@@ -10,6 +10,8 @@
 
 已完成 Android 16 真机调试版安装与启动，产物和复现方式见 [Android 首次运行记录](docs/android-first-run-2026-10-17.md)。
 
+视频缺口、清晰度和模型/动画源的逐项核对见 [媒体交付核对](docs/media-audit-2026-10-17.md)。
+
 ## 构建
 
 ```bash
