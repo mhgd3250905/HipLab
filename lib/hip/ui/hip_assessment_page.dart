@@ -179,8 +179,7 @@ class HipAssessmentPage extends StatefulWidget {
   State<HipAssessmentPage> createState() => _HipAssessmentPageState();
 }
 
-class _HipAssessmentPageState extends State<HipAssessmentPage>
-    with SingleTickerProviderStateMixin {
+class _HipAssessmentPageState extends State<HipAssessmentPage> {
   final _answers = <String, ItemAnswer>{};
   int _index = 0;
   HipSide? _side;
@@ -188,7 +187,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
   int? _choice;
   String? _follow;
   AssessmentResult? _result;
-  late final AnimationController _timer = AnimationController(vsync: this);
+  bool _demoPlaying = true;
 
   /// Guards against a double tap on 下一项 recording twice (#5).
   bool _advancing = false;
@@ -204,7 +203,6 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
   final Set<int> _fired = {};
   DateTime _itemStart = clock.now();
   Timer? _voiceTicker;
-  double _lead = 0;
 
   List<AssessmentItem> get _items => widget.store.content.rules.items;
   AssessmentItem get _item => _items[_index];
@@ -226,7 +224,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
   void _beginItem() {
     _side = _item.sided ? HipSide.left : null;
     _leftAnswer = null;
-    _restartTimer();
+    _restartGuidance();
     _precacheNext();
   }
 
@@ -242,15 +240,13 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
     });
   }
 
-  void _restartTimer() {
+  void _restartGuidance() {
+    _demoPlaying = true;
     _choice = null;
     _follow = null;
     final voice = _voice!;
     final speaking = voice.settings.voice && voice.lib.has('a.hold');
     final script = voice.script();
-    _lead = speaking
-        ? script.assessmentLeadSeconds(_item, first: _index == 0, side: _side)
-        : 0;
     final secs = _item.seconds.toDouble();
     _cues = speaking
         ? script.assessmentCues(_item, first: _index == 0, side: _side)
@@ -273,11 +269,6 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
       );
       _voiceTick();
     }
-    _timer
-      ..duration = Duration(
-        milliseconds: ((_lead + _item.seconds) * 1000).round(),
-      )
-      ..forward(from: 0);
   }
 
   double get _t => clock.now().difference(_itemStart).inMicroseconds / 1e6;
@@ -298,7 +289,6 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
   @override
   void dispose() {
     if (_voice != null) ScreenAwake.release();
-    _timer.dispose();
     _bannerTimer?.cancel();
     _voiceTicker?.cancel();
     _queue?.cancelAll(_t);
@@ -323,7 +313,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
         setState(() {
           _side = HipSide.right;
           _switchBanner = true;
-          _restartTimer();
+          _restartGuidance();
         });
         _bannerTimer?.cancel();
         _bannerTimer = Timer(const Duration(milliseconds: 1600), () {
@@ -350,7 +340,6 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
       });
       return;
     }
-    _timer.stop();
     _voiceTicker?.cancel();
     _queue?.cancelAll(_t);
     _queue?.submit(
@@ -423,26 +412,26 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
           ),
         ),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, c) {
-              final mediaH = (c.maxHeight * .36).clamp(180.0, 300.0);
-              return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: mediaH, child: _demo(item)),
-                    const SizedBox(height: 16),
-                    HipFadeSwitcher(
-                      child: KeyedSubtree(
-                        key: ValueKey('$_stepKey-${_needsFollow ? 'f' : 'o'}'),
-                        child: _question(item),
-                      ),
-                    ),
-                  ],
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: AspectRatio(aspectRatio: 1, child: _demo(item)),
+                  ),
                 ),
-              );
-            },
+                const SizedBox(height: 16),
+                HipFadeSwitcher(
+                  child: KeyedSubtree(
+                    key: ValueKey('$_stepKey-${_needsFollow ? 'f' : 'o'}'),
+                    child: _question(item),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         _bottomBar(item),
@@ -460,23 +449,24 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
         Positioned(
           left: 14,
           top: 14,
-          child: _pill(Icons.repeat_rounded, '跟着做一遍'),
+          child: IgnorePointer(
+            child: _pill(
+              _demoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              _demoPlaying ? '点击暂停' : '点击播放',
+            ),
+          ),
         ),
         if (_side != null) Positioned(right: 14, top: 14, child: _sidePill()),
-        Positioned(
-          left: 24,
-          right: 24,
-          bottom: 16,
-          child: AnimatedBuilder(
-            animation: _timer,
-            builder: (_, _) => ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: _timer.value,
-                minHeight: 4,
-                color: Colors.white,
-                backgroundColor: Colors.white.withValues(alpha: .18),
-              ),
+        Positioned.fill(
+          child: Semantics(
+            button: true,
+            label: _demoPlaying ? '动作示范，点击暂停' : '动作示范已暂停，点击播放',
+            onTap: _toggleDemo,
+            child: GestureDetector(
+              key: const ValueKey('assessment-demo-toggle'),
+              behavior: HitTestBehavior.opaque,
+              excludeFromSemantics: true,
+              onTap: _toggleDemo,
             ),
           ),
         ),
@@ -499,16 +489,19 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
           child: demo != null && demo.mediaStatus != HipMediaStatus.pending
               ? HipDrillArt(
                   drill: demo,
-                  play: true,
+                  play: _demoPlaying,
+                  fit: BoxFit.contain,
                   mirror: _side == HipSide.right,
                 )
               : fallback != null
-              ? Image.asset(fallback, fit: BoxFit.cover)
+              ? Image.asset(fallback, fit: BoxFit.contain)
               : const HipPendingArt(label: '动画待渲染'),
         ),
       ),
     );
   }
+
+  void _toggleDemo() => setState(() => _demoPlaying = !_demoPlaying);
 
   Widget _switchOverlay() => ColoredBox(
     color: Colors.black.withValues(alpha: .55),
