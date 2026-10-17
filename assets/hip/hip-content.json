@@ -228,13 +228,13 @@
     "id": "deep_squat",
     "options": [
      {
-      "description": "大腿到水平附近就下不去",
+      "description": "只能半蹲，大腿还高于水平",
       "image": "assets/hip/assessment/deep-squat-c.webp",
       "label": "紧",
       "score": 0
      },
      {
-      "description": "脚跟抬起或要扶东西",
+      "description": "大腿接近水平，还不能蹲到底",
       "image": "assets/hip/assessment/deep-squat-b.webp",
       "label": "一般",
       "score": 1
