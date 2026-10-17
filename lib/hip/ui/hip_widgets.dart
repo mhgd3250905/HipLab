@@ -171,6 +171,7 @@ class HipDrillArt extends StatefulWidget {
     this.showPendingLabel = true,
     this.alignment = Alignment.center,
     this.mirror = false,
+    this.mediaViewBuilder,
   });
   final HipDrill drill;
 
@@ -183,6 +184,12 @@ class HipDrillArt extends StatefulWidget {
 
   /// Flip horizontally (the other side of a sided move).
   final bool mirror;
+
+  /// Replaces the native view in widget tests, retaining the real playback
+  /// controller and widget lifecycle without requiring a mobile WebView.
+  @visibleForTesting
+  final Widget Function(DrillMedia media, DrillMediaController controller)?
+  mediaViewBuilder;
 
   @override
   State<HipDrillArt> createState() => _HipDrillArtState();
@@ -255,7 +262,12 @@ class _HipDrillArtState extends State<HipDrillArt> {
       ..addListener(_onMedia);
     _media = own;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _controller == controller && widget.play) {
+      // didUpdateWidget may already have requested playback this frame.
+      // Starting the same controller twice must not toggle it back to pause.
+      if (mounted &&
+          _controller == controller &&
+          widget.play &&
+          !controller.wantsPlay) {
         controller.toggle();
       }
     });
@@ -308,25 +320,26 @@ class _HipDrillArtState extends State<HipDrillArt> {
       out = Stack(
         fit: StackFit.expand,
         children: [
-          DrillMediaPlatformView(
-            key: ValueKey(widget.drill.id),
-            media: media,
-            controller: controller,
-            fit: widget.fit == BoxFit.contain ? 'contain' : 'cover',
-            align: widget.alignment,
-            variant:
-                !HipColors.isDark &&
-                    HipMediaVariants.hasLightVideo(widget.drill.video)
-                ? 'light'
-                : null,
-            labels: const {
-              'title': '动作示范',
-              'play': '播放',
-              'pause': '暂停',
-              'error': '示范加载失败',
-              'disabled': '示范已暂停',
-            },
-          ),
+          widget.mediaViewBuilder?.call(media, controller) ??
+              DrillMediaPlatformView(
+                key: ValueKey(widget.drill.id),
+                media: media,
+                controller: controller,
+                fit: widget.fit == BoxFit.contain ? 'contain' : 'cover',
+                align: widget.alignment,
+                variant:
+                    !HipColors.isDark &&
+                        HipMediaVariants.hasLightVideo(widget.drill.video)
+                    ? 'light'
+                    : null,
+                labels: const {
+                  'title': '动作示范',
+                  'play': '播放',
+                  'pause': '暂停',
+                  'error': '示范加载失败',
+                  'disabled': '示范已暂停',
+                },
+              ),
           // The poster stays on top until the clip has a frame, then fades.
           IgnorePointer(
             child: AnimatedOpacity(
