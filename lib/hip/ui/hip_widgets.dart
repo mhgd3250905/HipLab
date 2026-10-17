@@ -108,6 +108,29 @@ class HipMediaFrame extends StatelessWidget {
   }
 }
 
+/// A drill / pose thumbnail (round 2 #3): the picture clipped to a rounded
+/// rect on the media backdrop, with no stroke of its own. Thumbnails sit on
+/// cards that already carry the edge; a second frame read as boxes in boxes.
+/// When it sits in a card's corner, pass radius = card radius − padding so
+/// the corners run concentric.
+class HipThumb extends StatelessWidget {
+  const HipThumb({super.key, required this.child, this.size, this.radius = 12});
+  final Widget child;
+  final double? size;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final thumb = ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: ColoredBox(color: HipColors.mediaBackdrop, child: child),
+    );
+    return size == null
+        ? thumb
+        : SizedBox.square(dimension: size, child: thumb);
+  }
+}
+
 /// Shows the [focus] part of a square still (fractions of the image) filling
 /// the box with a small margin, so thumbnails of different poses are framed
 /// alike (#2): same subject size, centred, no stray backdrop strips.

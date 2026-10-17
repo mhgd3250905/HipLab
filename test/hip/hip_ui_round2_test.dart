@@ -228,4 +228,23 @@ void main() {
     final started = await topPixel(.5);
     expect(started[1], greaterThan(60), reason: 'arc tail at the top');
   });
+
+  testWidgets('hip-check thumbnails: one card edge, concentric clean crop', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await tester.pumpAndSettle();
+    final row = find.byKey(const ValueKey('intro-item-butterfly'));
+    // No framed media box inside the row any more.
+    expect(
+      find.descendant(of: row, matching: find.byType(HipMediaFrame)),
+      findsNothing,
+    );
+    final panel = tester.widget<HipPanel>(row);
+    final thumb = tester.widget<HipThumb>(
+      find.descendant(of: row, matching: find.byType(HipThumb)),
+    );
+    expect(thumb.radius, panel.radius - panel.padding.left);
+  });
 }

@@ -104,20 +104,20 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
+    // One card edge only; the thumbnail is a clean rounded crop concentric
+    // with the card (20 − 7 = 13), no frame of its own (round 2 #3).
     return HipPanel(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.all(6),
-      radius: 18,
+      padding: const EdgeInsets.all(7),
+      radius: 20,
       child: Row(
         children: [
-          SizedBox.square(
-            dimension: 56,
-            child: HipMediaFrame(
-              radius: 13,
-              child: still == null
-                  ? const HipPendingArt()
-                  : HipFocusImage(asset: still, focus: _focusOf(item)),
-            ),
+          HipThumb(
+            size: 58,
+            radius: 13,
+            child: still == null
+                ? const HipPendingArt()
+                : HipFocusImage(asset: still, focus: _focusOf(item)),
           ),
           const SizedBox(width: 12),
           Container(
@@ -1108,13 +1108,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
                 ),
                 if (hero != null) ...[
                   const SizedBox(width: 12),
-                  SizedBox(
-                    width: 96,
-                    height: 96,
-                    child: HipMediaFrame(
-                      radius: 16,
-                      child: HipDrillArt(drill: hero, showPendingLabel: false),
-                    ),
+                  HipThumb(
+                    size: 96,
+                    radius: 14,
+                    child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),
                 ],
               ],
@@ -1124,15 +1121,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage>
               Row(
                 children: [
                   for (final p in steps.skip(1).take(4)) ...[
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: HipMediaFrame(
-                        radius: 12,
-                        child: HipDrillArt(
-                          drill: p.drill,
-                          showPendingLabel: false,
-                        ),
+                    HipThumb(
+                      size: 48,
+                      radius: 12,
+                      child: HipDrillArt(
+                        drill: p.drill,
+                        showPendingLabel: false,
                       ),
                     ),
                     const SizedBox(width: 8),

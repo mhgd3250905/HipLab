@@ -788,13 +788,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          SizedBox(
-            width: 52,
-            height: 52,
-            child: HipMediaFrame(
-              radius: 12,
-              child: HipDrillArt(drill: next.drill, showPendingLabel: false),
-            ),
+          // Concentric with the card: 22 − 10 padding.
+          HipThumb(
+            size: 52,
+            radius: 12,
+            child: HipDrillArt(drill: next.drill, showPendingLabel: false),
           ),
           const SizedBox(width: 12),
           Expanded(

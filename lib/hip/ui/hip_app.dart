@@ -853,16 +853,12 @@ class _HipHomeState extends State<HipHome> {
                         ))
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
-                            child: SizedBox(
-                              width: 40,
-                              height: 40,
-                              child: HipMediaFrame(
-                                radius: 10,
-                                borderColor: stage.line,
-                                child: HipDrillArt(
-                                  drill: s.drill,
-                                  showPendingLabel: false,
-                                ),
+                            child: HipThumb(
+                              size: 40,
+                              radius: 10,
+                              child: HipDrillArt(
+                                drill: s.drill,
+                                showPendingLabel: false,
                               ),
                             ),
                           ),

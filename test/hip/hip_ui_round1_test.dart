@@ -225,13 +225,12 @@ void main() {
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.
     final card = tester.getRect(find.byKey(const ValueKey('route-card')));
-    for (final e
-        in find
-            .descendant(
-              of: find.byKey(const ValueKey('route-card')),
-              matching: find.byType(HipMediaFrame),
-            )
-            .evaluate()) {
+    final thumbs = find.descendant(
+      of: find.byKey(const ValueKey('route-card')),
+      matching: find.byType(HipThumb),
+    );
+    expect(thumbs, findsWidgets);
+    for (final e in thumbs.evaluate()) {
       final r = tester.getRect(find.byWidget(e.widget));
       expect(card.contains(r.bottomRight - const Offset(.5, .5)), isTrue);
     }
