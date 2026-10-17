@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 class _Player extends Fake implements AudioPlayer {
   _Player(this.events);
   final List<String> events;
+  int stops = 0;
   @override
   Future<void> setVolume(double volume) async {}
   @override
@@ -21,14 +22,17 @@ class _Player extends Fake implements AudioPlayer {
   @override
   Future<void> play() async => events.add('play');
   @override
-  Future<void> stop() async {}
+  Future<void> stop() async => stops++;
   @override
   Future<void> dispose() async {}
 }
 
 class _Session extends Fake implements AudioSession {
-  _Session(this.events);
+  _Session(this.events, {this.noisy = const Stream.empty()});
   final List<String> events;
+  final Stream<void> noisy;
+  @override
+  Stream<void> get becomingNoisyEventStream => noisy;
   @override
   Stream<AudioInterruptionEvent> get interruptionEventStream =>
       const Stream.empty();
@@ -50,6 +54,29 @@ class _Session extends Fake implements AudioSession {
 }
 
 void main() {
+  test('unplugging stops both players and releases music focus', () async {
+    final events = <String>[];
+    final noisy = StreamController<void>.broadcast(sync: true);
+    final voice = _Player(events);
+    final chime = _Player(events);
+    final output = JustAudioVoiceOutput.forTesting(
+      voice: voice,
+      chime: chime,
+      keepAlive: _Player(events),
+      session: () async => _Session(events, noisy: noisy.stream),
+    );
+    await output.begin();
+    await output.speak(['assets/voice/zh/p.welcome.m4a']);
+    expect(events, ['active:true', 'play']);
+    noisy.add(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(voice.stops, 1);
+    expect(chime.stops, 1);
+    expect(events, ['active:true', 'play', 'active:false']);
+    await output.dispose();
+    await noisy.close();
+  });
+
   test(
     'first speech waits for initialization and acquires focus before play',
     () async {

@@ -4,13 +4,13 @@
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
-- Dart ^3.12.2；本机已验证 Flutter 3.44.7，原迁移 PR 声明 3.47.7，团队 SDK 尚待统一。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
+- Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
 后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。台账快照日期为 2026-10-17。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-Android 16 真机现已保留数据更新至 **0.1.2+3**，采用用户选定的青玉绿「站姿开髋」图标，已查看桌面确认。原有 46 项动作视频、专用自测剪辑及 47 张 1080 封面保持；6 项自测均为视频。当前构建/安装见[版本台账](docs/version-ledger.md)，高清媒体实机证据保留在 [Android 运行记录](docs/android-first-run-2026-10-17.md)。
+Android 16 真机本轮已逐次覆盖安装 **0.3.0+5 debug**，现为 #7/#8/#9 的本地验证集成（尚未推送或合并），采用用户选定的青玉绿「站姿开髋」图标，已查看桌面确认。原有 46 项动作视频、专用自测剪辑及 47 张 1080 封面保持；6 项自测均为视频。当前构建/安装见[版本台账](docs/version-ledger.md)，高清媒体实机证据保留在 [Android 运行记录](docs/android-first-run-2026-10-17.md)。
 
 制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
 
@@ -18,7 +18,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。新环境先明确 Flutter SDK，再获取依赖并审阅锁文件差异；下方为通用构建命令。Android 已验证 debug；iOS 工程在 `feat/ios` 完成配置与静态验证（SwiftPM、无需 CocoaPods），尚未在 Mac 构建或真机验收，步骤见 [iOS 运行与上架说明](docs/ios-setup-and-release.md)；正式签名和商店发布尚未验收。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。新环境先明确 Flutter SDK，再获取依赖并审阅锁文件差异；下方为通用构建命令。Android 已验证 debug；iOS 工程在 `feat/ios` 完成配置与静态验证（SwiftPM、无需 CocoaPods），尚未在 Mac 构建或真机验收，步骤见 [iOS 运行与上架说明](docs/ios-setup-and-release.md)；0.2.0+4 已完成正式上传签名并送 Alpha 审核，尚未正式上架；见[送审记录](docs/play-store-release-2026-10-17.md)。
 
 ```bash
 flutter pub get
