@@ -97,6 +97,7 @@
     "title": "90/90"
    },
    {
+    "aka": "又称托马斯测试（Thomas test），测髋前侧屈髋肌紧不紧",
     "cue": "抱住一边膝盖，另一条腿放松伸直，把手塞到膝盖下面试试。",
     "demo_drill": "n-thomas-test",
     "directions": [
@@ -104,7 +105,7 @@
     ],
     "glow": "髋前侧",
     "id": "thomas",
-    "note_for_dancer": "这项和托马斯全旋没关系，但髋前侧松不松，会影响你的 L 撑。",
+    "note_for_dancer": "这项（Thomas test）和托马斯全旋没关系，但髋前侧松不松，会影响你的 L 撑。",
     "options": [
      {
       "description": "拳头能塞进去，或大腿抬起",
@@ -129,7 +130,7 @@
     "question": "膝窝能塞进什么？",
     "seconds": 15,
     "sided": true,
-    "title": "托马斯测试"
+    "title": "屈髋肌测试"
    },
    {
     "cue": "一条腿伸直抬起来，往另一边跨过去。手按胯骨，胯骨一动就停。",
@@ -1846,7 +1847,7 @@
     "relax"
    ],
    "mvp": true,
-   "name": "仰卧单膝抱胸（托马斯测试演示）",
+   "name": "仰卧单膝抱胸（屈髋肌测试演示）",
    "note": "穿模风险：低；h-knee-hug 的单腿版本；需额外出 3 张对比图（伸直腿贴地 / 膝窝离地 / 大腿翘起）",
    "scenes": [
     "home"

@@ -141,8 +141,13 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pumpAndSettle();
     final plan = store.todayPlan!;
-    expect(find.text(plan.steps.first.drill.name), findsOneWidget);
+    // Lead-in first ("准备开始" + the first drill), then skip into the drill.
+    expect(find.text('准备开始'), findsWidgets);
+    expect(find.text(plan.steps.first.drill.name), findsWidgets);
     expect(find.text('1/${plan.steps.length}'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    await tester.pumpAndSettle();
+    expect(find.text(plan.steps.first.drill.name), findsOneWidget);
     // Pain once → smaller range, half time, "别勉强".
     await tester.tap(find.byKey(const ValueKey('player-pain')));
     await tester.pumpAndSettle();
@@ -184,6 +189,8 @@ void main() {
       },
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('player-skip'))); // lead-in
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('player-pain')));
     await tester.pumpAndSettle();

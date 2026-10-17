@@ -231,10 +231,12 @@ def assessment():
                 },
             },
             {
-                'id': 'thomas', 'order': 3, 'title': '托马斯测试', 'question': '膝窝能塞进什么？',
+                'id': 'thomas', 'order': 3, 'title': '屈髋肌测试', 'question': '膝窝能塞进什么？',
+                # Plain name for users (2026-10-17 round 1 #4); the clinical name stays in the note.
+                'aka': '又称托马斯测试（Thomas test），测髋前侧屈髋肌紧不紧',
                 'cue': '抱住一边膝盖，另一条腿放松伸直，把手塞到膝盖下面试试。', 'demo_drill': 'n-thomas-test',
                 'seconds': 15, 'sided': True, 'directions': ['extension'], 'glow': '髋前侧',
-                'note_for_dancer': '这项和托马斯全旋没关系，但髋前侧松不松，会影响你的 L 撑。',
+                'note_for_dancer': '这项（Thomas test）和托马斯全旋没关系，但髋前侧松不松，会影响你的 L 撑。',
                 'options': [
                     opt(0, '紧', '拳头能塞进去，或大腿抬起', assess_img('thomas-c')),
                     opt(1, '一般', '手掌能塞进去', assess_img('thomas-b')),
