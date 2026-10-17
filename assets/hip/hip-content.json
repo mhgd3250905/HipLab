@@ -459,7 +459,7 @@
  "drills": [
   {
    "alternative": "h-reverse-clam",
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -469,9 +469,11 @@
    "id": "h-9090-liftoff",
    "level": "advanced",
    "media": {
-    "poster": "assets/hip/posters/h-9090-liftoff.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-9090-liftoff.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-9090-liftoff.mp4"
    },
    "methods": [
     "control"
@@ -487,7 +489,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -498,9 +500,11 @@
    "id": "h-adductor-rock",
    "level": "beginner",
    "media": {
-    "poster": "assets/hip/posters/h-adductor-rock.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-adductor-rock.jpg",
+    "poster_time_seconds": 2.4,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-adductor-rock.mp4"
    },
    "methods": [
     "flexibility"
@@ -516,7 +520,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -526,9 +530,11 @@
    "id": "h-band-hip-ir",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-band-hip-ir.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-band-hip-ir.mp4"
    },
    "methods": [
     "strength"
@@ -544,7 +550,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "内收肌根"
    ],
@@ -554,9 +560,11 @@
    "id": "h-band-leg-out",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-band-leg-out.jpg",
+    "poster_time_seconds": 4.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-band-leg-out.mp4"
    },
    "methods": [
     "flexibility"
@@ -572,7 +580,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "内收肌根"
    ],
@@ -584,9 +592,11 @@
    "id": "h-butterfly-active",
    "level": "beginner",
    "media": {
-    "poster": "assets/hip/posters/h-butterfly-active.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-butterfly-active.jpg",
+    "poster_time_seconds": 2.3,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-butterfly-active.mp4"
    },
    "methods": [
     "control"
@@ -602,7 +612,7 @@
   },
   {
    "alternative": "s-kneel-hipflex",
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "腰"
@@ -613,9 +623,11 @@
    "id": "h-couch-stretch",
    "level": "advanced",
    "media": {
-    "poster": "assets/hip/posters/h-couch-stretch.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-couch-stretch.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-couch-stretch.mp4"
    },
    "methods": [
     "flexibility"
@@ -631,7 +643,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "external_rotation",
@@ -642,9 +654,11 @@
    "id": "h-hip-gate",
    "level": "beginner",
    "media": {
-    "poster": "assets/hip/posters/h-hip-gate.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-hip-gate.jpg",
+    "poster_time_seconds": 1.6,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-hip-gate.mp4"
    },
    "methods": [
     "control"
@@ -660,7 +674,7 @@
   },
   {
    "alternative": "h-hip-gate",
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -675,9 +689,11 @@
    "id": "h-quad-cars",
    "level": "advanced",
    "media": {
-    "poster": "assets/hip/posters/h-quad-cars.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-quad-cars.jpg",
+    "poster_time_seconds": 2.2,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-quad-cars.mp4"
    },
    "methods": [
     "control"
@@ -693,7 +709,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -703,9 +719,11 @@
    "id": "h-reverse-clam",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-reverse-clam.jpg",
+    "poster_time_seconds": 1.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-reverse-clam.mp4"
    },
    "methods": [
     "control",
@@ -722,7 +740,7 @@
   },
   {
    "alternative": "h-squat",
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "髋前侧夹痛"
@@ -735,9 +753,11 @@
    "id": "h-sumo-pry",
    "level": "advanced",
    "media": {
-    "poster": "assets/hip/posters/h-sumo-pry.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-sumo-pry.jpg",
+    "poster_time_seconds": 2.6,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-sumo-pry.mp4"
    },
    "methods": [
     "flexibility"
@@ -753,7 +773,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "内收肌根"
    ],
@@ -763,9 +783,11 @@
    "id": "h-wall-straddle",
    "level": "beginner",
    "media": {
-    "poster": "assets/hip/posters/h-wall-straddle.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-wall-straddle.jpg",
+    "poster_time_seconds": 4.5,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-wall-straddle.mp4"
    },
    "methods": [
     "relax",
@@ -782,7 +804,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "髋前侧夹痛"
    ],
@@ -792,9 +814,11 @@
    "id": "h-knee-hug",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-knee-hug.jpg",
+    "poster_time_seconds": 2.5,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-knee-hug.mp4"
    },
    "methods": [
     "relax"
@@ -810,7 +834,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -821,9 +845,11 @@
    "id": "h-supine-twist",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-supine-twist.jpg",
+    "poster_time_seconds": 2.3,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-supine-twist.mp4"
    },
    "methods": [
     "relax"
@@ -839,7 +865,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -849,9 +875,11 @@
    "id": "h-squat",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-h-squat.jpg",
+    "poster_time_seconds": 0,
+    "status": "video",
+    "video": "assets/drill_media/hip-h-squat.mp4"
    },
    "methods": [
     "strength"
@@ -867,7 +895,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "flexion"
@@ -876,10 +904,10 @@
    "level": "advanced",
    "media": {
     "duration_seconds": 8.0,
-    "poster": "assets/drill_media/hip-flexors-a.jpg",
-    "poster_time_seconds": 1.0,
+    "poster": "assets/drill_media/hip-hip-flexors-a.jpg",
+    "poster_time_seconds": 1.9,
     "status": "video",
-    "video": "assets/drill_media/hip-flexors-a.mp4"
+    "video": "assets/drill_media/hip-hip-flexors-a.mp4"
    },
    "methods": [
     "control"
@@ -895,7 +923,7 @@
   },
   {
    "alternative": "w-feet-on-chair-bridge",
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -907,7 +935,7 @@
    "media": {
     "duration_seconds": 8.0,
     "poster": "assets/drill_media/hip-glute-max-a.jpg",
-    "poster_time_seconds": 1.0,
+    "poster_time_seconds": 2.1,
     "status": "video",
     "video": "assets/drill_media/hip-glute-max-a.mp4"
    },
@@ -925,7 +953,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有旧版成片（spec 已更新，需重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -936,9 +964,11 @@
    "id": "s-9090",
    "level": "beginner",
    "media": {
-    "poster": "assets/hip/posters/s-9090.webp",
-    "status": "poster",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-9090.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-9090.mp4"
    },
    "methods": [
     "flexibility"
@@ -954,7 +984,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "内收肌根"
    ],
@@ -985,7 +1015,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有旧版成片（spec 已更新，需重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "external_rotation"
@@ -993,9 +1023,11 @@
    "id": "s-figure4",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-figure4.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-figure4.mp4"
    },
    "methods": [
     "relax",
@@ -1012,7 +1044,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "内收肌根"
@@ -1024,9 +1056,11 @@
    "id": "s-frog",
    "level": "advanced",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-frog.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-frog.mp4"
    },
    "methods": [
     "flexibility"
@@ -1042,7 +1076,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "腰"
@@ -1053,9 +1087,11 @@
    "id": "s-kneel-hipflex",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-kneel-hipflex.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-kneel-hipflex.mp4"
    },
    "methods": [
     "flexibility"
@@ -1071,7 +1107,7 @@
   },
   {
    "alternative": "o-stand-lunge",
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "extension",
@@ -1080,9 +1116,11 @@
    "id": "s-lizard",
    "level": "advanced",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-lizard.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-lizard.mp4"
    },
    "methods": [
     "flexibility"
@@ -1098,7 +1136,7 @@
   },
   {
    "alternative": "s-figure4",
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1109,9 +1147,11 @@
    "id": "s-pigeon",
    "level": "advanced",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-pigeon.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-pigeon.mp4"
    },
    "methods": [
     "flexibility"
@@ -1127,7 +1167,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -1137,9 +1177,11 @@
    "id": "s-seated-fold",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-s-seated-fold.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-s-seated-fold.mp4"
    },
    "methods": [
     "flexibility"
@@ -1155,7 +1197,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1165,9 +1207,11 @@
    "id": "o-seated-fig4",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-o-seated-fig4.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-o-seated-fig4.mp4"
    },
    "methods": [
     "flexibility"
@@ -1183,7 +1227,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "flexion"
@@ -1191,9 +1235,11 @@
    "id": "o-seated-ham",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-o-seated-ham.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-o-seated-ham.mp4"
    },
    "methods": [
     "flexibility"
@@ -1209,7 +1255,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -1219,9 +1265,11 @@
    "id": "o-stand-lunge",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-o-stand-lunge.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-o-stand-lunge.mp4"
    },
    "methods": [
     "flexibility"
@@ -1237,7 +1285,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "adduction"
@@ -1245,9 +1293,11 @@
    "id": "o-stand-crossreach",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-o-stand-crossreach.jpg",
+    "poster_time_seconds": 3.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-o-stand-crossreach.mp4"
    },
    "methods": [
     "flexibility"
@@ -1263,7 +1313,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "external_rotation",
@@ -1272,9 +1322,11 @@
    "id": "w-clamshell",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-w-clamshell.jpg",
+    "poster_time_seconds": 1.8,
+    "status": "video",
+    "video": "assets/drill_media/hip-w-clamshell.mp4"
    },
    "methods": [
     "strength"
@@ -1290,7 +1342,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（v7 旧风格成片，需按 B 重渲）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "extension"
@@ -1298,9 +1350,11 @@
    "id": "w-feet-on-chair-bridge",
    "level": "beginner",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 8.0,
+    "poster": "assets/drill_media/hip-w-feet-on-chair-bridge.jpg",
+    "poster_time_seconds": 2.0,
+    "status": "video",
+    "video": "assets/drill_media/hip-w-feet-on-chair-bridge.mp4"
    },
    "methods": [
     "strength"
@@ -1316,7 +1370,7 @@
   },
   {
    "alternative": "n-leg-circles",
-   "animation_note": "仅 spec（本地未见成片，需渲染验证）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "abduction",
@@ -1325,9 +1379,11 @@
    "id": "t-seated-straddle-lift-1leg",
    "level": "advanced",
    "media": {
-    "poster": null,
-    "status": "pending",
-    "video": null
+    "duration_seconds": 10.0,
+    "poster": "assets/drill_media/hip-t-seated-straddle-lift-1leg.jpg",
+    "poster_time_seconds": 0.9,
+    "status": "video",
+    "video": "assets/drill_media/hip-t-seated-straddle-lift-1leg.mp4"
    },
    "methods": [
     "control"
@@ -1343,7 +1399,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1373,7 +1429,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "internal_rotation",
@@ -1403,7 +1459,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1433,7 +1489,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1463,7 +1519,7 @@
   },
   {
    "alternative": "o-seated-ham",
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "腰"
@@ -1494,7 +1550,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -1525,7 +1581,7 @@
   },
   {
    "alternative": "h-adductor-rock",
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝",
     "内收肌根"
@@ -1557,7 +1613,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -1588,7 +1644,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "内收肌根",
     "腰"
@@ -1620,7 +1676,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "flexion"
@@ -1648,7 +1704,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "flexion",
@@ -1679,7 +1735,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [],
    "directions": [
     "adduction"
@@ -1707,7 +1763,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "膝"
    ],
@@ -1738,7 +1794,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "腰"
    ],
@@ -1770,7 +1826,7 @@
   },
   {
    "alternative": null,
-   "animation_note": "有（B 风格成片，第 1 阶段快速渲染）",
+   "animation_note": "有（本机高清成片，1080×1080 / 30fps）",
    "cautions": [
     "髋前侧夹痛"
    ],

@@ -4,9 +4,21 @@
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`
 - App 名：开胯训练助手（iOS `CFBundleName` 为 HipLab）
-- Flutter 3.47.x（Dart ^3.12.2），只支持 Android / iOS，只做中文、深色
+- Dart ^3.12.2；本机已验证 Flutter 3.44.7，原迁移 PR 声明 3.47.7，团队 SDK 尚待统一。只支持 Android / iOS，目前中文、深色
+
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。台账快照日期为 2026-10-17。
+
+当前应用成果在 [PR #2](https://github.com/mhgd3250905/HipLab/pull/2)，仍需与 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 集成至 main。手机已安装版本与远端主线状态分别登记。
+
+Android 16 真机现已保留数据更新至 **0.1.1+2**：46 项动作视频、专用自测剪辑及 47 张封面均为 1080；6 项自测全部可播放。构建、安装与实机播放证据见 [Android 运行记录](docs/android-first-run-2026-10-17.md)。
+
+制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
+
+PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿幕、透明母帧与当前深色 App 播放版本的来源和检查见 [本地制作记录](docs/local-hd-render-2026-10-17.md)。
 
 ## 构建
+
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。新环境先明确 Flutter SDK，再获取依赖并审阅锁文件差异；下方为通用构建命令。Android 已验证 debug，iOS、正式签名和商店发布尚未验收。
 
 ```bash
 flutter pub get
@@ -31,7 +43,7 @@ lib/hip/control/hip_store.dart 本地持久化（SharedPreferences，单 key hip
 lib/hip/ui/                    安全图卡/身份 → 首页 → 自测 → 结果 → 跟练播放器 → 进度/设置
 lib/core/                      从 3D-Body 复制来的公共代码（见下表）
 assets/hip/hip-content.json    内容包（脚本生成，不要手改）
-assets/hip/posters/            原型静帧（还没成片的动作用）
+assets/hip/posters/            历史原型静帧（当前 46 项动作均已接入视频）
 assets/hip/assessment/         自测对比图（20 张）
 assets/drill_media/            动作成片 hip-<id>.mp4 + .jpg，以及 WebView 播放器 player.html/js/css
 assets/fonts/NotoSansSC.ttf    字体（OFL）
@@ -39,7 +51,7 @@ tools/hip_content/             内容包生成脚本 + 第 0 阶段源文件（�
 tools/sync_drill_media.py      从 3D-Body drill-anim 同步成片并重生成内容包
 test/hip/                      规则 / 界面流程 / 资源边界测试
 test/core/                     公共代码的测试（随代码一起复制）
-docs/                          设计与 MVP 说明
+docs/                          当前状态、版本/验证/事项台账、工作流与历史设计证据
 ```
 
 ## 从 3D-Body 复制来的公共代码
@@ -60,7 +72,7 @@ docs/                          设计与 MVP 说明
 | `assets/drill_media/player.js` | `app/assets/drill_media/player.js` | id 规则只接受 `hip-<id>` |
 | `assets/fonts/NotoSansSC.ttf` + `assets/licenses/NotoSansSC-OFL.txt` | `app/assets/fonts/FlareSans.ttf`（即 Noto Sans SC） | 改文件名，字体族改叫 `NotoSansSC` |
 | `test/core/*_test.dart` | `app/test/platform/` 对应测试 | 只改 import |
-| `assets/drill_media/hip-glute-max-a.*`、`hip-flexors-a.*` | `app/assets/drill_media/glute-max-A.*`、`hip-flexors-A.*` | 原样复制、改名 |
+| 初次迁移的 `hip-glute-max-a.*`、`hip-flexors-a.*` | `app/assets/drill_media/glute-max-A.*`、`hip-flexors-A.*` | 当时原样复制改名；0.1.1+2 已换为本机高清制作素材，废弃的 `hip-flexors-a.*` 别名已移出包 |
 
 主题（`lib/hip/ui/hip_theme.dart`）本来就是 HipLab 自己的，没有依赖 FlareLab 主题。不带过来的：3D 场景、托马斯资源、FlareLab 的 51 个动作库/肌群图/多语言、`AppLocalizations`。
 
@@ -71,31 +83,24 @@ docs/                          设计与 MVP 说明
 
 ## 同步动作成片（tools/sync_drill_media.py）
 
-需要 `ffmpeg` / `ffprobe`。默认 3D-Body 和本仓库放在同一个上级目录（`../3D-Body`）。
+需要 `ffmpeg` / `ffprobe`。默认 3D-Body 和本仓库放在同一个上级目录（`../3D-Body`）。当前高清流程从已验收 Android 派生批次导入，先预览，再移除 `--dry-run` 执行：
 
 ```bash
-python3 tools/sync_drill_media.py --dry-run                      # 先看会改什么
-python3 tools/sync_drill_media.py                                # 用 ../3D-Body/tools/drill-anim/out
-python3 tools/sync_drill_media.py --threed-body D:/src/3D-Body   # 别的位置
-python3 tools/sync_drill_media.py --out D:/renders/out --ids n-prone-ir s-pigeon
-python3 tools/sync_drill_media.py --library                      # 顺带刷新两条 FlareLab 库成片
+python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --poster-size 1080 --out E:/AII-3D/3D-Body/output/hiplab-android-20261017-v2 --dry-run
 ```
 
 它做的事：
 
-1. 在 drill-anim 的 `out/` 里找本 App 动作表（`tools/hip_content/source/髋部动作表.csv`）里有的动作 `<id>.mp4`，并且 `out/metrics/<id>.json` 是 qa PASS 的；其他（包括 FlareLab 的渲染）一律跳过。
-2. 转码成 `assets/drill_media/hip-<id 小写>.mp4`（720×720、30fps、H.264 CRF 27、faststart、无音轨），按动作 spec 的 `stillAt` 截 540×540 封面 `.jpg`。App 里的文件比渲染新时不重转，`--force` 强制。
+1. 从 `--out` 读取本 App 动作及 QA；`--copy-ready` 还校验完整交付清单、来源与文件 SHA。
+2. 当前流程将 1080×1080 / 真实 30fps / H.264 CRF18 的主片原字节复制至 `assets/drill_media/hip-<id 小写>.mp4`，不二次压缩；按交付封面时间生成 1080 封面。
 3. 自测示范片从长动作里剪（目前：`supine-cross-demo` 取自 `n-leg-circles` 7.2–12 秒）。
 4. 更新 `tools/hip_content/source/hip-media.json`（时长、封面时间、来源），把动作表里对应行的「动画状态」标成已有成片。
 5. 运行 `tools/hip_content/build_hip_content.py` 重生成 `assets/hip/hip-content.json`。
 
 同步完跑一次 `flutter test`：`test/hip/hip_assets_test.dart` 会检查内容包引用的文件都在、`assets/drill_media/` 里只有 `hip-*` 成对文件。自测对比图（`assets/hip/assessment/`）不归这个脚本管，换图时直接替换同名 webp。
 
-## 待办
+旧转码路径的默认参数仍是 720 / CRF27 / 540 封面，保留源帧时序；`--library` 属于早期迁移兼容功能，会从旧素材库复制，不用于当前高清批次。新批次替换 `--out`，完整步骤和验证见[开发工作流](docs/development-workflow.md)。
 
-- 久坐提醒的系统通知插件（`ReminderScheduler` 接口已留好，目前只记录时间表）
-- 正式 App 图标（现在 Android/iOS 用的是占位图标，iOS 由 192px 图放大）
-- iOS 签名团队、App Store 信息（以后可用 Hip Interlude 的名额）
-- CI
-- 18 个动作还没有成片（显示「动画待渲染」），9 个用原型静帧
-- 字体 Noto Sans SC 17 MB，可以按用到的字做子集瘦身
+## 后续开发
+
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。当前优先处理紧侧加练计时分配缺陷、主线集成和全量真机体验验收；系统通知、正式图标/签名、iOS、CI 与主题适配仍待推进。46 项动作高清交付及 Android 0.1.1+2 安装已完成。

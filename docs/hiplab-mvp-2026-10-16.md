@@ -1,6 +1,6 @@
 # HipLab · 开胯训练助手 MVP 骨架（2026-10-16）
 
-> **历史文档（2026-10-17 起）**：本文写于 HipLab 还是 3D-Body 里的 hip 变体时（3D-Body PR #118）。拆到本仓库后：入口是 `lib/main.dart`（原 `main_hip.dart`），Android/iOS 包名固定为 `com.ugk.hiplab`，不再有按入口切换的 Gradle 逻辑；共享部件改为复制在 `lib/core/`（清单见仓库 README）；字体族改名 `NotoSansSC`；不再用 `AppLocalizations`。下文第 1 节的变体说明只作背景参考，其余（内容包、自测计分、训练规划、疼痛降级）仍然有效。
+> **历史文档（2026-10-17 起）**：本文写于 HipLab 还是 3D-Body 里的 hip 变体时（3D-Body PR #118）。拆仓后入口为 `lib/main.dart`，包名固定为 `com.ugk.hiplab`，公共代码复制在 `lib/core/`，字体族为 `NotoSansSC`，不再用 `AppLocalizations`。下文变体架构、媒体数量、构建及测试结果均为历史背景；内容与业务设计可作参考，具体实现以现代码为准。当前版本、已确认缺陷及验证范围见[文档台账](README.md)和[当前状态](current-state.md)。
 
 方案 A：在本 Flutter 工程里加第二个 App 变体。FlareLab（托马斯）的入口、包名、构建命令、资源和测试都不变。
 
