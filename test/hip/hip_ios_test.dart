@@ -15,6 +15,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_assessment.dart';
@@ -342,6 +343,26 @@ void main() {
       }, variant: ios);
     }
   });
+
+  for (final (theme, icons) in [
+    (HipThemeChoice.dark, Brightness.dark),
+    (HipThemeChoice.light, Brightness.light),
+  ]) {
+    testWidgets('status bar text contrasts with the ${theme.id} theme', (
+      tester,
+    ) async {
+      await bootIos(tester, theme: theme);
+      final regions = tester
+          .widgetList<AnnotatedRegion<SystemUiOverlayStyle>>(
+            find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+          )
+          .toList();
+      expect(regions, isNotEmpty);
+      // iOS reads statusBarBrightness: the brightness of what's *behind*
+      // the status bar (dark background → light text).
+      expect(regions.first.value.statusBarBrightness, icons);
+    }, variant: ios);
+  }
 
   testWidgets('the player cannot be swiped away on iOS mid-session', (
     tester,
