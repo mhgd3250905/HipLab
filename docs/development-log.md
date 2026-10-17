@@ -14,6 +14,13 @@
 | 2026-10-17 / Icon 方向重做 | 用户否决前轮六个角色候选，PR #4 关闭并保留原分支；当前聊天直接用 ImageGen 生成坐姿舒展、站姿开髋两张运动符号，侧弓步输出被服务拦截未生成；本轮原图与提示已保存，待用户选版，未改 App | [新设计说明](app-icon-sports-2026-10-17.md)，D-05 进行中 |
 | 2026-10-17 14:37 / Android 图标落地 | 用户认可第二个 B；`4cf5ca7` 采用站姿开髋图标，导出五档/圆形/Adaptive/Monochrome，0.1.2+3 重新 analyze/49 测试/构建通过；同签名保留数据安装、冷启动和手机桌面确认，1195 字节设置逐字节保持 | [版本台账](version-ledger.md)、[图标资源](../design/app-icon/launcher-20261017/README.md)，PR #5；iOS/矢量尚未完成 |
 | 2026-10-17 / 用户验收 | 用户在 Android 0.1.2+3 更新后确认“测试通过了”；已将反馈记入当前状态、版本与验证台账，版本号和已安装 APK 保持 | 本聊天用户反馈；本轮仅台账更新 |
+| 2026-10-17 / Play 送审准备 | `codex/play-store-release` 工作区升级 0.2.0+4，正式上传 key 的 release 构建已产生；补主 Manifest 的正常网络权限及离线隐私入口，analyze 无问题、50 项测试通过。商店资料、四张旧版真机截图、展示图和 10 项声明已保存，公开隐私页已发布；Alpha 配置进行中，尚未上传/送审，release 实播仍在验证；D-01 未修、D-06 进行中 | [Play 送审记录](play-store-release-2026-10-17.md)；用户确认公开支持邮箱；用户真机安装版本保持 0.1.2+3 |
+| 2026-10-17 / release 最终核验与开始上传 | 最终 AAB/APK 签名核验通过并记录 SHA；API 35 模拟器 host GPU 的正式 APK 视频实播和断网隐私页验证通过。软件 GPU 宿主 GL 异常与旧包未声明 INTERNET 分别留证；用户真机未覆盖。最终 AAB 已开始 Alpha 上传，尚待平台校验及提交审核 | [版本台账](version-ledger.md)、[验证台账](verification.md)、[送审回执](play-store-release-2026-10-17.md)；产物在仓库外部本地目录 |
+| 2026-10-17 / AAB 上传完成 | 最终 Alpha AAB 文件传输完成，Console 进入 Google 优化；尚待平台就绪及提交审核。稳定 host GPU 旧包对照已确认 INTERNET 缺失导致黑屏，最终包已覆盖恢复 | [Play 送审记录](play-store-release-2026-10-17.md)，仍未宣称审核已提交 |
+| 2026-10-17 / 构建源码提交 | 本次最终构建源码提交为 `19aa388`，版本 0.2.0+4；等待推送、PR 和 main 集成各自回执。文档继续维护 Console 结果 | [版本台账](version-ledger.md)、[Play 送审记录](play-store-release-2026-10-17.md) |
+| 2026-10-17 / 分支推送与 Alpha 版本保存 | `19aa388` 已推送并创建 draft PR #10，main 未合并。AAB 平台处理完成，回读4(0.2.0)/target36/min24/三ABI，预览无阻塞错误且 Alpha 版本已保存；正在发布概览送审，待最终回执 | [PR #10](https://github.com/mhgd3250905/HipLab/pull/10)、[Play 送审记录](play-store-release-2026-10-17.md) |
+| 2026-10-17 20:59 / 送审请求提交 | 已确认“将 15 项更改送审”，发布概览变为“正在审核中的更改”；Alpha 0.2.0(4)、177 国家/地区及其他、名单/商店/内容声明纳入。快速自动检查仍在进行，未审核通过或正式上架；测试链接未启用、实际加入 0 人，后续须组织 12 人连续 14 天 | [提交回执及本地证据](play-store-release-2026-10-17.md)，D-06 继续进行中；main 未合并、真机未覆盖 |
+| 2026-10-17 20:59 / 精确提交活动回读 | Submission ID 1，状态“审核中”，15 项变更；时间由 Console 的 8:59 下午精确核对。已保存活动与详情截图/文本；尚未审核通过或正式上架 | [Console 提交详情（需登录）](https://play.google.com/console/u/0/developers/4872134440776463225/app/4976120800604322549/publishing/submission-activity/1/details)、[送审记录](play-store-release-2026-10-17.md) |
 
 ## 后续检查点模板
 

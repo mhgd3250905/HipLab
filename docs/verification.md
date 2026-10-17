@@ -1,6 +1,6 @@
 # 验证台账
 
-当前 Android 基线为 **0.1.2+3 / `4cf5ca7`**，检查日期 2026-10-17。下表 V-01 至 V-13 保留 0.1.1+2 / `35f2a97` 的原始验证，新图标版本见本页末节。测试通过只覆盖所述范围，后续文档修改不会使旧检查变成新版本验证。
+当前用户真机安装基线为 **0.1.2+3 / `4cf5ca7`**，检查日期 2026-10-17。待送审 **0.2.0+4 release** 的独立检查见本页末节；下表 V-01 至 V-13 保留 0.1.1+2 / `35f2a97` 的原始验证，新图标版本见对应节。测试通过只覆盖所述范围，后续文档修改不会使旧检查变成新版本验证。
 
 | 编号 | 范围 / 命令 | 已执行结果 | 证据与边界 |
 |---|---|---|---|
@@ -53,3 +53,39 @@ alpha≥8 阈值下，各 density 主体半径约 32.02–32.14dp，中央 66dp 
 Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正常、未观察到运行致命错误。安装前后、冷启动后和桌面检查后，1195 字节设置文件逐字节一致。查看 App 首页和 `com.miui.home` 桌面截图，确认新图标完整显示。证据位于 `build/android-icon-20261017/`；未切换手机系统主题，未做 iOS、商店或矢量验收。媒体及业务代码未改，本轮没有重复媒体解码与同步工具测试。
 
 用户验收反馈（2026-10-17）：本次 Android 0.1.2+3 更新后，用户确认“测试通过了”。该反馈已登记至版本台账；其他独立待办的状态保持各自记录。本次台账更新没有新增自动测试结果或重新构建、安装。
+
+## 0.2.0+4 Play 准备阶段检查（2026-10-17）
+
+`codex/play-store-release` 工作区重新执行 `flutter analyze --no-pub` 无问题，`flutter test --no-pub` **50 项通过**；对应源码随后提交为 `19aa388`。新增用例从进度页打开离线隐私页、复制公开政策链接并返回；全部 7 项界面流程测试通过。支持邮箱按用户确认补入 `mhgd3250905@gmail.com`，最终 release 的离线页面验证已覆盖该邮箱。
+
+准备阶段正式上传 key 签名 release 构建已产生，当时 release 实际播放器核验尚在进行。商店四张 `verified-real-20261017` 截图来自用户真机的 `0.1.2+3`，不能作为新版 release 安装或运行证明。后续最终核验如下。
+
+Play Console 的商店介绍、图标、1024 × 500 展示图与四张手机截图已保存，全部 10 项内容声明当前无待注意项；IARC 显示 ESRB Everyone / PEGI 3，目标受众 18+。公开隐私页已发布且回读 HTTP 200，含系统备份、本机媒体权限与支持邮箱。准备阶段 Alpha 地区、单人测试名单和反馈邮箱已保存，当时尚未上传版本或送审；上传后续变化见下节与 [Play 送审记录](play-store-release-2026-10-17.md)。
+
+### 最终 release 模拟器核验回执
+
+正式签名 AAB 的 `jarsigner`、APK 的 `apksigner` 验证通过，最终字节数和 SHA 见[版本台账](version-ledger.md)。API 35 `emulator-5554` 使用 host RTX 4080 GPU 运行正式 APK，视频实播 8 秒，纯媒体区域 15 次采样获得 14 个不同 hash。App 进程未出现 `SocketException`、`EACCES` 或 cleartext 异常；禁用 Wi-Fi/移动数据后，离线隐私页与 `mhgd3250905@gmail.com` 仍可见。
+
+证据在本地外部目录 `E:\AII-3D\hiplab-releases\0.2.0+4\release-verification-20261017`：`host-playback.mp4`、`host-player*.png`、`final-progress.png`、`final-privacy-offline.png`、`final-privacy-bottom.png`。日志保留本地，不链接敏感运行日志。模拟器软件 SwiftShader 曾出现宿主 GL 崩溃，host GPU 验证通过；旧包未声明 `INTERNET` 的真实问题已修复，不能将软件 GPU 的黑屏本身当成唯一 App 失败证据。
+
+**以上为最终 release 的模拟器验证；用户真机保持旧 debug 版本，未覆盖、未清数据。** Alpha AAB 上传已开始，仍待 Console 平台校验与送审回执。
+
+四张真机商店图已排序为今日训练 → 播放暂停 → 自测 → 进度；Console 已声明 ImageGen 制作的站姿图标，真机截图未用 AI 改造。独立只读 review 无阻塞项；基线 Gradle 在异机缺 release key 配置时可能回退 debug 签名，本轮正式签名核验通过，后续重建仍须核对证书。
+
+追加同环境对照：稳定 NVIDIA host GPU 下旧无 `INTERNET` release 仍黑屏，权限清单确认缺失网络权限；`original-host-black.png` 留证。最终 release 已覆盖恢复，`INTERNET` granted，未卸载或清除模拟器应用数据，产物 SHA 未变。结构化验证结果为上述证据目录的 `verification-report.json`。
+
+上传后续回执：Alpha AAB 文件传输完成，Console 已进入 Google 优化，尚待平台处理就绪与提交审核。
+
+### 16 KB 页对齐静态检查
+
+Android SDK 36 `zipalign -c -P 16 -v 4` 对最终 APK 返回 `Verification successful`。三种 ABI 共 9 个 `.so` 的所有 `PT_LOAD` 对齐值为 16,384 或 65,536，文件 offset 与虚拟地址模 16,384 一致；AAB 的 `base/lib` 与 APK `lib` 九项库 SHA256 逐项相同。证据为上述验证目录内 `zipalign-16kb.txt`、`elf-16kb-and-aab-library-identity.json`。未改源码、未重新构建、最终产物 SHA 不变；**未在 16 KB 内核设备运行，不作该类真机验收声明**。
+
+平台处理回执：最终 AAB 优化完成，Console 显示 `4 (0.2.0)`、target SDK 36、min SDK 24、三 ABI、估算下载大小 60.5 MB。预览“可以发布了”、无阻塞错误，Alpha 版本已保存，尚待最终送审回执。代码 `19aa388` 已推送并创建 draft [PR #10](https://github.com/mhgd3250905/HipLab/pull/10)，main 未合并。
+
+### Play 送审请求回执（2026-10-17 20:59）
+
+发布概览确认“将 15 项更改送审”后，变为“正在审核中的更改”，含 Alpha `0.2.0 (4)`、177 国家/地区及其他、名单、商店与内容声明。快速自动检查仍在进行，界面提示最多约 14 分钟、成功后自动进入审核；**没有取得审核通过或正式上架结果**。
+
+本机证据为 `E:\AII-3D\hiplab-releases\0.2.0+4\play-console-20261017` 下 `submitted-overview.txt`、`submitted-overview.png`、`before-submit-15-changes.*`、`alpha-preview.*`。Console 提供的测试加入链接提交时仍 disabled；名单 1 人、实际加入 0 人，12 人连续 14 天的正式发布门槛未满足。详见[送审记录](play-store-release-2026-10-17.md)。
+
+最终在提交活动及详情回读确认 **Submission ID 1 / 2026-10-17 20:59 / 状态“审核中” / 15 项变更**，覆盖封闭式测试 Alpha、商品详情、应用内容、商店设置；准确时间取 Console 的 8:59 下午。证据追加 `submission-activity.txt/.png`、`submission-1-details.txt/.png`，同在上述本机目录。[需登录的提交详情](https://play.google.com/console/u/0/developers/4872134440776463225/app/4976120800604322549/publishing/submission-activity/1/details)可回读最新状态，本文没有记录审核通过。
