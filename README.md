@@ -8,6 +8,8 @@
 
 本地接手与验证记录见 [2026-10-17 接手基线](docs/project-takeover-2026-10-17.md)，包含实际测试结果、SDK 差异、已确认问题与后续顺序。
 
+已完成 Android 16 真机调试版安装与启动，产物和复现方式见 [Android 首次运行记录](docs/android-first-run-2026-10-17.md)。
+
 ## 构建
 
 ```bash
