@@ -14,6 +14,12 @@ let initialSeekPending = false;
 let initialSeekStarted = false;
 let posterTime = 0;
 let pendingPlay = false;
+// The host asked to play and hasn't asked to stop: survives the page being
+// hidden (app in background / screen locked) so playback resumes on return.
+let hostWantsPlay = false;
+// iOS WebKit: autoplay without a gesture needs the *property* muted too.
+video.muted = true;
+video.defaultMuted = true;
 const emit = type => {
   if (disposed) return;
   const event = {source:'drill-media', type, id, playing:!video.paused,
@@ -104,22 +110,31 @@ video.addEventListener('seeked', () => {
 });
 window.drillMediaCommand = command => {
   if (disposed || !command) return;
-  if (command.type === 'play') void begin();
-  if (command.type === 'pause') stop();
+  if (command.type === 'play') { hostWantsPlay=true; void begin(); }
+  if (command.type === 'pause') { hostWantsPlay=false; stop(); }
   if (command.type === 'active') {
     active = command.value === true;
-    if (!active) stop();
+    if (!active) { hostWantsPlay=false; stop(); }
   }
   if (command.type === 'dispose') {
-    stop(); disposed=true; video.removeAttribute('src'); video.load();
+    hostWantsPlay=false; stop(); disposed=true; video.removeAttribute('src'); video.load();
   }
 };
 window.addEventListener('message', event => {
   if (event.origin === location.origin && event.source === parent &&
       event.data?.source === 'drill-media-host') window.drillMediaCommand(event.data.command);
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
+// Hidden (background / locked) → pause; visible again → carry on if the host
+// still wants the demo playing (it never re-sends `play` for an unchanged
+// state, so without this the clip stayed frozen after unlocking).
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { stop(); return; }
+  if (hostWantsPlay && active && !disposed) void begin();
+});
 window.addEventListener('pagehide', stop);
+window.addEventListener('pageshow', () => {
+  if (!document.hidden && hostWantsPlay && active && !disposed) void begin();
+});
 window.__drillMediaSnapshot = () => ({id,active,disposed,hasFrame,mediaReady,posterTime,playing:!video.paused,
   time:video.currentTime,duration:video.duration,readyState:video.readyState,
   error:video.error?.code || null});
@@ -129,6 +144,9 @@ window.__drillMediaSnapshot = () => ({id,active,disposed,hasFrame,mediaReady,pos
 // invisible until its first frame is composited – the Flutter host covers it
 // with the same poster – so Android's grey play/pause placeholder can never
 // show; object-fit/position and a theme variant folder come from the host.
+// (2026-10-17, iOS) muted set as a property for WebKit autoplay, no PiP /
+// AirPlay / start-button overlay, and playback resumes after the page was
+// hidden (app background, screen lock) while the host still wants it.
 const fit = params.get('fit') === 'cover' ? 'cover' : 'contain';
 const pos = /^\d{1,3}% \d{1,3}%$/.test(params.get('pos') || '') ? params.get('pos') : '50% 50%';
 const variant = params.get('variant') === 'light' ? 'light/' : '';
