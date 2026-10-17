@@ -1,0 +1,3 @@
+/* App name on the Home Screen and in Settings (iOS localization). */
+"CFBundleDisplayName" = "HipLab";
+"CFBundleName" = "HipLab";
