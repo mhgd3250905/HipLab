@@ -10,7 +10,7 @@
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-Android 16 真机现已保留数据更新至 **0.1.1+2**：46 项动作视频、专用自测剪辑及 47 张封面均为 1080；6 项自测全部可播放。构建、安装与实机播放证据见 [Android 运行记录](docs/android-first-run-2026-10-17.md)。
+Android 16 真机现已保留数据更新至 **0.1.2+3**，采用用户选定的青玉绿「站姿开髋」图标，已查看桌面确认。原有 46 项动作视频、专用自测剪辑及 47 张 1080 封面保持；6 项自测均为视频。当前构建/安装见[版本台账](docs/version-ledger.md)，高清媒体实机证据保留在 [Android 运行记录](docs/android-first-run-2026-10-17.md)。
 
 制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
 
@@ -103,4 +103,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。当前优先处理紧侧加练计时分配缺陷和全量真机体验验收；系统通知、正式图标/签名、iOS、CI 与主题适配仍待推进。主线集成、46 项动作高清交付及 Android 0.1.1+2 安装已完成。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。当前优先处理紧侧加练计时分配缺陷和全量真机体验验收；系统通知、正式发布签名、iOS、CI 与主题适配仍待推进。主线集成、46 项动作高清交付、Android 正式图标与 0.1.2+3 安装已完成。
