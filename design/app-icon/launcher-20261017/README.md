@@ -11,7 +11,7 @@
 - [商店图源](store-icon-512.png)：512×512，未发布商店。
 - [导出清单](export-manifest.json)：29 个产物及 SHA，含 20 张各 density 资源、4 份 adaptive XML、背景色和预览文件。
 
-遵循 [Android 官方自适应图标文档](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive?hl=en)，在 108dp 图层中保留中央 66dp 安全圆；可见像素测得最大半径约 32.03dp，越界像素为 0。资源包括 API 26 自适应图标、API 33 单色图层和五档 legacy/round 图标，背景 `#101316`。没有伪称提供矢量源，iOS 图标尚未替换。
+遵循 [Android 官方自适应图标文档](https://developer.android.com/develop/ui/compose/system/icon_design_adaptive?hl=en)，在 108dp 图层中保留中央 66dp 安全圆；以 alpha≥8 为可见阈值，432px 主图最大半径约 32.03dp，各 density 独立复核最大约 32.14dp，越界像素为 0。透明源少量 alpha 1–7 的低不透明度残留在安全圆外，未修补或隐瞒；主体完整。资源包括 API 26 自适应图标、API 33 单色图层和五档 legacy/round 图标，背景 `#101316`。没有伪称提供矢量源，iOS 图标尚未替换。
 
 可重复执行 `node tools/export_android_icons.cjs`（需要 Node.js 与 sharp）。脚本只对已生成的透明图进行居中、尺寸导出、单色 alpha 派生和遮罩预览，不再生成或重绘人物。排布时以 alpha≥8 的可见范围计算位置，不删除或修补原图；具体版本和参数见清单。
 

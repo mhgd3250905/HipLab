@@ -3,8 +3,9 @@
   "date": "2026-10-17",
   "generation": "built-in image_gen",
   "model": "not exposed by tool",
-  "selected": null,
-  "installed": false,
+  "selected": "B",
+  "installed": true,
+  "installed_version": "0.1.2+3",
   "originals_preserved": true,
   "images": [
     {

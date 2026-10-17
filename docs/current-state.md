@@ -7,8 +7,9 @@
 | 项目 | 当前状态 |
 |---|---|
 | 产品 / 包名 | 开胯训练助手 HipLab / `com.ugk.hiplab` |
-| Android 已安装版本 | **0.1.1+2**，debug 签名，2026-10-17 13:15 保留数据覆盖安装 |
-| 已安装代码提交 | `35f2a977530bdcc6ab7e7caa9aa1d76dfe0bc53d`；后续文档提交不改变该安装基线 |
+| Android 已安装版本 | **0.1.2+3**，debug 签名，2026-10-17 14:37 保留数据覆盖安装 |
+| 已安装代码提交 | `4cf5ca7990949d025e02f13fc83e468f8bab9d07`；后续文档/设计状态提交不改变该安装基线 |
+| 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 验证设备 | 2602BRT18C，Android 16 / API 36，arm64 |
 | 产品范围 | 中文、离线、深色；Android 已运行，iOS 尚未构建与实机验证 |
 | 动作素材 | 46 项动作全视频（45 MVP + 1 备选），另有 1 条专用自测剪辑，共 47 对视频/封面，均为 1080 |
@@ -19,13 +20,14 @@
 
 ## Git 与主线集成
 
-**`mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是后续开发基线。** 按用户“审核合并、保存提交 push 对齐到最新”的明确授权，已将接手分支通过 #2、#1 合入 main；本机已建立跟踪 `origin/main` 的本地 main。应用代码基线仍为已安装的 `35f2a97`，本轮未修改应用代码或重新安装。
+**`mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是后续开发基线。** 接手成果通过 #2、#1 合入 main，本机 main 跟踪 origin/main。图标版本 0.1.2+3 的代码提交为 `4cf5ca7`，通过 [PR #5](https://github.com/mhgd3250905/HipLab/pull/5) 集成；业务逻辑和视频资源保持，安装状态独立记录。
 
 | 对象 | 2026-10-17 核对结果 |
 |---|---|
 | HipLab `main` | 已包含 App、高清素材与台账；首次业务集成提交 `656ee28daf1a0335f28c28fd2ac802e8dd20b6b7`，后续文档提交继续在其上集成 |
 | [HipLab #1](https://github.com/mhgd3250905/HipLab/pull/1) | MERGED，`feat/initial-migration` → `main`，2026-10-17 13:59:40，merge `656ee28` |
 | [HipLab #2](https://github.com/mhgd3250905/HipLab/pull/2) | MERGED，`codex/project-takeover` → `feat/initial-migration`，2026-10-17 13:59:14，merge `e52b3c2` |
+| [HipLab #5](https://github.com/mhgd3250905/HipLab/pull/5) | 0.1.2+3 站姿开髋图标与安卓实机交付；已安装代码 `4cf5ca7`，具体合并 SHA 回读 GitHub |
 | [3D-Body #119](https://github.com/mhgd3250905/3D-Body/pull/119) | 已合并，2026-10-17 10:29，merge `ae81d96f271a18129abbf6afc7064cfd9dd1d8c3` |
 | [3D-Body #120](https://github.com/mhgd3250905/3D-Body/pull/120) | OPEN / draft，制作工具与修订规格 → `master`，源 `f8b5138` |
 
@@ -47,4 +49,4 @@
 
 ## 当前限制
 
-已确认的紧侧加练计时分配缺陷尚未修复；系统通知、正式图标、正式发布签名、iOS 验证和 CI 尚未完成。完整事项和验收要求统一维护在[开发事项台账](development-roadmap.md)，不继续把已完成的“18 项未成片、9 项静帧”作为当前待办。
+已确认的紧侧加练计时分配缺陷尚未修复；系统通知、iOS 图标、正式发布签名、iOS 验证和 CI 尚未完成。Android 彩色图标已实机验证，单色图层未做手机主题切换验证。完整事项和验收要求统一维护在[开发事项台账](development-roadmap.md)，不继续把已完成的缺片或 Android 占位图标作为当前待办。
