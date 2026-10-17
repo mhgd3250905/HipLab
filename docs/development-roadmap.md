@@ -8,13 +8,14 @@
 | D-02 / 高 | 将当前成果集成到 main | 已完成 | 按用户明确授权审核合并 HipLab #2、#1；首次业务集成 `656ee28`，文件树与审核版一致；[集成记录](mainline-integration-2026-10-17.md) |
 | D-03 / 中 | 全量手机观感与训练交互验收 | 待验收 | 46 条逐项核对清晰度、构图、循环、换边；6 项自测实际逐项播放；完整训练与疼痛流程，问题留证 |
 | D-04 / 中 | 久坐提醒系统通知 | 待开发 | 在已有提醒时间表外实现权限、系统投递、取消/重排和实际设备验证；当前 `deliversNotifications=false` |
-| D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS 图标与正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
+| D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已在 `feat/ios` 由同源前景导出（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
 | D-06 / 发布前 | Android 正式签名与发布包 | 待开发 | 确认签名与包身份、构建 AAB、发布检查；密钥不入库；当前 debug 不是商店产物 |
-| D-07 / 后续平台 | iOS 构建、签名与实机 | 待开发 | macOS/Xcode 环境、团队配置、构建/安装和视频交互验证；当前尚未执行 |
+| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | `feat/ios`（PR #9）：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；剩余：Mac 上选 Team 签名、`flutter run`/Archive、按真机清单确认后台语音/ducking/静音键/来电/视频首帧/安全区，结果入验证与版本台账 |
 | D-08 / 中 | SDK 统一与 CI | 待开发 | 明确团队 Flutter 版本、审阅锁文件差异；CI 自动 analyze/test；当前暂无 CI |
 | D-09 / 可选 | 字体与包体优化 | 待开发 | 17 MB 中文字体子集在完整文案与授权检查后瘦身，比较包体与显示结果 |
 | D-10 / 中 | 浅色/深色主题适配 + 训练锁屏/后台 | 部分完成 | `feat/polish-round1`：设置里「跟随系统 / 浅色 / 深色」整套切换；媒体卡在浅色主题仍为深色舞台，`assets/drill_media/light/hip-<id>.{jpg,mp4}` 放入后自动换浅色版（素材待出）。iOS 已加 `UIBackgroundModes: audio` + 静音保活；Android 训练/自测页常亮（`wakelock_plus`），**手动按电源键锁屏不保证计时继续**，需前台服务（`audio_service`）方案，见下文 |
 | D-12 / 中 | 5 分钟训练实际时长 | 待产品确认 | 语音版动作间休息 5 → 15 秒（预告下一个 + 要点 + 3-2-1），套 A 实际 350 秒，首页显示「6 分钟」（套 D 11 分钟）；可选：缩短休息到约 8 秒、缩减动作时长，或保持 |
+| D-13 / 中 | iOS 自测页后台计时 | 待真机确认 | 自测倒计时由动画控制器（帧时间）驱动，不像训练播放器那样显式按挂钟计算；切后台/锁屏回来是追上、停住还是跳完未验证，真机确认后决定是否改为挂钟 |
 | D-11 / 中 | 制作工具及修订源入主线 | 待审核 | 3D-Body #120 审核后合入 master；本机绿幕/alpha 输出另行备份，Git 中的源配方不能代替素材备份 |
 
 ## D-01：紧侧加练（已修复，2026-10-17 第一轮修改）
@@ -24,7 +25,7 @@
 ## D-10：主题与锁屏/后台
 
 - 主题：`HipPalette.dark/light`，设置页三档切换，全 App 实时生效（`hip_ui_round1_test` #14）。浅色版动作视频/封面缺失，媒体卡暂用深色舞台；素材放到 `assets/drill_media/light/` 即自动使用。
-- iOS：`Info.plist` 已加 `UIBackgroundModes: audio`；会话期间循环静音片段保持音频会话，锁屏后计时与播报应继续。需真机确认。
+- iOS：`Info.plist` 已加 `UIBackgroundModes: audio`；会话期间循环静音片段保持音频会话，锁屏后计时与播报应继续。`feat/ios` 起来电/Siri/拔耳机时训练静默暂停，点继续重新激活会话；锁屏回来动作示范继续播放。需真机确认（[iOS 真机清单](ios-setup-and-release.md#真机确认清单)）。
 - Android：会话页（训练播放器、自测）持有屏幕常亮（`lib/core/platform/screen_awake.dart`，引用计数，无新权限/无 Manifest 服务）。这避免自动锁屏中断，但用户主动锁屏后进程可能被系统冻结（缓存进程冻结 / Doze），计时与语音会停；回到前台后按绝对时钟追上进度。完整保证需前台服务：`audio_service`（`MainActivity` 改继承 `AudioServiceActivity`、Manifest 声明 `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 服务、通知栏控件、Play Console 前台服务声明），引入成本和审核风险较高，本轮列为待办。
 
 ## 已完成事项

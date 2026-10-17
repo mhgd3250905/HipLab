@@ -3,7 +3,7 @@
 离线的开胯训练 App：围绕髋部的放松、柔韧和主动控制训练。面向久坐人群和舞者，打开就能练，小白也能上手。和「托马斯训练助手 FlareLab」同一家族（石墨底 + 青玉 `#3ccfa4`），但是独立 App、独立仓库。
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`
-- App 名：开胯训练助手（iOS `CFBundleName` 为 HipLab）
+- App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；本机已验证 Flutter 3.44.7，原迁移 PR 声明 3.47.7，团队 SDK 尚待统一。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
 后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。台账快照日期为 2026-10-17。
@@ -18,19 +18,21 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。新环境先明确 Flutter SDK，再获取依赖并审阅锁文件差异；下方为通用构建命令。Android 已验证 debug，iOS、正式签名和商店发布尚未验收。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。新环境先明确 Flutter SDK，再获取依赖并审阅锁文件差异；下方为通用构建命令。Android 已验证 debug；iOS 工程在 `feat/ios` 完成配置与静态验证（SwiftPM、无需 CocoaPods），尚未在 Mac 构建或真机验收，步骤见 [iOS 运行与上架说明](docs/ios-setup-and-release.md)；正式签名和商店发布尚未验收。
 
 ```bash
 flutter pub get
 flutter analyze
 flutter test                                   # 单元 + 界面流程 + 资源边界测试
 flutter test test_screens/hip_shots_test.dart  # 可选：界面截图 → test/_shots/hip/（不提交）
+flutter test test_screens/hip_ios_shots_test.dart  # 可选：iPhone 15 Pro/SE 安全区截图 → test/_shots/ios/
+python3 tools/ios/check_ios_project.py          # iOS 工程静态检查（plist / pbxproj / 图标）
 python3 tools/voice/build_voice.py             # 重新生成语音（edge-tts，需联网）→ assets/voice/
 
 flutter run
 flutter build apk --release                    # → com.ugk.hiplab
 flutter build appbundle --release
-flutter build ios --release --no-codesign      # 签名团队需在 Xcode 里自己选
+flutter build ipa --release                    # 需 Mac + Xcode，签名团队在 Xcode 里选，见 docs/ios-setup-and-release.md
 ```
 
 Android release 签名：有 `android/key.properties` 就用它，没有时退回 debug 签名（和 3D-Body 的做法一样）。
@@ -107,4 +109,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一轮修改（主题、语音、自测与引导页重做、紧侧加练修复）在 `feat/polish-round1` 待合并，之后优先真机验收与 Android 锁屏前台服务（D-10）；系统通知、正式发布签名、iOS、CI 仍待推进。主线集成、46 项动作高清交付、Android 正式图标与 0.1.2+3 安装已完成。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一轮修改（主题、语音、自测与引导页重做、紧侧加练修复）在 `feat/polish-round1` 待合并，之后优先真机验收与 Android 锁屏前台服务（D-10）；iOS 配置在 `feat/ios`（含 #7 #8，待合并、待 Mac 真机）；系统通知、正式发布签名、CI 仍待推进。主线集成、46 项动作高清交付、Android 正式图标与 0.1.2+3 安装已完成。
