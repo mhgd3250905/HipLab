@@ -48,3 +48,7 @@ app.*.map.json
 
 # HipLab visual-check screenshots (test_screens/hip_shots_test.dart)
 /test/_shots/
+tools/voice/.voice-cache/
+
+# Python bytecode (tools/)
+__pycache__/
