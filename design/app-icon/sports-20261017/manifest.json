@@ -1,0 +1,35 @@
+{
+  "kind": "hiplab-sports-icon-design",
+  "date": "2026-10-17",
+  "generation": "built-in image_gen",
+  "model": "not exposed by tool",
+  "selected": null,
+  "installed": false,
+  "originals_preserved": true,
+  "images": [
+    {
+      "label": "A",
+      "title": "Seated butterfly hip stretch",
+      "file": "A-butterfly-hip-stretch.png",
+      "source_path": "C:\\Users\\29485\\.codex\\generated_images\\01a1479c-a74f-7053-8bf0-e087d45428fc\\exec-32e3b3a0-e96b-402e-bdbf-d577c16fe301.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1268305,
+      "sha256": "3cba4c04a0024b88f4c18053a1be39703409ed7e68c58f565ae0cf3b341aae34"
+    },
+    {
+      "label": "B",
+      "title": "Standing hip mobility",
+      "file": "B-standing-hip-mobility.png",
+      "source_path": "C:\\Users\\29485\\.codex\\generated_images\\01a1479c-a74f-7053-8bf0-e087d45428fc\\exec-90a06e92-36c2-41db-8c54-4dfbbb7bd860.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1192798,
+      "sha256": "20c4661445ba183b650e902774bf975c14007e6a3863d51051be2b2fced47946"
+    }
+  ],
+  "failed_attempt": {
+    "prompt_id": "S1",
+    "status": "image service output filter; no image returned; not retried"
+  }
+}
