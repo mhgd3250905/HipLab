@@ -6,6 +6,8 @@
 
 2026-10-17 已按用户明确授权完成 HipLab #2 → `feat/initial-migration`、#1 → main 的审核合并，首次业务集成提交 `656ee28`，来源与验证见[集成记录](mainline-integration-2026-10-17.md)。本地 main 已跟踪 origin/main，App 与制作成果不再停留在迁移分支。
 
+2026-10-18，main 已顺序集成 #7/#8/#9 及 rebased #10，并接入 Pose-Hub v0.1.0；业务代码 `9ef59a1` 已推送 origin/main，GitHub 确认四个 PR 均 MERGED。CSS 首帧修复已通过 Chrome 原 H.264 探针和构建检查，最终 APK 未重新安装手机，原生首帧复验仍待补。Windows 主干线按用户明确授权验证后直接提交推送 main，无需新 PR；Mac 和其他贡献方仍用分支 + PR。
+
 本地 fetch 为 `+refs/heads/*:refs/remotes/origin/*`。工作区干净时更新主线：
 
 ```powershell
@@ -20,30 +22,43 @@ git pull --ff-only
 
 ## 日常开发
 
-从同步后的 main 建功能/修复分支，按事项 ID 记录目标与验收条件。遵循 [AGENTS.md](../AGENTS.md) 的分支 + PR 约定，由仓库主人审核合并或按其明确授权由代理执行。已有明确授权不重复询问，执行前仍核对目标和版本。
+Windows 主干线可在 main 推进已授权工作，按事项 ID 记录目标、验收和检查结果，验证后直接提交推送。其他贡献方从同步后的 main 建分支并提 PR，由主干线审核集成，遵循 [AGENTS.md](../AGENTS.md)。已有明确授权不重复询问，执行前仍核对目标和版本。
 
 Dart 改动完成后运行 analyze 和 test，必要时做真机验证。当前本机解析缓存已可运行：
 
 ```powershell
 flutter analyze --no-pub
-flutter test --no-pub
+flutter test --no-pub --concurrency=1
 ```
 
-新环境或依赖变动时先选择 SDK、执行 `flutter pub get` 并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
+新环境先按 [README](README.md#新机器拉素材mac--windows) 恢复冻结媒体，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
 
 提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。
 
 ## 两端分工与授权
 
-Windows：`lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本号；分支 `feat/…`、`fix/…`、`android/…`。Mac：`ios/` 及少量 iOS 专属平台代码；分支 `ios/…`，不动 assets、不跑 sync、不升依赖。新分支均从实际 main 开始，通过 PR 集成。**推送 / 合并前先取得用户同意**；本地分析、修复、构建和保留数据覆盖安装先完成。
+Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器允许按 README 用 `--from-dir` 恢复冻结资源并 `--check`。禁止 force push，保留未提交工作与用户数据。
 
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-后续建模、动作、渲染和 QA 在 Pose-Hub 完成，发布后按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。以下为既有 3D-Body 高清批次的历史流程，首版发布前保留，不自动导入新批次。历史上：建模、动作、渲染和 QA 在 3D-Body 完成。新修订用独立源和新输出目录，保留旧规格、模型、检查器与输出；最多两路 3D 渲染、每路 jobs 1。当前配方和三项修订见制作副本 `tools/hiplab-render/` 和[制作记录](local-hd-render-2026-10-17.md)。
+当前取用 Pose-Hub v0.1.0，冻结 lock / manifest 随 main 保存；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
 
-当前高清交付推荐按已完成的 Android 派生片原字节导入，先预览：
+```powershell
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --dry-run
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --check
+python tools/hip_content/build_hip_content.py
+```
+
+每步退出码为 0 后再继续。保留自有剪辑和既有 still，不从 ZIP 臆造 light 资源。
+
+### 3D-Body 同步旧流程（历史兼容，不用于日常更新）
+
+以下旧流程仅保留作历史追溯，不自动导入新批次。历史上：建模、动作、渲染和 QA 在 3D-Body 完成。新修订用独立源和新输出目录，保留旧规格、模型、检查器与输出；最多两路 3D 渲染、每路 jobs 1。当前配方和三项修订见制作副本 `tools/hiplab-render/` 和[制作记录](local-hd-render-2026-10-17.md)。
+
+历史高清交付曾按已完成的 Android 派生片原字节导入，预览命令如下：
 
 ```powershell
 python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --poster-size 1080 --out E:/AII-3D/3D-Body/output/hiplab-android-20261017-v2 --dry-run

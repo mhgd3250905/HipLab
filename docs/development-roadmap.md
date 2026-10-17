@@ -1,16 +1,16 @@
 # 开发事项台账
 
-更新日期：2026-10-17。状态仅使用“待开发 / 进行中 / 待审核 / 待验收 / 已完成”；优先级表示建议顺序，不表示用户已批准外部发布。新任务使用新 ID，完成后保留证据。
+更新日期：2026-10-18。状态仅使用“待开发 / 进行中 / 待审核 / 待验收 / 已完成”；优先级表示建议顺序，不表示用户已批准外部发布。新任务使用新 ID，完成后保留证据。
 
 | ID / 优先级 | 事项 | 状态 | 完成条件 / 证据 |
 |---|---|---|---|
 | D-01 / 高 | 紧侧加练的实际侧别时长分配 | 已修复，待真机确认 | `feat/polish-round1`：`PlanStep.extraSeconds/segments` 把加时只给紧侧（70 秒 → 右 35 + 左 35；左紧 105 秒 → 右 35 + 左 70），播放器按分段计时与换边；`hip_voice_test` 覆盖左紧/右紧/正常、暂停、跳过、疼痛降级；详见下文 |
-| D-02 / 高 | 将当前成果集成到 main | 已完成 | 按用户明确授权审核合并 HipLab #2、#1；首次业务集成 `656ee28`，文件树与审核版一致；[集成记录](mainline-integration-2026-10-17.md) |
+| D-02 / 高 | 将当前成果集成到 main | 已完成 | 历史首次集成 #2/#1 为 `656ee28`；2026-10-18 已按 #7 → #8 → #9 → rebased #10 集成，业务代码 `9ef59a1` 已推送 main，四个 PR 均 MERGED；见 D-14 和[当前状态](current-state.md) |
 | D-03 / 中 | 全量手机观感与训练交互验收 | 待验收 | 46 条逐项核对清晰度、构图、循环、换边；6 项自测实际逐项播放；完整训练与疼痛流程，问题留证 |
 | D-04 / 中 | 久坐提醒系统通知 | 待开发 | 在已有提醒时间表外实现权限、系统投递、取消/重排和实际设备验证；当前 `deliversNotifications=false` |
-| D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已在 `feat/ios` 由同源前景导出（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
-| D-06 / 发布前 | Android 正式签名与发布包 | Alpha 已送审 | 0.2.0+4 正式上传 key 签名、AAB 和模拟器核验完成；20:59 Submission 1 审核中（当时回执）；未正式上架。本轮 0.3.0+5 debug 另记，不代替商店包；见[送审记录](play-store-release-2026-10-17.md) |
-| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | `feat/ios`（PR #9）：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；剩余：Mac 上选 Team 签名、`flutter run`/Archive、按真机清单确认后台语音/ducking/静音键/来电/视频首帧/安全区，结果入验证与版本台账 |
+| D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已由同源前景导出并在本地 main 集成（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
+| D-06 / 发布前 | Android 正式签名与发布包 | Alpha 已送审 | 0.2.0+4 正式上传 key 签名、AAB 和模拟器核验完成；20:59 Submission 1 审核中（当时回执）；未正式上架。本轮 0.3.2+7 debug 另记，不代替商店包；见[送审记录](play-store-release-2026-10-17.md) |
+| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；剩余：Mac 上选 Team 签名、`flutter run`/Archive、按真机清单确认后台语音/ducking/静音键/来电/视频首帧/安全区，结果入验证与版本台账 |
 | D-08 / 中 | SDK 统一与 CI | SDK 已统一，CI 待开发 | Windows/Mac 固定 Flutter 3.44.7 stable；本地 lock 已适配 Dart 3.12.2；当前暂无 CI |
 | D-09 / 可选 | 字体与包体优化 | 待开发 | 17 MB 中文字体子集在完整文案与授权检查后瘦身，比较包体与显示结果 |
 | D-10 / 中 | 浅色/深色主题适配 + 训练锁屏/后台 | 部分完成 | `feat/polish-round1`：设置里「跟随系统 / 浅色 / 深色」整套切换；媒体卡在浅色主题仍为深色舞台，`assets/drill_media/light/hip-<id>.{jpg,mp4}` 放入后自动换浅色版（素材待出）。iOS 已加 `UIBackgroundModes: audio` + 静音保活；Android 训练/自测页常亮（`wakelock_plus`），**手动按电源键锁屏不保证计时继续**，需前台服务（`audio_service`）方案，见下文 |
@@ -52,14 +52,15 @@ ID / 优先级 / 状态：
 剩余限制：
 ```
 
-## 本轮接力新增事项（2026-10-17）
+## 本轮接力事项（2026-10-18 更新）
 
 | ID | 状态 | 下一步与边界 |
 |---|---|---|
-| D-14 第一轮 PR 集成 | 本地验证完成，待授权 | 按 #7 → #8 → #9 合并；先推送本轮修复和补充证据，经用户同意后执行，禁止直接推 main / force push。Mac 在实际合并后从 main 开始 |
-| D-15 Android 前台音频 | 待开发 | 单独 `android/foreground-audio` PR；目前只做屏幕常亮，手动锁屏后后台语音无保证 |
+| D-14 第一轮 PR 集成 | 已完成 | 业务代码 `9ef59a1` 已推送 main；GitHub 回读 #7/#8/#9/#10 均 MERGED（北京时间 10 月 18 日 01:01:06），merge 为 `ba591bf` / `5bb43f0` / `61979d8` / `60a683c`。Mac 可从 main 开始；Windows 已获直接推 main 授权 |
+| D-15 Android 前台音频 | 待开发 | 独立 `android/foreground-audio` 任务；目前只做屏幕常亮，手动锁屏后后台语音无保证 |
 | D-16 音乐 ducking | 真机待补测 | 用户选择先完成代码/APK，音乐实测稍后；不重试被手机取消的临时工具安装。中英预生成声线为 Xiaoxiao / Jenny，最终选择待用户确认 |
-| D-17 Pose-Hub 发布接入 | 等首版发布 | 另开 `chore/pose-hub-media`，见[迁移约定](pose-hub-adoption.md)；当前不切换媒体来源 |
-| D-18 左右视频镜像 | 待独立 App PR | 左右侧当前共用未镜像视频；App 播放端做水平镜像。四足画圈高亮根治等 Pose-Hub 新人物 |
+| D-17 Pose-Hub 发布接入 | 已完成 | v0.1.0 已接入并推送 main，冻结 lock / manifest 已保存；92 文件 check、46 媒体 ffprobe、22 保留文件及 APK 内容检查通过。六个动作（5 训练 + 90/90 自测）真机循环已有证据；首帧原生复验单列 D-19，见[接入约定](pose-hub-adoption.md) |
+| D-18 左右视频镜像 | 待开发 | 左右侧当前共用未镜像视频；App 播放端做水平镜像。四足画圈高亮根治等 Pose-Hub 新人物 |
+| D-19 视频首帧淡入 | 待验收 | 训练与自测共享播放器的六个动作逐帧均有 0.08–0.25 秒淡入变暗。`9ef59a1` 已去除 CSS 双重淡入，Chrome 原 H.264 旧红新绿对照、循环及暂停恢复通过，analyze 0 / Flutter 116 / APK 构建通过；手机拔出，最终 APK 未安装，Android 原生首帧待补 |
 
 产品仍待确认：中英声线、引导页 A/B、“屈髋肌测试”改名、动作间休息 15 秒或 5 秒。本轮保留 PR 实现，不将其当成用户最终选择。历史 D-11 的 3D-Body 制作源事项保留记录；#8 姿态源已迁到 Pose-Hub #1，后续问题到 Pose-Hub，不在 HipLab 重渲。

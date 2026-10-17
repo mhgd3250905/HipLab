@@ -1,8 +1,8 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-17，北京时间。分支 `feat/ios`（包含第一轮 App 修改 #7 与媒体修订 #8）。本页写给在 Mac 上接手 iOS 构建的人：先照「在 Mac 上跑起来」操作，再按「真机确认清单」逐项打勾，结果回填[验证台账](verification.md)与[版本台账](version-ledger.md)。
+更新日期：2026-10-18，北京时间。#7/#8/#9 及 rebased #10 已合并并推送 main，当前 0.3.2+7；业务代码 `9ef59a1` 的 CSS 首帧修复已通过 Chrome 原 H.264 探针和最终构建，Android 原生首帧待补。Mac 从已推送 main 开始，不使用旧 `feat/ios` 作为新基线。本页写给在 Mac 上接手 iOS 构建的人：先照「在 Mac 上跑起来」操作，再按「真机确认清单」逐项打勾，结果回填[验证台账](verification.md)与[版本台账](version-ledger.md)。
 
-> 本分支所有 iOS 改动都在 Linux 沙箱完成，**没有 Xcode、没有 `flutter build ios`、没有真机**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
+> 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
 ## 工程身份（已配置）
 
@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（本地集成版 0.3.0+5 → 0.3.0 / 5；尚未合入 main） | Info.plist；`flutter build` 写入 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（当前 main 0.3.2+7 → 0.3.2 / 7；由 Windows 统一递增） | Info.plist；`flutter build` 写入 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -28,14 +28,17 @@
 
 ```bash
 git fetch origin
-git switch main                # 等 #7 → #8 → #9 实际合并后开始
+git switch main                # 使用已推送且包含 9ef59a1 的 main
 git pull --ff-only
-git switch -c ios/<本次事项>     # 只改 ios/ 与少量 iOS 专属平台代码
-flutter --version              # 确认 3.44.x stable
-flutter pub get                # 若 pubspec.lock 有改动，先审阅差异，与本分支无关就还原
+git switch -c ios/device-validation  # 只改 ios/ 与少量 iOS 专属平台代码
+flutter --version              # 必须为 3.44.7 stable
+# 先按 docs/README.md 校验 ZIP、恢复 v0.1.0 冻结素材并 --check
+flutter pub get --enforce-lockfile  # 不修改 lock 或升级依赖
 flutter analyze && flutter test --concurrency=1
 open ios/Runner.xcworkspace    # 用 workspace 打开
 ```
+
+新机器先完成 [README 新机器拉素材](README.md#新机器拉素材mac--windows) 的恢复步骤，再继续检查和构建。ZIP 根是动作 ID 文件夹，`--from-dir` 指向 `build/pose-hub/v0.1.0/extracted`；资源缓存不入库。Mac 仅恢复既定版本，不改 lock / manifest / pubspec 或生成新的素材版本。
 
 Xcode 里：
 
@@ -63,7 +66,7 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 
 每次构建/安装/上传按[版本台账](version-ledger.md)模板追加记录；build 号随 `pubspec.yaml` 的 `+N` 递增，TestFlight 同一版本号下 build 号不能重复。
 
-## 本分支做了什么（及验证方式）
+## 已集成的 iOS 配置（及原验证方式）
 
 | 范围 | 内容 | 验证 |
 |---|---|---|
@@ -72,7 +75,7 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 | 启动页 | `LaunchBackground` colorset：浅色 #F4F5F3 / 深色 #0C0D0F，跟随系统外观，与 App 默认「跟随系统」及加载帧同色；中央 120pt 透明人物；`Main.storyboard` 底色同色 | storyboard XML 解析、引用的 image/color 存在 |
 | 音频 | `playback` 类别（静音键下也播放）；只在说话时 `duckOthers`，句间恢复其他 App 音量；静音片段循环保活后台；来电/Siri/闹钟/拔耳机：切断语音、训练静默暂停，中断结束重新激活会话，用户点「继续」恢复（再次激活，iOS 不保证发结束事件）；关闭 just_audio 内置中断处理（默认会在来电后重播旧句、拔耳机时暂停保活） | `test/hip/hip_ios_test.dart`（iOS 目标平台）：中断/拔耳机→暂停且不播「已暂停」，20 秒内计时不动，中断结束仍暂停，点继续后恢复并调用 reactivate；已暂停时中断不改变状态 |
 | 屏幕常亮 / 锁屏计时 | `wakelock_plus`（iOS 为 `idleTimerDisabled`）在训练与自测页持有；训练计时按绝对时钟（`clock.now()` 减暂停时长），后台/锁屏回来直接落到正确阶段，过时的口令丢弃 | 既有 `hip_voice_test` 覆盖时钟/阶段；常亮与锁屏需真机 |
-| 视频示范 | 保留 WKWebView + `player.js`：`allowsInlineMediaPlayback`、`mediaTypesRequiringUserAction` 为空（原已有）；`playsinline`、muted 属性与 property 同设、禁 PiP/AirPlay/开始播放按钮浮层，首帧前 video 透明由 Flutter 海报盖住；锁屏/后台回来若宿主仍要播放则自动继续（原先会停住，Android 同受益）；关闭 WKWebView 前进后退手势，debug 可用 Safari Web Inspector。本地回环服务器已支持 Range/206（AVFoundation 必需）。未改 `video_player`：现方案已在 Android 真机验证、支持透明舞台，换原生播放器风险更大 | Playwright Chromium 驱动 `player.html`（VP9 转码副本，Chromium 无 H.264）：需手势策略下静音自动播放、首帧事件、隐藏→暂停、可见→继续、宿主暂停后隐藏再显示不播放；`test/core` 路由/服务器 Range 测试。**WebKit 未测** |
+| 视频示范 | 保留 WKWebView + `player.js`：`allowsInlineMediaPlayback`、`mediaTypesRequiringUserAction` 为空（原已有）；`playsinline`、muted 属性与 property 同设、禁 PiP/AirPlay/开始播放按钮浮层，当前 `9ef59a1` 让 video 始终 `opacity: 1`，在 Flutter 海报下播放；首帧事件后只由 Flutter 海报淡出，去除双重淡入；锁屏/后台回来若宿主仍要播放则自动继续（原先会停住，Android 同受益）；关闭 WKWebView 前进后退手势，debug 可用 Safari Web Inspector。本地回环服务器已支持 Range/206（AVFoundation 必需）。未改 `video_player`：现方案已在 Android 真机验证、支持透明舞台，换原生播放器风险更大 | 原 #9 阶段：Playwright Chromium 驱动 `player.html`（当时使用 VP9 转码副本，该 Chromium 环境无 H.264）：需手势策略下静音自动播放、首帧事件、隐藏→暂停、可见→继续、宿主暂停后隐藏再显示不播放；`test/core` 路由/服务器 Range 测试。2026-10-18 又以 Chrome 原 H.264 完成新旧首帧对照、循环和暂停恢复；独立网页 UI 预览使用 poster stub，不是正式 Web 支持。**最终 Android 原生首帧与 WebKit 仍待补测** |
 | 状态栏 | `UIViewControllerBasedStatusBarAppearance = true`，Flutter `AnnotatedRegion`：深色主题白字、浅色黑字 | hip_ios_test 断言 `statusBarBrightness` |
 | 安全区 | 各页面原本就用 SafeArea/viewPadding | hip_ios_test：iPhone 15 Pro（59/34）、15 Pro Max、13 mini（50/34）、SE（20/0）下引导 3 卡、三个 Tab、自测题与结果、播放器准备/动作/暂停：固定控件和文字不进状态栏/灵动岛与 Home 条；列表滚到底最后一个控件在 Home 条之上；探测器做过反向验证（放大不安全区会报出） |
 | iOS 返回手势 | 训练播放器 `PopScope(canPop: false)`，Cupertino 侧滑不能中途退出；自测/播放器为 fullscreenDialog | hip_ios_test 侧滑测试 |
@@ -84,7 +87,7 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 
 1. **安装与外观**：桌面图标、名称（系统语言中文显示「开胯训练助手」，英文显示「HipLab」）；冷启动启动页在深/浅系统外观下颜色与 App 首屏一致、无闪白；在 App 里选了与系统相反的主题时，启动页后会切一次颜色（预期，记录观感）。
 2. **安全区**：灵动岛/刘海机型和 SE 上首页、自测、结果、播放器、设置不被遮挡，底部按钮不压 Home 条。
-3. **视频首帧**：首页卡、自测示范、播放器切换动作时，不出现原生播放按钮/灰底/白框，海报 → 视频无跳动；浅色主题同样检查；镜像（左侧动作）显示正确。
+3. **视频首帧**：首页卡、自测示范、播放器切换动作时，不出现原生播放按钮/灰底/白框，海报 → 视频无跳动；浅色主题同样检查；左右侧当前仍共用未镜像视频，水平镜像另列 D-18；不要将其当成已经实现的功能。
 4. **后台语音**：开始训练后按电源键锁屏，语音按时继续，换边/倒数不丢；锁屏 3 分钟后解锁，计时与阶段对得上，动作示范继续播放。
 5. **Ducking**：先在音乐 App 放歌再训练：说话时音乐压低、说完约 0.7 秒恢复；结束训练后音乐恢复原音量；不出现音乐被暂停（若被暂停记录系统版本）。
 6. **静音键**：打开静音（铃声开关）后语音和提示音仍能听到（预期，健身跟练选 playback）；音量键调的是媒体音量。
@@ -97,6 +100,6 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 ## 已知待办
 
 - **系统通知**（久坐提醒，D-04）未接入：iOS 需 `flutter_local_notifications` 或同类插件、首启后再申请权限、隐私清单与 Info.plist 无需额外 usage 描述（通知不需要），本分支不硬加。
-- **团队 SDK / CI**（D-08）：锁文件在不同 SDK 下会变化，Mac 上 `pub get` 后先审阅。
+- **团队 SDK / CI**（D-08）：两端固定 3.44.7，Mac 使用 `pub get --enforce-lockfile`，不单独改 lock；CI 仍待开发。
 - **iPad**：仅 iPhone；若以后支持 iPad 需补方向、图标与布局。
 - **正式矢量图标**（D-05）：iOS 图标由透明 PNG 前景导出，非矢量源。
