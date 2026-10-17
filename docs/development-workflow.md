@@ -29,15 +29,19 @@ flutter analyze --no-pub
 flutter test --no-pub
 ```
 
-新环境或依赖变动时先选择 SDK、执行 `flutter pub get` 并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。实际验收 SDK 3.44.7 与源 PR 3.47.7 差异详见当前状态，不在日常功能修复中顺带升级或提交降级。
+新环境或依赖变动时先选择 SDK、执行 `flutter pub get` 并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
 
 提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。
+
+## 两端分工与授权
+
+Windows：`lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本号；分支 `feat/…`、`fix/…`、`android/…`。Mac：`ios/` 及少量 iOS 专属平台代码；分支 `ios/…`，不动 assets、不跑 sync、不升依赖。新分支均从实际 main 开始，通过 PR 集成。**推送 / 合并前先取得用户同意**；本地分析、修复、构建和保留数据覆盖安装先完成。
 
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-建模、动作、渲染和 QA 在 3D-Body 完成。新修订用独立源和新输出目录，保留旧规格、模型、检查器与输出；最多两路 3D 渲染、每路 jobs 1。当前配方和三项修订见制作副本 `tools/hiplab-render/` 和[制作记录](local-hd-render-2026-10-17.md)。
+后续建模、动作、渲染和 QA 在 Pose-Hub 完成，发布后按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。以下为既有 3D-Body 高清批次的历史流程，首版发布前保留，不自动导入新批次。历史上：建模、动作、渲染和 QA 在 3D-Body 完成。新修订用独立源和新输出目录，保留旧规格、模型、检查器与输出；最多两路 3D 渲染、每路 jobs 1。当前配方和三项修订见制作副本 `tools/hiplab-render/` 和[制作记录](local-hd-render-2026-10-17.md)。
 
 当前高清交付推荐按已完成的 Android 派生片原字节导入，先预览：
 
@@ -66,4 +70,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；正式签名、AAB、iOS 和商店资料仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。
+debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核，iOS 构建与正式发布仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。

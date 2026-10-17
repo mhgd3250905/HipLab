@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（当前 0.1.2+3 → 0.1.2 / 3） | Info.plist；`flutter build` 写入 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（本地集成版 0.3.0+5 → 0.3.0 / 5；尚未合入 main） | Info.plist；`flutter build` 写入 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -24,11 +24,13 @@
 
 ## 在 Mac 上跑起来
 
-前提：macOS + Xcode（含 iOS SDK 与命令行工具，App Store 上传对 Xcode/SDK 的最低版本以 Apple 当期公告为准）、Flutter **3.44.7 stable** 或更新（团队 SDK 尚未统一，见 D-08）、Apple 开发者账号。
+前提：macOS + Xcode（含 iOS SDK 与命令行工具，App Store 上传对 Xcode/SDK 的最低版本以 Apple 当期公告为准）、两端统一 Flutter **3.44.7 stable**、Apple 开发者账号。版本和依赖由 Windows 统一管理，Mac 不单独升级。
 
 ```bash
 git fetch origin
-git switch feat/ios            # 或合并顺序完成后直接用 main
+git switch main                # 等 #7 → #8 → #9 实际合并后开始
+git pull --ff-only
+git switch -c ios/<本次事项>     # 只改 ios/ 与少量 iOS 专属平台代码
 flutter --version              # 确认 3.44.x stable
 flutter pub get                # 若 pubspec.lock 有改动，先审阅差异，与本分支无关就还原
 flutter analyze && flutter test --concurrency=1
