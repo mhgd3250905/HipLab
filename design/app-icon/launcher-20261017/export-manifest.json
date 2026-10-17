@@ -1,0 +1,183 @@
+{
+  "selected": "B-standing-hip-mobility",
+  "source": "design/app-icon/launcher-20261017/foreground-source.png",
+  "sourceSha256": "7a47256ed07228d8bf5d845fe95be027854835fd5eecc7648fc05a1954d16356",
+  "sharpVersion": "0.35.5",
+  "sourceDimensions": [
+    1254,
+    1254
+  ],
+  "sourceTransparentRatio": 0.84192148124407,
+  "background": "#101316",
+  "layoutAlphaThreshold": 8,
+  "sourceBounds": [
+    175,
+    124,
+    1008,
+    1190
+  ],
+  "safeCircleDiameterDp": 66,
+  "measuredRadiusDp": 32.02440475637291,
+  "outsideSafeCirclePixels": 0,
+  "legacySizes": [
+    48,
+    72,
+    96,
+    144,
+    192
+  ],
+  "layerSizes": [
+    108,
+    162,
+    216,
+    324,
+    432
+  ],
+  "files": [
+    {
+      "file": "design/app-icon/launcher-20261017/foreground-108dp.png",
+      "bytes": 46464,
+      "sha256": "a7f93954a1fe4a9e9fcee83cb524ca06bf16c36f6d804e400279c4e9bb6a6006"
+    },
+    {
+      "file": "design/app-icon/launcher-20261017/monochrome-108dp.png",
+      "bytes": 12800,
+      "sha256": "b837a7349f19169a6131736cad2d84aef6c81a5e270c3be7946c9a67a9c13f39"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "bytes": 2608,
+      "sha256": "386316b486272c0bca5f472fb3b3f122efee2c95cd1f7c20bbf9311b8435b81f"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+      "bytes": 3090,
+      "sha256": "88c7b76eb857a03a55dfda9328180ee9ee7f1fe86526e9d95a97ae5dfea27793"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+      "bytes": 4876,
+      "sha256": "34cd542e4380468a9db1faa4a2f4ab06d53b93da033b64af040dd3d2cbb198a8"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-mdpi/ic_launcher_monochrome.png",
+      "bytes": 2025,
+      "sha256": "fc99455796ee0592fc9986bf8591296c62a55c1afd54a3d9038803099ab39888"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "bytes": 4666,
+      "sha256": "0926c56d39892d7d3f8c3c7df73632613a8bbf8b5e3fb3d989ef38c81e49907e"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+      "bytes": 5448,
+      "sha256": "6130365733883cf8d3c22d82c59eabc8c947c27ba3fb510d72fd3d79b8de7392"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+      "bytes": 9230,
+      "sha256": "5e46816f1a85976c6af9a0e4a865266bb3036d523049ea2a66b10669539c7c75"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-hdpi/ic_launcher_monochrome.png",
+      "bytes": 3106,
+      "sha256": "49f3b375f1c5b409810f8b739d5763dab48cee10a57a712e61e5c70a5e3b1faf"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "bytes": 7202,
+      "sha256": "0a165a7aee5f40f6ea71f38fb1f3ec3f4050c552054aa13f84c161cbeba5a60d"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+      "bytes": 8231,
+      "sha256": "22d611690812e94aa8c4f5928dc9f3fdffa89ba67752d2f3f2066a2d2a3360bb"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+      "bytes": 14626,
+      "sha256": "018bae99ed3aff53eb8faf25f0ea9af812b69c2d556c0a134580b62723c73734"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_monochrome.png",
+      "bytes": 4164,
+      "sha256": "65f4673fb3fe6adb6e7e41211e5e2e677fff9a6e78eed3fbec964a38a85f9297"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "bytes": 13730,
+      "sha256": "eb166f6f8092faac34c8b22a116bb89a572ca1821a1ae7197f98eae5bf17484c"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "bytes": 15226,
+      "sha256": "ae5b852e495c5599b1bd16100e2526c673de01e1910bf1ecaf2e077ab46e54b7"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "bytes": 29606,
+      "sha256": "be84a8e70606229641409ee614e5e066a323cf04883d291fee90387643b938a6"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_monochrome.png",
+      "bytes": 7251,
+      "sha256": "cdf397043e36fdcde47848cfe32601ea1b18557bd4764ccaeb762b90b3dd4419"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "bytes": 22474,
+      "sha256": "47f3c5a863202140d363b61d51581f141758fc8dc25825894330be066ead125a"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "bytes": 24453,
+      "sha256": "b0f8923b14a287e056666c4faec0ff648a58d2a8570779738e76285ea2376fae"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "bytes": 46464,
+      "sha256": "a7f93954a1fe4a9e9fcee83cb524ca06bf16c36f6d804e400279c4e9bb6a6006"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_monochrome.png",
+      "bytes": 12800,
+      "sha256": "b837a7349f19169a6131736cad2d84aef6c81a5e270c3be7946c9a67a9c13f39"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "bytes": 268,
+      "sha256": "5056b7226b3f58e65a61739e8ab6f5c52099fccee3ae9aad0e8856f31709e3fa"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "bytes": 268,
+      "sha256": "5056b7226b3f58e65a61739e8ab6f5c52099fccee3ae9aad0e8856f31709e3fa"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-anydpi-v33/ic_launcher.xml",
+      "bytes": 337,
+      "sha256": "5bef67e3eba5c56f6ca0f96173c76e654977bce5ea91f0161fce94c5f52bbef7"
+    },
+    {
+      "file": "android/app/src/main/res/mipmap-anydpi-v33/ic_launcher_round.xml",
+      "bytes": 337,
+      "sha256": "5bef67e3eba5c56f6ca0f96173c76e654977bce5ea91f0161fce94c5f52bbef7"
+    },
+    {
+      "file": "android/app/src/main/res/values/ic_launcher_colors.xml",
+      "bytes": 121,
+      "sha256": "ddae175ec1a2d0acf4d43c9c486370f3132efc302daf5e52a5b797c651a03037"
+    },
+    {
+      "file": "design/app-icon/launcher-20261017/store-icon-512.png",
+      "bytes": 111812,
+      "sha256": "d80743c39c1362114dd01ea9ec592164e319c76851a99d33769502aa17dd401e"
+    },
+    {
+      "file": "design/app-icon/launcher-20261017/android-preview.png",
+      "bytes": 95812,
+      "sha256": "5f5e47a2d9f69c72ca8c07495dd3213f12dbd79f119f16d668c4463703b1ddcc"
+    }
+  ]
+}
