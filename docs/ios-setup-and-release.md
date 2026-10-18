@@ -1,6 +1,6 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。当前共用版本 **0.3.6+11**，Windows main `fce7ad8`；Mac 分支 `ios/main-ui-036` 已 rebase 对齐，补 iOS 隐私页平台适配，候选 `2f8aeb0` 的签名 Release / Archive 已通过，真机安装因设备掉线待重连。详情见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。固定 Flutter 3.44.7，冻结素材 v0.2.0，不升级 lock / 依赖；旧 0.3.3 的用户验收独立保留。
+更新日期：2026-10-18，北京时间。当前共用版本 **0.3.6+11**，Windows main `fce7ad8`；Mac 分支 `ios/main-ui-036` 已 rebase 对齐，补 iOS 隐私页平台适配，候选 `2f8aeb0` 的签名 Release / Archive 已通过，20:49已保留偏好安装到iPhone 16 Pro，镜像UI检查待锁屏。详情见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。固定 Flutter 3.44.7，冻结素材 v0.2.0，不升级 lock / 依赖；旧 0.3.3 的用户验收独立保留。
 
 > 历史边界：原 #9 在 Linux 沙箱完成，彼时未执行 Mac/iPhone 检查。后续 Mac 已完成 0.3.3 首轮真机验证及本轮 0.3.6 本地构建；各候选结果分别记账，不将旧通过套用新版本。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
