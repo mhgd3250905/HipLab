@@ -61,4 +61,4 @@ Pose-Hub v0.1.0 已公开发布并接入，lock 与冻结 manifest 随源码保�
 
 Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。
 
-固定上游 `59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4`；ZIP与云端manifest核验/92文件安全解压完成。同步工具主体与已审版本完全一致，仅更新来源头；本轮结果：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。视频1080、封面540，保留自有剪辑和still，不重渲。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。
+固定上游 `59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4`；ZIP与云端manifest核验/92文件安全解压完成。同步工具与 `bb828be` 逐字节一致，保留原来源头；发布提交 `59fb7b9` 的正文未变；本轮结果：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。视频1080、封面540，保留自有剪辑和still，不重渲。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。

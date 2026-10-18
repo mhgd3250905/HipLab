@@ -8,7 +8,7 @@
 
 制作源码 `cf2c6bdffcb8a9d9bd7dc3afd0a6ddbf57aef618` 与发布快照 `59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4` 分开登记。仓库完整manifest SHA `ec05dee9508a58d1ea8c1e9c95eee77189afc141b0e03f32cf48185ce3c85acd`；云端单版本manifest与完整清单的0.2.0 release对象精确一致。替换前每项来源完整快照存于prior_sources，已有prior数组亦保留。
 
-同步脚本主体与已审v0.1.0一致，仅来源头改发布commit；dry-run只校验选择/映射，不能冒充完整文件校验。
+同步脚本与原 main `bb828be` 逐字节一致，保留原 `ee9d7ea` 来源注释；已核对其正文与发布提交 `59fb7b9` 相同；dry-run只校验选择/映射，不能冒充完整文件校验。
 
 45 项规格路径和哈希继承 v0.1.0，只有 `h-quad-cars` 从 r2 回到原规格。`s-frog-r2`、`s-9090-r2`、`h-9090-liftoff-r2`、`h-knee-hug-r2`、`h-supine-twist-r2`、`s-seated-fold-r3` 六项修订均保留。soft-v1 大面积高亮分段线等上游已知限制仍见[固定发布说明](https://github.com/mhgd3250905/3D-Pose-Hub/blob/59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4/media/releases/0.2.0.md)。
 
@@ -39,3 +39,7 @@
 本轮无ADB和商店上传；不调整版本号以外发布配置。手机保留原安装，native/iOS人工观感、系统行为仍待验。未登记项不当作通过。v0.1.0和#7/#8/#9/#10/#13/#14历史记录保留，见 [前轮主干记录](mainline-pose-hub-2026-10-18.md)、[第二轮记录](round2-integration-2026-10-18.md)。
 
 本机证据目录：`E:/AII-3D/hiplab-releases/posehub-v020-20261018/`。包含发布差异、完整解码、92 文件哈希、22 个保护文件、APK 核验、共享播放器与网页尺寸报告；本机路径不代表远端备份。
+
+## 指定分支与合入后复打包（2026-10-18）
+
+用户本次指令到达前，素材已按原授权随 `03c3b5b` / `a70df11` 推送 main。本次补建 `media/pose-hub-v0.2.0`，起点为 `bb828be`，快进接入上述已有提交，按“脚本未变就不动”恢复同步工具与基线逐字节一致，再合回 main。没有重写已推送历史。Dart、资源、依赖及 `pubspec.lock` 未新增变化；沿用已递增的 0.3.4+9。合入后重新执行 Android debug arm64 构建，实际产物追加版本台账，并向 Mac 的 `ios/device-validation` / PR #15 同步新 main 基线。
