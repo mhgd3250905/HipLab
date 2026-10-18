@@ -1,7 +1,8 @@
 // HipLab button gallery (not part of `flutter test`): every shared button
 // type on one page, dark and light, plus a frame-by-frame press capture.
-// Used for the tactile-button before/after review (docs/
-// button-style-audit-2026-10-18.md).
+// Used for the tactile-button reviews (docs/button-style-audit-2026-10-18.md,
+// docs/tactile-design-rationale-2026-10-19.md). Each row mirrors the widget
+// the app really uses there (45 / 60 = small HipSegmented, 试听 = text action).
 //
 //   BUTTONS_OUT=test/_shots/buttons/after \
 //     flutter test --no-pub test_screens/hip_button_gallery_test.dart
@@ -228,10 +229,12 @@ class _GalleryState extends State<_Gallery> {
                           ),
                         ),
                         const Spacer(),
-                        HipChipButton(
-                          label: '试听',
-                          icon: HipGlyph.today,
+                        // As in the app (HipVoiceSettingsPanel): an in-card
+                        // text action, not a tactile chip (rationale R5).
+                        TextButton.icon(
                           onPressed: () {},
+                          icon: const HipIcon(HipGlyph.today, size: 20),
+                          label: const Text('试听'),
                         ),
                       ],
                     ),

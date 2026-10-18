@@ -4,6 +4,7 @@
 
 | 文档 | 用途 | 何时更新 |
 |---|---|---|
+| [轻拟物有选择引入：审美考据](tactile-design-rationale-2026-10-19.md) | 引用 HIG / M3 / Refactoring UI / NN/g / Rams 推导的 6 条规则、逐控件判定、预算回归测试（分支 fix/tactile-curation，未合并） | 拟物使用范围变化时 |
 | [PR #17/#18修复与合并](pr17-pr18-fixes-and-merge-2026-10-18.md) | 两项P2、191项回归、真机数据保持与合并身份 | 本轮实际状态变化后 |
 | [0.3.6样式与阶段收束](theme-polish-2026-10-18.md) | 4项修复、源码/证据绑定、APK和19:29安装、验收边界 | 本阶段事实变化后 |
 | [Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md) | 当前冻结资源、App 产物及验收边界 | 同步或实际结果变化后 |

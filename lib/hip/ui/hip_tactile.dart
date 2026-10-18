@@ -5,8 +5,19 @@ import 'package:flutter/widgets.dart';
 
 import 'hip_theme.dart';
 
-/// Light skeuomorphic ("tactile") surfaces: the one button material of the
-/// app (button audit 2026-10-18).
+/// Light skeuomorphic ("tactile") surfaces, used *selectively* (docs/
+/// tactile-design-rationale-2026-10-19.md). Only two things in the app are
+/// raised:
+///
+/// * [HipTactileStyle.neutral] — the sliding thumb of [HipSegmented] (rule
+///   R1: the one control part that actually moves along a track);
+/// * [HipTactileStyle.accent] — the home 开始 disc [HipStartButton] (rule
+///   R2: the one hero action, sitting on the dark media stage).
+///
+/// Everything else (primary / secondary buttons, icon buttons, the tab bar,
+/// in-card actions, media chips) stays flat or tonal: emphasis by colour and
+/// hierarchy, not height. Do not add new uses without updating the
+/// rationale doc and `test/hip/hip_tactile_budget_test.dart`.
 ///
 /// Distilled from the raised thumb of the settings segmented control
 /// ([HipSegmented], round 2), which reads as a small physical tile rather
@@ -63,9 +74,8 @@ class HipTactileShadow {
   int get hashCode => Object.hash(color, blur, dy);
 }
 
-/// One tactile material. Build one with [HipTactileStyle.neutral],
-/// [HipTactileStyle.accent], [HipTactileStyle.glass] or
-/// [HipTactileStyle.flat]; [pressed] derives the pushed-in state.
+/// One tactile material. Build one with [HipTactileStyle.neutral] or
+/// [HipTactileStyle.accent]; [pressed] derives the pushed-in state.
 @immutable
 class HipTactileStyle {
   const HipTactileStyle({
@@ -103,9 +113,9 @@ class HipTactileStyle {
 
   // ── tokens ──────────────────────────────────────────────────────────────
 
-  /// Neutral raised tile: secondary buttons, icon buttons, the segmented
-  /// thumb, the selected tab. Dark: the settings thumb (#26292d, its 8 %
-  /// top light); light: a white tile with a hairline edge.
+  /// Neutral raised tile: the segmented-control thumb only (R1). Dark: the
+  /// settings thumb (#26292d, its 8 % top light); light: a white tile with a
+  /// hairline edge and an ink (never coloured) shadow.
   factory HipTactileStyle.neutral([HipPalette? palette]) {
     final p = palette ?? HipColors.palette;
     return p.isDark
@@ -134,8 +144,10 @@ class HipTactileStyle {
           );
   }
 
-  /// Brand-coloured tile: primary CTAs and the 开始 button. Same lighting
-  /// as [neutral], with a deeper edge of the accent instead of a glow.
+  /// Brand-coloured tile: the home 开始 disc only (R2; it is always drawn
+  /// with the dark stage palette). Same lighting as [neutral], with a deeper
+  /// edge of the accent instead of a glow. The light branch is kept so the
+  /// token stays palette-complete, at a lower shadow opacity than dark (R6).
   factory HipTactileStyle.accent([HipPalette? palette, Color? color]) {
     final p = palette ?? HipColors.palette;
     final c = color ?? p.jade;
@@ -180,22 +192,6 @@ class HipTactileStyle {
               HipTactileShadow(Color(0x1f0d2a20), blur: 7, dy: 3),
             ],
           );
-  }
-
-  /// Translucent tile floating on media (chips over a playing clip): the
-  /// edge light and stroke without an opaque fill or a cast shadow.
-  factory HipTactileStyle.glass() => const HipTactileStyle(
-    base: Color(0x73000000),
-    lighten: .06,
-    highlight: Color(0x2effffff),
-    stroke: Color(0x1fffffff),
-    strokeBottom: Color(0x0affffff),
-  );
-
-  /// Disabled: no light, no lift (it cannot be pressed).
-  factory HipTactileStyle.flat([HipPalette? palette]) {
-    final p = palette ?? HipColors.palette;
-    return HipTactileStyle(base: p.surfaceHigh, stroke: p.line);
   }
 
   /// The pushed-in state: top light and highlight mostly gone, contact
