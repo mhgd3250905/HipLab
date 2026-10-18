@@ -31,3 +31,9 @@
 | 安装 / 发布 | 未安装 / 未上传 |
 
 本机截图及日志：`E:/AII-3D/3D-Hip/build/theme-fix-20261018/`，包括 analyze.log、test.log、web-build.log、apk-build.log、apk-identity.json及截图；属于忽略目录，不在Git远端备份。
+
+## 安装追加（2026-10-18）
+
+19:29按用户明确要求把上述APK覆盖安装到2602BRT18C / Android16；安装返回Success，versionName0.3.6/versionCode11回读通过，MainActivity resumed，冷启动首页浅色浮起滑块已查看。此前“未安装”保留为构建阶段历史，此处补齐实际安装状态；未重新构建或上传。
+
+安装前备份当前1356字节偏好及4,204,032字节可读数据tar（shared_prefs, files, no_backup），安装/启动/截图后偏好逐字节保持，SHA-256 `b4ac5a3817155431b4a0b445fd12d8941852ea99fafd86956f0da153a505a5a4`。没有恢复旧备份、清数据或进入训练/自测；未切换用户主题。旧0.3.5+10的听音确认不能替代本版重新听音。用户数据、截图与报告保存在`E:/AII-3D/hiplab-releases/theme-polish-20261018/install-20261018/`，不在Git远端备份。

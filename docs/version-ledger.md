@@ -170,3 +170,7 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ## 0.3.6+11：浅色控件与文字、隐私顶栏（2026-10-18）
 
 业务源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`。`flutter build apk --debug --target-platform android-arm64 --no-pub` 成功（Gradle 23.1秒）；同包名、既有debug证书，versionName0.3.6/versionCode11。APK `E:/AII-3D/hiplab-releases/theme-polish-20261018/hiplab-0.3.6+11-debug-arm64.apk`，150,886,340 bytes，SHA-256 `78e766d76a083a519d703a88001a26cbfe8d8193d55125b2393f5a1d80ceb4f8`。包名/签名/ABI与114媒体/488语音+5提示音核验通过。analyze0；158pass/1条件skip；网页复查通过。**未安装、未发布**，手机保持0.3.5+10。见[样式修复记录](theme-polish-2026-10-18.md)。
+
+## 0.3.6+11 安装追加（2026-10-18 19:29）
+
+同上已归档APK（源码`66f5da0`，SHA-256 `78e766d76a083a519d703a88001a26cbfe8d8193d55125b2393f5a1d80ceb4f8`）经`adb install -r`返回Success，从0.3.5+10更新至0.3.6+11，设备2602BRT18C / Android16，冷启动首页及浅色滑块已查看。当前偏好1356字节在安装/启动/截图后保持，SHA-256 `b4ac5a3817155431b4a0b445fd12d8941852ea99fafd86956f0da153a505a5a4`；完整数据tar已备份且可读。本次未重构建、未修改版本、未上传商店。
