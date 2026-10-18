@@ -86,13 +86,17 @@ class _Session extends Fake implements AudioSession {
   _Session(this.events, {this.noisy = const Stream.empty()});
   final List<String> events;
   final Stream<void> noisy;
+  final configurations = <AudioSessionConfiguration>[];
   @override
   Stream<void> get becomingNoisyEventStream => noisy;
   @override
   Stream<AudioInterruptionEvent> get interruptionEventStream =>
       const Stream.empty();
   @override
-  Future<void> configure(AudioSessionConfiguration configuration) async {}
+  Future<void> configure(AudioSessionConfiguration configuration) async {
+    configurations.add(configuration);
+  }
+
   @override
   Future<bool> setActive(
     bool active, {
@@ -255,6 +259,82 @@ void main() {
       expect(events, isNot(contains('play')));
       expect(events, isNot(contains('active:true')));
       await output.dispose();
+    },
+  );
+
+  test(
+    'coaching session starts on media volume, independent of alert mute',
+    () async {
+      final events = <String>[];
+      final session = _Session(events);
+      final output = JustAudioVoiceOutput.forTesting(
+        voice: _Player(events),
+        chime: _Player(events),
+        keepAlive: _Player(events),
+        session: () async => session,
+      );
+      addTearDown(output.dispose);
+      await output.begin();
+      expect(session.configurations, hasLength(1));
+      expect(
+        session.configurations.single.androidAudioAttributes?.usage,
+        AndroidAudioUsage.media,
+        reason:
+            'Training and settings preview are spoken media. Muting ring/'
+            'system sounds must not route this audio to the alert stream.',
+      );
+      expect(
+        session.configurations.single.androidAudioAttributes?.contentType,
+        AndroidAudioContentType.speech,
+      );
+    },
+  );
+
+  test(
+    'ducking, reactivate and end retain media routing and iOS policy',
+    () async {
+      final events = <String>[];
+      final session = _Session(events);
+      final output = JustAudioVoiceOutput.forTesting(
+        voice: _Player(events),
+        chime: _Player(events),
+        keepAlive: _Player(events),
+        session: () async => session,
+      );
+      addTearDown(output.dispose);
+      await output.begin();
+      await output.speak(['assets/voice/zh/p.welcome.m4a']);
+      await output.reactivate();
+      await output.end();
+      expect(session.configurations, hasLength(4));
+      expect(
+        session.configurations.map((c) => c.avAudioSessionCategoryOptions),
+        [
+          AVAudioSessionCategoryOptions.mixWithOthers,
+          AVAudioSessionCategoryOptions.duckOthers |
+              AVAudioSessionCategoryOptions
+                  .interruptSpokenAudioAndMixWithOthers,
+          AVAudioSessionCategoryOptions.mixWithOthers,
+          AVAudioSessionCategoryOptions.mixWithOthers,
+        ],
+        reason:
+            'Only Android routing changes; iOS playback/mixing stays intact.',
+      );
+      for (final config in session.configurations) {
+        expect(config.androidAudioAttributes?.usage, AndroidAudioUsage.media);
+        expect(
+          config.androidAudioAttributes?.contentType,
+          AndroidAudioContentType.speech,
+        );
+        expect(
+          config.androidAudioFocusGainType,
+          AndroidAudioFocusGainType.gainTransientMayDuck,
+        );
+        expect(config.androidWillPauseWhenDucked, isFalse);
+        expect(config.avAudioSessionCategory, AVAudioSessionCategory.playback);
+        expect(config.avAudioSessionMode, AVAudioSessionMode.defaultMode);
+      }
+      expect(events, ['active:true', 'play', 'active:false']);
     },
   );
 }

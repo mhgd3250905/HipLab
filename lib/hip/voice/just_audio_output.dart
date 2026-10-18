@@ -105,7 +105,9 @@ class JustAudioVoiceOutput
     avAudioSessionMode: AVAudioSessionMode.defaultMode,
     androidAudioAttributes: const AndroidAudioAttributes(
       contentType: AndroidAudioContentType.speech,
-      usage: AndroidAudioUsage.assistanceSonification,
+      // Coaching (including ticks) follows media volume. Sonification routes
+      // to system/alert volume and is muted when the phone is in silent mode.
+      usage: AndroidAudioUsage.media,
     ),
     androidAudioFocusGainType: AndroidAudioFocusGainType.gainTransientMayDuck,
     androidWillPauseWhenDucked: false,
