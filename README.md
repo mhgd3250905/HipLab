@@ -112,4 +112,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，隐私页、自测、深色全流程原生复查及iPhone仍待验收。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，Android隐私页、自测、深色全流程原生复查仍待验收。iPhone基础检查已补，iOS平台适配在PR #16待主线审核；完整系统矩阵及后续共用UI集成复验列D-26。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。

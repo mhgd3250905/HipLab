@@ -165,3 +165,11 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 收拢后的 #16 已保留 #12 商店历史/隐私适配和 #15 详细真机/计时说明；旧 #12/#15 已关闭，原分支保留，未合 main。Mac 另在 detached 源5711b42验证 #17/#18：analyze0、178 pass/1 skip、45.1秒开发签名Release及部分真机交互通过；原生短右滑取消/长右滑返回、深浅按钮、自测入口、播放中退出可操作。两种采样未覆盖动画中间帧，未作连续无闪/性能结论。
 
 成功装回含iOS隐私修复的 #16 候选2f8aeb0，启动后偏好与本轮开始753字节完全一致（深色/15分钟/英语），镜像退出。本轮iOS适配/基础QA转待审核，完整系统矩阵及未来主线UI集成后重测单列D-26。Apple只读查询会话过期，未取得最新审核状态，无发布动作。详见 [新 UI 验证与收尾](ios-pr-ui-validation-2026-10-18.md)。
+
+## 2026-10-18 / iOS 版本记录阶段收束
+
+按用户显式调用 cockpit-closeout，先完成只读 Preflight，再修正确定的文档残留。阶段基线为用户指定 main `fce7ad84baf5dd364afa23dd08572976792c21e4`，入场 HEAD `0a4f1f8fbfcf9d82186af892865ea4432312e60e`；基线为祖先，delta为10提交/11文档/1生产文件/1测试文件。完整工作区暂存、未暂存、删除、重命名、未跟踪均0；主目录既有历史台账不在本次工作副本内，未改动。
+
+从根AGENTS/README直接发现的当前来源为docs/README、current-state、version-ledger、verification、development-roadmap、development-log、development-workflow及ios-setup-and-release。核对版本/安装/提交/PR/商店状态分开记账；0.3.3真机报告与0.3.2商店报告只作历史。修正入口和当前限制中仍笼统写iOS构建/真机待完成的表述、详细报告旧“最新状态”，并显式标记0.3.5版本段落为历史。没有改变各时间点的原始结果或扩大通过范围。
+
+验证绑定：0.3.6+11候选完整源 `2f8aeb099fae965e764fc41fd38c2c3154064766`；2026-10-18 20:17记录的flutter analyze无问题、flutter test --concurrency=1为160 pass/1条件skip、flutter build ios --release --no-pub成功44.1秒及Xcode Archive观察结果保持。该源至入场HEAD及本次收束仅文档变化，故复用既有运行证据，不将当前文档HEAD冒称新构建。#17/#18的178项测试绑定独立源 `5711b4215ee26f35a20a342168fcf91747020ecf`，不能套用当前候选。仅文档收束检查事实、链接、完整状态和git diff --check；不增加App版本、不重复构建、不读私有日志/产物或操作手机、商店。
