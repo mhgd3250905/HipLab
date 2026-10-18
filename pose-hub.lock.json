@@ -1,7 +1,7 @@
 {
   "poseHub": {
     "repo": "mhgd3250905/3D-Pose-Hub",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "manifest": "tools/pose-hub-manifest.json",
   "targets": [
@@ -63,7 +63,7 @@
     {
       "variant": "dark",
       "role": "poster",
-      "width": 1080,
+      "width": 540,
       "dest": "assets/drill_media",
       "name": "hip-{id_lower}.jpg",
       "ids": [
