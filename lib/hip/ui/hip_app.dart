@@ -279,7 +279,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
               '开始之前 · 安全确认',
               style: TextStyle(
                 fontSize: 14,
-                color: HipColors.jade,
+                color: HipColors.jadeText,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -386,7 +386,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
         Text(
           '这是运动练习，不能替代医生的建议。',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: HipColors.faint),
+          style: TextStyle(fontSize: 12, color: HipColors.muted),
         ),
       ],
     );
@@ -440,7 +440,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
           '最后一步',
           style: TextStyle(
             fontSize: 14,
-            color: HipColors.jade,
+            color: HipColors.jadeText,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -625,7 +625,7 @@ class _HipHomeState extends State<HipHome> {
   /// Selected tab: filled glyph in jade with a small settle; others outline.
   Widget _navItem(int i, HipGlyph glyph, String label) {
     final on = _tab == i;
-    final color = on ? HipColors.jade : HipColors.muted;
+    final color = on ? HipColors.jadeText : HipColors.muted;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1183,7 +1183,7 @@ class HipProgressPage extends StatelessWidget {
                     const Spacer(),
                     Text(
                       '${result.level.name} · ${result.total}/12',
-                      style: TextStyle(color: HipColors.jade),
+                      style: TextStyle(color: HipColors.jadeText),
                     ),
                   ],
                 ),
@@ -1313,7 +1313,7 @@ class HipProgressPage extends StatelessWidget {
         Text(
           '这是运动练习，不能替代医生的建议。',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: HipColors.faint),
+          style: TextStyle(fontSize: 12, color: HipColors.muted),
         ),
       ],
     );

@@ -620,7 +620,7 @@ class HipTopBar extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.2,
-                          color: HipColors.jade,
+                          color: HipColors.jadeText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

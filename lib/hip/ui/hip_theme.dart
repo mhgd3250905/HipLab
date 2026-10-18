@@ -155,6 +155,10 @@ abstract final class HipColors {
   static Color get line => palette.line;
   static Color get jade => palette.jade;
   static Color get jadeDeep => palette.jadeDeep;
+
+  /// Accent text on page/card backgrounds. Keep the brighter jade for fills
+  /// and graphics; light-theme small text needs the deeper shade to read.
+  static Color get jadeText => palette.isDark ? palette.jade : palette.jadeDeep;
   static Color get onJade => palette.onJade;
   static Color get glow => palette.glow;
   static Color get text => palette.text;
@@ -308,6 +312,11 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
       ),
     ),
     listTileTheme: ListTileThemeData(textColor: p.text, iconColor: p.muted),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: p.isDark ? p.jade : p.jadeDeep,
+      ),
+    ),
     chipTheme: ChipThemeData(
       backgroundColor: p.surfaceHigh,
       selectedColor: p.jade.withValues(alpha: p.isDark ? .22 : .16),

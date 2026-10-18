@@ -16,14 +16,14 @@ typedef HipSegmentBuilder<T> = Widget Function(T value, Color fg, double t);
 ///   minus the inset, so the corners run parallel.
 /// * No outline on the selection: on dark the thumb is a raised step above
 ///   the surface (lighter fill, 1px top light, soft shadow); on light it is a
-///   soft jade wash ([standalone]) or a white raised chip (inside a card).
+///   white raised chip over a recessed grey track in both placements.
 /// * The thumb slides with a small spring; every segment's colour follows
 ///   the thumb's position, so text and glyphs cross-fade in step with it.
 /// * Tap a segment or drag along the track.
 ///
 /// [standalone] controls sit directly on the page and are their own card
-/// (surface fill + the card stroke / shadow); nested ones sit inside a card
-/// and use the recessed [HipColors.track].
+/// (card stroke / shadow); on light, both placements use the recessed
+/// [HipColors.track] so the white thumb remains distinct.
 class HipSegmented<T> extends StatelessWidget {
   const HipSegmented({
     super.key,
@@ -57,14 +57,10 @@ class HipSegmented<T> extends StatelessWidget {
   /// Thumb corner radius: concentric with the track.
   double get thumbRadius => (radius - inset).clamp(0, radius).toDouble();
 
-  bool get _washThumb => standalone && !HipColors.isDark;
-
-  Color get _selectedFg => _washThumb
-      ? HipColors.jadeDeep
-      : (standalone ? HipColors.jade : HipColors.text);
+  Color get _selectedFg => standalone ? HipColors.jadeText : HipColors.text;
 
   BoxDecoration get _trackDecoration => BoxDecoration(
-    color: standalone ? HipColors.surface : HipColors.track,
+    color: standalone && HipColors.isDark ? HipColors.surface : HipColors.track,
     borderRadius: BorderRadius.circular(radius),
     border: standalone && HipColors.isDark
         ? Border.all(color: HipColors.line)
@@ -72,29 +68,24 @@ class HipSegmented<T> extends StatelessWidget {
     boxShadow: standalone ? HipColors.cardShadow : null,
   );
 
-  BoxDecoration get _thumbDecoration => _washThumb
-      ? BoxDecoration(
-          color: HipColors.jade.withValues(alpha: .12),
-          borderRadius: BorderRadius.circular(thumbRadius),
-        )
-      : BoxDecoration(
-          color: HipColors.thumb,
-          borderRadius: BorderRadius.circular(thumbRadius),
-          boxShadow: HipColors.thumbShadow,
-          // A light catching the top edge (transparent in the light theme):
-          // reads as a raised surface, not as an outline.
-          gradient: HipColors.isDark
-              ? LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color.alphaBlend(HipColors.thumbHighlight, HipColors.thumb),
-                    HipColors.thumb,
-                  ],
-                  stops: const [0, .5],
-                )
-              : null,
-        );
+  BoxDecoration get _thumbDecoration => BoxDecoration(
+    color: HipColors.thumb,
+    borderRadius: BorderRadius.circular(thumbRadius),
+    boxShadow: HipColors.thumbShadow,
+    // A light catching the top edge (transparent in the light theme):
+    // reads as a raised surface, not as an outline.
+    gradient: HipColors.isDark
+        ? LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.alphaBlend(HipColors.thumbHighlight, HipColors.thumb),
+              HipColors.thumb,
+            ],
+            stops: const [0, .5],
+          )
+        : null,
+  );
 
   void _select(int i) {
     if (i < 0 || i >= values.length || values[i] == selected) return;

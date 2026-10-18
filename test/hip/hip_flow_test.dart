@@ -208,6 +208,7 @@ void main() {
   testWidgets('progress opens offline privacy policy and copies public URL', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     String? copiedUrl;
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
@@ -267,9 +268,10 @@ void main() {
     expect(copiedUrl, HipPrivacyPage.policyUrl);
     expect(find.text('已复制隐私政策链接'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.bySemanticsLabel('返回'));
     await tester.pumpAndSettle();
     expect(find.byType(HipPrivacyPage), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('progress tab: reminder switch persists (schedule recorded)', (

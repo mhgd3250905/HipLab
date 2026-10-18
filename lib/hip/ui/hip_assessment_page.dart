@@ -152,7 +152,7 @@ class HipAssessmentIntro extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: HipColors.jade,
+                color: HipColors.jadeText,
               ),
             ),
           ),
@@ -649,7 +649,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
               TextSpan(
                 text: item.title,
                 style: TextStyle(
-                  color: HipColors.jade,
+                  color: HipColors.jadeText,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -657,7 +657,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 TextSpan(
                   text: _side == HipSide.left ? ' · 左边' : ' · 右边',
                   style: TextStyle(
-                    color: HipColors.jade,
+                    color: HipColors.jadeText,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -767,7 +767,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                         HipLevelBars(
                           level: o.score + 1,
                           color: _choice == o.score
-                              ? HipColors.jade
+                              ? HipColors.jadeText
                               : HipColors.text,
                         ),
                         const SizedBox(width: 6),
@@ -781,7 +781,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: _choice == o.score
-                                  ? HipColors.jade
+                                  ? HipColors.jadeText
                                   : HipColors.text,
                             ),
                           ),
@@ -819,7 +819,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                       style: TextStyle(
                         fontSize: 15,
                         color: _follow == o.id
-                            ? HipColors.jade
+                            ? HipColors.jadeText
                             : HipColors.text,
                       ),
                     ),
@@ -1126,7 +1126,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                         eyebrow == null ? '为你推荐' : '为你推荐 · $eyebrow',
                         style: TextStyle(
                           fontSize: 13,
-                          color: HipColors.jade,
+                          color: HipColors.jadeText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
