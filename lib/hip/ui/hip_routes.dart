@@ -579,19 +579,59 @@ class HipTabSwitcher extends StatefulWidget {
   State<HipTabSwitcher> createState() => _HipTabSwitcherState();
 }
 
-class _HipTabSwitcherState extends State<HipTabSwitcher> {
+class _HipTabSwitcherState extends State<HipTabSwitcher>
+    with SingleTickerProviderStateMixin {
   final _pages = <int, Widget>{};
   final _visible = <int>{};
-  final _directions = <int, int>{};
-  late final int _initialIndex;
+  final _startOpacity = <int, double>{};
+  final _startDx = <int, double>{};
+  late final AnimationController _controller;
+  late int _targetIndex;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
-    _initialIndex = widget.index;
+    _targetIndex = widget.index;
     _pages[widget.index] = widget.child;
     _visible.add(widget.index);
-    _directions[widget.index] = widget.direction;
+    _startOpacity[widget.index] = 1;
+    _startDx[widget.index] = 0;
+    _controller =
+        AnimationController(vsync: this, duration: HipMotion.tab, value: 1)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              setState(
+                () => _visible
+                  ..clear()
+                  ..add(_targetIndex),
+              );
+            }
+          });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  }
+
+  double _opacityOf(int index) {
+    final t = _controller.value;
+    final out =
+        (_startOpacity[index] ?? 0) * (1 - HipTabSwitcher._out.transform(t));
+    final incoming = index == _targetIndex
+        ? HipTabSwitcher._in.transform(t)
+        : 0.0;
+    return out + incoming;
+  }
+
+  double _dxOf(int index) {
+    if (_reduceMotion) return 0;
+    final start = _startDx[index] ?? 0;
+    return index == _targetIndex
+        ? start * (1 - HipTabSwitcher._drift.transform(_controller.value))
+        : start;
   }
 
   @override
@@ -599,18 +639,35 @@ class _HipTabSwitcherState extends State<HipTabSwitcher> {
     super.didUpdateWidget(old);
     // One persistent slot per tab. Returning before an outgoing animation
     // ends updates that same slot instead of mounting its GlobalKeys twice.
-    _pages[widget.index] = widget.child;
     if (old.index != widget.index) {
+      // Sample the displayed frame before changing the target. Reusing a
+      // previous controller value with a new incoming/outgoing identity
+      // changes both opacity and position instantly on a quick reversal.
+      final opacities = {for (final i in _pages.keys) i: _opacityOf(i)};
+      final positions = {for (final i in _pages.keys) i: _dxOf(i)};
+      if (!_visible.contains(widget.index)) {
+        opacities[widget.index] = 0;
+        positions[widget.index] = _reduceMotion
+            ? 0
+            : widget.direction * HipTabSwitcher.shift;
+      }
+      _startOpacity
+        ..clear()
+        ..addAll(opacities);
+      _startDx
+        ..clear()
+        ..addAll(positions);
+      _targetIndex = widget.index;
       _visible.add(widget.index);
-      _directions[old.index] = -widget.direction;
-      _directions[widget.index] = widget.direction;
+      _controller.forward(from: 0);
     }
+    _pages[widget.index] = widget.child;
   }
 
-  void _settled(int index) {
-    if (index != widget.index && _visible.contains(index) && mounted) {
-      setState(() => _visible.remove(index));
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -618,54 +675,37 @@ class _HipTabSwitcherState extends State<HipTabSwitcher> {
     final videosAllowed =
         HipMediaPolicy.of(context) && ModalRoute.isCurrentOf(context) != false;
     return ClipRect(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          for (final entry in _pages.entries)
-            TweenAnimationBuilder<double>(
-              key: ValueKey('tab-slot-${entry.key}'),
-              tween: Tween(
-                begin: entry.key == _initialIndex ? 1.0 : 0.0,
-                end: entry.key == widget.index ? 1.0 : 0.0,
-              ),
-              duration: HipMotion.tab,
-              onEnd: () => _settled(entry.key),
-              builder: (context, v, child) {
-                // [v] runs linearly: 0 → 1 for the tab coming in, 1 → 0 for
-                // the one going out.
-                final incoming = entry.key == widget.index;
-                final reduce =
-                    MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-                final opacity = incoming
-                    ? HipTabSwitcher._in.transform(v)
-                    : 1 - HipTabSwitcher._out.transform(1 - v);
-                final dx = incoming && !reduce
-                    ? (_directions[entry.key] ?? 1) *
-                          HipTabSwitcher.shift *
-                          (1 - HipTabSwitcher._drift.transform(v))
-                    : 0.0;
-                return Offstage(
-                  offstage: !_visible.contains(entry.key),
-                  child: IgnorePointer(
-                    ignoring: entry.key != widget.index,
-                    child: ExcludeSemantics(
-                      excluding: entry.key != widget.index,
-                      child: FocusScope(
-                        canRequestFocus: entry.key == widget.index,
-                        child: HeroMode(
-                          enabled: entry.key == widget.index,
-                          child: SlideTransition(
-                            position: AlwaysStoppedAnimation(Offset(dx, 0)),
-                            child: FadeTransition(
-                              opacity: AlwaysStoppedAnimation(opacity),
-                              child: TickerMode(
-                                enabled: entry.key == widget.index,
-                                child: HipMediaPolicy(
-                                  videoEnabled:
-                                      videosAllowed &&
-                                      entry.key == widget.index,
-                                  child: child!,
-                                ),
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) => Stack(
+          fit: StackFit.expand,
+          children: [
+            for (final entry in _pages.entries)
+              Offstage(
+                key: ValueKey('tab-slot-${entry.key}'),
+                offstage: !_visible.contains(entry.key),
+                child: IgnorePointer(
+                  ignoring: entry.key != widget.index,
+                  child: ExcludeSemantics(
+                    excluding: entry.key != widget.index,
+                    child: FocusScope(
+                      canRequestFocus: entry.key == widget.index,
+                      child: HeroMode(
+                        enabled: entry.key == widget.index,
+                        child: SlideTransition(
+                          position: AlwaysStoppedAnimation(
+                            Offset(_dxOf(entry.key), 0),
+                          ),
+                          child: FadeTransition(
+                            opacity: AlwaysStoppedAnimation(
+                              _opacityOf(entry.key),
+                            ),
+                            child: TickerMode(
+                              enabled: entry.key == widget.index,
+                              child: HipMediaPolicy(
+                                videoEnabled:
+                                    videosAllowed && entry.key == widget.index,
+                                child: entry.value,
                               ),
                             ),
                           ),
@@ -673,11 +713,10 @@ class _HipTabSwitcherState extends State<HipTabSwitcher> {
                       ),
                     ),
                   ),
-                );
-              },
-              child: entry.value,
-            ),
-        ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
