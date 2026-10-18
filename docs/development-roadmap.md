@@ -10,7 +10,7 @@
 | D-04 / 中 | 久坐提醒系统通知 | 待开发 | 在已有提醒时间表外实现权限、系统投递、取消/重排和实际设备验证；当前 `deliversNotifications=false` |
 | D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已由同源前景导出并在本地 main 集成（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
 | D-06 / 发布前 | Android 正式签名与发布包 | Alpha 已送审 | 0.2.0+4 正式上传 key 签名、AAB 和模拟器核验完成；20:59 Submission 1 审核中（当时回执）；未正式上架。本轮 0.3.2+7 debug 另记，不代替商店包；见[送审记录](play-store-release-2026-10-17.md) |
-| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；Mac 0.3.3+8 签名 Release / Archive 已通过；iPhone 16 Pro / iOS 26.5 重连后已 flutter run release 覆盖安装，部分 UI/视频/后台检查通过；完整听感和系统 11 项仍未完成，QA 运行缓存待重启复核；见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
+| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；Mac 0.3.3+8 签名 Release / Archive 已通过；iPhone 16 Pro / iOS 26.5 重连后已 flutter run release 覆盖安装，部分 UI/视频/后台检查通过；完整听感和系统 11 项仍未完成，QA 恢复已获用户重启后确认；见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
 | D-08 / 中 | SDK 统一与 CI | SDK 已统一，CI 待开发 | Windows/Mac 固定 Flutter 3.44.7 stable；本地 lock 已适配 Dart 3.12.2；当前暂无 CI |
 | D-09 / 可选 | 字体与包体优化 | 待开发 | 17 MB 中文字体子集在完整文案与授权检查后瘦身，比较包体与显示结果 |
 | D-10 / 中 | 浅色/深色主题适配 + 训练锁屏/后台 | 部分完成 | `feat/polish-round1`：设置里「跟随系统 / 浅色 / 深色」整套切换；媒体卡在浅色主题仍为深色舞台，`assets/drill_media/light/hip-<id>.{jpg,mp4}` 放入后自动换浅色版（素材待出）。iOS 已加 `UIBackgroundModes: audio` + 静音保活；Android 训练/自测页常亮（`wakelock_plus`），**手动按电源键锁屏不保证计时继续**，需前台服务（`audio_service`）方案，见下文 |
@@ -84,3 +84,5 @@ D-07 构建与签名已完成；安装、D-13 自测后台、D-16 ducking、D-19
 ## Mac 真机进度补记（2026-10-18 11:40）
 
 D-07 已覆盖安装，前述 CoreDevice 阻塞解除；D-19 重点四视频已有跨循环时段截图抽查，连续首帧无闪待验；D-21 深浅 UI 与返回/换侧功能可用，触觉、120Hz、连续跟手/回弹待验。D-13 按当前实现修正文档描述，系统听音未验；D-16/D-20 保持待人工复听。镜像断连暂停需脱离镜像区分原因。QA 文件恢复后运行缓存仍旧，按两次无进展规则等用户重启，PR 暂为草稿；见[iOS 真机记录](ios-device-validation-2026-10-18.md)。
+
+11:45：用户重启后确认首页恢复 10 分钟、连续 0 天，QA 缓存阻塞解除；已退出镜像，等待本机听音和普通锁屏结果。D-07 的完整系统矩阵、D-13/D-16/D-20 的声音及 D-21 的主观观感继续待验收。
