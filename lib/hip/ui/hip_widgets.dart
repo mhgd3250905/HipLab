@@ -945,6 +945,7 @@ class HipPressable extends StatefulWidget {
     this.semanticLabel,
     this.selected,
     this.inMutuallyExclusiveGroup = false,
+    this.onPressChanged,
   });
   final Widget child;
   final VoidCallback? onTap;
@@ -953,6 +954,10 @@ class HipPressable extends StatefulWidget {
   final String? semanticLabel;
   final bool? selected;
   final bool inMutuallyExclusiveGroup;
+
+  /// Reports pointer press/cancel changes when a shared face is painted
+  /// outside this widget (for example a segmented control's sliding thumb).
+  final ValueChanged<bool>? onPressChanged;
   @override
   State<HipPressable> createState() => _HipPressableState();
 }
@@ -960,7 +965,10 @@ class HipPressable extends StatefulWidget {
 class _HipPressableState extends State<HipPressable> {
   bool _down = false;
   void _set(bool v) {
-    if (_down != v && mounted) setState(() => _down = v);
+    if (_down != v && mounted) {
+      setState(() => _down = v);
+      widget.onPressChanged?.call(v);
+    }
   }
 
   @override

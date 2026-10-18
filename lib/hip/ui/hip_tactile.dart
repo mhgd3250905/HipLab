@@ -315,8 +315,8 @@ class HipTactile extends StatelessWidget {
     final down = pressed ?? HipPressedScope.of(context);
     return TweenAnimationBuilder<double>(
       tween: Tween(end: down ? 1 : 0),
-      duration: HipMotion.press,
-      curve: Curves.easeOut,
+      duration: down ? HipMotion.press : HipMotion.release,
+      curve: down ? Curves.easeOut : Curves.easeOutCubic,
       builder: (context, t, child) => CustomPaint(
         painter: HipTactilePainter(
           HipTactileStyle.lerp(style, style.pressed(), t),

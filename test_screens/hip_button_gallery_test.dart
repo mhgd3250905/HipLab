@@ -214,20 +214,24 @@ class _GalleryState extends State<_Gallery> {
                     ),
                     Row(
                       children: [
-                        for (final m in [45, 60])
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Text('$m 分钟'),
-                              selected: interval == m,
-                              onSelected: (_) => setState(() => interval = m),
-                            ),
+                        SizedBox(
+                          width: 220,
+                          child: HipSegmented<int>(
+                            keyPrefix: 'g-reminder',
+                            height: 40,
+                            radius: 12,
+                            inset: 3,
+                            values: const [45, 60],
+                            selected: interval,
+                            label: (m) => '$m 分钟',
+                            onChanged: (m) => setState(() => interval = m),
                           ),
+                        ),
                         const Spacer(),
-                        TextButton.icon(
+                        HipChipButton(
+                          label: '试听',
+                          icon: HipGlyph.today,
                           onPressed: () {},
-                          icon: const HipIcon(HipGlyph.today, size: 20),
-                          label: const Text('试听'),
                         ),
                       ],
                     ),
