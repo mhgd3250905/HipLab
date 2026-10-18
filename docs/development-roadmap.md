@@ -2,7 +2,7 @@
 
 更新日期：2026-10-18。状态仅使用“待开发 / 进行中 / 待审核 / 待验收 / 已完成”；优先级表示建议顺序，不表示用户已批准外部发布。新任务使用新 ID，完成后保留证据。
 
-**iOS 最新进展：** D-07 的 Mac 构建、签名和工程运行已实际完成；新 0.3.2（7）已上传并处理完成，HipLab Internal 已邀请当前账号。正式/Beta 审核联系人和 Build 7 关联已保存，正式审核待精确 Build 真机验收；完整 11 项系统行为仍待验收，见[iOS 商店记录](ios-store-release-2026-10-18.md)。D-05 的旧版 iPhone 运行不扩写为新包图标/启动页全量通过。
+**iOS 最新进展：** D-07 的 Mac 构建、签名和工程运行已实际完成；用户反馈 TestFlight 0.3.2（7）下载并测试通过，Apple 显示已安装。2026-10-18 09:43 已提交正式审核，状态等待审核，审核通过后手动发布。完整 11 项系统行为仍缺逐项证据，见[iOS 商店记录](ios-store-release-2026-10-18.md)；不把基本验收扩写为全量验证。
 
 | ID / 优先级 | 事项 | 状态 | 完成条件 / 证据 |
 |---|---|---|---|
@@ -12,7 +12,7 @@
 | D-04 / 中 | 久坐提醒系统通知 | 待开发 | 在已有提醒时间表外实现权限、系统投递、取消/重排和实际设备验证；当前 `deliversNotifications=false` |
 | D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已由同源前景导出并在本地 main 集成（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
 | D-06 / 发布前 | Android 正式签名与发布包 | Alpha 已送审 | 0.2.0+4 正式上传 key 签名、AAB 和模拟器核验完成；20:59 Submission 1 审核中（当时回执）；未正式上架。本轮 0.3.2+7 debug 另记，不代替商店包；见[送审记录](play-store-release-2026-10-17.md) |
-| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；剩余：Mac 上选 Team 签名、`flutter run`/Archive、按真机清单确认后台语音/ducking/静音键/来电/视频首帧/安全区，结果入验证与版本台账 |
+| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | Mac Archive / App Store 分发签名、TestFlight 上传及用户基本验收完成；0.3.2（7）已送正式审核。完整后台语音/ducking/静音键/中断/全量首帧/安全区仍待逐项证据，见[iOS 交付](ios-store-release-2026-10-18.md)；不再将构建和签名列作未执行 |
 | D-08 / 中 | SDK 统一与 CI | SDK 已统一，CI 待开发 | Windows/Mac 固定 Flutter 3.44.7 stable；本地 lock 已适配 Dart 3.12.2；当前暂无 CI |
 | D-09 / 可选 | 字体与包体优化 | 待开发 | 17 MB 中文字体子集在完整文案与授权检查后瘦身，比较包体与显示结果 |
 | D-10 / 中 | 浅色/深色主题适配 + 训练锁屏/后台 | 部分完成 | `feat/polish-round1`：设置里「跟随系统 / 浅色 / 深色」整套切换；媒体卡在浅色主题仍为深色舞台，`assets/drill_media/light/hip-<id>.{jpg,mp4}` 放入后自动换浅色版（素材待出）。iOS 已加 `UIBackgroundModes: audio` + 静音保活；Android 训练/自测页常亮（`wakelock_plus`），**手动按电源键锁屏不保证计时继续**，需前台服务（`audio_service`）方案，见下文 |
