@@ -10,12 +10,12 @@
 | D-04 / 中 | 久坐提醒系统通知 | 待开发 | 在已有提醒时间表外实现权限、系统投递、取消/重排和实际设备验证；当前 `deliversNotifications=false` |
 | D-05 / 发布前 | 正式图标 | 进行中 | 已选 B 站姿开髋，Android 0.1.2+3 完成五档图标、Adaptive/Monochrome 与实机桌面展示，设置保持；[交付记录](app-icon-sports-2026-10-17.md)。iOS AppIcon 已由同源前景导出并在本地 main 集成（`tools/ios/export_ios_icons.py`，1024 无 alpha），待 Mac 桌面确认；正式矢量尚未完成，单色系统主题尚未做真机切换验证 |
 | D-06 / 发布前 | Android 正式签名与发布包 | Alpha 已送审 | 0.2.0+4 正式上传 key 签名、AAB 和模拟器核验完成；20:59 Submission 1 审核中（当时回执）；未正式上架。本轮 0.3.2+7 debug 另记，不代替商店包；见[送审记录](play-store-release-2026-10-17.md) |
-| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；Mac 0.3.3+8 签名 Release / Archive 已通过；iPhone 16 Pro / iOS 26.5 的 CoreDevice 1011 阻止安装，待重连后 `flutter run --release` 及完整 11 项检查；见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
+| D-07 / 后续平台 | iOS 构建、签名与实机 | 进行中 | main 已集成 #9：工程身份、图标/启动页、音频会话与中断、WKWebView 示范、安全区已完成并静态验证（[iOS 说明](ios-setup-and-release.md)）；Mac 0.3.3+8 签名 Release / Archive 已通过；iPhone 16 Pro / iOS 26.5 重连后已 flutter run release 覆盖安装，部分 UI/视频/后台检查通过；完整听感和系统 11 项仍未完成，QA 运行缓存待重启复核；见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
 | D-08 / 中 | SDK 统一与 CI | SDK 已统一，CI 待开发 | Windows/Mac 固定 Flutter 3.44.7 stable；本地 lock 已适配 Dart 3.12.2；当前暂无 CI |
 | D-09 / 可选 | 字体与包体优化 | 待开发 | 17 MB 中文字体子集在完整文案与授权检查后瘦身，比较包体与显示结果 |
 | D-10 / 中 | 浅色/深色主题适配 + 训练锁屏/后台 | 部分完成 | `feat/polish-round1`：设置里「跟随系统 / 浅色 / 深色」整套切换；媒体卡在浅色主题仍为深色舞台，`assets/drill_media/light/hip-<id>.{jpg,mp4}` 放入后自动换浅色版（素材待出）。iOS 已加 `UIBackgroundModes: audio` + 静音保活；Android 训练/自测页常亮（`wakelock_plus`），**手动按电源键锁屏不保证计时继续**，需前台服务（`audio_service`）方案，见下文 |
 | D-12 / 中 | 5 分钟训练实际时长 | 待产品确认 | 语音版动作间休息 5 → 15 秒（预告下一个 + 要点 + 3-2-1），套 A 实际 350 秒，首页显示「6 分钟」（套 D 11 分钟）；可选：缩短休息到约 8 秒、缩减动作时长，或保持 |
-| D-13 / 中 | iOS 自测页后台计时 | 待真机确认 | 自测倒计时由动画控制器（帧时间）驱动，不像训练播放器那样显式按挂钟计算；切后台/锁屏回来是追上、停住还是跳完未验证，真机确认后决定是否改为挂钟 |
+| D-13 / 中 | iOS 自测页后台计时 | 待真机确认 | 当前 main 自测已无可见倒计时环；语音用 clock.now() + Timer 调度并丢弃过时口令。旧 AnimationController 描述失效；自测后台语音与恢复仍需真实听音检查 |
 | D-21 / 中 | 第二轮 UI 打磨真机确认 | 待验收 | 本轮单屏、key/键盘/音频 route 与隐藏视频回归完成；行为检查 156 项通过、1 项按设计跳过。Hero、iOS 手势、阴影/触觉和 33ms tick 观感仍待真机；见[第二轮集成记录](round2-integration-2026-10-18.md) |
 | D-11 / 中 | 制作工具及修订源入主线 | 待审核 | 3D-Body #120 审核后合入 master；本机绿幕/alpha 输出另行备份，Git 中的源配方不能代替素材备份 |
 
@@ -79,3 +79,8 @@ D-14 第一轮 PR 与 D-17 Pose-Hub 接入保持已完成；D-19 原生首帧、
 ## Mac iOS 接力进度（2026-10-18 10:33）
 
 D-07 构建与签名已完成；安装、D-13 自测后台、D-16 ducking、D-19 WKWebView 首帧、D-20 语音与 D-21 观感均未完成。设备镜像可用但 CoreDevice/Xcode 无法准备，已按两次无进展规则停下，等待用户拔插、解锁及信任后继续。Mac 只提交验证文档，本轮无共用代码问题的新运行结论，不上传商店、不合并他人 PR。详情见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
+
+
+## Mac 真机进度补记（2026-10-18 11:40）
+
+D-07 已覆盖安装，前述 CoreDevice 阻塞解除；D-19 重点四视频已有跨循环时段截图抽查，连续首帧无闪待验；D-21 深浅 UI 与返回/换侧功能可用，触觉、120Hz、连续跟手/回弹待验。D-13 按当前实现修正文档描述，系统听音未验；D-16/D-20 保持待人工复听。镜像断连暂停需脱离镜像区分原因。QA 文件恢复后运行缓存仍旧，按两次无进展规则等用户重启，PR 暂为草稿；见[iOS 真机记录](ios-device-validation-2026-10-18.md)。

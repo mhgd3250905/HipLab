@@ -135,3 +135,10 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 | 远端 / 发布 | `ios/device-validation` 文档提交 `668616f` 已推送，[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) OPEN / Draft；未合并 main；未导出分发 IPA、未上传 TestFlight / App Store、未调整旧审核 |
 
 旧 iOS 0.3.2+7 于 09:43 正式送审的历史见独立 [PR #12](https://github.com/mhgd3250905/HipLab/pull/12)，当时为等待审核，本轮未回读现状；用户旧版 TestFlight 测试通过不覆盖本次构建。
+
+
+## iOS 0.3.3+8 真机覆盖安装（2026-10-18）
+
+- 源码 `bb828be` / Bundle `com.ugk.hiplab` / 0.3.3（8），已有开发签名；`flutter run --release --no-pub` 构建 27.0 秒，安装启动 5.4 秒。devicectl 回读精确版本成功；实际安装的 App 验签及哈希见[iOS 真机记录](ios-device-validation-2026-10-18.md)，与早先 Archive 分开记录。
+- 设备 iPhone 16 Pro / iOS 26.5；覆盖安装前后偏好 426 字节逐字节一致，原始备份保留。部分 UI/视频/后台检查已完成，完整 11 项及人工音频未完成。
+- QA 后备份已写回文件，但 UI 仍显示测试缓存，等待重启核验；不将文件哈希等同于运行数据已恢复。没有分发 IPA、商店上传或审核配置变更。[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 继续草稿，未合并 main。

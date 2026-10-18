@@ -4,6 +4,8 @@
 
 **Mac / iOS 补记（10:33）：** `ios/device-validation` 从 `origin/main@bb828be` 验证 **0.3.3+8**：analyze 无问题、156 pass / 1 skip，签名 Flutter Release 与 Xcode Archive 均通过。iPhone 16 Pro / iOS 26.5 的 CoreDevice 准备错误阻止安装，当前版本未上真机，11 项均待验收。此前 0.3.2+7 的 TestFlight 用户反馈与 09:43 正式送审是独立历史，本轮未操作 Apple；已推送文档提交 `668616f` 并创建 [草稿 PR #15](https://github.com/mhgd3250905/HipLab/pull/15)，未合并；详情见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
 
+**Mac / iOS 11:40 更新：** 设备重连成功，0.3.3+8 已覆盖安装于 iPhone 16 Pro / iOS 26.5，安装后原 426 字节偏好保持；完成部分深浅 UI、六项课流程、六页自测及四个重点视频抽查。后台主屏幕对照可推进，关闭镜像的锁屏路径出现暂停，普通锁屏语音仍待复测；人工听音及系统中断/耳机未验收。测试文件已恢复，运行缓存等待用户重启复核；详见[iOS 真机记录](ios-device-validation-2026-10-18.md)。
+
 ## App 与设备
 
 | 项目 | 当前状态 |
@@ -15,7 +17,7 @@
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 用户验收 | 2026-10-17，0.1.2+3 更新测试通过；2026-10-18，用户已验收 0.3.1+6 单屏自测 UI。此验收不覆盖后来 CSS 修复的原生首帧 |
 | 验证设备 | 2602BRT18C，Android 16 / API 36，arm64 |
-| 产品范围 | 中文、离线；main 已含浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 0.3.3+8 本地 Release / Archive 已通过，当前版本安装与真机验收待设备连接恢复 |
+| 产品范围 | 中文、离线；main 已含浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 0.3.3+8 Release / Archive 和保留偏好安装已通过，已完成部分真机 UI/视频/后台检查，完整系统与听感验收未完成 |
 | 动作素材 | 46 项动作已取用 Pose-Hub v0.1.0 的 1080 dark 视频/封面，共 92 文件；另保留 HipLab 自有 `supine-cross-demo` 视频/封面 |
 | 自测素材 | 6 项自测均解析为视频；现有 20 张自测静图保留（含 #8 的 11 张修订），不在 Pose-Hub v0.1.0 ZIP / lock 内 |
 | 运行验证 | 行为检查源 `162a4e6b78a8640d367cac13ef5e1ae6cfa9b33a`：analyze 0，Flutter 156 项通过、1 项按设计跳过；本轮 APK 构建成功，网页证据边界见下文；未执行 ADB / iPhone 验收 |
