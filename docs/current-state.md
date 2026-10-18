@@ -96,3 +96,5 @@ Pose-Hub 首版已发布并接入，版本冻结为 **v0.1.0**。新机器从已
 Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。
 
 ZIP、云端冻结 manifest 已下载核验，安全解压 92 文件完成；App 同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。人工观感、原生首帧/音频与 Mac/iPhone 仍待验收。
+
+PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；本分支未合并 main，商店状态未改变。

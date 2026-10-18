@@ -121,3 +121,5 @@ QuickTime 可列出 iPhone 屏幕与扬声器来源，但预览黑屏且提示�
 本次开工 fetch 发现 Windows 已推进到 `origin/main@a70df11`，包含 `03c3b5b` 的 0.3.4+9 / Pose-Hub v0.2.0。按交接在 `ios/device-validation` 合入 main 跟上基线，没有合并其他贡献分支、没有 force push；五份文档的冲突保留 Windows v0.2.0 交付和本轮 Mac 历史。受保护代码、版本、lock、素材以 Windows main 为准，PR 相对 main 仍只有文档差异。
 
 **没有重新构建、覆盖安装或验证 0.3.4+9**。当前已安装、用户反馈通过的仍为旧候选 0.3.3+8 / v0.1.0；v0.2.0 的 iPhone 视频重测另列待办。PR 记录交由 Windows 审查，未合并 main，未上传 TestFlight/App Store 或改变既有审核。
+
+PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；本分支未合并 main，商店状态未改变。
