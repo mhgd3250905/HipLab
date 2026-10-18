@@ -87,4 +87,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核，iOS 构建与正式发布仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。
+debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核。iOS 0.3.6+11 已完成本地签名 Release/Archive 与基础真机检查，未上传本候选；正式发布和完整系统矩阵见当前台账。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。

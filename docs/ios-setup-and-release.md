@@ -111,6 +111,6 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 页面过渡/Hero 流畅度、iOS 右滑返回的跟手与回弹、浅色真机阴影/触觉以及 33 ms 倒计时 tick 的实际观感均待原生设备；Chrome 环区域比较不等于 native 帧率。原第 9 PR 的静态配置与历史 VP9/Chrome 探针记录保留，不能作为本轮系统行为验收。见[第二轮集成记录](round2-integration-2026-10-18.md)。
 
 
-## 共用版本更新（2026-10-18，Android音频通道修复）
+## 共用版本更新历史（2026-10-18，Android音频通道修复）
 
-Windows已统一递增至 **0.3.5+10**，Android usage由系统提示音改为MEDIA；iOS playback/mix/duck与焦点生命周期未改，回归测试保留其原策略。Mac后续从最新main取共用版本，不自行回退至0.3.4+9；本次没有新iOS构建或验收，没有商店上传。
+当时 Windows 已统一递增至 **0.3.5+10**，Android usage由系统提示音改为MEDIA；iOS playback/mix/duck与焦点生命周期未改，回归测试保留其原策略。该历史阶段没有新iOS构建或验收，没有商店上传。当前0.3.6+11的Mac构建与检查见本文开头及版本台账，不沿用历史阶段的“未构建”结论。

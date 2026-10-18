@@ -18,7 +18,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮 analyze 0问题、158项测试通过/1条件跳过，debug arm64 APK已构建并安装；网页四尺寸复查仅证明布局，完整训练、原生视频/系统音频和Mac/iPhone仍需单独验收。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console、未上传任何商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮 Android analyze 0问题、158项测试通过/1条件跳过，debug arm64 APK已构建并安装；网页四尺寸复查仅证明布局，完整训练、原生视频/系统音频仍需单独验收。iOS 0.3.6+11 候选已完成签名 Release/Archive、保留数据安装及基础真机检查，完整系统矩阵仍待验，见[iOS 本轮记录](docs/ios-main-ui-036-2026-10-18.md)。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console、未上传任何商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get
@@ -112,4 +112,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，隐私页、自测、深色全流程原生复查及iPhone仍待验收。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，Android隐私页、自测、深色全流程原生复查仍待验收。iPhone基础检查已补，iOS平台适配在PR #16待主线审核；完整系统矩阵及后续共用UI集成复验列D-26。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
