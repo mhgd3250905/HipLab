@@ -228,3 +228,7 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 ## 转场质量返工（2026-10-18，分支 fix/transition-quality）
 
 基于 main `ee83628`。新增逐帧捕获工具（widget test 60 fps 截帧 + 拼图/MP4），14 个转场修改前后同场景录制并逐帧审阅，缺陷与修改见[转场审计](transition-audit-2026-10-18.md)。`flutter analyze` 0；全量 165 pass / 1 条件 skip（main 158 + 新增 7）；四尺寸单屏自测回归包含在全量内通过。仅在沙盒无头环境验证；未构建 APK、未安装手机，GPU 掉帧、原生视频视图参与容器变换、iOS 右滑手感待真机按审计文末清单验收。未合入 main。
+
+## 按钮轻拟物统一（2026-10-18，分支 feat/tactile-buttons）
+
+叠在 `fix/transition-quality`（PR #17）之上。从设置页分段控件选中块提炼共享材质 `HipTactile`，统一主 CTA、「开始」、次按钮、圆形图标按钮、分段选中块、底部 Tab 选中态、卡片内小按钮、播放器反馈按钮，去掉全部彩色外发光，详见[按钮样式审计](button-style-audit-2026-10-18.md)。`flutter analyze` 0；全量 178 pass / 1 条件 skip（165 + 新增 13）；四尺寸单屏自测回归在全量内通过；「开始」容器展开首帧截图与新按钮逐像素一致（新增测试）。仅沙盒无头 widget 测试截图验证；未构建 APK、未安装手机，真机渲染与掉帧待查。未合入 main。

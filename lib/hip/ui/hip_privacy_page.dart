@@ -90,7 +90,7 @@ class HipPrivacyPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       const SelectableText(policyUrl),
                       const SizedBox(height: 8),
-                      TextButton.icon(
+                      HipChipButton(
                         key: const ValueKey('copy-privacy-url'),
                         onPressed: () async {
                           await Clipboard.setData(
@@ -101,8 +101,9 @@ class HipPrivacyPage extends StatelessWidget {
                             const SnackBar(content: Text('已复制隐私政策链接')),
                           );
                         },
-                        icon: const HipIcon(HipGlyph.copy),
-                        label: const Text('复制链接，在浏览器中查看'),
+                        icon: HipGlyph.copy,
+                        color: HipColors.jadeText,
+                        label: '复制链接，在浏览器中查看',
                       ),
                     ],
                   ),
