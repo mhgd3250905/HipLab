@@ -1,7 +1,6 @@
 // PR #18 review regressions: exercise a held pointer and the actual painted
 // route frame, rather than checking only the target scale or snapshot bytes.
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';

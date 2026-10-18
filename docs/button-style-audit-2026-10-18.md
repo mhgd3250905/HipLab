@@ -83,3 +83,7 @@ python3 tools/transitions/render.py test/_shots/buttons/after/dark   # press-she
 - 按下态（常态 / 约 110 ms 处）：[深色](images/button-style-audit-2026-10-18/press-states-dark.jpg) · [浅色](images/button-style-audit-2026-10-18/press-states-light.jpg)
 
 整页对比、按下慢放 MP4 和转场逐帧对比体积较大，未入库（由 `test_screens/hip_button_gallery_test.dart`、`hip_shots_test.dart`、`hip_transition_capture_test.dart` 复现）。
+
+## Windows复核修订：共享滑块按压（2026-10-18）
+
+用户已授权修复后直接合并。F2第1轮让分段控件显式持有共享滑块按压/拖动/取消状态，滑块和文字同步缩放；减少动画仅保留材质下沉。材质释放与缩放统一180ms。新增9项回归覆盖正常/减少动画、移出/取消、拖动取消、纵向滚动、键盘选中语义、180ms释放及两个开始入口实际首帧。相关34项通过；组合analyze0、全量191pass/1条件skip（F1新增4、F2新增9），原审核6项现由日常回归覆盖。gallery 45/60模拟区改为小号分段与实际试听按钮，先前深浅2项生成通过。未改依赖、lock、版本或商店配置；后续组合APK与真机检查另记，不将本段当作已安装。
