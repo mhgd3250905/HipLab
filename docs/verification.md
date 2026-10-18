@@ -234,6 +234,16 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 
 收束文档独立复核通过：9份Markdown未发现剩余确定finding，147处相对链接目标为Git已跟踪路径，选中文档内锚点匹配；代码相对已验证源`66f5da0`保持，完整工作区仅本轮9份文档和两项原有未跟踪文件，后者不纳入提交。
 
+## 动作素材浅/深主题（2026-10-19，分支 feat/themed-action-media，沙盒，未合并、未安装）
+
+| 范围 / 命令 | 结果 | 边界 |
+|---|---|---|
+| `flutter analyze --no-pub` | 0 问题 | |
+| `flutter test --no-pub` | 198 通过 / 1 条件跳过（新增 `hip_action_media_test.dart` 7 项） | 含清单 SHA-256 逐文件校验、两主题素材齐全、主题切换重建视频 |
+| `python3 -m unittest discover -s tools/tests` | 15 通过（新增 4 项） | `build_themed_media.py check` 通过：47 视频 + 47 封面 + 20 自测图 |
+| `test_screens/hip_shots_test.dart` 深/浅截图 | 深色 18 张与改前逐像素一致；浅色无深色块 | `large text 1.5 on 360` 改前即溢出，未改 |
+| 原生 WebView 播放浅色视频 | **未执行** | 沙盒 Chromium 无 H.264；待 Android/iOS 真机 |
+
 ## Windows复核修订：中途反向Tab连续性（2026-10-18）
 
 按用户直接修复并推进合并授权处理F1，第1轮将Tab改为共享时钟，每次重定向从实际当前透明度和位移采样；保留持久slot、fade-through及媒体/焦点/语义策略。新增4项：零时间透明度与位移连续、三Tab快速重定向、减少动画无漂移。此固定分支analyze0，独立全量169pass/1条件skip；相关22项targeted通过。原失败证据在PR #17评论6251531461，修复后的组合Android原生验证与#18一起完成，不将本段写成已安装结论。未改依赖、lock、版本或商店配置。

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import '../../core/media/drill_media.dart';
 import '../../core/media/media_controller.dart';
 import '../../core/media/media_view.dart';
+import '../domain/hip_action_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_tactile.dart';
@@ -32,31 +33,30 @@ class HipMediaPolicy extends InheritedWidget {
       old.videoEnabled != videoEnabled;
 }
 
-/// Theme-matched drill media (#14). The bundled clips are rendered on the
-/// dark `#101013` stage. When light-stage versions are bundled as
-/// `assets/drill_media/light/hip-<id>.{jpg,mp4}` they are used in the light
-/// theme automatically; until then both themes show the dark stage, framed
-/// as a media tile.
+/// Theme-matched action media (#14, 2026-10-19). Every clip, poster and
+/// self-test still has a light-stage counterpart listed in
+/// `assets/hip/action-media.json` (tools/media/build_themed_media.py); in the
+/// light theme those are shown, so no dark box sits on the light pages. The
+/// content pack keeps naming the dark asset.
 abstract final class HipMediaVariants {
-  /// Asset keys present in the bundle (filled once at startup).
-  static Set<String> assets = const {};
+  /// Loaded once at startup (HipApp); empty until then / in bare widget tests.
+  static HipActionMedia media = HipActionMedia.empty;
 
-  static String? lightPoster(String? poster) {
-    if (poster == null || !poster.startsWith('assets/drill_media/')) {
-      return null;
-    }
-    final light = poster.replaceFirst(
-      'assets/drill_media/',
-      'assets/drill_media/light/',
-    );
-    return assets.contains(light) ? light : null;
-  }
+  static String? lightPoster(String? poster) => media.lightOf(poster);
 
-  static bool hasLightVideo(String? video) =>
-      video != null &&
-      assets.contains(
-        video.replaceFirst('assets/drill_media/', 'assets/drill_media/light/'),
-      );
+  static bool hasLightVideo(String? video) => media.hasLight(video);
+
+  /// [asset] for the theme in effect ([HipColors.isDark] unless [dark]).
+  static String themed(String asset, {bool? dark}) =>
+      media.resolve(asset, dark: dark ?? HipColors.isDark);
+
+  /// Media stage behind [asset] in the theme in effect: the light stage only
+  /// when a light counterpart is actually shown, else the dark stage it was
+  /// rendered on (so a not-yet-built clip still letterboxes cleanly).
+  static Color stageFor(String? asset) =>
+      HipColors.isDark || asset == null || !media.hasLight(asset)
+      ? HipPalette.dark.mediaBackdrop
+      : HipPalette.light.mediaBackdrop;
 }
 
 /// A rounded media box whose border is painted *over* the clipped content,
@@ -229,6 +229,35 @@ class _HipDrillArtState extends State<HipDrillArt> {
   DrillMedia? _media;
   bool _shown = false;
 
+  /// Player variant the web view was created for ('light' or null = dark).
+  String? _variant;
+
+  /// 'light' when the light theme is in effect and this clip has a light
+  /// render bundled; null plays the default (dark-stage) clip.
+  String? get _wantedVariant =>
+      !HipColors.isDark && HipMediaVariants.hasLightVideo(widget.drill.video)
+      ? 'light'
+      : null;
+
+  /// Theme switched while the clip is up: the web view loaded the other
+  /// stage's file, so build a fresh one. The new theme's poster covers the
+  /// box (opacity 1) until the new clip reports its first frame, so the
+  /// switch never shows an empty or wrong-colour stage.
+  void _followTheme() {
+    final wanted = _wantedVariant;
+    if (wanted == _variant) return;
+    _variant = wanted;
+    final old = _controller;
+    if (old == null) return;
+    old.removeListener(_onMedia);
+    // The old platform view detaches from it while unmounting this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    _controller = null;
+    _media = null;
+    _shown = false;
+    _sync();
+  }
+
   bool _videoAllowed(BuildContext context) =>
       widget.drill.mediaStatus == HipMediaStatus.video &&
       HipMediaPolicy.of(context);
@@ -293,6 +322,7 @@ class _HipDrillArtState extends State<HipDrillArt> {
     if (!widget.play || !_videoAllowed(context) || _controller != null) return;
     final own = _ownMedia(widget.drill);
     if (own == null) return;
+    _variant = _wantedVariant;
     final controller = _controller = DrillMediaController()
       ..addListener(_onMedia);
     _media = own;
@@ -321,14 +351,14 @@ class _HipDrillArtState extends State<HipDrillArt> {
     super.dispose();
   }
 
-  String? get _poster =>
-      (HipColors.isDark
-          ? null
-          : HipMediaVariants.lightPoster(widget.drill.poster)) ??
-      widget.drill.poster;
+  String? get _poster {
+    final p = widget.drill.poster;
+    return p == null ? null : HipMediaVariants.themed(p);
+  }
 
   @override
   Widget build(BuildContext context) {
+    _followTheme();
     final poster = _poster;
     Widget still = poster == null
         ? HipPendingArt(label: widget.showPendingLabel ? '动画待渲染' : null)
@@ -346,6 +376,16 @@ class _HipDrillArtState extends State<HipDrillArt> {
                   ),
             errorBuilder: (_, _, _) => const HipPendingArt(label: '动画待渲染'),
           );
+    if (poster != null) {
+      // Theme switch: cross-fade the two stages' posters instead of showing
+      // the old one on the new backdrop until the new one has decoded.
+      still = AnimatedSwitcher(
+        duration: HipMotion.fast,
+        layoutBuilder: (current, previous) =>
+            Stack(fit: StackFit.expand, children: [...previous, ?current]),
+        child: KeyedSubtree(key: ValueKey(poster), child: still),
+      );
+    }
     final media = _media;
     final controller = _controller;
     Widget out;
@@ -357,16 +397,12 @@ class _HipDrillArtState extends State<HipDrillArt> {
         children: [
           widget.mediaViewBuilder?.call(media, controller) ??
               DrillMediaPlatformView(
-                key: ValueKey(widget.drill.id),
+                key: ValueKey('${widget.drill.id}/${_variant ?? 'dark'}'),
                 media: media,
                 controller: controller,
                 fit: widget.fit == BoxFit.contain ? 'contain' : 'cover',
                 align: widget.alignment,
-                variant:
-                    !HipColors.isDark &&
-                        HipMediaVariants.hasLightVideo(widget.drill.video)
-                    ? 'light'
-                    : null,
+                variant: _variant,
                 labels: const {
                   'title': '动作示范',
                   'play': '播放',
@@ -390,15 +426,21 @@ class _HipDrillArtState extends State<HipDrillArt> {
     if (widget.mirror) {
       out = Transform.flip(flipX: true, child: out);
     }
-    return ColoredBox(color: HipColors.mediaBackdrop, child: out);
+    return ColoredBox(
+      color: HipMediaVariants.stageFor(widget.drill.poster),
+      child: out,
+    );
   }
 }
 
 /// Warms the image cache for the posters a screen is about to show (the next
-/// drill, the next assessment item) so they appear on the first frame.
+/// drill, the next assessment item) so they appear on the first frame —
+/// in the variant of the theme in effect.
 void hipPrecache(BuildContext context, Iterable<String?> assets) {
   for (final a in assets) {
-    if (a != null) precacheImage(AssetImage(a), context).ignore();
+    if (a != null) {
+      precacheImage(AssetImage(HipMediaVariants.themed(a)), context).ignore();
+    }
   }
 }
 

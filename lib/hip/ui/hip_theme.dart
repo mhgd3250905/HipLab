@@ -124,9 +124,12 @@ class HipPalette {
     pain: Color(0xffd43f3f),
     scrim: Color(0xccffffff),
     shadow: Color(0x121d2b25),
-    // Renders are on a dark stage; media tiles stay dark in the light theme
-    // until light-stage renders are bundled (HipMediaVariants).
-    mediaBackdrop: Color(0xff141517),
+    // Light media stage (2026-10-19): every clip/poster/still has a light
+    // render baked on exactly this colour (tools/media/build_themed_media.py
+    // STAGE['light']). Neutral grey on purpose: R=G=B decodes to the same
+    // value under BT.601 and BT.709, so the video never shows a tinted box
+    // against this Flutter-painted backdrop. Change both together.
+    mediaBackdrop: Color(0xffefefef),
     track: Color(0xffeceeec),
     thumb: Color(0xffffffff),
     thumbHighlight: Color(0x00ffffff),

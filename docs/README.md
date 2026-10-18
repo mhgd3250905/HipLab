@@ -8,6 +8,7 @@
 | [0.3.6样式与阶段收束](theme-polish-2026-10-18.md) | 4项修复、源码/证据绑定、APK和19:29安装、验收边界 | 本阶段事实变化后 |
 | [Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md) | 当前冻结资源、App 产物及验收边界 | 同步或实际结果变化后 |
 | [第二轮集成记录](round2-integration-2026-10-18.md) | #13/#14 固定审核、语音生命周期、UI 回归、APK 与网页/原生边界 | 本轮事实变化后 |
+| [动作素材浅/深主题](action-media-audit-2026-10-19.md) | 8 个展示位置盘点、方案比较、管线、体积、动作包对接（feat/themed-action-media，未合并） | 素材或方案变化后 |
 | [主干与 Pose-Hub 集成记录](mainline-pose-hub-2026-10-18.md) | 四个 PR 合并、v0.1.0、最终构建与首帧原生待补边界 | 本轮状态变化后 |
 | [第一轮 Android 集成验证](android-round1-integration-2026-10-17.md) | 原三阶段构建、真机及当时待合并边界；最新进展见当前状态 | 保留原阶段证据 |
 | [Google Play 送审](play-store-release-2026-10-17.md) | 0.2.0+4 / Submission 1 的历史回执 | Console 实际变化后 |
