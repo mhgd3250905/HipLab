@@ -2,7 +2,7 @@
 
 核对日期：2026-10-19，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
 
-**Mac / iOS 补记（20:17）：** 已从 `fce7ad8` rebase 对齐 0.3.6+11，在 `ios/main-ui-036` 补 iOS 隐私文案/链接；候选 `2f8aeb0` 的 analyze、160 pass /1 skip、签名 Release / Archive 与 611 文件随包核验均通过。安装时 iPhone 掉线，目前仍为 0.3.3+8，新 UI 真机检查等待重连；旧用户验收不套用新候选。见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。
+**Mac / iOS 补记（20:17）：** 已从 `fce7ad8` rebase 对齐 0.3.6+11，在 `ios/main-ui-036` 补 iOS 隐私文案/链接；候选 `2f8aeb0` 的 analyze、160 pass /1 skip、签名 Release / Archive 与 611 文件随包核验均通过。安装时 iPhone 掉线，目前仍为 0.3.3+8，新 UI 真机检查等待重连；旧用户验收不套用新候选。分支已推送，已建[草稿 PR #16](https://github.com/mhgd3250905/HipLab/pull/16)，未合并。见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。
 
 ## App 与设备
 

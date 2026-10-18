@@ -135,4 +135,4 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 
 ## 2026-10-18 20:17 / iOS 对齐新版 main
 
-按用户要求在新 `ios/main-ui-036` 分支整理保留旧 iOS 验证记录，并 rebase 到 `fce7ad8`，旧已发布分支/PR与主目录未提交台账保持。继承0.3.6+11新版控件、对比度、隐私顶栏及v0.2.0素材；发现隐私正文/复制链接仍针对Android，补iOS平台分支且保留Android行为，最终160 pass /1 skip、analyze及本地Release/Archive通过。安装时设备掉线，未将新版写入手机，已请用户重连。完整证据见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)；未上传商店。
+按用户要求在新 `ios/main-ui-036` 分支整理保留旧 iOS 验证记录，并 rebase 到 `fce7ad8`，旧已发布分支/PR与主目录未提交台账保持。继承0.3.6+11新版控件、对比度、隐私顶栏及v0.2.0素材；发现隐私正文/复制链接仍针对Android，补iOS平台分支且保留Android行为，最终160 pass /1 skip、analyze及本地Release/Archive通过。安装时设备掉线，未将新版写入手机，已请用户重连。完整证据见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)；分支已正常推送并建立[草稿 PR #16](https://github.com/mhgd3250905/HipLab/pull/16)，未合并或上传商店。
