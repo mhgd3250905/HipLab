@@ -236,14 +236,16 @@ abstract final class HipMotion {
   static const segment = Duration(milliseconds: 380);
 
   /// Push / pop of a page (horizontal), its reverse a touch quicker.
-  static const page = Duration(milliseconds: 360);
-  static const pageReverse = Duration(milliseconds: 300);
+  static const page = Duration(milliseconds: 400);
+  static const pageReverse = Duration(milliseconds: 340);
 
-  /// Container transform (a button growing into a full-screen page).
-  static const expand = Duration(milliseconds: 380);
-  static const expandReverse = Duration(milliseconds: 320);
+  /// Container transform (a button growing into a full-screen page): the
+  /// one large move of the app, so it gets the longest time; closing is a
+  /// little quicker.
+  static const expand = Duration(milliseconds: 500);
+  static const expandReverse = Duration(milliseconds: 420);
 
-  /// Bottom tab switch.
+  /// Bottom tab switch (fade through: out, then in).
   static const tab = Duration(milliseconds: 300);
 
   /// Bottom sheets rise from the bottom on the page timing.
@@ -253,9 +255,26 @@ abstract final class HipMotion {
   );
 
   /// Material 3 emphasized easing: quick start, long gentle settle.
+  ///
+  /// Not for page moves: the three-point M3 curve is ~90 % done after a
+  /// third of its time, so a 380 ms page move read as a cut followed by a
+  /// long creep (transition audit 2026-10-18). Pages use [enter] /
+  /// [exit] / [container] below.
   static const Curve emphasized = Curves.easeInOutCubicEmphasized;
   static const Curve emphasizedDecelerate = Cubic(0.05, 0.7, 0.1, 1.0);
   static const Curve emphasizedAccelerate = Cubic(0.3, 0.0, 0.8, 0.15);
+
+  /// A page arriving (push, rise): a gentle first frame, half way at
+  /// ~20 % of the time, then a long soft landing (M3 "emphasized" as a
+  /// single cubic).
+  static const Curve enter = Cubic(0.2, 0.0, 0.0, 1.0);
+
+  /// A page leaving (pop), expressed as the distance travelled: starts
+  /// promptly and decelerates out without a lingering sliver.
+  static const Curve exit = Curves.fastOutSlowIn;
+
+  /// Container transform bounds, both ways (Material's container easing).
+  static const Curve container = Curves.fastOutSlowIn;
 
   /// A soft spring: settles with a small (≈4%) overshoot. Used for the
   /// segmented thumb and press release.
@@ -348,7 +367,7 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
 
 /// Fallback for any plain [PageRoute] (the app pushes `HipRoute`s, see
 /// hip_routes.dart): the same horizontal push — in from the right on the
-/// emphasized curves, no white flash. iOS keeps Cupertino's (edge swipe).
+/// [HipMotion.enter] / [HipMotion.exit] curves, no white flash. iOS keeps Cupertino's (edge swipe).
 class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   const HipPageTransitionsBuilder();
 
@@ -368,8 +387,8 @@ class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   ) {
     final curved = CurvedAnimation(
       parent: animation,
-      curve: HipMotion.emphasizedDecelerate,
-      reverseCurve: HipMotion.emphasizedAccelerate.flipped,
+      curve: HipMotion.enter,
+      reverseCurve: HipMotion.exit.flipped,
     );
     return SlideTransition(
       position: Tween(
