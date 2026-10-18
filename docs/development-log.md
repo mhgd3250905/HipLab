@@ -56,3 +56,9 @@ Pose-Hub v0.1.0 已公开发布并接入，lock 与冻结 manifest 随源码保�
 临时独立网页预览在 320×568、360×740、390×844、768×1024 上检查正方形示范区、按钮 bounds、无滚动、六项自测及结果完成；点按暂停/继续、键盘、分段拖动、快速 Tab 和训练暂停/继续通过。预览使用 silent-voice fixture 与 poster stub；普通 DOM locator 仍因 Flutter semantics root 空白而超时，保留失败证据。坐标 page.mouse 操作通过且未使用 force；原生 widget hitTest 回归通过。这不构成原生媒体、H.264、系统音频或正式 Web 支持验收，也不据此诊断透明旧页遮挡。倒计时改为 33 ms tick；Chrome 18 屏的 17 个相邻环区域中，完全相同对数由旧 100 ms 的 5 对降至 0 对，采样约 47–79 ms，不代表真机帧时或帧率
 
 独立 488 素材复核和窄值舍入说明见[第二轮集成记录](round2-integration-2026-10-18.md)。本轮不重做旧迁移，不改写既有手机验收，不上传商店或改版本号之外发布配置。
+
+## 2026-10-18：Pose-Hub v0.2.0 素材升级
+
+Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。
+
+固定上游 `59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4`；ZIP与云端manifest核验/92文件安全解压完成。同步工具主体与已审版本完全一致，仅更新来源头；本轮结果：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。视频1080、封面540，保留自有剪辑和still，不重渲。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。

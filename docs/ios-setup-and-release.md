@@ -1,6 +1,6 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。业务代码 `1b35657dec153741e25ca095ac2764b18d14ac29` 已于 2026-10-18 10:04 北京时间推送 main；运行源码 `1b35657dec153741e25ca095ac2764b18d14ac29`，版本 0.3.3+8。Mac 从最终 main 开始，按 README 恢复冻结 v0.1.0 素材，固定 Flutter 3.44.7，不升级 lock / 依赖。#13 语音与 #14 路由改动仍需 iPhone 复验，本轮没有 Mac/Xcode 构建或 iOS 通过结论。
+更新日期：2026-10-18，北京时间。Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。 Mac 从最终 main 按 README 恢复冻结 v0.2.0（视频1080/封面540），固定 Flutter3.44.7，不升级lock/依赖；本轮仍无Mac/Xcode或iPhone验收。
 
 > 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.3+8 → 0.3.3 / 8）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.4+9 → 0.3.4 / 9）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |

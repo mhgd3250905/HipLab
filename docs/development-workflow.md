@@ -43,12 +43,12 @@ Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-当前取用 Pose-Hub v0.1.0，冻结 lock / manifest 随 main 保存；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
+当前取用 Pose-Hub v0.2.0，冻结 lock / manifest 随 main 保存；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
 
 ```powershell
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --dry-run
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.1.0/extracted --check
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --dry-run
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted
+python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --check
 python tools/hip_content/build_hip_content.py
 ```
 

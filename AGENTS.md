@@ -6,7 +6,7 @@
 - 仅文档改动验证事实、链接和 `git diff --check`，不增加 App 版本、不重复构建。功能变更按影响范围测试，涉及原生播放或安装需补真机证据；未执行检查明确写出。
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。
-- 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望），不在 HipLab 重渲。Pose-Hub v0.1.0 已发布并接入；使用仓库冻结的 pose-hub.lock.json / tools/pose-hub-manifest.json，按 docs/README.md 下载校验 ZIP 后用 --from-dir 恢复并 --check。后续升级由 Windows 更新冻结版本，保留旧母版、规格和 QA；旧 tools/sync_drill_media.py 仅保留历史兼容。
+- 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望），不在 HipLab 重渲。Pose-Hub v0.2.0 为当前冻结版本（视频1080、封面540）；使用仓库冻结的 pose-hub.lock.json / tools/pose-hub-manifest.json，按 docs/README.md 下载校验 ZIP 后用 --from-dir 恢复并 --check。后续升级由 Windows 更新冻结版本，保留旧母版、规格和 QA；旧 tools/sync_drill_media.py 仅保留历史兼容。
 - 高清同步使用已通过 QA 的批次和显式参数，当前流程见 `docs/development-workflow.md`。逐项来源以 `tools/hip_content/source/hip-media.json` 为准；保留绿幕/透明母帧、旧批次与修订来源，不覆盖冻结动作、模型或 QA。
 - `lib/core/` 是从 3D-Body 复制的公共代码，文件头注明来源；修改时保留来源注释并说明改了什么。
 - 包里只放 HipLab 自己用到的资源（`test/hip/hip_assets_test.dart` 会检查）。
