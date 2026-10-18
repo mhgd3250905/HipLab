@@ -173,35 +173,6 @@ abstract final class HipColors {
   static Color get thumb => palette.thumb;
   static Color get thumbHighlight => palette.thumbHighlight;
 
-  /// Lift for a raised thumb: a tight contact shadow plus a soft ambient one.
-  static List<BoxShadow> get thumbShadow => flatShadows
-      ? const []
-      : palette.isDark
-      ? const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-          BoxShadow(
-            color: Color(0x40000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ]
-      : const [
-          BoxShadow(
-            color: Color(0x1a0d2a20),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-          BoxShadow(
-            color: Color(0x140d2a20),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ];
-
   /// Soft elevation for cards: none on dark (strokes carry the shape), a
   /// faint two-layer shadow on light.
   static List<BoxShadow>? get cardShadow => palette.isDark || flatShadows
@@ -228,9 +199,14 @@ abstract final class HipMotion {
   static const slow = Duration(milliseconds: 420);
   static const curve = Curves.easeOutCubic;
 
-  /// Pressed-state feedback (scale down) and its release.
-  static const press = Duration(milliseconds: 110);
-  static const release = Duration(milliseconds: 420);
+  /// Pressed-state feedback (a tactile tile sinking: scale 0.97, light and
+  /// shadow drop) and its release. Short and without overshoot, so a press
+  /// reads as "pushed in", not as a bounce (button audit 2026-10-18).
+  static const press = Duration(milliseconds: 100);
+  static const release = Duration(milliseconds: 180);
+
+  /// Press scale for tactile buttons; 1 (no scale) under reduce motion.
+  static const pressScale = .97;
 
   /// Segmented-control thumb slide.
   static const segment = Duration(milliseconds: 380);

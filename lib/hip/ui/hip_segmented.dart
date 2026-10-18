@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'hip_theme.dart';
-import 'hip_widgets.dart' show HipPressable;
+import 'hip_widgets.dart' show HipPressable, HipTactile, HipTactileStyle;
 
 /// Builds one segment's content. [fg] is the colour to paint text / glyphs
 /// in (already blended between the idle and selected colours), [t] how
@@ -14,9 +14,10 @@ typedef HipSegmentBuilder<T> = Widget Function(T value, Color fg, double t);
 ///
 /// * The thumb is concentric with the track: its radius is the track radius
 ///   minus the inset, so the corners run parallel.
-/// * No outline on the selection: on dark the thumb is a raised step above
-///   the surface (lighter fill, 1px top light, soft shadow); on light it is a
-///   white raised chip over a recessed grey track in both placements.
+/// * The selection is a raised tactile tile ([HipTactileStyle.neutral]):
+///   on dark a lighter step above the surface (lit top, 1px top light,
+///   hairline edge, tight shadow); on light a white chip over a recessed
+///   grey track in both placements. No accent outline.
 /// * The thumb slides with a small spring; every segment's colour follows
 ///   the thumb's position, so text and glyphs cross-fade in step with it.
 /// * Tap a segment or drag along the track.
@@ -24,7 +25,7 @@ typedef HipSegmentBuilder<T> = Widget Function(T value, Color fg, double t);
 /// [standalone] controls sit directly on the page and are their own card
 /// (card stroke / shadow); on light, both placements use the recessed
 /// [HipColors.track] so the white thumb remains distinct.
-class HipSegmented<T> extends StatelessWidget {
+class HipSegmented<T> extends StatefulWidget {
   const HipSegmented({
     super.key,
     required this.values,
@@ -57,88 +58,145 @@ class HipSegmented<T> extends StatelessWidget {
   /// Thumb corner radius: concentric with the track.
   double get thumbRadius => (radius - inset).clamp(0, radius).toDouble();
 
-  Color get _selectedFg => standalone ? HipColors.jadeText : HipColors.text;
+  @override
+  State<HipSegmented<T>> createState() => _HipSegmentedState<T>();
+}
+
+class _HipSegmentedState<T> extends State<HipSegmented<T>> {
+  int? _pressedIndex;
+  bool _dragging = false;
+  bool _pointerInside = true;
+
+  void _press(int i, bool down) {
+    if (down) {
+      if (_pressedIndex != i) setState(() => _pressedIndex = i);
+    } else if (_pressedIndex == i) {
+      setState(() => _pressedIndex = null);
+    }
+  }
+
+  void _release() {
+    if (_pressedIndex != null || _dragging) {
+      setState(() {
+        _pressedIndex = null;
+        _dragging = false;
+      });
+    }
+  }
+
+  void _inside(Offset local, Size size) {
+    final inside = (Offset.zero & size).contains(local);
+    if (inside != _pointerInside) setState(() => _pointerInside = inside);
+  }
+
+  Color get _selectedFg =>
+      widget.standalone ? HipColors.jadeText : HipColors.text;
 
   BoxDecoration get _trackDecoration => BoxDecoration(
-    color: standalone && HipColors.isDark ? HipColors.surface : HipColors.track,
-    borderRadius: BorderRadius.circular(radius),
-    border: standalone && HipColors.isDark
+    color: widget.standalone && HipColors.isDark
+        ? HipColors.surface
+        : HipColors.track,
+    borderRadius: BorderRadius.circular(widget.radius),
+    border: widget.standalone && HipColors.isDark
         ? Border.all(color: HipColors.line)
         : null,
-    boxShadow: standalone ? HipColors.cardShadow : null,
+    boxShadow: widget.standalone ? HipColors.cardShadow : null,
   );
 
-  BoxDecoration get _thumbDecoration => BoxDecoration(
-    color: HipColors.thumb,
-    borderRadius: BorderRadius.circular(thumbRadius),
-    boxShadow: HipColors.thumbShadow,
-    // A light catching the top edge (transparent in the light theme):
-    // reads as a raised surface, not as an outline.
-    gradient: HipColors.isDark
-        ? LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.alphaBlend(HipColors.thumbHighlight, HipColors.thumb),
-              HipColors.thumb,
-            ],
-            stops: const [0, .5],
-          )
-        : null,
+  /// The selection thumb is the reference tactile tile the app's buttons
+  /// were distilled from (button audit 2026-10-18): lit from above, a 1px
+  /// top light, a hairline edge and a tight contact shadow.
+  Widget _thumb(bool pressed) => HipTactile(
+    style: HipTactileStyle.neutral(),
+    radius: widget.thumbRadius,
+    pressed: pressed,
   );
 
   void _select(int i) {
-    if (i < 0 || i >= values.length || values[i] == selected) return;
+    if (i < 0 ||
+        i >= widget.values.length ||
+        widget.values[i] == widget.selected) {
+      return;
+    }
     HapticFeedback.selectionClick();
-    onChanged(values[i]);
+    widget.onChanged(widget.values[i]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final index = values.indexOf(selected).clamp(0, values.length - 1);
+    final index = widget.values
+        .indexOf(widget.selected)
+        .clamp(0, widget.values.length - 1);
+    final pressed = _pointerInside && (_dragging || _pressedIndex == index);
+    final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final idle = HipColors.muted;
     final on = _selectedFg;
     return Container(
-      height: height,
+      height: widget.height,
       decoration: _trackDecoration,
-      padding: EdgeInsets.all(inset),
+      padding: EdgeInsets.all(widget.inset),
       child: LayoutBuilder(
         builder: (context, c) {
-          final segW = c.maxWidth / values.length;
-          int at(double dx) => (dx / segW).floor().clamp(0, values.length - 1);
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragStart: (d) => _select(at(d.localPosition.dx)),
-            onHorizontalDragUpdate: (d) => _select(at(d.localPosition.dx)),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: index.toDouble()),
-              duration: HipMotion.segment,
-              curve: HipMotion.spring,
-              builder: (context, pos, _) => Stack(
-                children: [
-                  Positioned(
-                    key: ValueKey('$keyPrefix-thumb'),
-                    left: pos * segW,
-                    top: 0,
-                    bottom: 0,
-                    width: segW,
-                    child: DecoratedBox(decoration: _thumbDecoration),
-                  ),
-                  Row(
+          final segW = c.maxWidth / widget.values.length;
+          final trackSize = Size(c.maxWidth, c.maxHeight);
+          int at(double dx) =>
+              (dx / segW).floor().clamp(0, widget.values.length - 1);
+          return Listener(
+            onPointerDown: (event) => _inside(event.localPosition, trackSize),
+            onPointerMove: (event) => _inside(event.localPosition, trackSize),
+            onPointerUp: (_) => _release(),
+            onPointerCancel: (_) => _release(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragStart: (d) {
+                setState(() => _dragging = true);
+                _select(at(d.localPosition.dx));
+              },
+              onHorizontalDragUpdate: (d) => _select(at(d.localPosition.dx)),
+              onHorizontalDragEnd: (_) => _release(),
+              onHorizontalDragCancel: _release,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: pressed ? 1.0 : 0.0),
+                duration: pressed ? HipMotion.press : HipMotion.release,
+                curve: pressed ? Curves.easeOut : Curves.easeOutCubic,
+                builder: (context, press, _) => TweenAnimationBuilder<double>(
+                  tween: Tween(end: index.toDouble()),
+                  duration: HipMotion.segment,
+                  curve: HipMotion.spring,
+                  builder: (context, pos, _) => Stack(
                     children: [
-                      for (final (i, v) in values.indexed)
-                        Expanded(
-                          child: _segment(
-                            i,
-                            v,
-                            (1 - (pos - i).abs()).clamp(0.0, 1.0),
-                            idle,
-                            on,
-                          ),
+                      Positioned(
+                        key: ValueKey('${widget.keyPrefix}-thumb'),
+                        left: pos * segW,
+                        top: 0,
+                        bottom: 0,
+                        width: segW,
+                        child: Transform.scale(
+                          key: ValueKey('${widget.keyPrefix}-thumb-scale'),
+                          scale: reduceMotion
+                              ? 1
+                              : 1 - (1 - HipMotion.pressScale) * press,
+                          child: _thumb(pressed),
                         ),
+                      ),
+                      Row(
+                        children: [
+                          for (final (i, v) in widget.values.indexed)
+                            Expanded(
+                              child: _segment(
+                                i,
+                                v,
+                                (1 - (pos - i).abs()).clamp(0.0, 1.0),
+                                idle,
+                                on,
+                                reduceMotion ? 0 : press,
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           );
@@ -147,32 +205,37 @@ class HipSegmented<T> extends StatelessWidget {
     );
   }
 
-  Widget _segment(int i, T v, double t, Color idle, Color on) {
+  Widget _segment(int i, T v, double t, Color idle, Color on, double press) {
     final fg = Color.lerp(idle, on, t)!;
-    final isOn = v == selected;
+    final isOn = v == widget.selected;
     return HipPressable(
       selected: isOn,
       inMutuallyExclusiveGroup: true,
-      key: ValueKey('$keyPrefix-$v'),
+      key: ValueKey('${widget.keyPrefix}-$v'),
       scale: 1,
+      onPressChanged: (down) => _press(i, down),
       onTap: () => _select(i),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: itemBuilder != null
-                ? itemBuilder!(v, fg, t)
-                : Text(
-                    label!(v),
-                    maxLines: 1,
-                    softWrap: false,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isOn ? FontWeight.w700 : FontWeight.w500,
-                      color: Color.lerp(idle, HipColors.text, t),
+      child: Transform.scale(
+        key: ValueKey('${widget.keyPrefix}-label-scale-$v'),
+        scale: 1 - (1 - HipMotion.pressScale) * press * t,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: widget.itemBuilder != null
+                  ? widget.itemBuilder!(v, fg, t)
+                  : Text(
+                      widget.label!(v),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isOn ? FontWeight.w700 : FontWeight.w500,
+                        color: Color.lerp(idle, HipColors.text, t),
+                      ),
                     ),
-                  ),
+            ),
           ),
         ),
       ),
