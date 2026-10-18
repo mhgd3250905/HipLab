@@ -56,3 +56,8 @@ Pose-Hub v0.1.0 已公开发布并接入，lock 与冻结 manifest 随源码保�
 临时独立网页预览在 320×568、360×740、390×844、768×1024 上检查正方形示范区、按钮 bounds、无滚动、六项自测及结果完成；点按暂停/继续、键盘、分段拖动、快速 Tab 和训练暂停/继续通过。预览使用 silent-voice fixture 与 poster stub；普通 DOM locator 仍因 Flutter semantics root 空白而超时，保留失败证据。坐标 page.mouse 操作通过且未使用 force；原生 widget hitTest 回归通过。这不构成原生媒体、H.264、系统音频或正式 Web 支持验收，也不据此诊断透明旧页遮挡。倒计时改为 33 ms tick；Chrome 18 屏的 17 个相邻环区域中，完全相同对数由旧 100 ms 的 5 对降至 0 对，采样约 47–79 ms，不代表真机帧时或帧率
 
 独立 488 素材复核和窄值舍入说明见[第二轮集成记录](round2-integration-2026-10-18.md)。本轮不重做旧迁移，不改写既有手机验收，不上传商店或改版本号之外发布配置。
+
+
+## 2026-10-18 10:33 / Mac iOS 0.3.3 本地构建
+
+从已 fetch 的 `origin/main@bb828be` 建立独立 `ios/device-validation`，保留原目录及旧发布 worktree。固定 Flutter 3.44.7，156 pass / 1 skip、analyze 无问题、92 素材无漂移；无需工程修复即可完成开发签名 Release 和 Xcode Archive，Team 用忽略目录内 xcconfig 注入。真机因 CoreDevice 1011 / Xcode 准备错误未安装，已尝试两种标识后停止并请求用户重新连接。11 项系统/音视频验收保持待做；未新上传、未调整旧审核，详见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。

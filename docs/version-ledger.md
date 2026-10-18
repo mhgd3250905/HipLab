@@ -121,3 +121,17 @@ main 按 #7/#8/#9/rebased #10 集成，四 PR 均回读 MERGED；素材固定 Po
 PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建成功保留在[第二轮集成记录](round2-integration-2026-10-18.md)，不覆盖其 151,821,564 bytes 阶段 APK，也不混用早期候选 APK。没有新商店上传或审核回执。
 
 阶段产物均未安装：#13 `a41e7e0` / 0.3.2+7（151,821,564 bytes），#14 `4c563f9` / 0.3.2+7（176,826,741 bytes），后续候选 `162a4e6` / 0.3.2+7（176,826,917 bytes）；各 SHA-256 与检查结果见[第二轮集成记录](round2-integration-2026-10-18.md)。
+
+
+## iOS 0.3.3+8 本地构建（2026-10-18 10:33）
+
+| 项目 | 实际结果 |
+|---|---|
+| 源码 / 分支 | `bb828be30a6d3631538fc732154c5985c44ef2f8` / `ios/device-validation`；文档提交不改变构建源码 |
+| Flutter Release / Xcode Archive | 均成功，分别 58.1 / 46.1 秒；已有开发签名，Team 未入库 |
+| 身份 / 核验 | com.ugk.hiplab / 0.3.3 / 8 / arm64，codesign deep strict 通过，6 份隐私清单可解析 |
+| 归档 | `build/ios-device-validation/HipLab-0.3.3+8.xcarchive`，248,539,390 bytes；本机工作目录与主可执行文件 SHA 见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
+| 设备 / 安装 | iPhone 16 Pro / iOS 26.5；CoreDevice 准备错误，未安装、未进行新版本真机验收或数据保留核验 |
+| 远端 / 发布 | 分支与 PR 状态以其回执为准；未合并 main；未导出分发 IPA、未上传 TestFlight / App Store、未调整旧审核 |
+
+旧 iOS 0.3.2+7 于 09:43 正式送审的历史见独立 [PR #12](https://github.com/mhgd3250905/HipLab/pull/12)，当时为等待审核，本轮未回读现状；用户旧版 TestFlight 测试通过不覆盖本次构建。

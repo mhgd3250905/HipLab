@@ -167,3 +167,10 @@ Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正�
 临时独立网页预览在 320×568、360×740、390×844、768×1024 上检查正方形示范区、按钮 bounds、无滚动、六项自测及结果完成；点按暂停/继续、键盘、分段拖动、快速 Tab 和训练暂停/继续通过。预览使用 silent-voice fixture 与 poster stub；普通 DOM locator 仍因 Flutter semantics root 空白而超时，保留失败证据。坐标 page.mouse 操作通过且未使用 force；原生 widget hitTest 回归通过。这不构成原生媒体、H.264、系统音频或正式 Web 支持验收，也不据此诊断透明旧页遮挡。倒计时改为 33 ms tick；Chrome 18 屏的 17 个相邻环区域中，完全相同对数由旧 100 ms 的 5 对降至 0 对，采样约 47–79 ms，不代表真机帧时或帧率
 
 本轮没有 ADB、Android 原生复验或 iOS 系统行为新结论。详见[第二轮集成记录](round2-integration-2026-10-18.md)。
+
+
+## Mac iOS 0.3.3+8 本地构建（2026-10-18 10:33）
+
+`bb828be`：固定 Flutter 3.44.7 / Xcode 26.6，pub get enforce-lockfile、analyze、iOS 工程静态与冻结素材 92 / 0 drift 均通过；Flutter 156 项通过、1 项按设计跳过。开发签名 Release（58.1 秒）及 Xcode Archive（46.1 秒）成功，arm64 / com.ugk.hiplab / 0.3.3 / 8 与签名核验一致，6 份隐私清单可解析。没有生产代码修改。
+
+iPhone 16 Pro / iOS 26.5 镜像可用，CoreDevice 两种标识查询均报 1011，Xcode 亦显示准备错误；按两次无进展即停的规则等待用户重新连接。未安装本次构建、未成功备份或核对数据保留，11 项真机结果均为未执行，#13 复听及 #14 观感均待验收；不得套用旧版用户反馈。完整矩阵与本机证据见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。本轮未导出分发 IPA、未上传或修改商店。
