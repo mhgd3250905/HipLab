@@ -199,3 +199,7 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 用户重连真机并要求先安装最新版。2602BRT18C 从 0.3.2+7 保留数据覆盖更新至 0.3.4+9，`adb install -r` 成功；新旧 APK 签名一致，设备版本及前台进程均回读确认。安装后和首次启动后，1356 字节偏好分别与安装前备份逐字节比较一致；备份 tar 可读取，未清数据或回写偏好。冷启动 Status ok / 1677 ms，首页截图已查看，当前进程 crash 缓冲未见 FATAL EXCEPTION。
 
 本次未点击训练、自测或设置，不把安装成功扩展为原生首帧、循环、完整语音、ducking、锁屏或 iOS 验收。此前“手机拔线未安装”是该阶段历史，本次安装事实以本节及版本台账为准。证据 `E:/AII-3D/hiplab-releases/android-install-20261018-171428/` 留本机。
+
+## Android 静音场景语音修复（2026-10-18）
+
+修复前试听轨道为 SONIFICATION 且被 streamVolume/portVolume 静音；修复后 MEDIA / SPEECH 活跃轨道无静音标记，手机铃声仍静音，用户确认“已经能完整听到了”。新增2项旧红新绿回归；适配层8通过，全套analyze0 / 158 pass / 1条件skip，debug arm64构建通过。0.3.5+10覆盖安装、启动、试听后偏好1355字节均与安装前当前备份一致。完整课程、长句、背景音乐ducking和系统矩阵没有因此标通过。证据及版本身份见[Android 静音模式语音修复](android-voice-media-routing-2026-10-18.md)。

@@ -162,3 +162,7 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 | 启动 | COLD / Status ok，TotalTime 1677 ms；App 前台，首页已查看，当前进程 crash 日志未见 FATAL EXCEPTION |
 | 检查范围 | 仅安装与启动；未进入训练/自测，未测试原生首帧或系统音频，未上传商店 |
 | 本机证据 | `E:\AII-3D\hiplab-releases\android-install-20261018-171428`；含原包、签名、数据备份、安装与启动日志、版本回读、截图，均留本机，不代表 Git 备份 |
+
+## Android 0.3.5+10：静音场景语音修复与安装（2026-10-18 17:36）
+
+源码 `b3bd499a6eba1b2c4c72dc6625b6257d9288a5f7`；修复 Android 音频 usage，版本0.3.4+9 → **0.3.5+10**。APK `E:\AII-3D\hiplab-releases\android-audio-fix-20261018\validation\hiplab-0.3.5+10-debug-arm64.apk`，150,885,612 bytes，SHA-256 `9aec5a354e2a521ea791822cb64b403c293d901c41849efe137645b562e51a33`。同包名/同debug证书覆盖安装成功，设备回读versionCode10；安装、启动、试听后1355字节偏好保持（以安装前当前数据为基线）。用户确认完整试听恢复；未上传商店。构建和检查、原生证据及未验范围见[Android 静音模式语音修复](android-voice-media-routing-2026-10-18.md)。

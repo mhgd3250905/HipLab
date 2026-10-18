@@ -1,6 +1,6 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。 Mac 从最终 main 按 README 恢复冻结 v0.2.0（视频1080/封面540），固定 Flutter3.44.7，不升级lock/依赖；本轮仍无Mac/Xcode或iPhone验收。
+更新日期：2026-10-18，北京时间。当前共用版本 **0.3.5+10**，运行源 `b3bd499`；Android语音通道修复已推送并真机试听确认，iOS playback/mix/duck策略未改。Mac从最新main按README恢复冻结v0.2.0素材（视频1080/封面540），固定Flutter3.44.7，不升级lock/依赖；本次没有新Mac/Xcode或iPhone验收，已有iOS历史记录独立保留。
 
 > 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.4+9 → 0.3.4 / 9）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.5+10 → 0.3.5 / 10）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -109,3 +109,8 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 #13 的 complete/duck/取消与 #14 的页面/音频 route 交接已做假平台和 widget 回归，仍需 iPhone 验证完整句尾、背景音乐恢复、来电/耳机、返回路由不结束新音频会话、WKWebView 隐藏停播及恢复。重点复听第二句后的长句、5–6 秒自测指导、准备→三二一→开始；英文 sec.5、a.item.deep_squat、drill.h-reverse-clam 等重限幅片段需检查音量、句尾与失真。整套课程完整复听，不能只听开头。
 
 页面过渡/Hero 流畅度、iOS 右滑返回的跟手与回弹、浅色真机阴影/触觉以及 33 ms 倒计时 tick 的实际观感均待原生设备；Chrome 环区域比较不等于 native 帧率。原第 9 PR 的静态配置与历史 VP9/Chrome 探针记录保留，不能作为本轮系统行为验收。见[第二轮集成记录](round2-integration-2026-10-18.md)。
+
+
+## 共用版本更新（2026-10-18，Android音频通道修复）
+
+Windows已统一递增至 **0.3.5+10**，Android usage由系统提示音改为MEDIA；iOS playback/mix/duck与焦点生命周期未改，回归测试保留其原策略。Mac后续从最新main取共用版本，不自行回退至0.3.4+9；本次没有新iOS构建或验收，没有商店上传。

@@ -7,16 +7,16 @@
 | 项目 | 当前状态 |
 |---|---|
 | 产品 / 包名 | 开胯训练助手 HipLab / `com.ugk.hiplab` |
-| Android 已安装版本 | **0.3.4+9 debug / arm64**，2026-10-18 17:15 保留数据覆盖安装成功；包含 Pose-Hub v0.2.0，不是商店发布版本 |
-| 已构建版本 | **0.3.4+9 debug / arm64**，合入后复打源 `1a1657da91ea4b2d2a189e1439f370ed6d083e24`，已安装本机 Android；素材接入源 `03c3b5b` |
-| 已安装代码提交 | APK 源 `1a1657d`；主干 `5c7dc8e` 与其运行代码/资源相同，仅追加交接文档。此前手机 `963db04` / 0.3.2+7 已由本次覆盖更新 |
+| Android 已安装版本 | **0.3.5+10 debug / arm64**，2026-10-18 17:36 保留数据覆盖安装，静音模式试听已由用户确认恢复；包含 Pose-Hub v0.2.0 |
+| 已构建版本 | **0.3.5+10 debug / arm64**，源 `b3bd499a6eba1b2c4c72dc6625b6257d9288a5f7`，已安装；包与资源核验通过 |
+| 已安装代码提交 | `b3bd499`：Android 语音走媒体通道，原生轨道已无静音标记；之前0.3.4+9为安装历史 |
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 用户验收 | 2026-10-17，0.1.2+3 更新测试通过；2026-10-18，用户已验收 0.3.1+6 单屏自测 UI。此验收不覆盖后来 CSS 修复的原生首帧 |
 | 验证设备 | 2602BRT18C，Android 16 / API 36，arm64 |
 | 产品范围 | 中文、离线；main 已含浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 仅静态和 widget 检查，尚未在 Mac 构建或真机验证 |
 | 动作素材 | 当前冻结 Pose-Hub v0.2.0：46 条 1080 视频 / 46 张 540 封面，ID 和文件名保持；自有 supine-cross-demo 与20张 still 保留 |
 | 自测素材 | 既有 20 张自测 still 保留（含 #8 修订），不在 v0.2.0 ZIP / lock；不重新渲染 |
-| 运行验证 | analyze：exit 0，无问题；Flutter：单并发156通过、1条件跳过（未设置VOICE_TIMELINE_OUT），exit 0。本轮 native/iOS 未验，具体素材、APK、网页检查见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md) |
+| 运行验证 | analyze 0；158 pass / 1条件skip；APK构建和保留数据安装通过，用户确认完整试听恢复。完整课程/音乐ducking/iPhone仍待验 |
 
 当前素材按仓库冻结 lock / manifest 取用 v0.2.0。同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied；元数据：本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG；保护文件：hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持。浅色主题仍用深色舞台，light不在包内；旧批次QA和历史验收保留，不能作为本轮全量真机结论。
 
@@ -26,7 +26,7 @@
 
 | 对象 | 2026-10-18 核对结果（历史日期另列） |
 |---|---|
-| HipLab `main` | 指定媒体分支已快进合入并推送 `1a1657da91ea4b2d2a189e1439f370ed6d083e24`；v0.2.0 资源/元数据源 `03c3b5b`；此前 #7/#8/#9/#10/#13/#14 保持已合并 |
+| HipLab `main` | Android 静音模式语音修复 `b3bd499` 已推送，版本0.3.5+10已安装真机并获完整试听确认；原PR与Pose-Hub v0.2.0集成保持 |
 | [HipLab #7](https://github.com/mhgd3250905/HipLab/pull/7) | MERGED，merge `ba591bf`；并合入 Android 首轮验证修复 |
 | [HipLab #8](https://github.com/mhgd3250905/HipLab/pull/8) | MERGED，merge `5bb43f0`；保留修订媒体与配套评分说明 |
 | [HipLab #9](https://github.com/mhgd3250905/HipLab/pull/9) | MERGED，merge `61979d8`；保留 iOS 配置及共享音视频安全处理 |
@@ -98,3 +98,7 @@ ZIP、云端冻结 manifest 已下载核验，安全解压 92 文件完成；App
 ## Android 最新安装（2026-10-18 17:15）
 
 用户重新连接 2602BRT18C 后，核验旧包 0.3.2+7 与新包使用同一 debug 证书；备份 App 用户数据目录和 1356 字节偏好，执行 `adb install -r` 成功。设备回读 0.3.4 / versionCode 9；冷启动 Status ok（1677 ms），App 在前台、首页截图已查看，当前进程 crash 日志未见 FATAL EXCEPTION。安装后及启动后偏好均与备份逐字节一致。本次只安装和启动，未进入训练或自测，没有写回/清除数据；原生首帧、完整语音和系统音频仍待单独验证。
+
+## Android 语音修复当前结论（2026-10-18）
+
+0.3.4+9试听无声的原因是错误使用系统提示音通道；已改MEDIA并更新至0.3.5+10，铃声仍静音时原生轨道已 started / mutedState:none，用户确认完整口令可听。安装前当前偏好1355字节，与安装/启动/试听后逐字节一致；没有回写旧备份。详见[Android 静音模式语音修复](android-voice-media-routing-2026-10-18.md)。
