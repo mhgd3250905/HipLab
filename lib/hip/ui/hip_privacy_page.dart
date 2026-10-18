@@ -10,6 +10,13 @@ class HipPrivacyPage extends StatelessWidget {
   const HipPrivacyPage({super.key});
 
   static const policyUrl = 'https://mhgd3250905.github.io/HipLab/';
+  static const iosPolicyUrl = 'https://mhgd3250905.github.io/HipLab/ios/';
+
+  static bool _isIOS(BuildContext context) =>
+      Theme.of(context).platform == TargetPlatform.iOS;
+
+  static String _publicPolicyUrl(BuildContext context) =>
+      _isIOS(context) ? iosPolicyUrl : policyUrl;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -27,7 +34,9 @@ class HipPrivacyPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 17 日',
+                  _isIOS(context)
+                      ? '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 18 日'
+                      : '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 17 日',
                   style: TextStyle(color: HipColors.muted, height: 1.6),
                 ),
                 const SizedBox(height: 20),
@@ -46,20 +55,28 @@ class HipPrivacyPage extends StatelessWidget {
                       '这些信息用于本机生成练习建议、显示进度和调整训练安排。'
                       '本应用没有开发者运营的云端账号或同步服务。',
                 ),
-                const _PolicySection(
+                _PolicySection(
                   title: '保留、删除与系统备份',
-                  body:
-                      '记录会保留在设备上，直到你通过系统设置清除应用存储或卸载应用。'
-                      '卸载会清除本机应用数据；Android 系统可能根据设备设置备份并在重新安装时恢复数据。'
-                      '本应用未禁用系统备份。你可以在设备的系统备份设置中管理相关备份。'
-                      '我们无法访问或代你删除设备及系统备份中的记录。',
+                  body: _isIOS(context)
+                      ? '记录保存在设备的应用私有存储中。iOS 的“删除 App”会移除应用及其本地相关数据；'
+                            '“卸载 App”可能保留文稿与数据。iOS、iCloud 或电脑备份可能根据你的设置包含应用数据，'
+                            '重新安装或迁移后可能恢复记录。删除 App 不保证清除已有备份，'
+                            '请在对应系统或备份服务中管理。开发者无法读取或代你删除这些备份。'
+                      : '记录会保留在设备上，直到你通过系统设置清除应用存储或卸载应用。'
+                            '卸载会清除本机应用数据；Android 系统可能根据设备设置备份并在重新安装时恢复数据。'
+                            '本应用未禁用系统备份。你可以在设备的系统备份设置中管理相关备份。'
+                            '我们无法访问或代你删除设备及系统备份中的记录。',
                 ),
-                const _PolicySection(
+                _PolicySection(
                   title: '视频、网络与权限',
-                  body:
-                      '动作视频随应用内置，可以离线播放。Android 的网络权限用于 '
-                      '127.0.0.1 本机媒体服务，让播放器读取内置素材。'
-                      '应用本身不向外部服务器上传你的记录，不访问相机、麦克风、联系人或位置。',
+                  body: _isIOS(context)
+                      ? '动作视频与语音随应用提供，本机媒体服务仅绑定 127.0.0.1，'
+                            '供内嵌播放器读取素材，不用于向外部上传记录。iOS 可能显示无线数据使用提示；'
+                            '系统弹窗本身不代表向开发者上传数据。应用不请求相机、麦克风、联系人、'
+                            '位置或照片访问，也不通过 HealthKit 读取或写入健康数据。'
+                      : '动作视频随应用内置，可以离线播放。Android 的网络权限用于 '
+                            '127.0.0.1 本机媒体服务，让播放器读取内置素材。'
+                            '应用本身不向外部服务器上传你的记录，不访问相机、麦克风、联系人或位置。',
                 ),
                 const _PolicySection(
                   title: '运动与健康提示',
@@ -88,13 +105,13 @@ class HipPrivacyPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const SelectableText(policyUrl),
+                      SelectableText(_publicPolicyUrl(context)),
                       const SizedBox(height: 8),
                       TextButton.icon(
                         key: const ValueKey('copy-privacy-url'),
                         onPressed: () async {
                           await Clipboard.setData(
-                            const ClipboardData(text: policyUrl),
+                            ClipboardData(text: _publicPolicyUrl(context)),
                           );
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
