@@ -4,6 +4,8 @@
 
 ## 主线基线与更新
 
+当前App交付为0.3.6+11（源码`66f5da0`），2026-10-18 19:29已保留数据安装；最新事实以[当前状态](current-state.md)和[版本台账](version-ledger.md)为准。下方0.3.0与Pose-Hub v0.1.0段落保留首次集成历史，不代表当前安装或媒体版本。
+
 2026-10-17 已按用户明确授权完成 HipLab #2 → `feat/initial-migration`、#1 → main 的审核合并，首次业务集成提交 `656ee28`，来源与验证见[集成记录](mainline-integration-2026-10-17.md)。本地 main 已跟踪 origin/main，App 与制作成果不再停留在迁移分支。
 
 2026-10-18，main 已顺序集成 #7/#8/#9 及 rebased #10，并接入 Pose-Hub v0.1.0；业务代码 `9ef59a1` 已推送 origin/main，GitHub 确认四个 PR 均 MERGED。CSS 首帧修复已通过 Chrome 原 H.264 探针和构建检查，最终 APK 未重新安装手机，原生首帧复验仍待补。Windows 主干线按用户明确授权验证后直接提交推送 main，无需新 PR；Mac 和其他贡献方仍用分支 + PR。

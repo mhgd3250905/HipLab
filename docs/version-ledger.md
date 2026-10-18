@@ -2,6 +2,8 @@
 
 仅登记实际产生的构建、安装或发布。文档提交不增加 App 版本；“安装成功”“PR 合并”“商店发布”分别记录。时间均为北京时间。
 
+**最新实际交付：0.3.6+11 debug / arm64**，源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`；2026-10-18 19:29已保留数据安装。APK、SHA与安装证据见本页0.3.6两节。本次文档收束不新增构建或安装记录。下表为2026-10-17早期交付历史。
+
 | 版本 | 交付日期 | 状态 | 内容与证据 |
 |---|---|---|---|
 | 0.1.0+1 | 2026-10-17 | Android debug 首次安装、启动通过 | 原迁移基线 `2865ed7`，首次安全引导截图；[首次运行记录](android-first-run-2026-10-17.md)下半部分 |
@@ -169,7 +171,7 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 
 ## 0.3.6+11：浅色控件与文字、隐私顶栏（2026-10-18）
 
-业务源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`。`flutter build apk --debug --target-platform android-arm64 --no-pub` 成功（Gradle 23.1秒）；同包名、既有debug证书，versionName0.3.6/versionCode11。APK `E:/AII-3D/hiplab-releases/theme-polish-20261018/hiplab-0.3.6+11-debug-arm64.apk`，150,886,340 bytes，SHA-256 `78e766d76a083a519d703a88001a26cbfe8d8193d55125b2393f5a1d80ceb4f8`。包名/签名/ABI与114媒体/488语音+5提示音核验通过。analyze0；158pass/1条件skip；网页复查通过。**未安装、未发布**，手机保持0.3.5+10。见[样式修复记录](theme-polish-2026-10-18.md)。
+业务源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`。`flutter build apk --debug --target-platform android-arm64 --no-pub` 成功（Gradle 23.1秒）；同包名、既有debug证书，versionName0.3.6/versionCode11。APK `E:/AII-3D/hiplab-releases/theme-polish-20261018/hiplab-0.3.6+11-debug-arm64.apk`，150,886,340 bytes，SHA-256 `78e766d76a083a519d703a88001a26cbfe8d8193d55125b2393f5a1d80ceb4f8`。包名/签名/ABI与114媒体/488语音+5提示音核验通过。analyze0；158pass/1条件skip；网页复查通过。**构建完成时尚未安装**，手机当时为0.3.5+10；19:29安装见下一节。未上传/发布商店。见[样式修复记录](theme-polish-2026-10-18.md)。
 
 ## 0.3.6+11 安装追加（2026-10-18 19:29）
 
