@@ -52,3 +52,4 @@ tools/voice/.voice-cache/
 
 # Python bytecode (tools/)
 __pycache__/
+tools/voice/.raw-cache/
