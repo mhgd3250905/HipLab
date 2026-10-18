@@ -44,6 +44,9 @@ LEVEL_BY_ZH = {'入门': 'beginner', '进阶': 'advanced'}
 APP_VIDEO_DIR = os.path.join(APP, 'assets', 'drill_media')
 POSTER_DIR = os.path.join(APP, 'assets', 'hip', 'posters')
 ASSESS_DIR = os.path.join(APP, 'assets', 'hip', 'assessment')
+sys.path.insert(0, os.path.join(APP, 'tools', 'action_kits'))
+import build_action_kits as AK  # noqa: E402
+
 HIP_MEDIA = json.load(open(os.path.join(SRC, 'hip-media.json'), encoding='utf-8'))
 
 # 自测设计 4.4: explicit substitution pairs for the pain ladder.
@@ -158,6 +161,22 @@ def read_routines(drills):
             })
         elif line.startswith('## ') and not line.startswith('## 套'):
             current = None
+    # Each step references its action kit (assets/action_kits/<id>.json) and
+    # only overrides the dose: reps / hold seconds / hold length. A counted
+    # step lasts as long as its reps take at the kit's rhythm (lead + every
+    # rep in full, docs/rep-rhythm-audit-2026-10-19.md); the table's time is
+    # kept as `authored_seconds` for the record.
+    for r in routines:
+        for s in r['steps']:
+            kit = json.load(open(os.path.join(APP, 'assets', 'action_kits', f"{s['drill']}.json"),
+                                 encoding='utf-8'))
+            ov = AK.override_of(s['dose'], kit)
+            sides = 2 if s['sided'] else 1
+            per = AK.side_seconds(kit, ov, s['seconds'] // sides)
+            s['kit'] = {'id': s['drill'], **ov}
+            if per * sides != s['seconds']:
+                s['authored_seconds'] = s['seconds']
+            s['seconds'] = per * sides
     for r in routines:
         r['transition_seconds'] = 5
         r['seconds'] = sum(s['seconds'] for s in r['steps']) + 5 * (len(r['steps']) - 1)

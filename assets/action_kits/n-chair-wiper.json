@@ -1,0 +1,152 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-chair-wiper",
+ "display": {
+  "name": {
+   "zh": "坐椅雨刷（膝内倒）",
+   "en": "Chair windshield wipers"
+  },
+  "point": {
+   "zh": "坐在椅子上，小腿向外摆，膝盖向内倒",
+   "en": "Seated, swing the shin out and let the knee fall in"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "internal_rotation"
+  ],
+  "methods": [
+   "relax"
+  ],
+  "level": "beginner",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-n-chair-wiper.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-chair-wiper.js",
+   "specSha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-chair-wiper.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "turn",
+  "reps": [
+   [
+    0.46,
+    1.55,
+    2.74,
+    3.67
+   ],
+   [
+    4.46,
+    5.55,
+    6.74,
+    7.67
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_alternate",
+  "unit": "reps",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 6,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.46,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 1.1,
+     "cue": [
+      "w.right_knee_in",
+      "w.left_knee_in"
+     ]
+    },
+    {
+     "id": "hold",
+     "seconds": 1.2
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.center"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.75
+    }
+   ],
+   "source": "measured: track 'turn' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-chair-wiper": {
+    "zh": "坐椅雨刷（膝内倒）",
+    "en": "Chair windshield wipers"
+   },
+   "point.n-chair-wiper": {
+    "zh": "坐在椅子上，小腿向外摆，膝盖向内倒",
+    "en": "Seated, swing the shin out and let the knee fall in"
+   },
+   "w.right_knee_in": {
+    "zh": "右膝向内",
+    "en": "Right knee in"
+   },
+   "w.left_knee_in": {
+    "zh": "左膝向内",
+    "en": "Left knee in"
+   },
+   "w.center": {
+    "zh": "回正",
+    "en": "Back to center"
+   }
+  },
+  "prepare": [
+   "drill.n-chair-wiper",
+   "point.n-chair-wiper"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.relax.1",
+   "cue.relax.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: right knee in 0.3–1.7 s, hold to 2.6, back by 3.8; then left",
+  "flags": []
+ }
+}

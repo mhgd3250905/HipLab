@@ -21,6 +21,11 @@ PHRASES = {
     'p.go': ('开始', 'Go'),
     'p.go_right': ('先做右边，开始', 'Right side first. Go'),
     'p.half': ('过半了，保持住', 'Halfway there. Hold it'),
+    # rep rhythm (action kits, docs/rep-rhythm-audit-2026-10-19.md)
+    'p.last_rep': ('最后一次', 'Last one'),
+    'p.release': ('慢慢还原', 'Slowly come out of it'),
+    'p.again': ('再来一组', 'One more set'),
+    'p.right_first': ('先做右边', 'Right side first'),
     'p.last10': ('还剩 10 秒', '10 seconds left'),
     'p.switch_left': ('换左边', 'Switch to the left side'),
     'p.switch_right': ('换右边', 'Switch to the right side'),

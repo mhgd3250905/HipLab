@@ -1,0 +1,113 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-seated-fold",
+ "display": {
+  "name": {
+   "zh": "坐姿体前屈",
+   "en": "Seated forward fold"
+  },
+  "point": {
+   "zh": "膝盖伸直，从髋部往前折",
+   "en": "Knees straight, fold forward from the hips"
+  },
+  "cautions": [
+   "腰"
+  ],
+  "targets": [
+   "flexion"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-s-seated-fold.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-seated-fold-r3.js",
+   "specSha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-seated-fold.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 40,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-seated-fold": {
+    "zh": "坐姿体前屈",
+    "en": "Seated forward fold"
+   },
+   "point.s-seated-fold": {
+    "zh": "膝盖伸直，从髋部往前折",
+    "en": "Knees straight, fold forward from the hips"
+   }
+  },
+  "prepare": [
+   "drill.s-seated-fold",
+   "point.s-seated-fold"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

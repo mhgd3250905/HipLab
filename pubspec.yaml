@@ -44,6 +44,7 @@ flutter:
     - assets/voice/en/
     - assets/voice/chime/
     - assets/drill_media/
+    - assets/action_kits/
     - assets/licenses/
   fonts:
     - family: NotoSansSC

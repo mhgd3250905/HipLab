@@ -1,0 +1,112 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-lizard",
+ "display": {
+  "name": {
+   "zh": "蜥蜴式低弓步（扶砖）",
+   "en": "Lizard lunge"
+  },
+  "point": {
+   "zh": "前脚放在手外侧，髋往下沉",
+   "en": "Front foot outside your hand, sink the hips"
+  },
+  "cautions": [],
+  "targets": [
+   "extension",
+   "abduction"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "advanced",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-s-lizard.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-lizard.js",
+   "specSha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-lizard.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 35,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-lizard": {
+    "zh": "蜥蜴式低弓步（扶砖）",
+    "en": "Lizard lunge"
+   },
+   "point.s-lizard": {
+    "zh": "前脚放在手外侧，髋往下沉",
+    "en": "Front foot outside your hand, sink the hips"
+   }
+  },
+  "prepare": [
+   "drill.s-lizard",
+   "point.s-lizard"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

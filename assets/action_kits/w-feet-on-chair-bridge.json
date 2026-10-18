@@ -1,0 +1,143 @@
+{
+ "schema": "action-kit@1",
+ "id": "w-feet-on-chair-bridge",
+ "display": {
+  "name": {
+   "zh": "脚踩椅面臀桥",
+   "en": "Feet-on-chair bridge"
+  },
+  "point": {
+   "zh": "脚踩椅面，用臀部把身体推高",
+   "en": "Feet on the chair, drive your hips up"
+  },
+  "cautions": [],
+  "targets": [
+   "extension"
+  ],
+  "methods": [
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-w-feet-on-chair-bridge.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/w-feet-on-chair-bridge.js",
+   "specSha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-w-feet-on-chair-bridge.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.33,
+    1.28,
+    2.74,
+    3.77
+   ],
+   [
+    4.33,
+    5.28,
+    6.74,
+    7.77
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.33,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.95,
+     "cue": "w.hips_up"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.45
+    },
+    {
+     "id": "back",
+     "seconds": 1.05,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.55
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.w-feet-on-chair-bridge": {
+    "zh": "脚踩椅面臀桥",
+    "en": "Feet-on-chair bridge"
+   },
+   "point.w-feet-on-chair-bridge": {
+    "zh": "脚踩椅面，用臀部把身体推高",
+    "en": "Feet on the chair, drive your hips up"
+   },
+   "w.hips_up": {
+    "zh": "臀部抬起",
+    "en": "Hips up"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.w-feet-on-chair-bridge",
+   "point.w-feet-on-chair-bridge"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.strength.1",
+   "cue.strength.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s",
+  "flags": []
+ }
+}

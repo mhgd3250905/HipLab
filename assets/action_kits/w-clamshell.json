@@ -1,0 +1,144 @@
+{
+ "schema": "action-kit@1",
+ "id": "w-clamshell",
+ "display": {
+  "name": {
+   "zh": "侧卧蚌式开合",
+   "en": "Side-lying clamshell"
+  },
+  "point": {
+   "zh": "脚跟并拢，膝盖像贝壳一样打开",
+   "en": "Heels together, open the knee like a clamshell"
+  },
+  "cautions": [],
+  "targets": [
+   "external_rotation",
+   "abduction"
+  ],
+  "methods": [
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-w-clamshell.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/w-clamshell.js",
+   "specSha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-w-clamshell.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.41,
+    1.2,
+    2.44,
+    3.37
+   ],
+   [
+    4.41,
+    5.2,
+    6.44,
+    7.37
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 10,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.41,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.8,
+     "cue": "w.open"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.25
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.close"
+    },
+    {
+     "id": "rest",
+     "seconds": 1.0
+    }
+   ],
+   "source": "measured: track 'open' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.w-clamshell": {
+    "zh": "侧卧蚌式开合",
+    "en": "Side-lying clamshell"
+   },
+   "point.w-clamshell": {
+    "zh": "脚跟并拢，膝盖像贝壳一样打开",
+    "en": "Heels together, open the knee like a clamshell"
+   },
+   "w.open": {
+    "zh": "打开",
+    "en": "Open"
+   },
+   "w.close": {
+    "zh": "合拢",
+    "en": "Close"
+   }
+  },
+  "prepare": [
+   "drill.w-clamshell",
+   "point.w-clamshell"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.strength.1",
+   "cue.strength.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s",
+  "flags": []
+ }
+}

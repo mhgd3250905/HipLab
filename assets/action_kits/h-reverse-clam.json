@@ -1,0 +1,146 @@
+{
+ "schema": "action-kit@1",
+ "id": "h-reverse-clam",
+ "display": {
+  "name": {
+   "zh": "侧卧反向蚌式",
+   "en": "Side-lying reverse clam"
+  },
+  "point": {
+   "zh": "膝盖并拢，小腿慢慢向上抬",
+   "en": "Knees together, lift the shin up slowly"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "internal_rotation"
+  ],
+  "methods": [
+   "control",
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-h-reverse-clam.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/h-reverse-clam.js",
+   "specSha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-h-reverse-clam.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.43,
+    1.28,
+    2.44,
+    3.37
+   ],
+   [
+    4.43,
+    5.28,
+    6.44,
+    7.37
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.43,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.85,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.15
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 1.05
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.h-reverse-clam": {
+    "zh": "侧卧反向蚌式",
+    "en": "Side-lying reverse clam"
+   },
+   "point.h-reverse-clam": {
+    "zh": "膝盖并拢，小腿慢慢向上抬",
+    "en": "Knees together, lift the shin up slowly"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.h-reverse-clam",
+   "point.h-reverse-clam"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s, top foot lifts, hold, lower",
+  "flags": []
+ }
+}

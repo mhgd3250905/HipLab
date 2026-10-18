@@ -1,0 +1,149 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-seated-knee-lift",
+ "display": {
+  "name": {
+   "zh": "坐姿抬膝悬停",
+   "en": "Seated knee lift hold"
+  },
+  "point": {
+   "zh": "坐直，膝盖抬起，悬停住",
+   "en": "Sit tall, lift the knee and hold it there"
+  },
+  "cautions": [],
+  "targets": [
+   "flexion"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-n-seated-knee-lift.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-seated-knee-lift.js",
+   "specSha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-seated-knee-lift.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.29,
+    0.92,
+    2.9,
+    3.61
+   ],
+   [
+    4.29,
+    4.92,
+    6.9,
+    7.61
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_hold",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 3,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": 5,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.29,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.65,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 2.0,
+     "cue": "w.hold",
+     "cueAt": 1.2
+    },
+    {
+     "id": "back",
+     "seconds": 0.7,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.65
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-seated-knee-lift": {
+    "zh": "坐姿抬膝悬停",
+    "en": "Seated knee lift hold"
+   },
+   "point.n-seated-knee-lift": {
+    "zh": "坐直，膝盖抬起，悬停住",
+    "en": "Sit tall, lift the knee and hold it there"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.hold": {
+    "zh": "停住",
+    "en": "Hold"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.n-seated-knee-lift",
+   "point.n-seated-knee-lift"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: each side 0.8 s up, 1.8 s hover, 0.9 s down, 0.5 s rest; dose holds 5 s",
+  "flags": []
+ }
+}

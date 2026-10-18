@@ -1,0 +1,119 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-thomas-test",
+ "display": {
+  "name": {
+   "zh": "仰卧单膝抱胸（屈髋肌测试演示）",
+   "en": "Supine single knee hug"
+  },
+  "point": {
+   "zh": "抱住一边膝盖，另一条腿放松伸直",
+   "en": "Hug one knee, let the other leg rest straight"
+  },
+  "cautions": [
+   "髋前侧夹痛"
+  ],
+  "targets": [
+   "extension"
+  ],
+  "methods": [
+   "relax"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-n-thomas-test.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-thomas-test.js",
+   "specSha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-thomas-test.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.5
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "hug",
+  "reps": [
+   [
+    0.6,
+    2.01,
+    3.03,
+    3.88
+   ],
+   [
+    4.6,
+    6.01,
+    7.03,
+    7.88
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 30,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 1.4
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-thomas-test": {
+    "zh": "仰卧单膝抱胸（屈髋肌测试演示）",
+    "en": "Supine single knee hug"
+   },
+   "point.n-thomas-test": {
+    "zh": "抱住一边膝盖，另一条腿放松伸直",
+    "en": "Hug one knee, let the other leg rest straight"
+   }
+  },
+  "prepare": [
+   "drill.n-thomas-test",
+   "point.n-thomas-test"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.relax.1",
+   "cue.relax.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "test pose held",
+  "flags": []
+ }
+}

@@ -57,8 +57,12 @@ class PlanStep {
     this.replaced,
     this.tip = '',
     this.alternative,
+    this.kitDose = const KitDose(),
   });
   final HipDrill drill;
+
+  /// The routine's overrides of the action kit (reps / hold / seconds).
+  final KitDose kitDose;
   final String dose;
   final int seconds;
   final bool sided;
@@ -96,6 +100,7 @@ class PlanStep {
       replaced: replaced ?? this.replaced,
       tip: tip,
       alternative: alternative,
+      kitDose: kitDose,
     );
   }
 
@@ -224,14 +229,17 @@ class TrainingPlanner {
         if (routines.length > 1 && !seen.add(drill.id)) continue;
         seen.add(drill.id);
         final extra = s.sided ? profile.asymmetry[dir] : null;
+        // A swapped-in drill takes its own kit's rhythm for the same dose.
+        final seconds = content.stepSeconds(drill.id, s.kit, s.sided, s.seconds);
         steps.add(
           PlanStep(
             drill: drill,
             dose: s.dose,
-            seconds: s.seconds + (extra != null ? s.seconds ~/ 2 : 0),
+            seconds: seconds + (extra != null ? seconds ~/ 2 : 0),
             sided: s.sided,
             extraSide: extra,
-            extraSeconds: extra != null ? s.seconds ~/ 2 : 0,
+            extraSeconds: extra != null ? seconds ~/ 2 : 0,
+            kitDose: s.kit,
             replaced: replaced,
             tip: s.tip,
             alternative: replaced == null ? alt : null,

@@ -13,7 +13,20 @@ import 'package:flutter_test/flutter_test.dart';
 HipContent loadContent() => HipContent.fromJson(
   jsonDecode(File('assets/hip/hip-content.json').readAsStringSync())
       as Map<String, dynamic>,
-);
+).withKits(loadKits());
+
+/// The action kits as the app loads them (assets/action_kits/index.json).
+Map<String, ActionKit> loadKits() {
+  final index =
+      jsonDecode(File('assets/action_kits/index.json').readAsStringSync())
+          as Map<String, dynamic>;
+  return {
+    for (final path in index['kits'] as List)
+      (path as String).split('/').last.replaceAll('.json', ''): ActionKit.fromJson(
+        jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>,
+      ),
+  };
+}
 
 class MemoryStorage implements LocalStateStorage {
   final values = <String, String>{};
@@ -205,10 +218,12 @@ void main() {
         )!;
         expect(plan.routines.single.id, 'A');
         // Round 1 #13: 15 s rest between drills (voice preview + 3-2-1) is
-        // real session time, so 套 A (275 s of work, 6 drills) now runs
+        // real session time, so 套 A (275 s of work, 6 drills) ran
         // 275 + 5×15 = 350 s ≈ 6 min (was 5 s rests → 300 s = 5 min).
         // Pending product decision, see PR / development-roadmap.md D-12.
-        expect(plan.seconds, 350);
+        // Rep rhythm (action kits): 坐姿抬膝悬停 3 × (lift + 5 s hover +
+        // lower) needs 22 s a side, not 20 → 279 s of work, 354 s.
+        expect(plan.seconds, 354);
         expect(plan.minutes, 6);
         final home = planner.plan(
           minutes: 10,
