@@ -132,6 +132,6 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 | 身份 / 核验 | com.ugk.hiplab / 0.3.3 / 8 / arm64，codesign deep strict 通过，6 份隐私清单可解析 |
 | 归档 | `build/ios-device-validation/HipLab-0.3.3+8.xcarchive`，248,539,390 bytes；本机工作目录与主可执行文件 SHA 见[iOS 本地验证记录](ios-device-validation-2026-10-18.md) |
 | 设备 / 安装 | iPhone 16 Pro / iOS 26.5；CoreDevice 准备错误，未安装、未进行新版本真机验收或数据保留核验 |
-| 远端 / 发布 | 分支与 PR 状态以其回执为准；未合并 main；未导出分发 IPA、未上传 TestFlight / App Store、未调整旧审核 |
+| 远端 / 发布 | `ios/device-validation` 文档提交 `668616f` 已推送，[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) OPEN / Draft；未合并 main；未导出分发 IPA、未上传 TestFlight / App Store、未调整旧审核 |
 
 旧 iOS 0.3.2+7 于 09:43 正式送审的历史见独立 [PR #12](https://github.com/mhgd3250905/HipLab/pull/12)，当时为等待审核，本轮未回读现状；用户旧版 TestFlight 测试通过不覆盖本次构建。

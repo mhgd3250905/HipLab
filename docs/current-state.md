@@ -2,7 +2,7 @@
 
 核对日期：2026-10-18，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
 
-**Mac / iOS 补记（10:33）：** `ios/device-validation` 从 `origin/main@bb828be` 验证 **0.3.3+8**：analyze 无问题、156 pass / 1 skip，签名 Flutter Release 与 Xcode Archive 均通过。iPhone 16 Pro / iOS 26.5 的 CoreDevice 准备错误阻止安装，当前版本未上真机，11 项均待验收。此前 0.3.2+7 的 TestFlight 用户反馈与 09:43 正式送审是独立历史，本轮未操作 Apple；详情见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
+**Mac / iOS 补记（10:33）：** `ios/device-validation` 从 `origin/main@bb828be` 验证 **0.3.3+8**：analyze 无问题、156 pass / 1 skip，签名 Flutter Release 与 Xcode Archive 均通过。iPhone 16 Pro / iOS 26.5 的 CoreDevice 准备错误阻止安装，当前版本未上真机，11 项均待验收。此前 0.3.2+7 的 TestFlight 用户反馈与 09:43 正式送审是独立历史，本轮未操作 Apple；已推送文档提交 `668616f` 并创建 [草稿 PR #15](https://github.com/mhgd3250905/HipLab/pull/15)，未合并；详情见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
 
 ## App 与设备
 

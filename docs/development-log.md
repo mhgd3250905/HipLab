@@ -61,3 +61,5 @@ Pose-Hub v0.1.0 已公开发布并接入，lock 与冻结 manifest 随源码保�
 ## 2026-10-18 10:33 / Mac iOS 0.3.3 本地构建
 
 从已 fetch 的 `origin/main@bb828be` 建立独立 `ios/device-validation`，保留原目录及旧发布 worktree。固定 Flutter 3.44.7，156 pass / 1 skip、analyze 无问题、92 素材无漂移；无需工程修复即可完成开发签名 Release 和 Xcode Archive，Team 用忽略目录内 xcconfig 注入。真机因 CoreDevice 1011 / Xcode 准备错误未安装，已尝试两种标识后停止并请求用户重新连接。11 项系统/音视频验收保持待做；未新上传、未调整旧审核，详见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
+
+本阶段文档 `668616f` 已推送 `ios/device-validation`，[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 已创建并回读 OPEN / Draft，目标 main；尚未合并。
