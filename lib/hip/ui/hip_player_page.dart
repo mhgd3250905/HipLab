@@ -13,6 +13,7 @@ import '../voice/hip_voice.dart';
 import '../voice/session_engine.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
+import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -70,6 +71,10 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   int _shownSecond = -1;
   SessionPhase? _shownPhase;
 
+  /// Phase progress for the ring, updated every tick; only the ring
+  /// repaints for it (the page rebuilds once a second).
+  final _ringProgress = ValueNotifier<double>(0);
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -102,6 +107,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     unawaited(_interruptions?.cancel());
     _queue.cancelAll(_clock.t);
     unawaited(_voice.output.end());
+    _ringProgress.dispose();
     super.dispose();
   }
 
@@ -126,6 +132,10 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       if (sub != null) _subtitle = sub;
     }
     _queue.tick(t);
+    final phaseSeconds = _engine.phase.seconds;
+    _ringProgress.value = phaseSeconds == 0
+        ? 0
+        : (_engine.elapsedIn(t) / phaseSeconds).clamp(0.0, 1.0);
     if (!identical(_engine.phase, _shownPhase)) {
       if (_engine.phase.step != _shownPhase?.step) {
         // A new drill: drop the previous drill's ladder note / tip line.
@@ -221,6 +231,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     setState(() {});
     final kind = await showModalBottomSheet<PainKind>(
       context: context,
+      sheetAnimationStyle: HipMotion.sheet,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
@@ -235,8 +246,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               Row(
                 children: [
                   for (final (k, icon, label) in [
-                    (PainKind.pinch, Icons.compress_rounded, '关节夹着疼'),
-                    (PainKind.nerve, Icons.bolt_rounded, '麻、刺、往下窜'),
+                    (PainKind.pinch, HipGlyph.pinch, '关节夹着疼'),
+                    (PainKind.nerve, HipGlyph.bolt, '麻、刺、往下窜'),
                   ]) ...[
                     if (k == PainKind.nerve) const SizedBox(width: 12),
                     Expanded(
@@ -246,7 +257,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                         child: HipPanel(
                           child: Column(
                             children: [
-                              Icon(icon, size: 44, color: HipColors.pain),
+                              HipIcon(icon, size: 40, color: HipColors.pain),
                               const SizedBox(height: 8),
                               Text(label, style: const TextStyle(fontSize: 15)),
                             ],
@@ -381,9 +392,6 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     final shown = _step;
     final side = work || phase.kind == PhaseKind.switchSide ? phase.side : null;
     final left = _engine.secondsLeft(t);
-    final progress = phase.seconds == 0
-        ? 0.0
-        : _engine.elapsedIn(t) / phase.seconds;
     return Column(
       children: [
         HipTopBar(
@@ -429,7 +437,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                     top: 14,
                     child: _mediaButton(
                       key: const ValueKey('player-pain'),
-                      icon: Icons.bolt_rounded,
+                      icon: HipGlyph.bolt,
                       label: '疼',
                       color: HipColors.pain,
                       onTap: () => _pain(afterStep: false),
@@ -464,9 +472,14 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                 expand: true,
                 child: KeyedSubtree(
                   key: ValueKey('art-${shown.drill.id}'),
-                  child: HipDrillArt(
-                    drill: shown.drill,
-                    play: work && !_paused,
+                  child: HipArtHero(
+                    tag: hipDrillHeroTag(shown.drill),
+                    radius: 28,
+                    flight: HipDrillArt(drill: shown.drill),
+                    child: HipDrillArt(
+                      drill: shown.drill,
+                      play: work && !_paused,
+                    ),
                   ),
                 ),
               ),
@@ -499,10 +512,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                _voice.settings.voice
-                    ? Icons.volume_up_rounded
-                    : Icons.subtitles_outlined,
+              HipIcon(
+                _voice.settings.voice ? HipGlyph.volume : HipGlyph.subtitles,
                 size: 16,
                 color: HipColors.jade,
               ),
@@ -528,23 +539,27 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           children: [
             HipCircleButton(
               key: const ValueKey('player-pause'),
-              icon: _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+              icon: _paused ? HipGlyph.play : HipGlyph.pause,
               size: 64,
               tooltip: _paused ? '继续' : '暂停',
               onPressed: _togglePause,
             ),
             const SizedBox(width: 26),
             HipCountdownRing(
-              progress: progress,
+              key: const ValueKey('player-ring'),
+              progressListenable: _ringProgress,
               label: '$left',
               caption: _paused ? '已暂停' : '秒',
               size: 140,
-              color: work ? HipColors.jade : HipColors.muted,
+              // Lead-in / rest count in a quieter tone of the same accent.
+              color: work
+                  ? HipColors.jade
+                  : HipColors.jade.withValues(alpha: .5),
             ),
             const SizedBox(width: 26),
             HipCircleButton(
               key: const ValueKey('player-skip'),
-              icon: Icons.skip_next_rounded,
+              icon: HipGlyph.skipNext,
               size: 64,
               tooltip: '跳过',
               onPressed: _skip,
@@ -599,7 +614,12 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (s == HipSide.right && side == HipSide.left)
-                  Icon(Icons.check_rounded, size: 14, color: HipColors.jade),
+                  HipIcon(
+                    HipGlyph.check,
+                    size: 14,
+                    strokeWidth: 2.4,
+                    color: HipColors.jade,
+                  ),
                 Text(
                   s == HipSide.left ? '左' : '右',
                   style: TextStyle(
@@ -616,7 +636,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
 
   Widget _mediaButton({
     required Key key,
-    required IconData icon,
+    required HipGlyph icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
@@ -634,7 +654,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 16),
+            HipIcon(icon, color: color, size: 16),
             const SizedBox(width: 4),
             Text(label, style: TextStyle(color: color, fontSize: 14)),
           ],
@@ -774,13 +794,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          SizedBox(
-            width: 52,
-            height: 52,
-            child: HipMediaFrame(
-              radius: 12,
-              child: HipDrillArt(drill: next.drill, showPendingLabel: false),
-            ),
+          // Concentric with the card: 22 − 10 padding.
+          HipThumb(
+            size: 52,
+            radius: 12,
+            child: HipDrillArt(drill: next.drill, showPendingLabel: false),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -824,8 +842,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           duration: HipMotion.slow,
           curve: Curves.easeOutBack,
           builder: (_, v, child) => Transform.scale(scale: v, child: child),
-          child: Icon(
-            Icons.check_circle_rounded,
+          child: HipIcon(
+            HipGlyph.checkCircle,
+            filled: true,
             size: 88,
             color: HipColors.jade,
           ),
@@ -855,7 +874,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     child: Column(
       children: [
         const Spacer(),
-        Icon(Icons.pan_tool_alt_rounded, size: 80, color: HipColors.tight),
+        HipIcon(HipGlyph.stop, size: 80, color: HipColors.tight),
         const SizedBox(height: 16),
         const Text(
           '先停下来',

@@ -129,3 +129,25 @@ Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正�
 | `build_voice.py demo --lang zh --seconds 60` | 生成套 A 开头 60 秒混音（-17.1 LUFS 整段） | 仅混音示意，不经过 App 播放链路 |
 
 真机复听清单见[语音审计 §5](voice-audit-2026-10-18.md#5-需要真机复听的条目)。
+
+## 第二轮 UI 打磨检查（2026-10-18，`feat/polish-round2`）
+
+沙箱 Linux arm64，Flutter 3.44.7 / Dart 3.12.2，基于 `feat/ios` `313b484`（含 #7/#8/#9）。**无 macOS/Xcode、无 Android 设备：未构建、未安装、未在真机看动画。**
+
+| 范围 / 命令 | 结果 | 边界 |
+|---|---|---|
+| `flutter analyze` | 无问题 | 全仓库 |
+| `flutter test --concurrency=1` | **116 项全部通过**（基线 104 全过，无遗留失败；新增 `hip_ui_round2_test` 12 项） | 不含 `test_screens/` |
+| `hip_ui_round2_test` | 分段控件（深浅色）：滑块圆角 = 外圆角 − 内边距、选中无描边、切换中途滑块在移动、两个首页控件同尺寸同风格、沿轨道拖动可选；32 个图标描边/填充两态都有笔迹且不出 24 栅格、继承 IconTheme；主要页面不再出现 Material `Icon`；倒计时环 0% 顶部无点、50% 有弧；体检行内无媒体框、缩略图圆角与卡片同心；开始→播放页为容器展开且首页反向变化；Tab 按方向滑；右推进详情、iOS 左缘右滑返回；Hero tag 首页↔播放页、体检缩略图/标题↔自测页往返无报错 | 动画只能断言几何与类型，**观感与帧率需真机** |
+| `test_screens/hip_ios_shots_test.dart` | iPhone 15 Pro / SE × 深浅主题 72 张，已逐张查看（无截断/溢出，对比度正常） | 叠加的状态栏/灵动岛为示意；**截图时不画阴影**（见下） |
+| `test_screens/hip_icons_sheet_test.dart` | 图标总览与组件总览（倒计时环 0/35/80/准备 50%、开始按钮、圆形按钮、分段控件） | [图标/组件总览](images/polish-round2/icons-sheet.jpg) |
+| `test_screens/hip_transitions_frames_test.dart` | 7 段过渡各 6 帧（展开、缩回、Tab 右/左、右推、返回、自测展开 + Hero） | [帧序列](images/polish-round2/transitions-frames.jpg)；帧按测试时钟均分，不代表真机帧率 |
+
+截图说明：`flutter_tester` 渲染 `BoxShadow` 时不做模糊（画成硬边偏移色块，已用单独探针确认），之前浅色截图里卡片下的灰条就是这个伪影。截图脚本现在设 `HipColors.flatShadows = true` 不画阴影；App 本身不受影响，真机仍有柔和阴影。[改前/改后对比](images/polish-round2/compare.jpg)里“改前”仍带伪影。
+
+**需真机确认：**
+- 页面过渡与 Hero 的流畅度（120Hz ProMotion / 60Hz Android 各看一次），尤其“开始”容器展开与缩略图 Hero 同时进行时是否掉帧；
+- iOS 左缘右滑返回：跟手、松手回弹/完成、与系统手势无冲突（目前仅“重新看安全提示”页是右推页；播放器/自测页本就禁止手势返回）；
+- 分段控件拖动与轻触觉（`HapticFeedback.selectionClick`）；
+- 浅色主题真机阴影观感（截图里看不到阴影）；
+- 倒计时环每 100ms 重绘一次是否足够顺滑（如有阶梯感可把播放器节拍提到 33ms）。

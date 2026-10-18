@@ -1,11 +1,15 @@
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 
 import '../../core/media/drill_media.dart';
 import '../../core/media/media_controller.dart';
 import '../../core/media/media_view.dart';
 import '../domain/hip_models.dart';
+import 'hip_icons.dart';
 import 'hip_theme.dart';
 
 /// Video playback is off in widget tests (no platform view host there).
@@ -86,7 +90,7 @@ class HipMediaFrame extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? HipColors.mediaBackdrop,
         borderRadius: r,
-        boxShadow: shadow,
+        boxShadow: HipColors.shadows(shadow),
       ),
       foregroundDecoration: BoxDecoration(
         borderRadius: r,
@@ -104,6 +108,151 @@ class HipMediaFrame extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A drill / pose thumbnail (round 2 #3): the picture clipped to a rounded
+/// rect on the media backdrop, with no stroke of its own. Thumbnails sit on
+/// cards that already carry the edge; a second frame read as boxes in boxes.
+/// When it sits in a card's corner, pass radius = card radius − padding so
+/// the corners run concentric.
+class HipThumb extends StatelessWidget {
+  const HipThumb({super.key, required this.child, this.size, this.radius = 12});
+  final Widget child;
+  final double? size;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final thumb = ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: ColoredBox(color: HipColors.mediaBackdrop, child: child),
+    );
+    return size == null
+        ? thumb
+        : SizedBox.square(dimension: size, child: thumb);
+  }
+}
+
+/// Hero tag of a drill's picture (home art ↔ player video area).
+Object hipDrillHeroTag(HipDrill d) => 'drill-art-${d.id}';
+
+/// Shared-element hero for pictures (round 2 #4): a drill or pose image that
+/// flies between pages (home art → player video area, hip-check thumbnail →
+/// the check's demo). During the flight a static stand-in ([flight]) is drawn
+/// — never a live video view — cross-fading from one page's picture to the
+/// other's while the corner radius morphs between the two.
+class HipArtHero extends StatelessWidget {
+  const HipArtHero({
+    super.key,
+    required this.tag,
+    required this.radius,
+    required this.flight,
+    required this.child,
+  });
+  final Object tag;
+  final double radius;
+  final Widget flight;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Hero(
+    tag: tag,
+    flightShuttleBuilder: _shuttle,
+    child: _HeroPayload(radius: radius, flight: flight, child: child),
+  );
+
+  static Widget _shuttle(
+    BuildContext context,
+    Animation<double> animation,
+    HeroFlightDirection direction,
+    BuildContext fromContext,
+    BuildContext toContext,
+  ) {
+    _HeroPayload of(BuildContext c) => (c.widget as Hero).child as _HeroPayload;
+    // [animation] is the pushed route's: 0 = the page below, 1 = the page
+    // on top, in both directions.
+    final top = of(
+      direction == HeroFlightDirection.push ? toContext : fromContext,
+    );
+    final below = of(
+      direction == HeroFlightDirection.push ? fromContext : toContext,
+    );
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        final t = animation.value;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(
+            lerpDouble(below.radius, top.radius, t)!,
+          ),
+          child: ColoredBox(
+            color: HipColors.mediaBackdrop,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                below.flight,
+                Opacity(opacity: t.clamp(0.0, 1.0), child: top.flight),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeroPayload extends StatelessWidget {
+  const _HeroPayload({
+    required this.radius,
+    required this.flight,
+    required this.child,
+  });
+  final double radius;
+  final Widget flight;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+/// Shared-element hero for a title: the two pages' texts cross-fade inside
+/// the flying box, scaled to fit it.
+class HipTextHero extends StatelessWidget {
+  const HipTextHero({super.key, required this.tag, required this.child});
+  final Object tag;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Hero(
+    tag: tag,
+    flightShuttleBuilder: (context, animation, direction, from, to) {
+      final top =
+          (direction == HeroFlightDirection.push ? to : from).widget as Hero;
+      final below =
+          (direction == HeroFlightDirection.push ? from : to).widget as Hero;
+      Widget fit(Widget w, Alignment a) =>
+          FittedBox(fit: BoxFit.scaleDown, alignment: a, child: w);
+      return Material(
+        type: MaterialType.transparency,
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            final t = animation.value.clamp(0.0, 1.0);
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(
+                  opacity: 1 - t,
+                  child: fit(below.child, Alignment.centerLeft),
+                ),
+                Opacity(opacity: t, child: fit(top.child, Alignment.center)),
+              ],
+            );
+          },
+        ),
+      );
+    },
+    child: child,
+  );
 }
 
 /// Shows the [focus] part of a square still (fractions of the image) filling
@@ -208,6 +357,7 @@ class _HipDrillArtState extends State<HipDrillArt> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _sync();
+    _syncPlayback();
   }
 
   @override
@@ -218,12 +368,17 @@ class _HipDrillArtState extends State<HipDrillArt> {
       _sync();
     } else if (old.play != widget.play) {
       _sync();
-      final c = _controller;
-      if (c != null) {
-        if (widget.play && !c.wantsPlay) c.toggle();
-        if (!widget.play && c.wantsPlay) c.pause();
-      }
+      _syncPlayback();
     }
+  }
+
+  void _syncPlayback() {
+    final c = _controller;
+    if (c == null) return;
+    final allowed = _videoAllowed(context);
+    c.setActive(allowed);
+    if (allowed && widget.play && !c.wantsPlay) c.toggle();
+    if ((!allowed || !widget.play) && c.wantsPlay) c.pause();
   }
 
   void _teardown() {
@@ -387,8 +542,8 @@ class HipPendingArt extends StatelessWidget {
       builder: (context, c) => Stack(
         alignment: Alignment.center,
         children: [
-          Icon(
-            Icons.accessibility_new_rounded,
+          HipIcon(
+            HipGlyph.figure,
             size: math.min(c.maxWidth, c.maxHeight) * .42,
             color: HipColors.jade.withValues(alpha: .28),
           ),
@@ -423,7 +578,7 @@ class HipTopBar extends StatelessWidget {
     this.center,
     this.trailing,
     this.onClose,
-    this.icon = Icons.close_rounded,
+    this.icon = HipGlyph.close,
     this.tooltip = '关闭',
   });
   final String? title;
@@ -433,7 +588,7 @@ class HipTopBar extends StatelessWidget {
   final Widget? center;
   final Widget? trailing;
   final VoidCallback? onClose;
-  final IconData icon;
+  final HipGlyph icon;
   final String tooltip;
 
   @override
@@ -700,96 +855,259 @@ class _RadarPainter extends CustomPainter {
       old.p != p;
 }
 
-/// Countdown ring used by the player and assessment timers.
-class HipCountdownRing extends StatelessWidget {
+/// Countdown ring used by the player (round 2 #2): a hairline track, a
+/// gradient progress arc with round caps and a small lit knob at its head.
+/// Nothing is drawn at 0 % (no stray dot at the top). Pass
+/// [progressListenable] to have only the ring repaint as time runs (the page
+/// around it need not rebuild).
+class HipCountdownRing extends StatefulWidget {
   const HipCountdownRing({
     super.key,
-    required this.progress,
+    this.progress = 0,
+    this.progressListenable,
     required this.label,
     this.caption,
     this.size = 150,
     this.color,
   });
   final double progress;
+  final ValueListenable<double>? progressListenable;
   final String label;
   final String? caption;
   final double size;
   final Color? color;
+
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: size,
-    child: CustomPaint(
-      painter: _RingPainter(
-        progress.clamp(0, 1),
-        HipColors.surfaceHigh,
-        color ?? HipColors.jade,
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: HipMotion.fast,
-              transitionBuilder: (child, a) =>
-                  FadeTransition(opacity: a, child: child),
-              child: Text(
-                label,
-                key: ValueKey(label),
-                style: TextStyle(
-                  fontSize: size * .36,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-            if (caption != null)
-              Text(
-                caption!,
-                style: TextStyle(fontSize: size * .085, color: HipColors.muted),
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
+  State<HipCountdownRing> createState() => _HipCountdownRingState();
 }
 
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.progress, this.track, this.color);
-  final double progress;
+class _HipCountdownRingState extends State<HipCountdownRing> {
+  // A plain [progress] is fed through a notifier so the painter has one
+  // repaint source either way. (No animation controller here: the player
+  // updates progress every tick, and a controller restarted that often
+  // would keep the frame pump — and `pumpAndSettle` — from ever idling.)
+  late final _own = ValueNotifier<double>(widget.progress);
+
+  ValueListenable<double> get _source => widget.progressListenable ?? _own;
+
+  @override
+  void didUpdateWidget(HipCountdownRing old) {
+    super.didUpdateWidget(old);
+    _own.value = widget.progress;
+  }
+
+  @override
+  void dispose() {
+    _own.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = widget.size;
+    final color = widget.color ?? HipColors.jade;
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(
+        painter: HipRingPainter(
+          _source,
+          track: HipColors.surfaceHigh,
+          color: color,
+          knob: HipColors.isDark ? const Color(0xffffffff) : HipColors.surface,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: HipMotion.fast,
+                transitionBuilder: (child, a) => FadeTransition(
+                  opacity: a,
+                  child: ScaleTransition(
+                    scale: Tween(begin: .92, end: 1.0).animate(a),
+                    child: child,
+                  ),
+                ),
+                child: Text(
+                  widget.label,
+                  key: ValueKey(widget.label),
+                  style: TextStyle(
+                    fontSize: size * .34,
+                    fontWeight: FontWeight.w700,
+                    height: 1,
+                    letterSpacing: -size * .012,
+                    color: HipColors.text,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              if (widget.caption != null) ...[
+                SizedBox(height: size * .035),
+                Text(
+                  widget.caption!,
+                  style: TextStyle(
+                    fontSize: size * .082,
+                    height: 1.1,
+                    letterSpacing: size * .006,
+                    fontWeight: FontWeight.w500,
+                    color: HipColors.muted,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HipRingPainter extends CustomPainter {
+  HipRingPainter(
+    this.progress, {
+    required this.track,
+    required this.color,
+    required this.knob,
+  }) : super(repaint: progress);
+  final ValueListenable<double> progress;
   final Color track;
   final Color color;
+  final Color knob;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = size.width * .065;
-    final rect = (Offset.zero & size).deflate(stroke / 2 + 2);
-    canvas.drawArc(
-      rect,
-      0,
-      math.pi * 2,
-      false,
+    final p = progress.value.clamp(0.0, 1.0);
+    final stroke = size.width * .052;
+    final center = size.center(Offset.zero);
+    final radius = size.width / 2 - stroke / 2 - size.width * .03;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    // Hairline track: present but quiet.
+    canvas.drawCircle(
+      center,
+      radius,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = stroke
+        ..strokeWidth = stroke * .42
         ..color = track,
     );
+    if (p < .004) return;
+    final sweep = math.pi * 2 * p;
+    const start = -math.pi / 2;
+    // Arc: from a softer tone at its tail to full colour at its head.
+    final shader = SweepGradient(
+      startAngle: 0,
+      endAngle: math.max(sweep, .001),
+      colors: [
+        color.withValues(alpha: color.a * .38),
+        color,
+      ],
+      transform: const GradientRotation(start),
+    ).createShader(rect);
+    // Butt ends + a round tail cap in the tail colour: a round cap on the
+    // arc itself would sample the gradient's far end at the start.
     canvas.drawArc(
       rect,
-      -math.pi / 2,
-      math.pi * 2 * progress,
+      start,
+      sweep,
       false,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
-        ..strokeCap = StrokeCap.round
-        ..color = color,
+        ..strokeCap = StrokeCap.butt
+        ..shader = shader,
+    );
+    canvas.drawCircle(
+      center + Offset(math.cos(start), math.sin(start)) * radius,
+      stroke / 2,
+      Paint()..color = color.withValues(alpha: color.a * .38),
+    );
+    // Lit knob at the head: a soft glow and a small bright core.
+    final head =
+        center +
+        Offset(math.cos(start + sweep), math.sin(start + sweep)) * radius;
+    if (!HipColors.flatShadows) {
+      canvas.drawCircle(
+        head,
+        stroke * .95,
+        Paint()
+          ..color = color.withValues(alpha: color.a * .45)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, stroke * .6),
+      );
+    }
+    canvas.drawCircle(head, stroke * .5, Paint()..color = color);
+    canvas.drawCircle(
+      head,
+      stroke * .24,
+      Paint()..color = knob.withValues(alpha: .92),
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.progress != progress || old.track != track || old.color != color;
+  bool shouldRepaint(HipRingPainter old) =>
+      old.progress != progress ||
+      old.track != track ||
+      old.color != color ||
+      old.knob != knob;
+}
+
+/// Scales its child down while pressed and springs back on release (the
+/// shared press feedback for round buttons and the start button).
+class HipPressable extends StatefulWidget {
+  const HipPressable({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.scale = .94,
+    this.focusNode,
+  });
+  final Widget child;
+  final VoidCallback? onTap;
+  final double scale;
+  final FocusNode? focusNode;
+  @override
+  State<HipPressable> createState() => _HipPressableState();
+}
+
+class _HipPressableState extends State<HipPressable> {
+  bool _down = false;
+  void _set(bool v) {
+    if (_down != v && mounted) setState(() => _down = v);
+  }
+
+  @override
+  Widget build(BuildContext context) => FocusableActionDetector(
+    focusNode: widget.focusNode,
+    enabled: widget.onTap != null,
+    shortcuts: const {
+      SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+      SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+    },
+    actions: {
+      ActivateIntent: CallbackAction<ActivateIntent>(
+        onInvoke: (_) {
+          widget.onTap?.call();
+          return null;
+        },
+      ),
+    },
+    child: Semantics(
+      enabled: widget.onTap != null,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: widget.onTap == null ? null : (_) => _set(true),
+        onTapUp: widget.onTap == null ? null : (_) => _set(false),
+        onTapCancel: () => _set(false),
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _down ? widget.scale : 1,
+          duration: _down ? HipMotion.press : HipMotion.release,
+          curve: _down ? Curves.easeOut : HipMotion.spring,
+          child: widget.child,
+        ),
+      ),
+    ),
+  );
 }
 
 class HipPrimaryButton extends StatelessWidget {
@@ -802,8 +1120,8 @@ class HipPrimaryButton extends StatelessWidget {
   });
   final String label;
   final VoidCallback? onPressed;
-  final IconData? icon;
-  final IconData? trailing;
+  final HipGlyph? icon;
+  final HipGlyph? trailing;
   @override
   Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
@@ -812,7 +1130,7 @@ class HipPrimaryButton extends StatelessWidget {
       duration: HipMotion.fast,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        boxShadow: onPressed == null
+        boxShadow: onPressed == null || HipColors.flatShadows
             ? null
             : [
                 BoxShadow(
@@ -844,13 +1162,13 @@ class HipPrimaryButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 22),
-                const SizedBox(width: 6),
+                HipIcon(icon!, size: 20, filled: true),
+                const SizedBox(width: 8),
               ],
               Text(label),
               if (trailing != null) ...[
-                const SizedBox(width: 6),
-                Icon(trailing, size: 22),
+                const SizedBox(width: 4),
+                HipIcon(trailing!, size: 20, strokeWidth: 2.2),
               ],
             ],
           ),
@@ -895,7 +1213,7 @@ class HipCircleButton extends StatelessWidget {
     this.size = 44,
     this.tooltip,
   });
-  final IconData icon;
+  final HipGlyph icon;
   final VoidCallback? onPressed;
   final double size;
   final String? tooltip;
@@ -903,19 +1221,173 @@ class HipCircleButton extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
     button: true,
     label: tooltip,
-    child: Material(
-      color: HipColors.surfaceHigh,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: SizedBox.square(
-          dimension: size,
-          child: Icon(icon, size: size * .46, color: HipColors.text),
+    child: HipPressable(
+      onTap: onPressed,
+      scale: .9,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: HipColors.surfaceHigh,
+          shape: BoxShape.circle,
+          boxShadow: HipColors.isDark ? null : HipColors.thumbShadow,
+        ),
+        alignment: Alignment.center,
+        child: AnimatedSwitcher(
+          duration: HipMotion.fast,
+          transitionBuilder: (child, a) => FadeTransition(
+            opacity: a,
+            child: ScaleTransition(
+              scale: Tween(begin: .6, end: 1.0).animate(a),
+              child: child,
+            ),
+          ),
+          child: HipIcon(
+            icon,
+            key: ValueKey(icon),
+            size: size * (size > 50 ? .42 : .45),
+            color: HipColors.text,
+            filled: true,
+            strokeWidth: size > 50 ? 1.75 : 2,
+          ),
         ),
       ),
     ),
   );
+}
+
+/// The home hero's round 开始 button (round 2 #2): a soft jade halo instead
+/// of a hard ring, a lit top-to-bottom fill, a rounded optically centred play
+/// glyph, and a press that sinks and springs back.
+class HipStartButton extends StatelessWidget {
+  const HipStartButton({
+    super.key,
+    required this.onTap,
+    required this.stage,
+    this.buttonKey,
+    this.size = 104,
+    this.label = '开始',
+  });
+  final VoidCallback? onTap;
+
+  /// Palette of what the button sits on (the dark media stage).
+  final HipPalette stage;
+  final Key? buttonKey;
+  final double size;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final jade = stage.jade;
+    final halo = size * .12;
+    return Semantics(
+      button: true,
+      label: label,
+      child: HipPressable(
+        key: buttonKey,
+        onTap: onTap,
+        scale: .93,
+        child: SizedBox.square(
+          dimension: size,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Halo: a radial falloff, no edge.
+              Positioned(
+                left: -halo,
+                top: -halo,
+                right: -halo,
+                bottom: -halo,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        jade.withValues(alpha: .30),
+                        jade.withValues(alpha: .10),
+                        jade.withValues(alpha: 0),
+                      ],
+                      stops: const [.66, .82, 1],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.lerp(jade, const Color(0xffffffff), .16)!,
+                        jade,
+                        Color.lerp(jade, const Color(0xff000000), .06)!,
+                      ],
+                      stops: const [0, .55, 1],
+                    ),
+                    boxShadow: HipColors.shadows([
+                      BoxShadow(
+                        color: jade.withValues(alpha: .38),
+                        blurRadius: size * .3,
+                        spreadRadius: -size * .04,
+                        offset: Offset(0, size * .1),
+                      ),
+                      const BoxShadow(
+                        color: Color(0x40000000),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ]),
+                  ),
+                ),
+              ),
+              // Specular: a faint light on the upper half.
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      center: const Alignment(0, -.9),
+                      radius: .9,
+                      colors: [
+                        const Color(0xffffffff).withValues(alpha: .18),
+                        const Color(0x00ffffff),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HipIcon(
+                      HipGlyph.play,
+                      size: size * .32,
+                      filled: true,
+                      color: stage.onJade,
+                    ),
+                    SizedBox(height: size * .015),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: size * .14,
+                        height: 1.2,
+                        letterSpacing: size * .01,
+                        fontWeight: FontWeight.w700,
+                        color: stage.onJade,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class HipPanel extends StatelessWidget {

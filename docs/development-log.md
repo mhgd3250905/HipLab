@@ -18,6 +18,8 @@
 | 2026-10-17 / iOS 版本 | 给第一轮两个 PR 打 tag（`round1-app-v1`、`round1-media-v1`），从 #7 切 `feat/ios` 并合入 #8（无冲突）；完成 iOS 工程身份（中英显示名、仅 iPhone 竖屏、zh-Hans 开发区域）、同源站姿开髋 AppIcon 与跟随系统启动页、playback + 按句 ducking + 来电/Siri/拔耳机自动暂停、WKWebView 示范锁屏回来继续、安全区测试与截图；决定沿用 SwiftPM（不加 Podfile）、保留 WebView 不换 video_player、仅支持 iPhone；analyze 无问题、104 项测试通过，未在 Mac 构建或真机验证 | [iOS 说明](ios-setup-and-release.md)、[验证台账](verification.md)末节、D-07/D-13；tag `ios-v0.1`–`ios-v0.6`，PR #9 |
 | 2026-10-18 / 语音审计 | 用户 iPhone 实测 #9 播报中途消失、长词只听到一两个字、音量不稳。查明主因在播放链路：just_audio `play()` 在播放器仍处 playing（上一条播完不会自动变 false）时立即返回，代码误判一句已结束，700 ms 后释放 duck 时停用 iOS 音频会话，切断正在播的句子；素材无截断（逐条对照 edge-tts 原始输出），但 loudnorm linear 回退动态模式 + 短句 dynaudnorm 导致 -21…-13 LUFS、64 条真峰值超 -1 dBTP。新增 `VoiceLineController`（播完才算结束、无声才释放、会话操作串行、不剪上一句尾巴）、`audit_voice.py` 检测工具，后处理改为只裁首尾 + 固定增益 + 限幅并重新生成 488 条，检测 0 失败；analyze 无问题、115 项测试通过；版本号不变，待真机复听 | [语音审计](voice-audit-2026-10-18.md)、[验证台账](verification.md)末节；分支 `fix/voice-audit`，PR #13 |
 
+| 2026-10-18 / 第二轮 UI 打磨 | 按用户截图反馈在 `feat/polish-round2`（基于 `feat/ios` `313b484`）完成：统一分段控件（内嵌轨道 + 同心圆角滑块、弹性滑动、无描边选中）；自绘 32 个图标替换全部 Material 图标（24 栅格、1.75 笔画、描边/填充两态），开始按钮与倒计时环重做（0% 不再画灰点）；缩略图去掉双层边框改同心圆角裁切；按方位的页面过渡（容器展开 / 右推 / 上升 / Tab 按索引滑动，被覆盖页反向视差缩放变暗，iOS 左缘右滑返回保留）与共享元素 Hero；顺手统一自测选项卡选中态。决定：不加动画依赖，自研 `HipRoute`；截图测试渲染器画不出阴影模糊，截图时用 `HipColors.flatShadows` 关掉阴影。analyze 无问题、116 项测试通过；未在真机看动画流畅度与 iOS 返回手势 | [验证台账](verification.md)末节、[对比图](images/polish-round2/compare.jpg)、D-14；PR 见 GitHub |
+
 ## 后续检查点模板
 
 ```text

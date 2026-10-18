@@ -29,6 +29,9 @@ class HipPalette {
     required this.scrim,
     required this.shadow,
     required this.mediaBackdrop,
+    required this.track,
+    required this.thumb,
+    required this.thumbHighlight,
   });
 
   final Brightness brightness;
@@ -69,6 +72,16 @@ class HipPalette {
   /// What sits behind a drill render (so letterboxing matches the art).
   final Color mediaBackdrop;
 
+  /// Inset track of a segmented control / switch-like group: a step *below*
+  /// the surface it sits on, so the group reads as recessed.
+  final Color track;
+
+  /// The sliding selection thumb: a step *above* the surface (raised).
+  final Color thumb;
+
+  /// 1px top light on the thumb (dark theme only; transparent on light).
+  final Color thumbHighlight;
+
   bool get isDark => brightness == Brightness.dark;
 
   static const dark = HipPalette(
@@ -89,6 +102,9 @@ class HipPalette {
     scrim: Color(0x990c0d0f),
     shadow: Color(0x66000000),
     mediaBackdrop: Color(0xff101013),
+    track: Color(0xff0f1012),
+    thumb: Color(0xff26292d),
+    thumbHighlight: Color(0x14ffffff),
   );
 
   static const light = HipPalette(
@@ -111,6 +127,9 @@ class HipPalette {
     // Renders are on a dark stage; media tiles stay dark in the light theme
     // until light-stage renders are bundled (HipMediaVariants).
     mediaBackdrop: Color(0xff141517),
+    track: Color(0xffeceeec),
+    thumb: Color(0xffffffff),
+    thumbHighlight: Color(0x00ffffff),
   );
 }
 
@@ -119,6 +138,15 @@ class HipPalette {
 /// it changes (see `HipApp`), so `HipColors.x` always reads the current set.
 abstract final class HipColors {
   static HipPalette palette = HipPalette.dark;
+
+  /// Screenshot harness only: the flutter_tester renderer draws BoxShadow
+  /// without its blur (a hard offset copy of the shape), which would make
+  /// review screenshots show harsh shelves that never appear on a device.
+  /// test_screens/ sets this to drop blurred shadows; the app never does.
+  static bool flatShadows = false;
+
+  /// [s] unless [flatShadows] is set.
+  static List<BoxShadow>? shadows(List<BoxShadow>? s) => flatShadows ? null : s;
 
   static bool get isDark => palette.isDark;
   static Color get background => palette.background;
@@ -137,10 +165,42 @@ abstract final class HipColors {
   static Color get scrim => palette.scrim;
   static Color get shadow => palette.shadow;
   static Color get mediaBackdrop => palette.mediaBackdrop;
+  static Color get track => palette.track;
+  static Color get thumb => palette.thumb;
+  static Color get thumbHighlight => palette.thumbHighlight;
+
+  /// Lift for a raised thumb: a tight contact shadow plus a soft ambient one.
+  static List<BoxShadow> get thumbShadow => flatShadows
+      ? const []
+      : palette.isDark
+      ? const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+          BoxShadow(
+            color: Color(0x40000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ]
+      : const [
+          BoxShadow(
+            color: Color(0x1a0d2a20),
+            blurRadius: 2,
+            offset: Offset(0, 1),
+          ),
+          BoxShadow(
+            color: Color(0x140d2a20),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ];
 
   /// Soft elevation for cards: none on dark (strokes carry the shape), a
   /// faint two-layer shadow on light.
-  static List<BoxShadow>? get cardShadow => palette.isDark
+  static List<BoxShadow>? get cardShadow => palette.isDark || flatShadows
       ? null
       : [
           BoxShadow(
@@ -156,12 +216,46 @@ abstract final class HipColors {
         ];
 }
 
-/// Motion tokens shared by every transition (#12).
+/// Motion tokens shared by every transition (#12, round 2). Every duration
+/// and curve in the app comes from here so the whole UI moves alike.
 abstract final class HipMotion {
   static const fast = Duration(milliseconds: 180);
   static const medium = Duration(milliseconds: 280);
   static const slow = Duration(milliseconds: 420);
   static const curve = Curves.easeOutCubic;
+
+  /// Pressed-state feedback (scale down) and its release.
+  static const press = Duration(milliseconds: 110);
+  static const release = Duration(milliseconds: 420);
+
+  /// Segmented-control thumb slide.
+  static const segment = Duration(milliseconds: 380);
+
+  /// Push / pop of a page (horizontal), its reverse a touch quicker.
+  static const page = Duration(milliseconds: 360);
+  static const pageReverse = Duration(milliseconds: 300);
+
+  /// Container transform (a button growing into a full-screen page).
+  static const expand = Duration(milliseconds: 380);
+  static const expandReverse = Duration(milliseconds: 320);
+
+  /// Bottom tab switch.
+  static const tab = Duration(milliseconds: 300);
+
+  /// Bottom sheets rise from the bottom on the page timing.
+  static const sheet = AnimationStyle(
+    duration: page,
+    reverseDuration: pageReverse,
+  );
+
+  /// Material 3 emphasized easing: quick start, long gentle settle.
+  static const Curve emphasized = Curves.easeInOutCubicEmphasized;
+  static const Curve emphasizedDecelerate = Cubic(0.05, 0.7, 0.1, 1.0);
+  static const Curve emphasizedAccelerate = Cubic(0.3, 0.0, 0.8, 0.15);
+
+  /// A soft spring: settles with a small (≈4%) overshoot. Used for the
+  /// segmented thumb and press release.
+  static const Curve spring = Cubic(0.32, 1.28, 0.52, 1.0);
 }
 
 ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
@@ -243,10 +337,18 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
   );
 }
 
-/// Android-style page transition: fade + 4% rise, no white flash. Used for
-/// every pushed page so route changes read the same across the app (#12).
+/// Fallback for any plain [PageRoute] (the app pushes `HipRoute`s, see
+/// hip_routes.dart): the same horizontal push — in from the right on the
+/// emphasized curves, no white flash. iOS keeps Cupertino's (edge swipe).
 class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   const HipPageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => HipMotion.page;
+
+  @override
+  Duration get reverseTransitionDuration => HipMotion.pageReverse;
+
   @override
   Widget buildTransitions<T>(
     PageRoute<T> route,
@@ -257,18 +359,15 @@ class HipPageTransitionsBuilder extends PageTransitionsBuilder {
   ) {
     final curved = CurvedAnimation(
       parent: animation,
-      curve: HipMotion.curve,
-      reverseCurve: Curves.easeInCubic,
+      curve: HipMotion.emphasizedDecelerate,
+      reverseCurve: HipMotion.emphasizedAccelerate.flipped,
     );
-    return FadeTransition(
-      opacity: curved,
-      child: SlideTransition(
-        position: Tween(
-          begin: const Offset(0, .04),
-          end: Offset.zero,
-        ).animate(curved),
-        child: child,
-      ),
+    return SlideTransition(
+      position: Tween(
+        begin: const Offset(1, 0),
+        end: Offset.zero,
+      ).animate(curved),
+      child: child,
     );
   }
 }

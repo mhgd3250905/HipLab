@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'hip_theme.dart';
+import 'hip_icons.dart';
 import 'hip_widgets.dart';
 
 /// Bundled policy remains readable without an internet connection.
@@ -91,7 +92,7 @@ class HipPrivacyPage extends StatelessWidget {
                     context,
                   ).showSnackBar(const SnackBar(content: Text('已复制隐私政策链接')));
                 },
-                icon: const Icon(Icons.copy_outlined),
+                icon: const HipIcon(HipGlyph.copy),
                 label: const Text('复制链接，在浏览器中查看'),
               ),
             ],

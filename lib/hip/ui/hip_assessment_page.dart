@@ -11,6 +11,7 @@ import '../domain/hip_session.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
+import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -25,6 +26,14 @@ const hipAssessmentFocus = <String, Rect>{
   'seated_fold': Rect.fromLTRB(.24, .38, .76, .80),
   'deep_squat': Rect.fromLTRB(.23, .17, .76, .86),
 };
+
+/// Hero tags shared by the 自测 tab and the check page.
+Object hipAssessmentHeroTag(AssessmentItem item) => 'assess-art-${item.id}';
+Object hipAssessmentTitleTag(AssessmentItem item) => 'assess-title-${item.id}';
+
+Widget _thumbArt(AssessmentItem item, String? still) => still == null
+    ? const HipPendingArt()
+    : HipFocusImage(asset: still, focus: _focusOf(item));
 
 Rect _focusOf(AssessmentItem item) =>
     hipAssessmentFocus[item.id] ?? const Rect.fromLTRB(.15, .15, .85, .85);
@@ -44,9 +53,13 @@ class HipAssessmentIntro extends StatelessWidget {
     super.key,
     required this.store,
     required this.onStart,
+    this.startKey,
   });
   final HipStore store;
   final VoidCallback onStart;
+
+  /// On the start button, so the check can grow out of it.
+  final GlobalKey? startKey;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +88,7 @@ class HipAssessmentIntro extends StatelessWidget {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Icon(Icons.radar_rounded, size: 18, color: HipColors.jade),
+                  HipIcon(HipGlyph.radar, size: 18, color: HipColors.jade),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -90,11 +103,14 @@ class HipAssessmentIntro extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-          child: HipPrimaryButton(
-            key: const ValueKey('assessment-start'),
-            label: store.blocked ? '先问问医生再来' : '开始自测',
-            icon: Icons.play_arrow_rounded,
-            onPressed: store.blocked ? null : onStart,
+          child: KeyedSubtree(
+            key: startKey,
+            child: HipPrimaryButton(
+              key: const ValueKey('assessment-start'),
+              label: store.blocked ? '先问问医生再来' : '开始自测',
+              icon: HipGlyph.play,
+              onPressed: store.blocked ? null : onStart,
+            ),
           ),
         ),
       ],
@@ -103,19 +119,23 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
+    // One card edge only; the thumbnail is a clean rounded crop concentric
+    // with the card (20 − 7 = 13), no frame of its own (round 2 #3).
     return HipPanel(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.all(6),
-      radius: 18,
+      padding: const EdgeInsets.all(7),
+      radius: 20,
       child: Row(
         children: [
-          SizedBox.square(
-            dimension: 56,
-            child: HipMediaFrame(
+          HipThumb(
+            size: 58,
+            radius: 13,
+            // Flies into the check's demo area (and back to its row).
+            child: HipArtHero(
+              tag: hipAssessmentHeroTag(item),
               radius: 13,
-              child: still == null
-                  ? const HipPendingArt()
-                  : HipFocusImage(asset: still, focus: _focusOf(item)),
+              flight: _thumbArt(item, still),
+              child: _thumbArt(item, still),
             ),
           ),
           const SizedBox(width: 12),
@@ -141,13 +161,17 @@ class HipAssessmentIntro extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                HipTextHero(
+                  tag: hipAssessmentTitleTag(item),
+                  child: Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 1),
@@ -203,6 +227,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   final Set<int> _fired = {};
   DateTime _itemStart = clock.now();
   Timer? _voiceTicker;
+  Future<void>? _guidanceRelease;
+  bool _startingPlan = false;
 
   List<AssessmentItem> get _items => widget.store.content.rules.items;
   AssessmentItem get _item => _items[_index];
@@ -290,11 +316,15 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   void dispose() {
     if (_voice != null) ScreenAwake.release();
     _bannerTimer?.cancel();
-    _voiceTicker?.cancel();
-    _queue?.cancelAll(_t);
-    unawaited(_voice?.output.end());
+    unawaited(_releaseGuidance());
     super.dispose();
   }
+
+  Future<void> _releaseGuidance() => _guidanceRelease ??= () async {
+    _voiceTicker?.cancel();
+    _queue?.cancelAll(_t);
+    await _voice?.output.end();
+  }();
 
   bool get _needsFollow => _item.followUp.isNotEmpty && _choice == 0;
   bool get _canNext => _choice != null && (!_needsFollow || _follow != null);
@@ -439,7 +469,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           top: 14,
           child: IgnorePointer(
             child: _pill(
-              _demoPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              _demoPlaying ? HipGlyph.pause : HipGlyph.play,
               _demoPlaying ? '点击暂停' : '点击播放',
             ),
           ),
@@ -475,16 +505,29 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         expand: true,
         child: KeyedSubtree(
           key: ValueKey('demo-${item.id}'),
-          child: demo != null && demo.mediaStatus != HipMediaStatus.pending
-              ? HipDrillArt(
-                  drill: demo,
-                  play: _demoPlaying,
-                  fit: BoxFit.contain,
-                  mirror: _side == HipSide.right,
-                )
-              : fallback != null
-              ? Image.asset(fallback, fit: BoxFit.contain)
-              : const HipPendingArt(label: '动画待渲染'),
+          child: HipArtHero(
+            tag: hipAssessmentHeroTag(item),
+            radius: 26,
+            flight: demo != null && demo.mediaStatus != HipMediaStatus.pending
+                ? HipDrillArt(
+                    drill: demo,
+                    fit: BoxFit.contain,
+                    mirror: _side == HipSide.right,
+                  )
+                : fallback != null
+                ? Image.asset(fallback, fit: BoxFit.contain)
+                : const HipPendingArt(),
+            child: demo != null && demo.mediaStatus != HipMediaStatus.pending
+                ? HipDrillArt(
+                    drill: demo,
+                    play: _demoPlaying,
+                    fit: BoxFit.contain,
+                    mirror: _side == HipSide.right,
+                  )
+                : fallback != null
+                ? Image.asset(fallback, fit: BoxFit.contain)
+                : const HipPendingArt(label: '动画待渲染'),
+          ),
         ),
       ),
     );
@@ -501,7 +544,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle_rounded, color: HipColors.jade, size: 22),
+              HipIcon(
+                HipGlyph.checkCircle,
+                filled: true,
+                color: HipColors.jade,
+                size: 22,
+              ),
               const SizedBox(width: 6),
               const Text(
                 '左边记好了',
@@ -546,7 +594,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (s == HipSide.left && _side == HipSide.right) ...[
-                  Icon(Icons.check_rounded, size: 14, color: HipColors.jade),
+                  HipIcon(
+                    HipGlyph.check,
+                    size: 14,
+                    strokeWidth: 2.4,
+                    color: HipColors.jade,
+                  ),
                   const SizedBox(width: 2),
                 ],
                 Text(
@@ -564,7 +617,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _pill(IconData icon, String text) => Container(
+  Widget _pill(HipGlyph icon, String text) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
       color: Colors.black.withValues(alpha: .45),
@@ -574,39 +627,46 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.white70),
+        HipIcon(icon, size: 16, color: Colors.white70),
         const SizedBox(width: 5),
         Text(text, style: const TextStyle(fontSize: 13, color: Colors.white)),
       ],
     ),
   );
 
+  Widget _titleHero(AssessmentItem item, Widget title) => _index == 0
+      ? HipTextHero(tag: hipAssessmentTitleTag(item), child: title)
+      : title;
+
   Widget _questionHeading(AssessmentItem item) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: item.title,
-              style: TextStyle(
-                color: HipColors.jade,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (_side != null)
+      _titleHero(
+        item,
+        Text.rich(
+          TextSpan(
+            children: [
               TextSpan(
-                text: _side == HipSide.left ? ' · 左边' : ' · 右边',
+                text: item.title,
                 style: TextStyle(
                   color: HipColors.jade,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-          ],
+              if (_side != null)
+                TextSpan(
+                  text: _side == HipSide.left ? ' · 左边' : ' · 右边',
+                  style: TextStyle(
+                    color: HipColors.jade,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
+          key: const ValueKey('assessment-title'),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 13),
         ),
-        key: const ValueKey('assessment-title'),
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 13),
       ),
       const SizedBox(height: 3),
       Text(
@@ -656,7 +716,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
               TextButton.icon(
                 key: const ValueKey('assessment-pain'),
                 onPressed: () => _record(const SideAnswer.pain()),
-                icon: Icon(Icons.bolt_rounded, color: HipColors.pain, size: 18),
+                icon: HipIcon(HipGlyph.bolt, color: HipColors.pain, size: 18),
                 label: Text('做的时候疼', style: TextStyle(color: HipColors.pain)),
               ),
               Text('·', style: TextStyle(color: HipColors.faint)),
@@ -678,7 +738,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 : last
                 ? '看结果'
                 : '下一项',
-            trailing: Icons.chevron_right_rounded,
+            trailing: HipGlyph.chevronRight,
             onPressed: _canNext ? _next : null,
           ),
         ],
@@ -797,16 +857,11 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         child: HipMediaFrame(
           radius: 22,
           color: HipColors.surface,
+          // A calm 2 px accent edge (no glow halo) plus the tinted footer
+          // and the check badge carry the selection.
           borderColor: selected ? HipColors.jade : HipColors.line,
-          borderWidth: selected ? 2.5 : 1,
-          shadow: selected
-              ? [
-                  BoxShadow(
-                    color: HipColors.jade.withValues(alpha: .28),
-                    blurRadius: 18,
-                  ),
-                ]
-              : HipColors.cardShadow,
+          borderWidth: selected ? 2 : 1,
+          shadow: HipColors.cardShadow,
           overlays: [
             Positioned(
               right: 9,
@@ -822,9 +877,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                     color: HipColors.jade,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.check_rounded,
-                    size: 17,
+                  child: HipIcon(
+                    HipGlyph.check,
+                    size: 16,
+                    strokeWidth: 2.6,
                     color: HipColors.onJade,
                   ),
                 ),
@@ -944,7 +1000,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 HipPrimaryButton(
                   key: const ValueKey('result-start'),
                   label: '开始这条路线',
-                  icon: Icons.play_arrow_rounded,
+                  icon: HipGlyph.play,
                   onPressed: () => _start(plan),
                 ),
               ],
@@ -964,6 +1020,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   };
 
   Future<void> _start(TrainingPlan plan) async {
+    if (_startingPlan) return;
+    _startingPlan = true;
+    // Release before the next page acquires the shared output. The pop
+    // animation disposes this page later, so dispose must not end it twice.
+    await _releaseGuidance();
+    if (!mounted) return;
     Navigator.of(context).pop();
     await widget.onStartPlan(plan);
   }
@@ -972,6 +1034,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     final store = widget.store;
     final routine = await showModalBottomSheet<HipRoutine>(
       context: context,
+      sheetAnimationStyle: HipMotion.sheet,
       builder: (context) => SafeArea(
         child: ListView(
           shrinkWrap: true,
@@ -1086,13 +1149,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 ),
                 if (hero != null) ...[
                   const SizedBox(width: 12),
-                  SizedBox(
-                    width: 96,
-                    height: 96,
-                    child: HipMediaFrame(
-                      radius: 16,
-                      child: HipDrillArt(drill: hero, showPendingLabel: false),
-                    ),
+                  HipThumb(
+                    size: 96,
+                    radius: 10,
+                    child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),
                 ],
               ],
@@ -1102,15 +1162,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
               Row(
                 children: [
                   for (final p in steps.skip(1).take(4)) ...[
-                    SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: HipMediaFrame(
-                        radius: 12,
-                        child: HipDrillArt(
-                          drill: p.drill,
-                          showPendingLabel: false,
-                        ),
+                    HipThumb(
+                      size: 48,
+                      radius: 10,
+                      child: HipDrillArt(
+                        drill: p.drill,
+                        showPendingLabel: false,
                       ),
                     ),
                     const SizedBox(width: 8),
