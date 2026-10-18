@@ -1,6 +1,6 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。#7/#8/#9 及 rebased #10 已合并并推送 main，当前 0.3.2+7；业务代码 `9ef59a1` 的 CSS 首帧修复已通过 Chrome 原 H.264 探针和最终构建，Android 原生首帧待补。Mac 从已推送 main 开始，不使用旧 `feat/ios` 作为新基线。本页写给在 Mac 上接手 iOS 构建的人：先照「在 Mac 上跑起来」操作，再按「真机确认清单」逐项打勾，结果回填[验证台账](verification.md)与[版本台账](version-ledger.md)。
+更新日期：2026-10-18，北京时间。业务代码 `1b35657dec153741e25ca095ac2764b18d14ac29` 已于 2026-10-18 10:04 北京时间推送 main；运行源码 `1b35657dec153741e25ca095ac2764b18d14ac29`，版本 0.3.3+8。Mac 从最终 main 开始，按 README 恢复冻结 v0.1.0 素材，固定 Flutter 3.44.7，不升级 lock / 依赖。#13 语音与 #14 路由改动仍需 iPhone 复验，本轮没有 Mac/Xcode 构建或 iOS 通过结论。
 
 > 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（当前 main 0.3.2+7 → 0.3.2 / 7；由 Windows 统一递增） | Info.plist；`flutter build` 写入 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.3+8 → 0.3.3 / 8）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -103,3 +103,9 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 - **团队 SDK / CI**（D-08）：两端固定 3.44.7，Mac 使用 `pub get --enforce-lockfile`，不单独改 lock；CI 仍待开发。
 - **iPad**：仅 iPhone；若以后支持 iPad 需补方向、图标与布局。
 - **正式矢量图标**（D-05）：iOS 图标由透明 PNG 前景导出，非矢量源。
+
+## 第二轮共享代码需复验
+
+#13 的 complete/duck/取消与 #14 的页面/音频 route 交接已做假平台和 widget 回归，仍需 iPhone 验证完整句尾、背景音乐恢复、来电/耳机、返回路由不结束新音频会话、WKWebView 隐藏停播及恢复。重点复听第二句后的长句、5–6 秒自测指导、准备→三二一→开始；英文 sec.5、a.item.deep_squat、drill.h-reverse-clam 等重限幅片段需检查音量、句尾与失真。整套课程完整复听，不能只听开头。
+
+页面过渡/Hero 流畅度、iOS 右滑返回的跟手与回弹、浅色真机阴影/触觉以及 33 ms 倒计时 tick 的实际观感均待原生设备；Chrome 环区域比较不等于 native 帧率。原第 9 PR 的静态配置与历史 VP9/Chrome 探针记录保留，不能作为本轮系统行为验收。见[第二轮集成记录](round2-integration-2026-10-18.md)。

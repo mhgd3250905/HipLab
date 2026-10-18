@@ -151,3 +151,19 @@ Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正�
 - 分段控件拖动与轻触觉（`HapticFeedback.selectionClick`）；
 - 浅色主题真机阴影观感（截图里看不到阴影）；
 - 倒计时环每 100ms 重绘一次是否足够顺滑（如有阶梯感可把播放器节拍提到 33ms）。
+
+## 第二轮主干集成复核（2026-10-18）
+
+固定原 main `12f143868959187047ff7f7aaeff9f469dca0039`；#13 `d2e0286ffc0e402e0ddf0f80426536dc7192bca7`，#14 `217e058061325244de74f3155287b673e3247a57`，目标均 main。
+
+| 检查 | 结果 | 限制 |
+|---|---|---|
+| PR #13 | analyze 0，136 pass / 1 skip；23 targeted 通过 | 导出测试未设置 VOICE_TIMELINE_OUT，未执行导出 |
+| PR #14 初次合入 `4c563f9` | analyze 0，153 pass / 1 skip；APK 构建通过 | 后续控制语义及 33ms 更新另按 `162a4e6` 检查 |
+| 独立素材 | 488 条，0 失败；UTF-8/cp936 报告往返通过 | 未重跑 --raw；一位小数 −1.2 不等于严格≤−1.2，实际 TP 门槛≤−1.0 |
+| 行为检查源 `162a4e6b78a8640d367cac13ef5e1ae6cfa9b33a` | analyze 0；Flutter 156 项通过、1 项按设计跳过 | 不自动扩展到之后的代码变动 |
+| 最终 APK | `1b35657dec153741e25ca095ac2764b18d14ac29` / 0.3.3+8；151,888,384 bytes / `9ec9dbe4df19f625f38ffabb6448c479525b21dc138c60e8ca16e23afa688506` | 未装手机；包名 com.ugk.hiplab、versionCode 8、预期 debug 证书及 488 条语音 / 92 个 Pose-Hub 资源 / 22 个保留文件核验通过；内容重生成无变化；Python 11 项及 iOS 工程静态检查通过。最终构建 26.96 秒，未安装手机 |
+
+临时独立网页预览在 320×568、360×740、390×844、768×1024 上检查正方形示范区、按钮 bounds、无滚动、六项自测及结果完成；点按暂停/继续、键盘、分段拖动、快速 Tab 和训练暂停/继续通过。预览使用 silent-voice fixture 与 poster stub；普通 DOM locator 仍因 Flutter semantics root 空白而超时，保留失败证据。坐标 page.mouse 操作通过且未使用 force；原生 widget hitTest 回归通过。这不构成原生媒体、H.264、系统音频或正式 Web 支持验收，也不据此诊断透明旧页遮挡。倒计时改为 33 ms tick；Chrome 18 屏的 17 个相邻环区域中，完全相同对数由旧 100 ms 的 5 对降至 0 对，采样约 47–79 ms，不代表真机帧时或帧率
+
+本轮没有 ADB、Android 原生复验或 iOS 系统行为新结论。详见[第二轮集成记录](round2-integration-2026-10-18.md)。
