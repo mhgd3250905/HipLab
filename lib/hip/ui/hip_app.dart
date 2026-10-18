@@ -608,15 +608,12 @@ class _HipHomeState extends State<HipHome> {
               (2, HipGlyph.progress, '进度'),
             ])
               Expanded(
-                child: Semantics(
-                  button: true,
+                child: HipPressable(
+                  key: ValueKey('tab-$i'),
+                  semanticLabel: label,
                   selected: _tab == i,
-                  label: label,
-                  child: HipPressable(
-                    key: ValueKey('tab-$i'),
-                    onTap: () => _selectTab(i),
-                    child: ExcludeSemantics(child: _navItem(i, glyph, label)),
-                  ),
+                  onTap: () => _selectTab(i),
+                  child: _navItem(i, glyph, label),
                 ),
               ),
           ],

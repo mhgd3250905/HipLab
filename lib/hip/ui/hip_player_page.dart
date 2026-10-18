@@ -96,7 +96,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       _interruptions = out.interruptions.listen(_onInterruption);
     }
     ScreenAwake.acquire();
-    _ticker = Timer.periodic(const Duration(milliseconds: 100), (_) => _tick());
+    _ticker = Timer.periodic(const Duration(milliseconds: 33), (_) => _tick());
     _tick();
   }
 

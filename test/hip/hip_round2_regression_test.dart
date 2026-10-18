@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/core/media/media_controller.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
+import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
@@ -74,6 +77,138 @@ Future<void> _keyboardActivate(WidgetTester tester, Finder button) async {
 }
 
 void main() {
+  testWidgets(
+    'zero-time tab reversals leave start hittable and open training',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await _app(tester);
+      for (final tab in [1, 0, 1, 0, 2, 0]) {
+        await tester.tap(find.byKey(ValueKey('tab-$tab')));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('tab-body-1')), findsNothing);
+      expect(find.byKey(const ValueKey('tab-body-2')), findsNothing);
+      final start = find.byKey(const ValueKey('start-today'));
+      expect(start.hitTestable(), findsOneWidget);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.pumpAndSettle();
+      handle.dispose();
+    },
+  );
+
+  testWidgets('disabled circle exports one labelled disabled button', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Center(
+          child: HipCircleButton(
+            icon: HipGlyph.close,
+            tooltip: '关闭',
+            onPressed: null,
+          ),
+        ),
+      ),
+    );
+    final buttons = find.semantics
+        .byPredicate((node) => node.getSemanticsData().flagsCollection.isButton)
+        .evaluate()
+        .where((node) => !node.isMergedIntoParent)
+        .toList();
+    expect(buttons, hasLength(1));
+    expect(buttons.single.getSemanticsData().label, '关闭');
+    expect(
+      buttons.single.getSemanticsData().flagsCollection.isEnabled !=
+          Tristate.none,
+      isTrue,
+    );
+    expect(
+      buttons.single.getSemanticsData().flagsCollection.isEnabled ==
+          Tristate.isTrue,
+      isFalse,
+    );
+    expect(
+      buttons.single.getSemanticsData().hasAction(SemanticsAction.tap),
+      isFalse,
+    );
+    handle.dispose();
+  });
+
+  testWidgets('each picker and bottom tab exports one named semantic button', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _app(tester);
+    for (final label in [
+      '5 分',
+      '10 分',
+      '15 分',
+      '办公椅',
+      '居家',
+      '今日',
+      '自测',
+      '进度',
+      '开始',
+    ]) {
+      final matches = find.semantics
+          .byPredicate(
+            (node) =>
+                !node.isMergedIntoParent &&
+                node.getSemanticsData().flagsCollection.isButton &&
+                node
+                        .getSemanticsData()
+                        .label
+                        .replaceAll(RegExp(r'\s+'), ' ')
+                        .trim() ==
+                    label,
+          )
+          .evaluate();
+      expect(
+        matches.length,
+        1,
+        reason: '$label must be a single accessible button',
+      );
+    }
+    final selectedTab = find.semantics
+        .byPredicate(
+          (node) =>
+              !node.isMergedIntoParent &&
+              node.getSemanticsData().flagsCollection.isButton &&
+              node.getSemanticsData().label == '今日',
+        )
+        .evaluate()
+        .single;
+    expect(
+      selectedTab.getSemanticsData().flagsCollection.isSelected ==
+          Tristate.isTrue,
+      isTrue,
+    );
+    for (final button
+        in find.semantics
+            .byPredicate(
+              (node) => node.getSemanticsData().flagsCollection.isButton,
+            )
+            .evaluate()) {
+      if (button.isMergedIntoParent) continue;
+      final nested = collectAllSemanticsNodesFrom(button).where(
+        (node) =>
+            !node.isMergedIntoParent &&
+            node.getSemanticsData().flagsCollection.isButton,
+      );
+      expect(
+        nested,
+        isEmpty,
+        reason: '${button.label} contains a second button',
+      );
+    }
+    handle.dispose();
+  });
+
   testWidgets(
     'rapid tab returns keep one source-key and Hero subtree per tab',
     (tester) async {

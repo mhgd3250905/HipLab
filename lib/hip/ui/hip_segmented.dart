@@ -159,32 +159,29 @@ class HipSegmented<T> extends StatelessWidget {
   Widget _segment(int i, T v, double t, Color idle, Color on) {
     final fg = Color.lerp(idle, on, t)!;
     final isOn = v == selected;
-    return Semantics(
-      button: true,
+    return HipPressable(
       selected: isOn,
       inMutuallyExclusiveGroup: true,
-      child: HipPressable(
-        key: ValueKey('$keyPrefix-$v'),
-        scale: 1,
-        onTap: () => _select(i),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: itemBuilder != null
-                  ? itemBuilder!(v, fg, t)
-                  : Text(
-                      label!(v),
-                      maxLines: 1,
-                      softWrap: false,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isOn ? FontWeight.w700 : FontWeight.w500,
-                        color: Color.lerp(idle, HipColors.text, t),
-                      ),
+      key: ValueKey('$keyPrefix-$v'),
+      scale: 1,
+      onTap: () => _select(i),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: itemBuilder != null
+                ? itemBuilder!(v, fg, t)
+                : Text(
+                    label!(v),
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isOn ? FontWeight.w700 : FontWeight.w500,
+                      color: Color.lerp(idle, HipColors.text, t),
                     ),
-            ),
+                  ),
           ),
         ),
       ),

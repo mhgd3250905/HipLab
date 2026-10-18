@@ -1059,11 +1059,17 @@ class HipPressable extends StatefulWidget {
     this.onTap,
     this.scale = .94,
     this.focusNode,
+    this.semanticLabel,
+    this.selected,
+    this.inMutuallyExclusiveGroup = false,
   });
   final Widget child;
   final VoidCallback? onTap;
   final double scale;
   final FocusNode? focusNode;
+  final String? semanticLabel;
+  final bool? selected;
+  final bool inMutuallyExclusiveGroup;
   @override
   State<HipPressable> createState() => _HipPressableState();
 }
@@ -1075,35 +1081,45 @@ class _HipPressableState extends State<HipPressable> {
   }
 
   @override
-  Widget build(BuildContext context) => FocusableActionDetector(
-    focusNode: widget.focusNode,
-    enabled: widget.onTap != null,
-    shortcuts: const {
-      SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-      SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-    },
-    actions: {
-      ActivateIntent: CallbackAction<ActivateIntent>(
-        onInvoke: (_) {
-          widget.onTap?.call();
-          return null;
-        },
-      ),
-    },
+  Widget build(BuildContext context) => MergeSemantics(
     child: Semantics(
-      enabled: widget.onTap != null,
+      container: true,
       button: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: widget.onTap == null ? null : (_) => _set(true),
-        onTapUp: widget.onTap == null ? null : (_) => _set(false),
-        onTapCancel: () => _set(false),
-        onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _down ? widget.scale : 1,
-          duration: _down ? HipMotion.press : HipMotion.release,
-          curve: _down ? Curves.easeOut : HipMotion.spring,
-          child: widget.child,
+      enabled: widget.onTap != null,
+      label: widget.semanticLabel,
+      selected: widget.selected,
+      inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup,
+      onTap: widget.onTap,
+      child: FocusableActionDetector(
+        focusNode: widget.focusNode,
+        enabled: widget.onTap != null,
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          behavior: HitTestBehavior.opaque,
+          onTapDown: widget.onTap == null ? null : (_) => _set(true),
+          onTapUp: widget.onTap == null ? null : (_) => _set(false),
+          onTapCancel: () => _set(false),
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _down ? widget.scale : 1,
+            duration: _down ? HipMotion.press : HipMotion.release,
+            curve: _down ? Curves.easeOut : HipMotion.spring,
+            child: widget.semanticLabel == null
+                ? widget.child
+                : ExcludeSemantics(child: widget.child),
+          ),
         ),
       ),
     ),
@@ -1218,38 +1234,35 @@ class HipCircleButton extends StatelessWidget {
   final double size;
   final String? tooltip;
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: tooltip,
-    child: HipPressable(
-      onTap: onPressed,
-      scale: .9,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: HipColors.surfaceHigh,
-          shape: BoxShape.circle,
-          boxShadow: HipColors.isDark ? null : HipColors.thumbShadow,
+  Widget build(BuildContext context) => HipPressable(
+    semanticLabel: tooltip,
+    onTap: onPressed,
+    scale: .9,
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: HipColors.surfaceHigh,
+        shape: BoxShape.circle,
+        boxShadow: HipColors.isDark ? null : HipColors.thumbShadow,
+      ),
+      alignment: Alignment.center,
+      child: AnimatedSwitcher(
+        duration: HipMotion.fast,
+        transitionBuilder: (child, a) => FadeTransition(
+          opacity: a,
+          child: ScaleTransition(
+            scale: Tween(begin: .6, end: 1.0).animate(a),
+            child: child,
+          ),
         ),
-        alignment: Alignment.center,
-        child: AnimatedSwitcher(
-          duration: HipMotion.fast,
-          transitionBuilder: (child, a) => FadeTransition(
-            opacity: a,
-            child: ScaleTransition(
-              scale: Tween(begin: .6, end: 1.0).animate(a),
-              child: child,
-            ),
-          ),
-          child: HipIcon(
-            icon,
-            key: ValueKey(icon),
-            size: size * (size > 50 ? .42 : .45),
-            color: HipColors.text,
-            filled: true,
-            strokeWidth: size > 50 ? 1.75 : 2,
-          ),
+        child: HipIcon(
+          icon,
+          key: ValueKey(icon),
+          size: size * (size > 50 ? .42 : .45),
+          color: HipColors.text,
+          filled: true,
+          strokeWidth: size > 50 ? 1.75 : 2,
         ),
       ),
     ),
@@ -1280,110 +1293,107 @@ class HipStartButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final jade = stage.jade;
     final halo = size * .12;
-    return Semantics(
-      button: true,
-      label: label,
-      child: HipPressable(
-        key: buttonKey,
-        onTap: onTap,
-        scale: .93,
-        child: SizedBox.square(
-          dimension: size,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Halo: a radial falloff, no edge.
-              Positioned(
-                left: -halo,
-                top: -halo,
-                right: -halo,
-                bottom: -halo,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        jade.withValues(alpha: .30),
-                        jade.withValues(alpha: .10),
-                        jade.withValues(alpha: 0),
-                      ],
-                      stops: const [.66, .82, 1],
-                    ),
+    return HipPressable(
+      semanticLabel: label,
+      key: buttonKey,
+      onTap: onTap,
+      scale: .93,
+      child: SizedBox.square(
+        dimension: size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Halo: a radial falloff, no edge.
+            Positioned(
+              left: -halo,
+              top: -halo,
+              right: -halo,
+              bottom: -halo,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      jade.withValues(alpha: .30),
+                      jade.withValues(alpha: .10),
+                      jade.withValues(alpha: 0),
+                    ],
+                    stops: const [.66, .82, 1],
                   ),
                 ),
               ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color.lerp(jade, const Color(0xffffffff), .16)!,
-                        jade,
-                        Color.lerp(jade, const Color(0xff000000), .06)!,
-                      ],
-                      stops: const [0, .55, 1],
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color.lerp(jade, const Color(0xffffffff), .16)!,
+                      jade,
+                      Color.lerp(jade, const Color(0xff000000), .06)!,
+                    ],
+                    stops: const [0, .55, 1],
+                  ),
+                  boxShadow: HipColors.shadows([
+                    BoxShadow(
+                      color: jade.withValues(alpha: .38),
+                      blurRadius: size * .3,
+                      spreadRadius: -size * .04,
+                      offset: Offset(0, size * .1),
                     ),
-                    boxShadow: HipColors.shadows([
-                      BoxShadow(
-                        color: jade.withValues(alpha: .38),
-                        blurRadius: size * .3,
-                        spreadRadius: -size * .04,
-                        offset: Offset(0, size * .1),
-                      ),
-                      const BoxShadow(
-                        color: Color(0x40000000),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ]),
+                    const BoxShadow(
+                      color: Color(0x40000000),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+            // Specular: a faint light on the upper half.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -.9),
+                    radius: .9,
+                    colors: [
+                      const Color(0xffffffff).withValues(alpha: .18),
+                      const Color(0x00ffffff),
+                    ],
                   ),
                 ),
               ),
-              // Specular: a faint light on the upper half.
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      center: const Alignment(0, -.9),
-                      radius: .9,
-                      colors: [
-                        const Color(0xffffffff).withValues(alpha: .18),
-                        const Color(0x00ffffff),
-                      ],
-                    ),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HipIcon(
+                    HipGlyph.play,
+                    size: size * .32,
+                    filled: true,
+                    color: stage.onJade,
                   ),
-                ),
-              ),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    HipIcon(
-                      HipGlyph.play,
-                      size: size * .32,
-                      filled: true,
+                  SizedBox(height: size * .015),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: size * .14,
+                      height: 1.2,
+                      letterSpacing: size * .01,
+                      fontWeight: FontWeight.w700,
                       color: stage.onJade,
                     ),
-                    SizedBox(height: size * .015),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: size * .14,
-                        height: 1.2,
-                        letterSpacing: size * .01,
-                        fontWeight: FontWeight.w700,
-                        color: stage.onJade,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
