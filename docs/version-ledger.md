@@ -147,3 +147,18 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 | 包与资源核验 | 包名 `com.ugk.hiplab`、versionCode 9、既有 debug 证书匹配；92 新素材、22 自有文件、488 语音及共享播放器匹配源码 |
 | 与前包关系 | 与 `03c3b5b` 的 0.3.4+9 APK 逐字节一致；本次只恢复未变工具的原来源头并补分支/文档，按版本规则不再次递增 |
 | 安装 / 发布 | 未安装、无 ADB；未上传商店或 TestFlight |
+
+
+## Android 0.3.4+9 保留数据覆盖安装（2026-10-18 17:15）
+
+| 项目 | 实际结果 |
+|---|---|
+| 设备 / 包名 | 2602BRT18C / Android 16 / arm64；`com.ugk.hiplab` |
+| 更新 | 0.3.2+7 → **0.3.4+9 debug**，`adb install -r` 返回 Success，设备回读 versionName 0.3.4 / versionCode 9 |
+| APK 源 / 主线 | `1a1657da91ea4b2d2a189e1439f370ed6d083e24` / `5c7dc8e`（后者仅文档收尾） |
+| APK | `E:\AII-3D\hiplab-releases\posehub-v020-request-20261018\final\hiplab-0.3.4+9-debug-arm64.apk`，150,880,644 bytes；SHA-256 `ded02ba1f26c263c6e0d8c88d62a4b0fe43f6e6a5dba9a29baf6ba21773d4e75` |
+| 签名连续 | 新旧 APK 均为既有 debug 证书，SHA-256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7` |
+| 数据备份与保持 | 安装前备份 shared_prefs/files/databases/no_backup 中实际存在目录，tar 4,204,032 bytes、可读取；偏好 1356 bytes，安装后及启动后逐字节一致，SHA-256 `74f83f14c7ef77da8cdf08e6886a5401ee86aa325a7f653f68a3fea5b6b07c21` |
+| 启动 | COLD / Status ok，TotalTime 1677 ms；App 前台，首页已查看，当前进程 crash 日志未见 FATAL EXCEPTION |
+| 检查范围 | 仅安装与启动；未进入训练/自测，未测试原生首帧或系统音频，未上传商店 |
+| 本机证据 | `E:\AII-3D\hiplab-releases\android-install-20261018-171428`；含原包、签名、数据备份、安装与启动日志、版本回读、截图，均留本机，不代表 Git 备份 |
