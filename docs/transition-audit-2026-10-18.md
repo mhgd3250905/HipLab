@@ -130,3 +130,7 @@ python3 tools/transitions/render.py --compare <before> <after> test/_shots/captu
 9. 用 `adb shell dumpsys gfxinfo com.ugk.hiplab` 或 GPU 呈现模式条形图看第 1、2 项：可接受标准为转场期间无连续超过 2 帧的卡顿（janky frames 不集中在转场）。
 
 iOS（Mac agent）补看：右推页左缘右滑返回跟手、半途松手回弹；第 1、2 项在真机上的观感。
+
+## Windows复核修订：中途反向Tab连续性（2026-10-18）
+
+按用户直接修复并推进合并授权处理F1，第1轮将Tab改为共享时钟，每次重定向从实际当前透明度和位移采样；保留持久slot、fade-through及媒体/焦点/语义策略。新增4项：零时间透明度与位移连续、三Tab快速重定向、减少动画无漂移。此固定分支analyze0，独立全量169pass/1条件skip；相关22项targeted通过。原失败证据在PR #17评论6251531461，修复后的组合Android原生验证与#18一起完成，不将本段写成已安装结论。未改依赖、lock、版本或商店配置。
