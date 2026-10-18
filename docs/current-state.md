@@ -97,4 +97,4 @@ Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持
 
 ZIP、云端冻结 manifest 已下载核验，安全解压 92 文件完成；App 同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。人工观感、原生首帧/音频与 Mac/iPhone 仍待验收。
 
-PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；本分支未合并 main，商店状态未改变。
+PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；该 PR 尚未合入 main，商店状态未改变。

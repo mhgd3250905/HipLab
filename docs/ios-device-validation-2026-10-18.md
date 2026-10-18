@@ -122,4 +122,4 @@ QuickTime 可列出 iPhone 屏幕与扬声器来源，但预览黑屏且提示�
 
 **没有重新构建、覆盖安装或验证 0.3.4+9**。当前已安装、用户反馈通过的仍为旧候选 0.3.3+8 / v0.1.0；v0.2.0 的 iPhone 视频重测另列待办。PR 记录交由 Windows 审查，未合并 main，未上传 TestFlight/App Store 或改变既有审核。
 
-PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；本分支未合并 main，商店状态未改变。
+PR 状态回执：[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 为 OPEN，已退出草稿、等待 Windows 审查；该 PR 尚未合入 main，商店状态未改变。
