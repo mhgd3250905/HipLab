@@ -134,3 +134,16 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 | 安装 / 远端 | 未安装，无ADB；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main |
 
 上一轮0.3.3+8及手机0.3.2+7记录保留；不是商店包，不新上传商店。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。
+
+## 指定媒体分支合入后的复打包（2026-10-18 11:55）
+
+| 项目 | 实际结果 |
+|---|---|
+| 分支 / 起点 | `media/pose-hub-v0.2.0` / `bb828be`；已快进集成原有 v0.2.0 成果并合回、推送 main |
+| 构建源码 / 版本 | `1a1657da91ea4b2d2a189e1439f370ed6d083e24` / **0.3.4+9 debug arm64** |
+| APK 路径 | `E:\AII-3D\hiplab-releases\posehub-v020-request-20261018\final\hiplab-0.3.4+9-debug-arm64.apk` |
+| 字节数 / SHA-256 | 150,880,644 / `ded02ba1f26c263c6e0d8c88d62a4b0fe43f6e6a5dba9a29baf6ba21773d4e75` |
+| 实际构建 | 合入并推送 main 后执行 `flutter build apk --debug --target-platform android-arm64 --no-pub`，exit 0，17.42 秒 |
+| 包与资源核验 | 包名 `com.ugk.hiplab`、versionCode 9、既有 debug 证书匹配；92 新素材、22 自有文件、488 语音及共享播放器匹配源码 |
+| 与前包关系 | 与 `03c3b5b` 的 0.3.4+9 APK 逐字节一致；本次只恢复未变工具的原来源头并补分支/文档，按版本规则不再次递增 |
+| 安装 / 发布 | 未安装、无 ADB；未上传商店或 TestFlight |

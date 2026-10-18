@@ -62,3 +62,9 @@ Pose-Hub v0.1.0 已公开发布并接入，lock 与冻结 manifest 随源码保�
 Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。
 
 固定上游 `59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4`；ZIP与云端manifest核验/92文件安全解压完成。同步工具与 `bb828be` 逐字节一致，保留原来源头；发布提交 `59fb7b9` 的正文未变；本轮结果：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。视频1080、封面540，保留自有剪辑和still，不重渲。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。
+
+## 2026-10-18：补齐指定媒体分支与合入后复打包
+
+收到显式 `media/pose-hub-v0.2.0` 分支任务时，v0.2.0 已在 `03c3b5b` / `a70df11` 推送 main。本次从 `bb828be` 建指定分支并快进接入已有成果，恢复未变同步脚本与原 main 逐字节一致，产生 `1a1657d`，合回并推送 main。随后按要求重新构建 Android debug arm64，0.3.4+9 / 150,880,644 bytes，SHA `ded02ba1f26c263c6e0d8c88d62a4b0fe43f6e6a5dba9a29baf6ba21773d4e75`；既有包名/证书及内部资源再次通过，未安装或上传。
+
+版本只在素材接入时从 0.3.3+8 升至 0.3.4+9，本次注释和文档收尾不再递增。Mac 的 `ios/device-validation` 对应 [PR #15](https://github.com/mhgd3250905/HipLab/pull/15)，后续应保留其 iOS 历史验收文档并基于最终新 main 更新；使用 README 冻结 v0.2.0 的 1080 视频/540 封面恢复命令，不改共用版本、依赖或 lock，不上传 TestFlight/App Store。

@@ -43,3 +43,5 @@
 ## 指定分支与合入后复打包（2026-10-18）
 
 用户本次指令到达前，素材已按原授权随 `03c3b5b` / `a70df11` 推送 main。本次补建 `media/pose-hub-v0.2.0`，起点为 `bb828be`，快进接入上述已有提交，按“脚本未变就不动”恢复同步工具与基线逐字节一致，再合回 main。没有重写已推送历史。Dart、资源、依赖及 `pubspec.lock` 未新增变化；沿用已递增的 0.3.4+9。合入后重新执行 Android debug arm64 构建，实际产物追加版本台账，并向 Mac 的 `ios/device-validation` / PR #15 同步新 main 基线。
+
+合入后复打已完成：源码 `1a1657da91ea4b2d2a189e1439f370ed6d083e24`，0.3.4+9，17.42 秒；APK `E:\AII-3D\hiplab-releases\posehub-v020-request-20261018\final\hiplab-0.3.4+9-debug-arm64.apk`，150,880,644 bytes / `ded02ba1f26c263c6e0d8c88d62a4b0fe43f6e6a5dba9a29baf6ba21773d4e75`，包与资源核验通过，未安装。原有运行检查内容未变，具体边界见[复核台账](verification.md)。Mac 交接通过 `ios/device-validation` 的 [PR #15](https://github.com/mhgd3250905/HipLab/pull/15)同步最终新 main。
