@@ -752,56 +752,60 @@ class _HipHomeState extends State<HipHome> {
                           color: HipColors.surface,
                         )
                       : () => _selectTab(2),
-                  child: HipPanel(
+                  // Its own layer, so the check can start from a snapshot
+                  // of the tile (see HipRoute.expandFrom).
+                  child: RepaintBoundary(
                     key: _hipTileKey,
-                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '我的髋部',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: HipColors.muted,
+                    child: HipPanel(
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '我的髋部',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: HipColors.muted,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: result == null
-                              ? Center(
-                                  // Scales down instead of overflowing when
-                                  // a very large text size outgrows the tile.
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        HipIcon(
-                                          HipGlyph.radar,
-                                          size: 40,
-                                          color: HipColors.jade,
-                                        ),
-                                        SizedBox(height: 6),
-                                        Text(
-                                          '3 分半自测',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: result == null
+                                ? Center(
+                                    // Scales down instead of overflowing when
+                                    // a very large text size outgrows the tile.
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          HipIcon(
+                                            HipGlyph.radar,
+                                            size: 40,
+                                            color: HipColors.jade,
                                           ),
-                                        ),
-                                      ],
+                                          SizedBox(height: 6),
+                                          Text(
+                                            '3 分半自测',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : Center(
+                                    child: HipRadar(
+                                      values: result.radar,
+                                      highlight: result.tightest.toSet(),
+                                      warn: result.painDirections,
+                                      compact: true,
                                     ),
                                   ),
-                                )
-                              : Center(
-                                  child: HipRadar(
-                                    values: result.radar,
-                                    highlight: result.tightest.toSet(),
-                                    warn: result.painDirections,
-                                    compact: true,
-                                  ),
-                                ),
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -888,22 +892,13 @@ class _HipHomeState extends State<HipHome> {
                             child: HipThumb(
                               size: 40,
                               radius: 10,
-                              // The first move's thumbnail flies into the
-                              // player's video area (and back on close).
-                              child: s == plan.steps.first
-                                  ? HipArtHero(
-                                      tag: hipDrillHeroTag(s.drill),
-                                      radius: 10,
-                                      flight: HipDrillArt(drill: s.drill),
-                                      child: HipDrillArt(
-                                        drill: s.drill,
-                                        showPendingLabel: false,
-                                      ),
-                                    )
-                                  : HipDrillArt(
-                                      drill: s.drill,
-                                      showPendingLabel: false,
-                                    ),
+                              // No shared-element flight from here: the
+                              // player grows out of the 开始 button alone
+                              // (one move per transition, audit 2026-10-18).
+                              child: HipDrillArt(
+                                drill: s.drill,
+                                showPendingLabel: false,
+                              ),
                             ),
                           ),
                       ],
@@ -1256,23 +1251,27 @@ class HipProgressPage extends StatelessWidget {
                   ),
                 ),
               ],
-              ListTile(
+              RepaintBoundary(
                 key: tileKey,
-                contentPadding: const EdgeInsets.only(left: 34, right: 8),
-                title: const Text('2 分钟椅边放松'),
-                trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
-                onTap: () {
-                  final plan = store.microPlan;
-                  if (plan == null) return;
-                  Navigator.of(context).push(
-                    HipRoute.expandFrom<void>(
-                      tileKey.currentContext,
-                      (_) => HipPlayerPage(store: store, plan: plan),
-                      radius: 12,
-                      color: HipColors.surfaceHigh,
-                    ),
-                  );
-                },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.only(left: 34, right: 8),
+                  title: const Text('2 分钟椅边放松'),
+                  trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
+                  onTap: () {
+                    final plan = store.microPlan;
+                    if (plan == null) return;
+                    Navigator.of(context).push(
+                      HipRoute.expandFrom<void>(
+                        tileKey.currentContext,
+                        (_) => HipPlayerPage(store: store, plan: plan),
+                        radius: 12,
+                        // The row sits on its panel: grow from the panel's
+                        // colour, not a lighter one (a frame-1 flash).
+                        color: HipColors.surface,
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

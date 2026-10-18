@@ -1,12 +1,13 @@
 // Round-2 UI polish (2026-10-18): segmented control, the custom icon set,
-// clean thumbnails, directional page transitions and shared-element heroes.
+// clean thumbnails and directional page transitions. The shared-element
+// heroes were removed by the transition-quality pass (audit 2026-10-18):
+// every transition now has one main move, see test/hip/hip_transition_test.dart.
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
@@ -272,7 +273,7 @@ void main() {
       expect(route.transition, HipTransition.expand);
       expect(route.origin!.center.dx, closeTo(button.center.dx, 2));
       expect(route.transitionDuration, HipMotion.expand);
-      // The covered home answers (scale + dim), not a plain fade.
+      // The covered home answers (a dim), not a plain fade.
       expect(find.byType(HipCoveredTransition), findsOneWidget);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
@@ -359,57 +360,35 @@ void main() {
     );
   });
 
-  group('shared elements', () {
-    Set<Object> heroTags(WidgetTester tester) => {
-      for (final e in find.byType(Hero, skipOffstage: false).evaluate())
-        (e.widget as Hero).tag,
-    };
-
-    testWidgets('home art flies into the player video area', (tester) async {
-      final store = await pumpApp(tester);
-      final first = store.todayPlan!.steps.first.drill;
-      final tag = hipDrillHeroTag(first);
-      expect(heroTags(tester), contains(tag));
+  group('one move per transition', () {
+    testWidgets('开始 grows the player alone: no Hero flies alongside', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 60));
-      // Mid-flight: the shuttle (a static stand-in) is in the overlay.
-      expect(
-        find.descendant(
-          of: find.byType(Overlay).first,
-          matching: find.byType(ClipRRect),
-        ),
-        findsWidgets,
-      );
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
-      final player = find.byKey(const ValueKey('player-ring'));
-      expect(player, findsOneWidget);
-      expect(
-        find.byWidgetPredicate((w) => w is Hero && w.tag == tag),
-        findsWidgets,
-      );
+      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
+      expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('player-pause')));
       await tester.pumpAndSettle();
     });
 
-    testWidgets('hip-check row thumbnail and title fly into the check', (
+    testWidgets('the hip check grows from 开始自测 with no flying thumbnails', (
       tester,
     ) async {
       await pumpApp(tester);
       await tester.tap(find.byKey(const ValueKey('tab-1')));
       await tester.pumpAndSettle();
-      final item = content.rules.items.first;
-      final tags = heroTags(tester);
-      expect(tags, contains(hipAssessmentHeroTag(item)));
-      expect(tags, contains(hipAssessmentTitleTag(item)));
       await tester.tap(find.byKey(const ValueKey('assessment-start')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
-      final now = {
-        for (final e in find.byType(Hero).evaluate()) (e.widget as Hero).tag,
-      };
-      expect(now, contains(hipAssessmentHeroTag(item)));
-      expect(now, contains(hipAssessmentTitleTag(item)));
-      // Back out: flies back to its row without errors.
+      // Back out cleanly into the list.
       await tester.tap(find.byType(HipCircleButton).first);
       await tester.pumpAndSettle();
       expect(
