@@ -59,19 +59,13 @@ void main() {
         expect(seg.thumbRadius, seg.radius - seg.inset);
         final thumb = find.byKey(const ValueKey('minutes-thumb'));
         expect(thumb, findsOneWidget);
-        // No outline on the selection.
-        final deco =
-            tester
-                    .widget<DecoratedBox>(
-                      find.descendant(
-                        of: thumb,
-                        matching: find.byType(DecoratedBox),
-                      ),
-                    )
-                    .decoration
-                as BoxDecoration;
-        expect(deco.border, isNull);
-        expect((deco.borderRadius! as BorderRadius).topLeft.x, seg.thumbRadius);
+        // The selection is the shared neutral tactile tile (no accent
+        // outline), its corners concentric with the track.
+        final face = tester.widget<HipTactile>(
+          find.descendant(of: thumb, matching: find.byType(HipTactile)),
+        );
+        expect(face.style, HipTactileStyle.neutral());
+        expect(face.radius, seg.thumbRadius);
 
         final x0 = tester.getRect(thumb).left;
         final target = tester.getRect(find.byKey(const ValueKey('minutes-15')));

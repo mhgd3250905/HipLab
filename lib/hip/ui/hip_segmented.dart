@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'hip_theme.dart';
-import 'hip_widgets.dart' show HipPressable;
+import 'hip_widgets.dart' show HipPressable, HipTactile, HipTactileStyle;
 
 /// Builds one segment's content. [fg] is the colour to paint text / glyphs
 /// in (already blended between the idle and selected colours), [t] how
@@ -14,9 +14,10 @@ typedef HipSegmentBuilder<T> = Widget Function(T value, Color fg, double t);
 ///
 /// * The thumb is concentric with the track: its radius is the track radius
 ///   minus the inset, so the corners run parallel.
-/// * No outline on the selection: on dark the thumb is a raised step above
-///   the surface (lighter fill, 1px top light, soft shadow); on light it is a
-///   white raised chip over a recessed grey track in both placements.
+/// * The selection is a raised tactile tile ([HipTactileStyle.neutral]):
+///   on dark a lighter step above the surface (lit top, 1px top light,
+///   hairline edge, tight shadow); on light a white chip over a recessed
+///   grey track in both placements. No accent outline.
 /// * The thumb slides with a small spring; every segment's colour follows
 ///   the thumb's position, so text and glyphs cross-fade in step with it.
 /// * Tap a segment or drag along the track.
@@ -68,24 +69,11 @@ class HipSegmented<T> extends StatelessWidget {
     boxShadow: standalone ? HipColors.cardShadow : null,
   );
 
-  BoxDecoration get _thumbDecoration => BoxDecoration(
-    color: HipColors.thumb,
-    borderRadius: BorderRadius.circular(thumbRadius),
-    boxShadow: HipColors.thumbShadow,
-    // A light catching the top edge (transparent in the light theme):
-    // reads as a raised surface, not as an outline.
-    gradient: HipColors.isDark
-        ? LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.alphaBlend(HipColors.thumbHighlight, HipColors.thumb),
-              HipColors.thumb,
-            ],
-            stops: const [0, .5],
-          )
-        : null,
-  );
+  /// The selection thumb is the reference tactile tile the app's buttons
+  /// were distilled from (button audit 2026-10-18): lit from above, a 1px
+  /// top light, a hairline edge and a tight contact shadow.
+  Widget _thumb() =>
+      HipTactile(style: HipTactileStyle.neutral(), radius: thumbRadius);
 
   void _select(int i) {
     if (i < 0 || i >= values.length || values[i] == selected) return;
@@ -122,7 +110,7 @@ class HipSegmented<T> extends StatelessWidget {
                     top: 0,
                     bottom: 0,
                     width: segW,
-                    child: DecoratedBox(decoration: _thumbDecoration),
+                    child: _thumb(),
                   ),
                   Row(
                     children: [
