@@ -27,10 +27,6 @@ const hipAssessmentFocus = <String, Rect>{
   'deep_squat': Rect.fromLTRB(.23, .17, .76, .86),
 };
 
-/// Hero tags shared by the 自测 tab and the check page.
-Object hipAssessmentHeroTag(AssessmentItem item) => 'assess-art-${item.id}';
-Object hipAssessmentTitleTag(AssessmentItem item) => 'assess-title-${item.id}';
-
 Widget _thumbArt(AssessmentItem item, String? still) => still == null
     ? const HipPendingArt()
     : HipFocusImage(asset: still, focus: _focusOf(item));
@@ -105,11 +101,14 @@ class HipAssessmentIntro extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
           child: KeyedSubtree(
             key: startKey,
-            child: HipPrimaryButton(
-              key: const ValueKey('assessment-start'),
-              label: store.blocked ? '先问问医生再来' : '开始自测',
-              icon: HipGlyph.play,
-              onPressed: store.blocked ? null : onStart,
+            // Its own layer: the check grows from a snapshot of the button.
+            child: RepaintBoundary(
+              child: HipPrimaryButton(
+                key: const ValueKey('assessment-start'),
+                label: store.blocked ? '先问问医生再来' : '开始自测',
+                icon: HipGlyph.play,
+                onPressed: store.blocked ? null : onStart,
+              ),
             ),
           ),
         ),
@@ -127,17 +126,7 @@ class HipAssessmentIntro extends StatelessWidget {
       radius: 20,
       child: Row(
         children: [
-          HipThumb(
-            size: 58,
-            radius: 13,
-            // Flies into the check's demo area (and back to its row).
-            child: HipArtHero(
-              tag: hipAssessmentHeroTag(item),
-              radius: 13,
-              flight: _thumbArt(item, still),
-              child: _thumbArt(item, still),
-            ),
-          ),
+          HipThumb(size: 58, radius: 13, child: _thumbArt(item, still)),
           const SizedBox(width: 12),
           Container(
             width: 24,
@@ -161,17 +150,14 @@ class HipAssessmentIntro extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                HipTextHero(
-                  tag: hipAssessmentTitleTag(item),
-                  child: Text(
-                    item.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: HipColors.text,
-                    ),
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: HipColors.text,
                   ),
                 ),
                 const SizedBox(height: 1),
@@ -505,29 +491,16 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         expand: true,
         child: KeyedSubtree(
           key: ValueKey('demo-${item.id}'),
-          child: HipArtHero(
-            tag: hipAssessmentHeroTag(item),
-            radius: 26,
-            flight: demo != null && demo.mediaStatus != HipMediaStatus.pending
-                ? HipDrillArt(
-                    drill: demo,
-                    fit: BoxFit.contain,
-                    mirror: _side == HipSide.right,
-                  )
-                : fallback != null
-                ? Image.asset(fallback, fit: BoxFit.contain)
-                : const HipPendingArt(),
-            child: demo != null && demo.mediaStatus != HipMediaStatus.pending
-                ? HipDrillArt(
-                    drill: demo,
-                    play: _demoPlaying,
-                    fit: BoxFit.contain,
-                    mirror: _side == HipSide.right,
-                  )
-                : fallback != null
-                ? Image.asset(fallback, fit: BoxFit.contain)
-                : const HipPendingArt(label: '动画待渲染'),
-          ),
+          child: demo != null && demo.mediaStatus != HipMediaStatus.pending
+              ? HipDrillArt(
+                  drill: demo,
+                  play: _demoPlaying,
+                  fit: BoxFit.contain,
+                  mirror: _side == HipSide.right,
+                )
+              : fallback != null
+              ? Image.asset(fallback, fit: BoxFit.contain)
+              : const HipPendingArt(label: '动画待渲染'),
         ),
       ),
     );
@@ -634,39 +607,32 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _titleHero(AssessmentItem item, Widget title) => _index == 0
-      ? HipTextHero(tag: hipAssessmentTitleTag(item), child: title)
-      : title;
-
   Widget _questionHeading(AssessmentItem item) => Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      _titleHero(
-        item,
-        Text.rich(
-          TextSpan(
-            children: [
+      Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: item.title,
+              style: TextStyle(
+                color: HipColors.jadeText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (_side != null)
               TextSpan(
-                text: item.title,
+                text: _side == HipSide.left ? ' · 左边' : ' · 右边',
                 style: TextStyle(
                   color: HipColors.jadeText,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (_side != null)
-                TextSpan(
-                  text: _side == HipSide.left ? ' · 左边' : ' · 右边',
-                  style: TextStyle(
-                    color: HipColors.jadeText,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-            ],
-          ),
-          key: const ValueKey('assessment-title'),
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 13),
+          ],
         ),
+        key: const ValueKey('assessment-title'),
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 13),
       ),
       const SizedBox(height: 3),
       Text(

@@ -19,6 +19,7 @@
 | 2026-10-18 / 语音审计 | 用户 iPhone 实测 #9 播报中途消失、长词只听到一两个字、音量不稳。查明主因在播放链路：just_audio `play()` 在播放器仍处 playing（上一条播完不会自动变 false）时立即返回，代码误判一句已结束，700 ms 后释放 duck 时停用 iOS 音频会话，切断正在播的句子；素材无截断（逐条对照 edge-tts 原始输出），但 loudnorm linear 回退动态模式 + 短句 dynaudnorm 导致 -21…-13 LUFS、64 条真峰值超 -1 dBTP。新增 `VoiceLineController`（播完才算结束、无声才释放、会话操作串行、不剪上一句尾巴）、`audit_voice.py` 检测工具，后处理改为只裁首尾 + 固定增益 + 限幅并重新生成 488 条，检测 0 失败；analyze 无问题、115 项测试通过；版本号不变，待真机复听 | [语音审计](voice-audit-2026-10-18.md)、[验证台账](verification.md)末节；分支 `fix/voice-audit`，PR #13 |
 
 | 2026-10-18 / 第二轮 UI 打磨 | 按用户截图反馈在 `feat/polish-round2`（基于 `feat/ios` `313b484`）完成：统一分段控件（内嵌轨道 + 同心圆角滑块、弹性滑动、无描边选中）；自绘 32 个图标替换全部 Material 图标（24 栅格、1.75 笔画、描边/填充两态），开始按钮与倒计时环重做（0% 不再画灰点）；缩略图去掉双层边框改同心圆角裁切；按方位的页面过渡（容器展开 / 右推 / 上升 / Tab 按索引滑动，被覆盖页反向视差缩放变暗，iOS 左缘右滑返回保留）与共享元素 Hero；顺手统一自测选项卡选中态。决定：不加动画依赖，自研 `HipRoute`；截图测试渲染器画不出阴影模糊，截图时用 `HipColors.flatShadows` 关掉阴影。analyze 无问题、116 项测试通过；未在真机看动画流畅度与 iOS 返回手势 | [验证台账](verification.md)末节、[对比图](images/polish-round2/compare.jpg)、D-14；PR 见 GitHub |
+| 2026-10-18 / 转场质量返工 | 用户反馈第二轮转场没测、「开始」Hero 太快且多动画打架。新建逐帧捕获工具，14 个转场前后对比逐帧审阅：M3 三点 emphasized 曲线 1/3 时间完成约 90% 导致读成一闪；Hero 与容器起点不同、被覆盖页同时缩放，三层运动；Hero 落地终点闪变；Tab 双重曝光；push 首帧跳 40%、pop 先停后冲。决定：一次转场一个主运动，删除全部 Hero，「开始」等改真容器变换（起点快照、颜色转背景、内容后半段随容器缩放淡入，500/420 ms），push/rise 用 `Cubic(0.2,0,0,1)` 进、`fastOutSlowIn` 退（400/340 ms），被覆盖页只视差/变暗，Tab fade-through，尊重减少动态效果。analyze 0、165 pass；未真机 | [转场审计](transition-audit-2026-10-18.md)、[验证台账](verification.md)末节；分支 `fix/transition-quality`，PR 见 GitHub |
 
 ## 后续检查点模板
 

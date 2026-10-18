@@ -219,3 +219,7 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 ## 0.3.6+11 Android 安装复查（2026-10-18 19:29）
 
 设备回读0.3.6+11，HipLab处于resumed，冷启动首页和浅色浮起滑块原生截图已查看。当前1356字节偏好与安装前一致；数据tar备份可读。没有执行训练/自测/试听或主题切换，完整功能及iPhone验收仍保持此前待验范围。报告及截图：`E:/AII-3D/hiplab-releases/theme-polish-20261018/install-20261018/`，用户数据和截图不入Git。
+
+## 转场质量返工（2026-10-18，分支 fix/transition-quality）
+
+基于 main `ee83628`。新增逐帧捕获工具（widget test 60 fps 截帧 + 拼图/MP4），14 个转场修改前后同场景录制并逐帧审阅，缺陷与修改见[转场审计](transition-audit-2026-10-18.md)。`flutter analyze` 0；全量 165 pass / 1 条件 skip（main 158 + 新增 7）；四尺寸单屏自测回归包含在全量内通过。仅在沙盒无头环境验证；未构建 APK、未安装手机，GPU 掉帧、原生视频视图参与容器变换、iOS 右滑手感待真机按审计文末清单验收。未合入 main。
