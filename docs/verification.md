@@ -301,3 +301,9 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 ## 合并后验证适用性（2026-10-19）
 
 GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2b552fd/18bf4ce/b6fd55e；已推main业务集成点`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`。运行/工具/测试/资产/配置与`c7def2869b789357b303d69d66eb8c18a0a748ae`逐路径diff为空，之后仅文档更新。因此复用该source的analyze0、254pass/1条件skip、Python19、两工具check和arm64构建，本轮不重复全量/构建。合并记录文档执行链接存在性与git diff --check；不增加手机、听音或性能验收结论。原4个未跟踪文件保留。
+
+## iOS 0.3.6+11 main 对齐（2026-10-18 20:17）
+
+`ios/main-ui-036` 从 Windows `fce7ad8` rebase 对齐，候选 `2f8aeb0` 仅增加 iOS 隐私文案/链接适配。入场 main：158 pass /1 skip；最终候选 analyze 无问题、160 pass /1 skip，隐私/流程 10 项通过。冻结 v0.2.0 素材 92 /0 drift；签名 Release 44.1 秒、Archive 34.1 秒均成功，Bundle / 0.3.6 /11 /arm64、6 隐私清单和 611 随包文件核验通过。
+
+初始设备可读取，备份当前 435 字节偏好；安装时 CoreDevice 1011，之后设备 unavailable，无新安装或新版真机验收。已请求用户重连；未回写旧备份、未清数据。代码、具体哈希、平台范围和后续矩阵见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。

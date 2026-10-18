@@ -1,8 +1,8 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。当前共用版本 **0.3.5+10**，运行源 `b3bd499`；Android语音通道修复已推送并真机试听确认，iOS playback/mix/duck策略未改。Mac从最新main按README恢复冻结v0.2.0素材（视频1080/封面540），固定Flutter3.44.7，不升级lock/依赖；本次没有新Mac/Xcode或iPhone验收，已有iOS历史记录独立保留。
+更新日期：2026-10-18，北京时间。当前共用版本 **0.3.6+11**，Windows main `fce7ad8`；Mac 分支 `ios/main-ui-036` 已 rebase 对齐，补 iOS 隐私页平台适配，候选 `2f8aeb0` 的签名 Release / Archive 已通过，真机安装因设备掉线待重连。详情见[iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md)。固定 Flutter 3.44.7，冻结素材 v0.2.0，不升级 lock / 依赖；旧 0.3.3 的用户验收独立保留。
 
-> 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
+> 历史边界：原 #9 在 Linux 沙箱完成，彼时未执行 Mac/iPhone 检查。后续 Mac 已完成 0.3.3 首轮真机验证及本轮 0.3.6 本地构建；各候选结果分别记账，不将旧通过套用新版本。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
 ## 工程身份（已配置）
 
@@ -12,7 +12,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.5+10 → 0.3.5 / 10）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.6+11 → 0.3.6 / 11）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -30,15 +30,15 @@
 git fetch origin
 git switch main                # 使用已推送且包含 9ef59a1 的 main
 git pull --ff-only
-git switch -c ios/device-validation  # 只改 ios/ 与少量 iOS 专属平台代码
+git switch -c ios/main-ui-036  # 只改 ios/ 与少量 iOS 专属平台代码
 flutter --version              # 必须为 3.44.7 stable
-# 先按 docs/README.md 校验 ZIP、恢复 v0.1.0 冻结素材并 --check
+# 先按 docs/README.md 校验 ZIP、恢复 v0.2.0 冻结素材并 --check
 flutter pub get --enforce-lockfile  # 不修改 lock 或升级依赖
 flutter analyze && flutter test --concurrency=1
 open ios/Runner.xcworkspace    # 用 workspace 打开
 ```
 
-新机器先完成 [README 新机器拉素材](README.md#新机器拉素材mac--windows) 的恢复步骤，再继续检查和构建。ZIP 根是动作 ID 文件夹，`--from-dir` 指向 `build/pose-hub/v0.1.0/extracted`；资源缓存不入库。Mac 仅恢复既定版本，不改 lock / manifest / pubspec 或生成新的素材版本。
+新机器先完成 [README 新机器拉素材](README.md#新机器拉素材mac--windows) 的恢复步骤，再继续检查和构建。ZIP 根是动作 ID 文件夹，`--from-dir` 指向 `build/pose-hub/v0.2.0/extracted`；资源缓存不入库。Mac 仅恢复既定版本，不改 lock / manifest / pubspec 或生成新的素材版本。
 
 Xcode 里：
 
