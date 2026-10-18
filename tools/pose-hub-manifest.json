@@ -4212,6 +4212,4216 @@
         "folderUrl": "https://drive.google.com/drive/folders/1oNykkilki_VFEGQepDm3IbAdcpw2Zazy",
         "folderId": "1oNykkilki_VFEGQepDm3IbAdcpw2Zazy"
       }
+    },
+    "0.2.0": {
+      "status": "published",
+      "createdAt": "2026-10-18T03:13:26Z",
+      "publishedAt": "2026-10-18T03:24:06Z",
+      "model": "training-human-v2@2.0.1",
+      "notes": "HipLab 46 actions rendered once with soft-v1 on Pose-Hub main cf2c6bd. h-quad-cars uses the original spec; the other 45 bindings inherit v0.1.0. 1080 dark videos and 540 posters; 11220 exact-alpha frames and greenscreen masters remain local. Full source QA, full video decode, alpha/video full-cycle scans, sampled AI review and 92-file ZIP sync passed. Six historical solver-warning sets are byte/pose-equivalent to v0.1.0; no new warnings or relaxed thresholds. Public Google Drive ZIP downloaded and SHA-256 verified; v0.1.0 unchanged. Light and FlareLab are excluded. Provenance: media/releases/0.2.0.sources.json; release: media/releases/0.2.0.md.",
+      "items": [
+        {
+          "id": "glute-max-A",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "glute-max-A/glute-max-A.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/glute-max-A/",
+          "storage": "local",
+          "bytes": 28411867,
+          "sha256": "42ff3e07c37278d03bbbc4bef9a069534bed3b0e3a5bfbee6e8c296645bb6215",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/glute-max-A.js",
+            "sha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "glute-max-A",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "glute-max-A/glute-max-A.dark.poster.540.jpg",
+          "local": "dark/posters/glute-max-A.jpg",
+          "storage": "archive",
+          "bytes": 8028,
+          "sha256": "1762ede74a0fddeb87831273de01fc6d1a8e40c85382254b22133491f153bf2d",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/glute-max-A.js",
+            "sha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "glute-max-A",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "glute-max-A/glute-max-A.dark.1080.mp4",
+          "local": "dark/glute-max-A.mp4",
+          "storage": "archive",
+          "bytes": 524324,
+          "sha256": "6abf4b421c44faf1fa4379f0005e20a3306b0256ebb8bc615e70f21a000a064a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/glute-max-A.js",
+            "sha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "glute-max-A",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "glute-max-A/glute-max-A.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/glute-max-A-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1058043,
+          "sha256": "75f37f7935dbf61d17cfaec38aa00f167d004b463af56dbdd9f4766c5fab8ce1",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/glute-max-A.js",
+            "sha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-9090-liftoff",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-9090-liftoff/h-9090-liftoff.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-9090-liftoff/",
+          "storage": "local",
+          "bytes": 35047272,
+          "sha256": "f8a6da3e00b2ff98dedc10f17722ad19cf8c19956c4f92611ac8449c0fba4652",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-9090-liftoff-r2.js",
+            "sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-9090-liftoff",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-9090-liftoff/h-9090-liftoff.dark.poster.540.jpg",
+          "local": "dark/posters/h-9090-liftoff.jpg",
+          "storage": "archive",
+          "bytes": 8234,
+          "sha256": "8efd422eb354c379fcdd8c25665aa0b28218abf67a589383169dfd2d75e0d624",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-9090-liftoff-r2.js",
+            "sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-9090-liftoff",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-9090-liftoff/h-9090-liftoff.dark.1080.mp4",
+          "local": "dark/h-9090-liftoff.mp4",
+          "storage": "archive",
+          "bytes": 813203,
+          "sha256": "e514c7ebbc945c68ee6c5b734f1d0edc74cabe717c4825f04d8c396a20916ca4",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-9090-liftoff-r2.js",
+            "sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-9090-liftoff",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-9090-liftoff/h-9090-liftoff.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-9090-liftoff-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1734798,
+          "sha256": "0bbafee65987fdbc64dfb0b2c2b05165c56ea8b9970bbad542f95b48e93ee522",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-9090-liftoff-r2.js",
+            "sha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-adductor-rock",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-adductor-rock/h-adductor-rock.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-adductor-rock/",
+          "storage": "local",
+          "bytes": 51452688,
+          "sha256": "394c73cc9e2f672e5bad950d895b18cc4e566dd08bfb5e5215da6a13fa4a7a1d",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-adductor-rock.js",
+            "sha256": "d8d0601eb573cac10093a6d8fe6faec47040fbe22ab269801666b62f3f12eddd"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-adductor-rock",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-adductor-rock/h-adductor-rock.dark.poster.540.jpg",
+          "local": "dark/posters/h-adductor-rock.jpg",
+          "storage": "archive",
+          "bytes": 11204,
+          "sha256": "c8cd6a809953ec840825b106d6941370ecf9716b5820fbf44e2de334f1c07d34",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-adductor-rock.js",
+            "sha256": "d8d0601eb573cac10093a6d8fe6faec47040fbe22ab269801666b62f3f12eddd"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-adductor-rock",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-adductor-rock/h-adductor-rock.dark.1080.mp4",
+          "local": "dark/h-adductor-rock.mp4",
+          "storage": "archive",
+          "bytes": 1128681,
+          "sha256": "5203ab740be5ed9b09d39943b36a2568bc6a73329f2a2664132aa2fa4b6a5f1b",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-adductor-rock.js",
+            "sha256": "d8d0601eb573cac10093a6d8fe6faec47040fbe22ab269801666b62f3f12eddd"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-adductor-rock",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-adductor-rock/h-adductor-rock.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-adductor-rock-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2388887,
+          "sha256": "d7ae0f0b77f011b5808e7726e8f723fa39ed1d3b03f8335af411658606741403",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-adductor-rock.js",
+            "sha256": "d8d0601eb573cac10093a6d8fe6faec47040fbe22ab269801666b62f3f12eddd"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-hip-ir",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-band-hip-ir/h-band-hip-ir.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-band-hip-ir/",
+          "storage": "local",
+          "bytes": 38026427,
+          "sha256": "c56b49f28a9df1671440037f6d9cd7728523cc7f2d1840cf5dc18ce0e364f7d0",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-hip-ir.js",
+            "sha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-hip-ir",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-band-hip-ir/h-band-hip-ir.dark.poster.540.jpg",
+          "local": "dark/posters/h-band-hip-ir.jpg",
+          "storage": "archive",
+          "bytes": 8555,
+          "sha256": "45912caca84ac13cacb959f17e24c1ae210515f05b88050d0dc50c4d2d7df808",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-band-hip-ir.js",
+            "sha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-hip-ir",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-band-hip-ir/h-band-hip-ir.dark.1080.mp4",
+          "local": "dark/h-band-hip-ir.mp4",
+          "storage": "archive",
+          "bytes": 695382,
+          "sha256": "76bc9c905b0578b3ec8c307c699770578d28519902a53f3aed80fa62729e5242",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-hip-ir.js",
+            "sha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-hip-ir",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-band-hip-ir/h-band-hip-ir.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-band-hip-ir-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1546681,
+          "sha256": "47d89efe2c6f861fc0dfcec8187440b29bd38f4d688b30cf3f9cf5b36b0af781",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-hip-ir.js",
+            "sha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-leg-out",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-band-leg-out/h-band-leg-out.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-band-leg-out/",
+          "storage": "local",
+          "bytes": 55325177,
+          "sha256": "455f5472bd07bb344e398be250c9e0d10b4f31f3beed2ea36051a918f163a092",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-leg-out.js",
+            "sha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-leg-out",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-band-leg-out/h-band-leg-out.dark.poster.540.jpg",
+          "local": "dark/posters/h-band-leg-out.jpg",
+          "storage": "archive",
+          "bytes": 11463,
+          "sha256": "e20919c7e837a0ff455a165340f2704f5e41f2fc29738039510c299fa503bfbc",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-band-leg-out.js",
+            "sha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-leg-out",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-band-leg-out/h-band-leg-out.dark.1080.mp4",
+          "local": "dark/h-band-leg-out.mp4",
+          "storage": "archive",
+          "bytes": 1318861,
+          "sha256": "767edac333558f688e5bef8a54ee7620e0cfb049abe3b89d527ea646a0f5a103",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-leg-out.js",
+            "sha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-band-leg-out",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-band-leg-out/h-band-leg-out.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-band-leg-out-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2913390,
+          "sha256": "8d25cf2097ad15049d52835d46c23bec4c0842b32bdb76b394bc135b5e7fce6c",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-band-leg-out.js",
+            "sha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-butterfly-active",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-butterfly-active/h-butterfly-active.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-butterfly-active/",
+          "storage": "local",
+          "bytes": 50990381,
+          "sha256": "809e7e8b445f6b03f887d95ec7887b97db0422dd935677fb459c9c3450968746",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-butterfly-active.js",
+            "sha256": "58be080dfcac5075cb466e7c990e4b1a171da4bc77fb652a6b8865131ff13bb5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-butterfly-active",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-butterfly-active/h-butterfly-active.dark.poster.540.jpg",
+          "local": "dark/posters/h-butterfly-active.jpg",
+          "storage": "archive",
+          "bytes": 11528,
+          "sha256": "32fde0ca24d2c2056d0936451270fff069e7848a2727ba2b93609161481c2240",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-butterfly-active.js",
+            "sha256": "58be080dfcac5075cb466e7c990e4b1a171da4bc77fb652a6b8865131ff13bb5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-butterfly-active",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-butterfly-active/h-butterfly-active.dark.1080.mp4",
+          "local": "dark/h-butterfly-active.mp4",
+          "storage": "archive",
+          "bytes": 1300454,
+          "sha256": "0e49a8d3b860922fee3144297e7fad7f9c3a4a2876353287508850d1b8cf7684",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-butterfly-active.js",
+            "sha256": "58be080dfcac5075cb466e7c990e4b1a171da4bc77fb652a6b8865131ff13bb5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-butterfly-active",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-butterfly-active/h-butterfly-active.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-butterfly-active-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2683054,
+          "sha256": "d75c5c3d938a69e9492379ba2fd0ba7d507c32f6e0312072e8f3421e4b8fe297",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-butterfly-active.js",
+            "sha256": "58be080dfcac5075cb466e7c990e4b1a171da4bc77fb652a6b8865131ff13bb5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-couch-stretch",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-couch-stretch/h-couch-stretch.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-couch-stretch/",
+          "storage": "local",
+          "bytes": 43978369,
+          "sha256": "b85ffd8ffec1fe893dc5d67d5a1cadf1486dad7eae84aa13983c394282f40a62",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-couch-stretch.js",
+            "sha256": "717616a1d48eaf389c904c37f71e67ddfeaf1b5a4c4b080c65d920760c186ef5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-couch-stretch",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-couch-stretch/h-couch-stretch.dark.poster.540.jpg",
+          "local": "dark/posters/h-couch-stretch.jpg",
+          "storage": "archive",
+          "bytes": 9862,
+          "sha256": "97d3c77525432095860c6c0e2a1addebd9045604e53c705fa5cf2b5089a8d3ae",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-couch-stretch.js",
+            "sha256": "717616a1d48eaf389c904c37f71e67ddfeaf1b5a4c4b080c65d920760c186ef5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-couch-stretch",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-couch-stretch/h-couch-stretch.dark.1080.mp4",
+          "local": "dark/h-couch-stretch.mp4",
+          "storage": "archive",
+          "bytes": 853258,
+          "sha256": "9bfe1a3a959f3fb23180296c84ceb282bc027b66be3673c1beaa16c0b16f512c",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-couch-stretch.js",
+            "sha256": "717616a1d48eaf389c904c37f71e67ddfeaf1b5a4c4b080c65d920760c186ef5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-couch-stretch",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-couch-stretch/h-couch-stretch.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-couch-stretch-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1789989,
+          "sha256": "c64c13aee37ea6218fcfbb92290c6988bf1f93c13ccea358229e059369df46a3",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-couch-stretch.js",
+            "sha256": "717616a1d48eaf389c904c37f71e67ddfeaf1b5a4c4b080c65d920760c186ef5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-hip-gate",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-hip-gate/h-hip-gate.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-hip-gate/",
+          "storage": "local",
+          "bytes": 37589133,
+          "sha256": "07824a2d31c48c2ccd313aa346ce409926c9bdfc6a617c2cd88be37a182fa472",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-hip-gate.js",
+            "sha256": "f65d09ec9010e2c5aecaea4a0a0bb912b3ef7af8ff3b941e74adea080ae325b6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-hip-gate",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-hip-gate/h-hip-gate.dark.poster.540.jpg",
+          "local": "dark/posters/h-hip-gate.jpg",
+          "storage": "archive",
+          "bytes": 8260,
+          "sha256": "2575414a98e90eb61ddb6bc6597fef700d7ea9df3b033a5ae795816450924bd6",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-hip-gate.js",
+            "sha256": "f65d09ec9010e2c5aecaea4a0a0bb912b3ef7af8ff3b941e74adea080ae325b6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-hip-gate",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-hip-gate/h-hip-gate.dark.1080.mp4",
+          "local": "dark/h-hip-gate.mp4",
+          "storage": "archive",
+          "bytes": 755110,
+          "sha256": "700f6a6709a34a213a4e7f5c3489c46416a6c28a010289e43e11f562c81c3fe2",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-hip-gate.js",
+            "sha256": "f65d09ec9010e2c5aecaea4a0a0bb912b3ef7af8ff3b941e74adea080ae325b6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-hip-gate",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-hip-gate/h-hip-gate.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-hip-gate-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1646183,
+          "sha256": "127c58c9a5a3de3e6da5037a290851594dbbddcd7e561ec70e2e24b0f8c16a20",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-hip-gate.js",
+            "sha256": "f65d09ec9010e2c5aecaea4a0a0bb912b3ef7af8ff3b941e74adea080ae325b6"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-knee-hug",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-knee-hug/h-knee-hug.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-knee-hug/",
+          "storage": "local",
+          "bytes": 40232353,
+          "sha256": "ed3d288b5b1af0f7aa66347699d5b2af05107c97a342085c992bec17f2f8addb",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-knee-hug-r2.js",
+            "sha256": "73db57f4a968ef93b49cad8dfa07838791f5a2808ae6d1add6b36b3f12ae3e2a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-knee-hug",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-knee-hug/h-knee-hug.dark.poster.540.jpg",
+          "local": "dark/posters/h-knee-hug.jpg",
+          "storage": "archive",
+          "bytes": 10434,
+          "sha256": "63a1b4c7982d37106c7d75f7b910f075a8c3560e8abf397dc4e3fb3ad922f430",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-knee-hug-r2.js",
+            "sha256": "73db57f4a968ef93b49cad8dfa07838791f5a2808ae6d1add6b36b3f12ae3e2a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-knee-hug",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-knee-hug/h-knee-hug.dark.1080.mp4",
+          "local": "dark/h-knee-hug.mp4",
+          "storage": "archive",
+          "bytes": 853963,
+          "sha256": "08f47f1d469ab4e622e22bb2b40e38e9cfaf0b210b39d00f0fa56fd9f3803705",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-knee-hug-r2.js",
+            "sha256": "73db57f4a968ef93b49cad8dfa07838791f5a2808ae6d1add6b36b3f12ae3e2a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-knee-hug",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-knee-hug/h-knee-hug.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-knee-hug-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1792161,
+          "sha256": "17a9d6e00a72b03c1a10fdf8451c14f917653bcca830fc6faf7579f9dbc97a66",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-knee-hug-r2.js",
+            "sha256": "73db57f4a968ef93b49cad8dfa07838791f5a2808ae6d1add6b36b3f12ae3e2a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-quad-cars",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-quad-cars/h-quad-cars.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-quad-cars/",
+          "storage": "local",
+          "bytes": 41145388,
+          "sha256": "47c8392b64fd75dd7d8559d1974ecc127e06766369ad3ab5978d7695b5a81d63",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-quad-cars.js",
+            "sha256": "33b82f385715391f2142e9c8eb9fef5302652cf73a8fac61142a68fa23248929"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-quad-cars",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-quad-cars/h-quad-cars.dark.poster.540.jpg",
+          "local": "dark/posters/h-quad-cars.jpg",
+          "storage": "archive",
+          "bytes": 9465,
+          "sha256": "401ce3d6a5e256773729204888fd37cd181314e2049709eb07e6e81f85aa352d",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-quad-cars.js",
+            "sha256": "33b82f385715391f2142e9c8eb9fef5302652cf73a8fac61142a68fa23248929"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-quad-cars",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-quad-cars/h-quad-cars.dark.1080.mp4",
+          "local": "dark/h-quad-cars.mp4",
+          "storage": "archive",
+          "bytes": 1025870,
+          "sha256": "3cd26f5daf2a9d7478556240cad8404bace15e091a65efec430eb1baba52ad45",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-quad-cars.js",
+            "sha256": "33b82f385715391f2142e9c8eb9fef5302652cf73a8fac61142a68fa23248929"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-quad-cars",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-quad-cars/h-quad-cars.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-quad-cars-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2148240,
+          "sha256": "190d1f0c0b392c9a2096fcf1d5ba8174ab459f0fee52c00b84ae329447e65492",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-quad-cars.js",
+            "sha256": "33b82f385715391f2142e9c8eb9fef5302652cf73a8fac61142a68fa23248929"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-reverse-clam",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-reverse-clam/h-reverse-clam.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-reverse-clam/",
+          "storage": "local",
+          "bytes": 42961732,
+          "sha256": "2cd4680de5ed230955ab1a356fde6e5d62bd12f21671fed23b9116f50070f904",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-reverse-clam.js",
+            "sha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-reverse-clam",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-reverse-clam/h-reverse-clam.dark.poster.540.jpg",
+          "local": "dark/posters/h-reverse-clam.jpg",
+          "storage": "archive",
+          "bytes": 10288,
+          "sha256": "c7343410ee114e80d67941a51df65f66f27637780c56f99b56917f5420da9354",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-reverse-clam.js",
+            "sha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-reverse-clam",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-reverse-clam/h-reverse-clam.dark.1080.mp4",
+          "local": "dark/h-reverse-clam.mp4",
+          "storage": "archive",
+          "bytes": 976674,
+          "sha256": "6bbfe5c41a5edd37e0026fe58351143226da8ce3f5ec24629a52eadbb6ad7b58",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-reverse-clam.js",
+            "sha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-reverse-clam",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-reverse-clam/h-reverse-clam.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-reverse-clam-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2075799,
+          "sha256": "ed82f8c1b687546ec09c4e4f99c8e200b57942e718d8619729a72afecb966033",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-reverse-clam.js",
+            "sha256": "d6dc4d1b87390a988f617381cb2bc8fe5d6cac45d353ba9fae84e550aef97db2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-squat",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-squat/h-squat.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-squat/",
+          "storage": "local",
+          "bytes": 34718253,
+          "sha256": "853d7adf494b53235f594a13515052256331fb970a3f09f2ef2274685bda00d3",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-squat.js",
+            "sha256": "349e5313795134d9554245b07c13ca94c6f9102a4d41c2ed8ae61cd782e1e58d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-squat",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-squat/h-squat.dark.poster.540.jpg",
+          "local": "dark/posters/h-squat.jpg",
+          "storage": "archive",
+          "bytes": 7697,
+          "sha256": "f3eb854276c25172eaa056ebfdbb1da42319f91554186d978b0bbf691e5a05f1",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-squat.js",
+            "sha256": "349e5313795134d9554245b07c13ca94c6f9102a4d41c2ed8ae61cd782e1e58d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-squat",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-squat/h-squat.dark.1080.mp4",
+          "local": "dark/h-squat.mp4",
+          "storage": "archive",
+          "bytes": 693325,
+          "sha256": "488bf4e35fb265342f657aab6a8d40fb61283720b99acb37edfa5360011c2898",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-squat.js",
+            "sha256": "349e5313795134d9554245b07c13ca94c6f9102a4d41c2ed8ae61cd782e1e58d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-squat",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-squat/h-squat.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-squat-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1349635,
+          "sha256": "0534e6d993e18b890e188fed51fe11b835e518da96b693d1eccea792a1112464",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-squat.js",
+            "sha256": "349e5313795134d9554245b07c13ca94c6f9102a4d41c2ed8ae61cd782e1e58d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-sumo-pry",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-sumo-pry/h-sumo-pry.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-sumo-pry/",
+          "storage": "local",
+          "bytes": 41052354,
+          "sha256": "23886a0deacb3765d9070e9cfabd72e31e679eaf82145de9eb470b2871d991af",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-sumo-pry.js",
+            "sha256": "2822e6600f341862bc8491d7e58b35876bddc53c0635a727d69ec270baadac7a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-sumo-pry",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-sumo-pry/h-sumo-pry.dark.poster.540.jpg",
+          "local": "dark/posters/h-sumo-pry.jpg",
+          "storage": "archive",
+          "bytes": 9164,
+          "sha256": "425eedf72dd8a6d7daae9ab123b9325f7994df7a35b0a5336be8ff928215a5ed",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-sumo-pry.js",
+            "sha256": "2822e6600f341862bc8491d7e58b35876bddc53c0635a727d69ec270baadac7a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-sumo-pry",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-sumo-pry/h-sumo-pry.dark.1080.mp4",
+          "local": "dark/h-sumo-pry.mp4",
+          "storage": "archive",
+          "bytes": 1004159,
+          "sha256": "896d8cb11b09a136fca3f2512b11c6ecd11d240bf53615a0bdae91e5b5f81747",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-sumo-pry.js",
+            "sha256": "2822e6600f341862bc8491d7e58b35876bddc53c0635a727d69ec270baadac7a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-sumo-pry",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-sumo-pry/h-sumo-pry.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-sumo-pry-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2081852,
+          "sha256": "c763b2b201719958d0e35774d9a1087be920d720aa55a03b2a6e52f501c7f186",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-sumo-pry.js",
+            "sha256": "2822e6600f341862bc8491d7e58b35876bddc53c0635a727d69ec270baadac7a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-supine-twist",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-supine-twist/h-supine-twist.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-supine-twist/",
+          "storage": "local",
+          "bytes": 37315152,
+          "sha256": "69344dcb11edac84586ce2465b07dcdaa87fecf20c05f203362dd0ce9dbcb413",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-supine-twist-r2.js",
+            "sha256": "14103d9993b464853abb2502345f60bb83c2a52ecfa7ee7456b81d14385a4299"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-supine-twist",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-supine-twist/h-supine-twist.dark.poster.540.jpg",
+          "local": "dark/posters/h-supine-twist.jpg",
+          "storage": "archive",
+          "bytes": 8798,
+          "sha256": "c97b6cba8e346080cd991f24e79103c60d1180ac5f2c41de6c6a1d8bb5bd6b78",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-supine-twist-r2.js",
+            "sha256": "14103d9993b464853abb2502345f60bb83c2a52ecfa7ee7456b81d14385a4299"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-supine-twist",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-supine-twist/h-supine-twist.dark.1080.mp4",
+          "local": "dark/h-supine-twist.mp4",
+          "storage": "archive",
+          "bytes": 992016,
+          "sha256": "2986f7c7538c18d17a31a70e15e02252504c72759c50c829d5e09e3d25280073",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-supine-twist-r2.js",
+            "sha256": "14103d9993b464853abb2502345f60bb83c2a52ecfa7ee7456b81d14385a4299"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-supine-twist",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-supine-twist/h-supine-twist.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-supine-twist-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2062280,
+          "sha256": "ace064cf1dc7b70b6f2725a927afa95a2b0209d2c2d98288f791bc56634264cf",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-supine-twist-r2.js",
+            "sha256": "14103d9993b464853abb2502345f60bb83c2a52ecfa7ee7456b81d14385a4299"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-wall-straddle",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "h-wall-straddle/h-wall-straddle.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/h-wall-straddle/",
+          "storage": "local",
+          "bytes": 51399749,
+          "sha256": "ffe3ca710858e6d4293f1617bbd2d94007698e384e1fe4cdea1ca8518ee5c53a",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-wall-straddle.js",
+            "sha256": "e2119b273d8fc552dbaa2adab7fa09d76103d78b861f46ed1a422f93e911cf28"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-wall-straddle",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "h-wall-straddle/h-wall-straddle.dark.poster.540.jpg",
+          "local": "dark/posters/h-wall-straddle.jpg",
+          "storage": "archive",
+          "bytes": 11763,
+          "sha256": "061f43d29ec7ba2145d0d2f91afe874ff7672983f2f067e3e94f33a7f4e4b5f9",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/h-wall-straddle.js",
+            "sha256": "e2119b273d8fc552dbaa2adab7fa09d76103d78b861f46ed1a422f93e911cf28"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-wall-straddle",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "h-wall-straddle/h-wall-straddle.dark.1080.mp4",
+          "local": "dark/h-wall-straddle.mp4",
+          "storage": "archive",
+          "bytes": 1236793,
+          "sha256": "e65ff8e641bd5cf34414cd679c0d3d892b047055285c203f0991d3a7881abb0a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-wall-straddle.js",
+            "sha256": "e2119b273d8fc552dbaa2adab7fa09d76103d78b861f46ed1a422f93e911cf28"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "h-wall-straddle",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "h-wall-straddle/h-wall-straddle.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/h-wall-straddle-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2746956,
+          "sha256": "d112a569f9bf048e700304edb63b65c1e223d7985ce1ae60a017f3a0e86dab1f",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/h-wall-straddle.js",
+            "sha256": "e2119b273d8fc552dbaa2adab7fa09d76103d78b861f46ed1a422f93e911cf28"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "hip-flexors-A",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "hip-flexors-A/hip-flexors-A.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/hip-flexors-A/",
+          "storage": "local",
+          "bytes": 49015044,
+          "sha256": "0154ad7a364db7ce482aa56c48741e5a9c3be00dcaa299ba92b21a2c72221cf2",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/hip-flexors-A.js",
+            "sha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "hip-flexors-A",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "hip-flexors-A/hip-flexors-A.dark.poster.540.jpg",
+          "local": "dark/posters/hip-flexors-A.jpg",
+          "storage": "archive",
+          "bytes": 11721,
+          "sha256": "c84f74e49e470de460764f673df0d768c03f16a2676866f3ee3716ca7d5bcc43",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/hip-flexors-A.js",
+            "sha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "hip-flexors-A",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "hip-flexors-A/hip-flexors-A.dark.1080.mp4",
+          "local": "dark/hip-flexors-A.mp4",
+          "storage": "archive",
+          "bytes": 702480,
+          "sha256": "576784a5667c1a03aba847d9d70289b33449b40562df53ae824ce15a3349e82c",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/hip-flexors-A.js",
+            "sha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "hip-flexors-A",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "hip-flexors-A/hip-flexors-A.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/hip-flexors-A-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1469262,
+          "sha256": "c803f8606676b9852d4f491151bf506b6ca8e0d6944bf3be31c319c4697d10e6",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/hip-flexors-A.js",
+            "sha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-chair-wiper",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-chair-wiper/n-chair-wiper.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-chair-wiper/",
+          "storage": "local",
+          "bytes": 32346160,
+          "sha256": "51405d9854b6ea06245a39179fa1c924ef311d21e8d8a0b512152d6e896006dd",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-chair-wiper.js",
+            "sha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-chair-wiper",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-chair-wiper/n-chair-wiper.dark.poster.540.jpg",
+          "local": "dark/posters/n-chair-wiper.jpg",
+          "storage": "archive",
+          "bytes": 7816,
+          "sha256": "88544a48b1f76f434bb9564c6aa4add0e873988e13b1a178a88c981e1e95d904",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-chair-wiper.js",
+            "sha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-chair-wiper",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-chair-wiper/n-chair-wiper.dark.1080.mp4",
+          "local": "dark/n-chair-wiper.mp4",
+          "storage": "archive",
+          "bytes": 660680,
+          "sha256": "a2bb65f1963f2a58ee0a40253ace10027a77d248333dc1d1649dd66deab4182a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-chair-wiper.js",
+            "sha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-chair-wiper",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-chair-wiper/n-chair-wiper.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-chair-wiper-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1368184,
+          "sha256": "f3dd9890ceccd7142779a90dd2cbe15ace64de1abe32f611b62e947e0fca799d",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-chair-wiper.js",
+            "sha256": "5f336da54c7fb677ae7c421f23a41705ee297c5145cb12d92a1045d5f1fdfde9"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-half-split",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-half-split/n-half-split.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-half-split/",
+          "storage": "local",
+          "bytes": 49200437,
+          "sha256": "f531d33e77e6eb14e7819b527e2560d9d057bb50dd1f478fc84b989e177b85e1",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-half-split.js",
+            "sha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-half-split",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-half-split/n-half-split.dark.poster.540.jpg",
+          "local": "dark/posters/n-half-split.jpg",
+          "storage": "archive",
+          "bytes": 10574,
+          "sha256": "7b2eedc1c6e3e087f7be322de4a93cdba3f5e279c6ca627e84c2e4188c0f98e4",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-half-split.js",
+            "sha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-half-split",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-half-split/n-half-split.dark.1080.mp4",
+          "local": "dark/n-half-split.mp4",
+          "storage": "archive",
+          "bytes": 916209,
+          "sha256": "54c74f26a390d752c021cba5880a7c7d2099ea7c36e912e5c61b16fbed5306bb",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-half-split.js",
+            "sha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-half-split",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-half-split/n-half-split.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-half-split-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1969462,
+          "sha256": "38f189d95ca26c6d91c73835ce1d9438ea2a68d3af1cbab217709b49e8b72729",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-half-split.js",
+            "sha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-leg-circles",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-leg-circles/n-leg-circles.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-leg-circles/",
+          "storage": "local",
+          "bytes": 69219005,
+          "sha256": "330d9d0e8a76d300c13d2051e8d3e0639c156215adc77016febdd66013b40bfa",
+          "width": 1080,
+          "height": 1080,
+          "frames": 360,
+          "spec": {
+            "path": "drill-anim/specs/n-leg-circles.js",
+            "sha256": "36041116f7706901d5bbebf549c69e12ce6f175548776e0f7ac1ef02db29e013"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-leg-circles",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-leg-circles/n-leg-circles.dark.poster.540.jpg",
+          "local": "dark/posters/n-leg-circles.jpg",
+          "storage": "archive",
+          "bytes": 9694,
+          "sha256": "b17fcfce103423a47e68e82774b5ac8d3a635a023aad0a7170c90c54c418d20a",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-leg-circles.js",
+            "sha256": "36041116f7706901d5bbebf549c69e12ce6f175548776e0f7ac1ef02db29e013"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-leg-circles",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-leg-circles/n-leg-circles.dark.1080.mp4",
+          "local": "dark/n-leg-circles.mp4",
+          "storage": "archive",
+          "bytes": 1490103,
+          "sha256": "15a78a1499cea49d9fd712987dae56105598f7865d44911df431420634bb8310",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 12.0,
+          "fps": 30.0,
+          "frames": 360,
+          "spec": {
+            "path": "drill-anim/specs/n-leg-circles.js",
+            "sha256": "36041116f7706901d5bbebf549c69e12ce6f175548776e0f7ac1ef02db29e013"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-leg-circles",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-leg-circles/n-leg-circles.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-leg-circles-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 3325300,
+          "sha256": "b31f1b7d08958a4ed2bf053280c8f92e07d4afa3e252bb41fb05568b1f3ff471",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 12.0,
+          "fps": 30.0,
+          "frames": 360,
+          "spec": {
+            "path": "drill-anim/specs/n-leg-circles.js",
+            "sha256": "36041116f7706901d5bbebf549c69e12ce6f175548776e0f7ac1ef02db29e013"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-pelvis-circle",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-pelvis-circle/n-pelvis-circle.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-pelvis-circle/",
+          "storage": "local",
+          "bytes": 32784846,
+          "sha256": "8bdcc479ea11d112c70214d552dcf8719a6c12ebf100960696b8e649ffb19dbc",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-pelvis-circle.js",
+            "sha256": "5e1e140167ac622a79c2874e5957b1bb1f12799d26e4950857b36c32e4690381"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-pelvis-circle",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-pelvis-circle/n-pelvis-circle.dark.poster.540.jpg",
+          "local": "dark/posters/n-pelvis-circle.jpg",
+          "storage": "archive",
+          "bytes": 7411,
+          "sha256": "68397419c6b604c99d8ce5ffdc452e146f145e285f7484ecd96c720e8aa3b49d",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-pelvis-circle.js",
+            "sha256": "5e1e140167ac622a79c2874e5957b1bb1f12799d26e4950857b36c32e4690381"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-pelvis-circle",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-pelvis-circle/n-pelvis-circle.dark.1080.mp4",
+          "local": "dark/n-pelvis-circle.mp4",
+          "storage": "archive",
+          "bytes": 658914,
+          "sha256": "c01779e4aaa28c608f3005564f1aa32d01044ff7aa82e62bf411eb768117c5b6",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-pelvis-circle.js",
+            "sha256": "5e1e140167ac622a79c2874e5957b1bb1f12799d26e4950857b36c32e4690381"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-pelvis-circle",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-pelvis-circle/n-pelvis-circle.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-pelvis-circle-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1282961,
+          "sha256": "58618a7287c4617ade04ccfef434ec45cdf3a5f1dd8d55a531252c1bdc4a7a87",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-pelvis-circle.js",
+            "sha256": "5e1e140167ac622a79c2874e5957b1bb1f12799d26e4950857b36c32e4690381"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-hip-ext",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-prone-hip-ext/n-prone-hip-ext.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-prone-hip-ext/",
+          "storage": "local",
+          "bytes": 33693612,
+          "sha256": "a2427dce1726694c35746807c076268c5f00241736a9cd32a9462046dc218730",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-hip-ext.js",
+            "sha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-hip-ext",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-prone-hip-ext/n-prone-hip-ext.dark.poster.540.jpg",
+          "local": "dark/posters/n-prone-hip-ext.jpg",
+          "storage": "archive",
+          "bytes": 8042,
+          "sha256": "f1280de9b46213ee3294ab0a470edc2c8cc9cce3c9c08d350c7082868661bf2a",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-hip-ext.js",
+            "sha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-hip-ext",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-prone-hip-ext/n-prone-hip-ext.dark.1080.mp4",
+          "local": "dark/n-prone-hip-ext.mp4",
+          "storage": "archive",
+          "bytes": 748490,
+          "sha256": "a6db443a8708ff0b7f2c7caa2769e9b2cb934802faef1177ac22e8c9589ba7bf",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-hip-ext.js",
+            "sha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-hip-ext",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-prone-hip-ext/n-prone-hip-ext.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-prone-hip-ext-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1592790,
+          "sha256": "61ebd217407ab562b17d4a34c6e41dfd65b389e922310311da8ad20db99dbb61",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-hip-ext.js",
+            "sha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-ir",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-prone-ir/n-prone-ir.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-prone-ir/",
+          "storage": "local",
+          "bytes": 48162559,
+          "sha256": "bcccce7585c7adca7752ad09acff9be30fa2e7c38539de9caed9e76ee9a1d340",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-ir.js",
+            "sha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-ir",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-prone-ir/n-prone-ir.dark.poster.540.jpg",
+          "local": "dark/posters/n-prone-ir.jpg",
+          "storage": "archive",
+          "bytes": 11327,
+          "sha256": "54fa2feb84396065613d66e580d3b3ec887f02e094b301a84f842524fb79461e",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-ir.js",
+            "sha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-ir",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-prone-ir/n-prone-ir.dark.1080.mp4",
+          "local": "dark/n-prone-ir.mp4",
+          "storage": "archive",
+          "bytes": 1237794,
+          "sha256": "e1c7826d397a8dfc4f481655c67ba04beffc449c34b2e7a9595c01469751b761",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-ir.js",
+            "sha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-prone-ir",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-prone-ir/n-prone-ir.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-prone-ir-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2558739,
+          "sha256": "530a56f97d51aefb3d949311a7f31e584883953976984eb19d1e8a34a6844250",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-prone-ir.js",
+            "sha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-ir-drop",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-seated-ir-drop/n-seated-ir-drop.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-seated-ir-drop/",
+          "storage": "local",
+          "bytes": 35174687,
+          "sha256": "406c4ecaee0bb2f4047a88f97011bcbc7577e02236baf835790a5e5f8f4f953c",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-ir-drop.js",
+            "sha256": "48e44c56e8c7de96f905d2f572c85368cab18ac313ba2413942c22726c49676a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-ir-drop",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-seated-ir-drop/n-seated-ir-drop.dark.poster.540.jpg",
+          "local": "dark/posters/n-seated-ir-drop.jpg",
+          "storage": "archive",
+          "bytes": 8173,
+          "sha256": "34e12dccb484043e80646521ac3b6f6812461800f64f59a8f9034fd0a20ad8d8",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-ir-drop.js",
+            "sha256": "48e44c56e8c7de96f905d2f572c85368cab18ac313ba2413942c22726c49676a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-ir-drop",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-ir-drop/n-seated-ir-drop.dark.1080.mp4",
+          "local": "dark/n-seated-ir-drop.mp4",
+          "storage": "archive",
+          "bytes": 778618,
+          "sha256": "e58216c8bc9b7d90cb9d3fa0e9c79b54af115d84e9bac2abaa55bc85c324af96",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-ir-drop.js",
+            "sha256": "48e44c56e8c7de96f905d2f572c85368cab18ac313ba2413942c22726c49676a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-ir-drop",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-ir-drop/n-seated-ir-drop.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-seated-ir-drop-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1729573,
+          "sha256": "ef3d55a1478bac11bb98dca03bd9a122e71f81c24bdb9f105b8eb16e7ede228d",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-ir-drop.js",
+            "sha256": "48e44c56e8c7de96f905d2f572c85368cab18ac313ba2413942c22726c49676a"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-knee-lift",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-seated-knee-lift/n-seated-knee-lift.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-seated-knee-lift/",
+          "storage": "local",
+          "bytes": 39658400,
+          "sha256": "db024a40c37d089ea6ef9047b3ec7b9445d48f93d6d2d5a514299cf674b445e2",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-knee-lift.js",
+            "sha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-knee-lift",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-seated-knee-lift/n-seated-knee-lift.dark.poster.540.jpg",
+          "local": "dark/posters/n-seated-knee-lift.jpg",
+          "storage": "archive",
+          "bytes": 8211,
+          "sha256": "0f53ff9408b6bc1085d5fd93086fe8e70f08395b57b09fb8bb42f7480fcddc24",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-knee-lift.js",
+            "sha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-knee-lift",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-knee-lift/n-seated-knee-lift.dark.1080.mp4",
+          "local": "dark/n-seated-knee-lift.mp4",
+          "storage": "archive",
+          "bytes": 663469,
+          "sha256": "e79b74a7c6075cce14d5b04a594d96d41e0d3850041d73e32a38e86727a96838",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-knee-lift.js",
+            "sha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-knee-lift",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-knee-lift/n-seated-knee-lift.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-seated-knee-lift-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1528368,
+          "sha256": "befd6503ae6c9d3c4de7b5dc120b6031484e8fd486670db1bcd33f2ae99d3695",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-knee-lift.js",
+            "sha256": "a885cd9687ee3411287999ce0d710ca380206eefed2ca88f1f16d3437552b0eb"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-squeeze",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-seated-squeeze/n-seated-squeeze.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-seated-squeeze/",
+          "storage": "local",
+          "bytes": 37154135,
+          "sha256": "16fe78aafbe540d7b379e2cba5aa7b00b8d91c603850212436ca39dc60e4223a",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-squeeze.js",
+            "sha256": "74ba65d71cf733e7929c4cc94595a33b0cf47071dc263552abda354766ea27f1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-squeeze",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-seated-squeeze/n-seated-squeeze.dark.poster.540.jpg",
+          "local": "dark/posters/n-seated-squeeze.jpg",
+          "storage": "archive",
+          "bytes": 8553,
+          "sha256": "f381c5b600903cfa7109896f488c33e8ff4394f4fe0ed2e086796423d3c1c419",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-squeeze.js",
+            "sha256": "74ba65d71cf733e7929c4cc94595a33b0cf47071dc263552abda354766ea27f1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-squeeze",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-squeeze/n-seated-squeeze.dark.1080.mp4",
+          "local": "dark/n-seated-squeeze.mp4",
+          "storage": "archive",
+          "bytes": 605375,
+          "sha256": "1e9524706e2564b1b7e022fbfe661b946349a9f4cf487704c74f91e5d849a953",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-squeeze.js",
+            "sha256": "74ba65d71cf733e7929c4cc94595a33b0cf47071dc263552abda354766ea27f1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-seated-squeeze",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-seated-squeeze/n-seated-squeeze.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-seated-squeeze-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1287756,
+          "sha256": "54b63f7ad0882bcc12501e85d5e76200d384d21c274bf074c6c225edc437c8a6",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-seated-squeeze.js",
+            "sha256": "74ba65d71cf733e7929c4cc94595a33b0cf47071dc263552abda354766ea27f1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-slider-lateral",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-slider-lateral/n-slider-lateral.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-slider-lateral/",
+          "storage": "local",
+          "bytes": 36265798,
+          "sha256": "8e108c879f3287a43a1ad1352fce3c33f79b46f8de7e4e61642454711cb1d186",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-slider-lateral.js",
+            "sha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-slider-lateral",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-slider-lateral/n-slider-lateral.dark.poster.540.jpg",
+          "local": "dark/posters/n-slider-lateral.jpg",
+          "storage": "archive",
+          "bytes": 8487,
+          "sha256": "622ad8078c2e92cffcef1d8bfa23f0384a3f938132f720a0091960306bc6b11a",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-slider-lateral.js",
+            "sha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-slider-lateral",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-slider-lateral/n-slider-lateral.dark.1080.mp4",
+          "local": "dark/n-slider-lateral.mp4",
+          "storage": "archive",
+          "bytes": 990613,
+          "sha256": "b14fdd083f8f4d14c1b1a1d04b46afb6895341def65da5d894bc8154f41b1df1",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-slider-lateral.js",
+            "sha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-slider-lateral",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-slider-lateral/n-slider-lateral.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-slider-lateral-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1924026,
+          "sha256": "d897de837ea04ccf14d27c0d9c33d5bd03e8620a01a523763a13fb9ba5f5d4e2",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-slider-lateral.js",
+            "sha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-squat-shift",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-squat-shift/n-squat-shift.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-squat-shift/",
+          "storage": "local",
+          "bytes": 40590840,
+          "sha256": "75c1770a5e4d36dee12bd0ed53efab977d0fef1d35729d385215100707f5bbf8",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-squat-shift.js",
+            "sha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-squat-shift",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-squat-shift/n-squat-shift.dark.poster.540.jpg",
+          "local": "dark/posters/n-squat-shift.jpg",
+          "storage": "archive",
+          "bytes": 9801,
+          "sha256": "f3d4c6fa9547029c45fbee661461614fbceeda48a7ba88f4251824f514f199c0",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-squat-shift.js",
+            "sha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-squat-shift",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-squat-shift/n-squat-shift.dark.1080.mp4",
+          "local": "dark/n-squat-shift.mp4",
+          "storage": "archive",
+          "bytes": 951132,
+          "sha256": "81ffed31c0c5dda4b2fccec499a34b2321a0a8b8e29b64e1e568dd945c1751f1",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-squat-shift.js",
+            "sha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-squat-shift",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-squat-shift/n-squat-shift.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-squat-shift-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1953865,
+          "sha256": "477d2fbbaeab5ad0ce025c898ea19f653c43a7be214c34c1ac67db8b21dd80ad",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-squat-shift.js",
+            "sha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-straddle-fold",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-straddle-fold/n-straddle-fold.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-straddle-fold/",
+          "storage": "local",
+          "bytes": 59891590,
+          "sha256": "d56400417611e0693e4da9b142a04832861786351d99295553cba6fce9126857",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-straddle-fold.js",
+            "sha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-straddle-fold",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-straddle-fold/n-straddle-fold.dark.poster.540.jpg",
+          "local": "dark/posters/n-straddle-fold.jpg",
+          "storage": "archive",
+          "bytes": 12133,
+          "sha256": "d7253fd3905b1647b24e3f7146c592a58894306a135e2debbc087f5c305dff8e",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-straddle-fold.js",
+            "sha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-straddle-fold",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-straddle-fold/n-straddle-fold.dark.1080.mp4",
+          "local": "dark/n-straddle-fold.mp4",
+          "storage": "archive",
+          "bytes": 1151252,
+          "sha256": "332f375eb0ccd6ba500b4eb7a3bbfcde83b2f46c2c6460a16625c01c5c579856",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-straddle-fold.js",
+            "sha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-straddle-fold",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-straddle-fold/n-straddle-fold.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-straddle-fold-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2547689,
+          "sha256": "3116d04ed45c1b750981ec3b2fde4af15cc5cc7acad4f1bad6490c0d62458bcd",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-straddle-fold.js",
+            "sha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-thomas-test",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-thomas-test/n-thomas-test.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-thomas-test/",
+          "storage": "local",
+          "bytes": 29490590,
+          "sha256": "86b35ca6ca3c296a90ba75b6dfc0c8956775f7ecf61d104aa6dd67806009c07d",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-thomas-test.js",
+            "sha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-thomas-test",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-thomas-test/n-thomas-test.dark.poster.540.jpg",
+          "local": "dark/posters/n-thomas-test.jpg",
+          "storage": "archive",
+          "bytes": 7510,
+          "sha256": "bd4ce6d884acb639effea8e2bc68109bd5aab8ca71e1191da617c4ef121e6bbd",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-thomas-test.js",
+            "sha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-thomas-test",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-thomas-test/n-thomas-test.dark.1080.mp4",
+          "local": "dark/n-thomas-test.mp4",
+          "storage": "archive",
+          "bytes": 649464,
+          "sha256": "88b530578fec503bc9ef2f58fd77e3addbffc01438f64d49f2f783864307b40e",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-thomas-test.js",
+            "sha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-thomas-test",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-thomas-test/n-thomas-test.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-thomas-test-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1341635,
+          "sha256": "a43b5f05552e1a46d4f7cfe1196d51242d7e0b97c76924614175a7e99cc48ff0",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-thomas-test.js",
+            "sha256": "62d3cfa853048dc695812c3042b2ddad2afa313aea938d02dc24ca40c824037f"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-wide-fold",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-wide-fold/n-wide-fold.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-wide-fold/",
+          "storage": "local",
+          "bytes": 69481682,
+          "sha256": "90d9f57df7ac8ca4397dc232e788ea6571084d8a4d6f583770d2dd8663c124fc",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-wide-fold.js",
+            "sha256": "94f49696bdc8a7464ed3cf1ccaf2180220229da07d1deeccad05aaa8a1834452"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-wide-fold",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-wide-fold/n-wide-fold.dark.poster.540.jpg",
+          "local": "dark/posters/n-wide-fold.jpg",
+          "storage": "archive",
+          "bytes": 14503,
+          "sha256": "dd6e0ee273a18ebc8aa0c748a44dd6ab316ad1bf2d6438183b0f112eb2ec8ae5",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-wide-fold.js",
+            "sha256": "94f49696bdc8a7464ed3cf1ccaf2180220229da07d1deeccad05aaa8a1834452"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-wide-fold",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-wide-fold/n-wide-fold.dark.1080.mp4",
+          "local": "dark/n-wide-fold.mp4",
+          "storage": "archive",
+          "bytes": 1332675,
+          "sha256": "2d8429deeb80cc8ccb76974f1719b7f4c7e011330275a6103bc375c74c2ce453",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-wide-fold.js",
+            "sha256": "94f49696bdc8a7464ed3cf1ccaf2180220229da07d1deeccad05aaa8a1834452"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-wide-fold",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-wide-fold/n-wide-fold.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-wide-fold-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2895096,
+          "sha256": "914c0020b89c92b58b2e7330cb480d1ea5ca6ee02ab83c810e7f5f01450bb31e",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-wide-fold.js",
+            "sha256": "94f49696bdc8a7464ed3cf1ccaf2180220229da07d1deeccad05aaa8a1834452"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-windshield",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "n-windshield/n-windshield.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/n-windshield/",
+          "storage": "local",
+          "bytes": 52970959,
+          "sha256": "c54d60ba0b5bac5eaf3057aafb6248044ad55c175a06e6d870232aadc1d8a918",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-windshield.js",
+            "sha256": "10d16b2ccd6c637b95b6f134236e6fa3c6bccc7943f9be72712cdc5b829f3b75"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-windshield",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "n-windshield/n-windshield.dark.poster.540.jpg",
+          "local": "dark/posters/n-windshield.jpg",
+          "storage": "archive",
+          "bytes": 11608,
+          "sha256": "bbe7db88b573a87c4dad0992f3192f616fe8b6fb85a3c4472c704fdcf8717346",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/n-windshield.js",
+            "sha256": "10d16b2ccd6c637b95b6f134236e6fa3c6bccc7943f9be72712cdc5b829f3b75"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-windshield",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "n-windshield/n-windshield.dark.1080.mp4",
+          "local": "dark/n-windshield.mp4",
+          "storage": "archive",
+          "bytes": 1314966,
+          "sha256": "d05ed862e25abe4e52a8082de964c97e7a9d35807ac927263827c69299f2ea2b",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-windshield.js",
+            "sha256": "10d16b2ccd6c637b95b6f134236e6fa3c6bccc7943f9be72712cdc5b829f3b75"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "n-windshield",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "n-windshield/n-windshield.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/n-windshield-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2750841,
+          "sha256": "0dd87a5c2f6c1ec6d5566b6a0aadd59ce4cf301497ebde4633dd0641e76a2b4a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/n-windshield.js",
+            "sha256": "10d16b2ccd6c637b95b6f134236e6fa3c6bccc7943f9be72712cdc5b829f3b75"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-fig4",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "o-seated-fig4/o-seated-fig4.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/o-seated-fig4/",
+          "storage": "local",
+          "bytes": 41266903,
+          "sha256": "eb6247b67cb4203d979bad441da8c728558159fd83e954200d87d294738bf178",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-fig4.js",
+            "sha256": "66a147a7da04a444f705bcd3e2fd23788a1349c533847bba9f1a36ae32a0ac48"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-fig4",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "o-seated-fig4/o-seated-fig4.dark.poster.540.jpg",
+          "local": "dark/posters/o-seated-fig4.jpg",
+          "storage": "archive",
+          "bytes": 9473,
+          "sha256": "aae25e884909968fe73f1ad63fc34abccbc24e3b90bd3cdb4fda7ca0530486f1",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-fig4.js",
+            "sha256": "66a147a7da04a444f705bcd3e2fd23788a1349c533847bba9f1a36ae32a0ac48"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-fig4",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "o-seated-fig4/o-seated-fig4.dark.1080.mp4",
+          "local": "dark/o-seated-fig4.mp4",
+          "storage": "archive",
+          "bytes": 723766,
+          "sha256": "f44333331d01b4af0c166308eb1740f795d3a1ca094bf6b033d7a9661ce02fc2",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-fig4.js",
+            "sha256": "66a147a7da04a444f705bcd3e2fd23788a1349c533847bba9f1a36ae32a0ac48"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-fig4",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "o-seated-fig4/o-seated-fig4.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/o-seated-fig4-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1528956,
+          "sha256": "bb1457a999ca84989190e4155b796e84768f9e36417d1008fba8db78023fd5eb",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-fig4.js",
+            "sha256": "66a147a7da04a444f705bcd3e2fd23788a1349c533847bba9f1a36ae32a0ac48"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-ham",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "o-seated-ham/o-seated-ham.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/o-seated-ham/",
+          "storage": "local",
+          "bytes": 36788733,
+          "sha256": "ac396a038de1f9408cbed2a6ba34a6c5d51e59a14519863e053630d38c27d1dc",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-ham.js",
+            "sha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-ham",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "o-seated-ham/o-seated-ham.dark.poster.540.jpg",
+          "local": "dark/posters/o-seated-ham.jpg",
+          "storage": "archive",
+          "bytes": 8301,
+          "sha256": "21e1b12957ac16948e6d645fa79f5d8ab592d2f3d7567b7544ba0a39fc5b5f6f",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-ham.js",
+            "sha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-ham",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "o-seated-ham/o-seated-ham.dark.1080.mp4",
+          "local": "dark/o-seated-ham.mp4",
+          "storage": "archive",
+          "bytes": 545104,
+          "sha256": "0a472585bfbe1267c539a96150da0de083101c20dce0c38b50d73cf46fdeec7f",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-ham.js",
+            "sha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-seated-ham",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "o-seated-ham/o-seated-ham.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/o-seated-ham-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1174579,
+          "sha256": "87d0bc85e29637a6dbcbe71e3758d81d13b931cc0ff93df0961039efb4446037",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-seated-ham.js",
+            "sha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-crossreach",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "o-stand-crossreach/o-stand-crossreach.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/o-stand-crossreach/",
+          "storage": "local",
+          "bytes": 33370793,
+          "sha256": "67696b4321b10d78882aa8ae509772689c16e9b38b138611bf9165e5c457aeee",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-crossreach.js",
+            "sha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-crossreach",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "o-stand-crossreach/o-stand-crossreach.dark.poster.540.jpg",
+          "local": "dark/posters/o-stand-crossreach.jpg",
+          "storage": "archive",
+          "bytes": 8076,
+          "sha256": "39f4ff7978d316a20e48e9347943d77e2c68e39d8717d0105f8b5f24ddeb5598",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-crossreach.js",
+            "sha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-crossreach",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "o-stand-crossreach/o-stand-crossreach.dark.1080.mp4",
+          "local": "dark/o-stand-crossreach.mp4",
+          "storage": "archive",
+          "bytes": 396759,
+          "sha256": "2370d82345485cbf8a70883cdf35cf7b472d382b9aadf8b8859f503758c8184c",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-crossreach.js",
+            "sha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-crossreach",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "o-stand-crossreach/o-stand-crossreach.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/o-stand-crossreach-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 800881,
+          "sha256": "2a43e22a9649900171fafe999b582cede89c7494cddfc3c10974c4530262d6d5",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-crossreach.js",
+            "sha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-lunge",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "o-stand-lunge/o-stand-lunge.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/o-stand-lunge/",
+          "storage": "local",
+          "bytes": 34311486,
+          "sha256": "6e990d0eeff4ea1c27f2b789e4ad3cf745d9ccb70d0e40b1d14da646d1766d4d",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-lunge.js",
+            "sha256": "c2f3984febb97819713bbbbea85196498fa6f95c8cb1a5e869cc89e580b4beaa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-lunge",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "o-stand-lunge/o-stand-lunge.dark.poster.540.jpg",
+          "local": "dark/posters/o-stand-lunge.jpg",
+          "storage": "archive",
+          "bytes": 7561,
+          "sha256": "b0e0fef20c797ea42e99b0523f6f73c38a80dedd8b27e911a5c3c4a2eaae7961",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-lunge.js",
+            "sha256": "c2f3984febb97819713bbbbea85196498fa6f95c8cb1a5e869cc89e580b4beaa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-lunge",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "o-stand-lunge/o-stand-lunge.dark.1080.mp4",
+          "local": "dark/o-stand-lunge.mp4",
+          "storage": "archive",
+          "bytes": 595513,
+          "sha256": "21c2848abbdf03fdf19585ffcea8a8fcd8f68ab28c726ebd1a8a7823bf5391db",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-lunge.js",
+            "sha256": "c2f3984febb97819713bbbbea85196498fa6f95c8cb1a5e869cc89e580b4beaa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "o-stand-lunge",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "o-stand-lunge/o-stand-lunge.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/o-stand-lunge-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1250046,
+          "sha256": "0b4f63af19715f550f791487d0c3569d3848a07d29ba9af1c629041e8d2c216e",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/o-stand-lunge.js",
+            "sha256": "c2f3984febb97819713bbbbea85196498fa6f95c8cb1a5e869cc89e580b4beaa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-9090",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-9090/s-9090.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-9090/",
+          "storage": "local",
+          "bytes": 25939395,
+          "sha256": "a06b73e62684aa95c3d38e4ca49515663521d877adeee136ee7964437c62ad91",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-9090-r2.js",
+            "sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-9090",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-9090/s-9090.dark.poster.540.jpg",
+          "local": "dark/posters/s-9090.jpg",
+          "storage": "archive",
+          "bytes": 7087,
+          "sha256": "cd361b296bb8c0f0d4ac3e08c44ff3f6e57c6d7719ca903aab544f8757942b61",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-9090-r2.js",
+            "sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-9090",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-9090/s-9090.dark.1080.mp4",
+          "local": "dark/s-9090.mp4",
+          "storage": "archive",
+          "bytes": 671706,
+          "sha256": "394815a615ecd18b5e9d760ce0235491e29f028022b33fbb87a832a6a9a3c724",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-9090-r2.js",
+            "sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-9090",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-9090/s-9090.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-9090-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1417802,
+          "sha256": "34557e64acf0ced3627547d88cee3afaf83df572910bc48fab33df2f84507e0a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-9090-r2.js",
+            "sha256": "81d8d8629e9c90559dd715465ad4002e6bc7d3baa6a5e261eb3ad97a55f4aa2e"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-butterfly",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-butterfly/s-butterfly.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-butterfly/",
+          "storage": "local",
+          "bytes": 46260421,
+          "sha256": "c5ff6705f97ca01e6b72ba7e98d1e853480fc756133c951fffa59187f76eac97",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-butterfly.js",
+            "sha256": "67b29f53ee83bdc31f5e8b2f5526205b94d814ffbcf771e7cc7c4b9a7564b866"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-butterfly",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-butterfly/s-butterfly.dark.poster.540.jpg",
+          "local": "dark/posters/s-butterfly.jpg",
+          "storage": "archive",
+          "bytes": 10174,
+          "sha256": "adebb5e7fb92fbbaead5d2d402b9f83e96931c801262f216dd65aa7bc1a008d8",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-butterfly.js",
+            "sha256": "67b29f53ee83bdc31f5e8b2f5526205b94d814ffbcf771e7cc7c4b9a7564b866"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-butterfly",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-butterfly/s-butterfly.dark.1080.mp4",
+          "local": "dark/s-butterfly.mp4",
+          "storage": "archive",
+          "bytes": 839040,
+          "sha256": "bdd56f1df2cf7ce0865685ec04dd085a8a91d73a77bc60b2bacea0e9f02bf8ce",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-butterfly.js",
+            "sha256": "67b29f53ee83bdc31f5e8b2f5526205b94d814ffbcf771e7cc7c4b9a7564b866"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-butterfly",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-butterfly/s-butterfly.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-butterfly-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1801046,
+          "sha256": "e67c050093d8e7cade268065884bc19aec17635e0c073117456bfc601fc0f09b",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-butterfly.js",
+            "sha256": "67b29f53ee83bdc31f5e8b2f5526205b94d814ffbcf771e7cc7c4b9a7564b866"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-figure4",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-figure4/s-figure4.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-figure4/",
+          "storage": "local",
+          "bytes": 54097405,
+          "sha256": "7fc1a599ee6423590182a50cb341c87da302eec48b2aaf985934c11a27a704b2",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-figure4.js",
+            "sha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-figure4",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-figure4/s-figure4.dark.poster.540.jpg",
+          "local": "dark/posters/s-figure4.jpg",
+          "storage": "archive",
+          "bytes": 11144,
+          "sha256": "c422ff0b904e65daee200b27fb0ef7f0d9f879b21e9fb33795cb06ae135443af",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-figure4.js",
+            "sha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-figure4",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-figure4/s-figure4.dark.1080.mp4",
+          "local": "dark/s-figure4.mp4",
+          "storage": "archive",
+          "bytes": 830854,
+          "sha256": "90aa9b4ce06768b627a9338f50373fb6f32a1ee1dc27d1edc1ba1e72afcfcb50",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-figure4.js",
+            "sha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-figure4",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-figure4/s-figure4.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-figure4-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1850508,
+          "sha256": "445e04295d477ea8ca07180e84f8317e162148f02a851cada9e7ab35e2a49bae",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-figure4.js",
+            "sha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-frog",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-frog/s-frog.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-frog/",
+          "storage": "local",
+          "bytes": 23415671,
+          "sha256": "608fa5bd493fc7d7474a0b4c730c799c10f529bcfc0953b80356a61a2060e7d5",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-frog-r2.js",
+            "sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-frog",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-frog/s-frog.dark.poster.540.jpg",
+          "local": "dark/posters/s-frog.jpg",
+          "storage": "archive",
+          "bytes": 6474,
+          "sha256": "27fe0e1af33cf8da3c5b82cf0f44cf33af63ba9e3ba4449136a0e657efd492d7",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-frog-r2.js",
+            "sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-frog",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-frog/s-frog.dark.1080.mp4",
+          "local": "dark/s-frog.mp4",
+          "storage": "archive",
+          "bytes": 466202,
+          "sha256": "6c8f90487b66cd4692a9182cbd62fd681c215647aded99df7b85116c4ddfbe55",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-frog-r2.js",
+            "sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-frog",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-frog/s-frog.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-frog-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1008778,
+          "sha256": "7cc8f4bab9af28983e8704b3b5d6b43e7ea60a81fb3ffadc6e44eccce1d6c457",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-frog-r2.js",
+            "sha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-kneel-hipflex",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-kneel-hipflex/s-kneel-hipflex.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-kneel-hipflex/",
+          "storage": "local",
+          "bytes": 29804908,
+          "sha256": "3e16c8006b26a70ccf418832d12c7ac6765e7f3d7fccb29703f2ebeb126e7552",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-kneel-hipflex.js",
+            "sha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-kneel-hipflex",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-kneel-hipflex/s-kneel-hipflex.dark.poster.540.jpg",
+          "local": "dark/posters/s-kneel-hipflex.jpg",
+          "storage": "archive",
+          "bytes": 7522,
+          "sha256": "0842fd0cf8625f436cad29e1cbb2bfb1b1ca7474c3f1f463e500ea2e97757e66",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-kneel-hipflex.js",
+            "sha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-kneel-hipflex",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-kneel-hipflex/s-kneel-hipflex.dark.1080.mp4",
+          "local": "dark/s-kneel-hipflex.mp4",
+          "storage": "archive",
+          "bytes": 524563,
+          "sha256": "b4b74268769f3798f9d72a04312aeea88e2b0463b25a8c8e9eb40ddd779ce1d2",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-kneel-hipflex.js",
+            "sha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-kneel-hipflex",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-kneel-hipflex/s-kneel-hipflex.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-kneel-hipflex-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1036246,
+          "sha256": "9bdaaf14e881900a60a6a4e379adf4348ed5492239a62e6b72210cec7db709e1",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-kneel-hipflex.js",
+            "sha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-lizard",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-lizard/s-lizard.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-lizard/",
+          "storage": "local",
+          "bytes": 34542841,
+          "sha256": "48770fc01eb823549fe8640acf1c9b7f0bea84159edda93f5d65781a29f1a404",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-lizard.js",
+            "sha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-lizard",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-lizard/s-lizard.dark.poster.540.jpg",
+          "local": "dark/posters/s-lizard.jpg",
+          "storage": "archive",
+          "bytes": 7770,
+          "sha256": "605ebc6bfff58e3d61ea38b9c4885f1d27d3ddd6fb83561b94a3eaad650cd861",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-lizard.js",
+            "sha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-lizard",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-lizard/s-lizard.dark.1080.mp4",
+          "local": "dark/s-lizard.mp4",
+          "storage": "archive",
+          "bytes": 581718,
+          "sha256": "48490af5dbc1df91a2e867439f620d875994155869b3fb69aed51bfeb630134a",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-lizard.js",
+            "sha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-lizard",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-lizard/s-lizard.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-lizard-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1263469,
+          "sha256": "f6d89b640ee888452f26c5c7c5bd3ece028524a717ba583633c1ac72a066c040",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-lizard.js",
+            "sha256": "b80255afd4411b2197c93ae881cdb6058ef1104f20938c9d3dcf4ee174a3a7a5"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-pigeon",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-pigeon/s-pigeon.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-pigeon/",
+          "storage": "local",
+          "bytes": 24812333,
+          "sha256": "e1e7034842821d3d4132b1fbaa6db2b138accea137c7f62f939124f6da4d063d",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-pigeon.js",
+            "sha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-pigeon",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-pigeon/s-pigeon.dark.poster.540.jpg",
+          "local": "dark/posters/s-pigeon.jpg",
+          "storage": "archive",
+          "bytes": 6355,
+          "sha256": "38c9feec35ce76cb4f4c23e73bd62055061ac41850e9c41f65d4a8ed1bbd5727",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-pigeon.js",
+            "sha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-pigeon",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-pigeon/s-pigeon.dark.1080.mp4",
+          "local": "dark/s-pigeon.mp4",
+          "storage": "archive",
+          "bytes": 317184,
+          "sha256": "de2e3ec167d67380dba2064ceffe5f3d7c7bc45c55faf8191aca3d867ba22afa",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-pigeon.js",
+            "sha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-pigeon",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-pigeon/s-pigeon.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-pigeon-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 741809,
+          "sha256": "8230cd7f28202e837c92f8ee67b292500f785f8007c77852371ab076cf2f2273",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-pigeon.js",
+            "sha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-seated-fold",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "s-seated-fold/s-seated-fold.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/s-seated-fold/",
+          "storage": "local",
+          "bytes": 28576930,
+          "sha256": "9e6c237561e52facc8e072eb8b434a43ec954eb4dd2de1d51e90e6e396576086",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-seated-fold-r3.js",
+            "sha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-seated-fold",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "s-seated-fold/s-seated-fold.dark.poster.540.jpg",
+          "local": "dark/posters/s-seated-fold.jpg",
+          "storage": "archive",
+          "bytes": 7224,
+          "sha256": "8eadd96329042bd3c68e393fd1ea8a074e126c0f79d614d4e893f49264cc2974",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/s-seated-fold-r3.js",
+            "sha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-seated-fold",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "s-seated-fold/s-seated-fold.dark.1080.mp4",
+          "local": "dark/s-seated-fold.mp4",
+          "storage": "archive",
+          "bytes": 563852,
+          "sha256": "7fb4123cd2291578e14391c4ef30561e9b5837e43d5b8344951479f94405c2ea",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-seated-fold-r3.js",
+            "sha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "s-seated-fold",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "s-seated-fold/s-seated-fold.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/s-seated-fold-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1164500,
+          "sha256": "bb89789fdefe80494c30eb959d60dc579b2c81bd3ce6f688d09f26ebbf208614",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/s-seated-fold-r3.js",
+            "sha256": "13e38b9e0fb74935868633656b8cc98040f93cf13565132aa95f32c87cd75cc8"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "t-seated-straddle-lift-1leg",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/t-seated-straddle-lift-1leg/",
+          "storage": "local",
+          "bytes": 49994498,
+          "sha256": "13950f4cf26529a498504f7959508f515f277b9886cc1bfd199b5fa38b9a2c6b",
+          "width": 1080,
+          "height": 1080,
+          "frames": 300,
+          "spec": {
+            "path": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+            "sha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "t-seated-straddle-lift-1leg",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.dark.poster.540.jpg",
+          "local": "dark/posters/t-seated-straddle-lift-1leg.jpg",
+          "storage": "archive",
+          "bytes": 8827,
+          "sha256": "cbcd639cc98efe24a4a58028ef8e64518090b337ae02f374b904e0c7f723ac21",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+            "sha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "t-seated-straddle-lift-1leg",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.dark.1080.mp4",
+          "local": "dark/t-seated-straddle-lift-1leg.mp4",
+          "storage": "archive",
+          "bytes": 1083739,
+          "sha256": "17161a5028f5b7a4c06229c9071667907843f9e737f5c29e6840dc19ea8f9e3f",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 10.0,
+          "fps": 30.0,
+          "frames": 300,
+          "spec": {
+            "path": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+            "sha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "t-seated-straddle-lift-1leg",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "t-seated-straddle-lift-1leg/t-seated-straddle-lift-1leg.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/t-seated-straddle-lift-1leg-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 2234093,
+          "sha256": "244a6dd853b8c31d1196cd09e9d21270be993c9f5c2878957626e49ebe6a93f8",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 10.0,
+          "fps": 30.0,
+          "frames": 300,
+          "spec": {
+            "path": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+            "sha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-clamshell",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "w-clamshell/w-clamshell.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/w-clamshell/",
+          "storage": "local",
+          "bytes": 38774432,
+          "sha256": "3c8ea0e3075c534d19fd44bb684753f0606efb60c67bb2f05744613ecc5dc4de",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-clamshell.js",
+            "sha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-clamshell",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "w-clamshell/w-clamshell.dark.poster.540.jpg",
+          "local": "dark/posters/w-clamshell.jpg",
+          "storage": "archive",
+          "bytes": 8672,
+          "sha256": "b430d44a0a40a4331abc0a1fe079389329ac928302d4718935204d5012a01c0f",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/w-clamshell.js",
+            "sha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-clamshell",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "w-clamshell/w-clamshell.dark.1080.mp4",
+          "local": "dark/w-clamshell.mp4",
+          "storage": "archive",
+          "bytes": 870577,
+          "sha256": "c1d6c8d2796d21941b75f2ba1f51a66356cfaac9aa18977ca814bb93eadae333",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-clamshell.js",
+            "sha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-clamshell",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "w-clamshell/w-clamshell.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/w-clamshell-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1897612,
+          "sha256": "36c0181c90fbd116505a8c43915c97fc6d4745948c0226d5e4f8471585c31625",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-clamshell.js",
+            "sha256": "f3647e83bf4a87521600cbc96d5c124c1e8413bdd06c3f72235ff3cbb9a05ff1"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-feet-on-chair-bridge",
+          "variant": "alpha",
+          "role": "frames",
+          "kind": "frames",
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.alpha.frames.1080.frames/",
+          "local": "greenscreen/alpha/w-feet-on-chair-bridge/",
+          "storage": "local",
+          "bytes": 32679887,
+          "sha256": "a741b4731e48fed8e2abac8a022d125156d66baa38374f7f8f6ca37849389c6c",
+          "width": 1080,
+          "height": 1080,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-feet-on-chair-bridge.js",
+            "sha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-feet-on-chair-bridge",
+          "variant": "dark",
+          "role": "poster",
+          "kind": "file",
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.dark.poster.540.jpg",
+          "local": "dark/posters/w-feet-on-chair-bridge.jpg",
+          "storage": "archive",
+          "bytes": 8924,
+          "sha256": "04f9d6684e50bedad65e2781a74aac0c8c7ec4bd41c86b90875fdb866750751e",
+          "width": 540,
+          "height": 540,
+          "spec": {
+            "path": "drill-anim/specs/w-feet-on-chair-bridge.js",
+            "sha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-feet-on-chair-bridge",
+          "variant": "dark",
+          "role": "video",
+          "kind": "file",
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.dark.1080.mp4",
+          "local": "dark/w-feet-on-chair-bridge.mp4",
+          "storage": "archive",
+          "bytes": 677701,
+          "sha256": "f57ca24c22d0c092552def5b6bd0302156c0d0de09bddada5047a10d49b55401",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-feet-on-chair-bridge.js",
+            "sha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        },
+        {
+          "id": "w-feet-on-chair-bridge",
+          "variant": "greenscreen",
+          "role": "video",
+          "kind": "file",
+          "file": "w-feet-on-chair-bridge/w-feet-on-chair-bridge.greenscreen.1080.mp4",
+          "local": "greenscreen/media/master/w-feet-on-chair-bridge-greenscreen.mp4",
+          "storage": "local",
+          "bytes": 1408444,
+          "sha256": "d188e91a13dc392704924311eaf29ff9ca60b99d246b27a5849da6adc7b1c21d",
+          "width": 1080,
+          "height": 1080,
+          "durationSec": 8.0,
+          "fps": 30.0,
+          "frames": 240,
+          "spec": {
+            "path": "drill-anim/specs/w-feet-on-chair-bridge.js",
+            "sha256": "a1f5f1fd1997ae56a5692ce4c5e9f6aea65db5b20d7715209a104ddde4f65a7d"
+          },
+          "theme": {
+            "path": "drill-anim/themes/glow-soft.json",
+            "sha256": "7f26f07e38a500c565b7dbdb51a4e0b7eedfdf42657feea569fcc026ce85d2db"
+          }
+        }
+      ],
+      "updatedAt": "2026-10-18T03:24:06Z",
+      "distribution": {
+        "method": "google-drive-zip",
+        "archive": {
+          "fileName": "pose-hub-media-v0.2.0.zip",
+          "bytes": 39151634,
+          "fileCount": 92,
+          "sha256": "f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77dd317c772",
+          "url": "https://drive.google.com/file/d/17M0oMpWIqWQJ19sMEOEsDF7H7AU9meqF/view?usp=drivesdk",
+          "driveFileId": "17M0oMpWIqWQJ19sMEOEsDF7H7AU9meqF"
+        },
+        "layout": "{file}",
+        "folderUrl": "https://drive.google.com/drive/folders/12M4g7bpomaCjY7qdgYdfoUHuA2xla9lH",
+        "folderId": "12M4g7bpomaCjY7qdgYdfoUHuA2xla9lH"
+      }
     }
   },
   "_doc": "One immutable ZIP per published release, shared by Google Drive link. File hashes remain authoritative; local masters never enter the ZIP."

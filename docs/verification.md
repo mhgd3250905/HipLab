@@ -168,6 +168,24 @@ Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正�
 
 本轮没有 ADB、Android 原生复验或 iOS 系统行为新结论。详见[第二轮集成记录](round2-integration-2026-10-18.md)。
 
+## Pose-Hub v0.2.0 接入验证（2026-10-18）
+
+ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77dd317c772`；下载云端冻结 manifest SHA `76be4160b48f1a8d658d558b30418fe11e686a241bdfd63d2b7ee8fa45012889`，均核验，安全解压92文件完成。
+
+| 检查 | 本轮实际结果 |
+|---|---|
+| dry-run → sync → check | dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied |
+| 46 视频 / 46 封面元数据 | 本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG |
+| 自有剪辑 /20张 still | hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持 |
+| 内容重生成 | 来源metadata更新后重生成hip-content.json逐字节不变；时长与poster_time均保持；旧来源完整快照及prior数组保留 |
+| analyze | exit 0，无问题 |
+| Flutter | 单并发156通过、1条件跳过（未设置VOICE_TIMELINE_OUT），exit 0 |
+| Python | 本轮未重复；上一轮11项已通过，Python工具逻辑未改变 |
+| iOS 静态 | 本轮未重复静态检查，ios/文件未改；Mac构建与iPhone仍待验 |
+| APK 内容 / 身份 | 包名com.ugk.hiplab、versionCode9/versionName0.3.4、既有debug证书匹配；包内92新素材、22自有文件、488语音及共享播放器与源码匹配；未安装 |
+| 临时网页 | Chrome实际共享player.html/player.js，青蛙式、90/90、抬脚、四足画圈、臀大肌、屈髋肌测试共6动作：首帧事件/opacity1/contain、至少一次循环、暂停无时间漂移和恢复通过，截图已查看；独立App预览换入新封面，320×568/360×740/390×844/768×1024正方形示范、按钮完整与无滚动、6项自测和结果完成通过。App预览仍为poster stub+静音fixture；键盘启用可访问性后坐标操作，非原生验收；未证明原生无黑闪或系统音频通过。 |
+
+未登记结果不能视为通过。网页不等于 Android / WKWebView 原生合成、音频或 iPhone 验收；没有本轮 ADB。详见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。
 
 ## Mac iOS 0.3.3+8 本地构建（2026-10-18 10:33）
 
@@ -186,3 +204,10 @@ iPhone 16 Pro / iOS 26.5 镜像可用，CoreDevice 两种标识查询均报 1011
 
 
 11:45 补记：用户已重启并确认首页恢复“10 分钟、连续 0 天”，将恢复阶段记为用户确认通过；未重连镜像复查全部字段，不扩写为新的系统听音结果。镜像已退出且进程未运行，等待手机本机长句/倒数、锁屏 3 分钟、解锁阶段及视频反馈；后续不再写回偏好，保留用户新操作。
+
+
+## iOS 手机本机复测反馈（2026-10-18 11:51）
+
+0.3.3+8 / `bb828be` / iPhone 16 Pro / iOS 26.5，退出镜像并恢复原设置后，用户对所请求的长句/准备倒数、普通电源键锁屏约 3 分钟、解锁后计时/阶段和视频恢复反馈“测试通过一切正常”。记为 **PASS（用户报告）**，没有代理录音或逐项音频测量；不扩写到背景音乐 ducking、静音开关专项、来电/Siri/闹钟、耳机、自测后台、英文专项、其他机型或连续首帧无闪。
+
+此前镜像断连暂停的阶段观察保留，未据此认定普通锁屏缺陷或改音频代码。main 已由 Windows 更新到 `a70df11` / 0.3.4+9 / v0.2.0；文档分支合入 main 跟上，不将本次通过用于尚未构建/安装的 0.3.4+9。完整边界见[iOS 真机记录](ios-device-validation-2026-10-18.md)。

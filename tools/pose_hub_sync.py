@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# copied from 3D-Pose-Hub media/tools/sync.py @ ee9d7ea71c599037c00d0f0e4a1b7e70a65538e8
+# copied from 3D-Pose-Hub media/tools/sync.py @ 59fb7b9c68867ef57ff6d2fe5c8b72da3022fac4
 """Pose-Hub media sync for App repositories (single file, Python 3.9+ standard library only).
 
 Reads the frozen manifest of ONE pinned media version and downloads only the requested drill ids into a

@@ -2,11 +2,7 @@
 
 核对日期：2026-10-18，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
 
-**Mac / iOS 补记（10:33）：** `ios/device-validation` 从 `origin/main@bb828be` 验证 **0.3.3+8**：analyze 无问题、156 pass / 1 skip，签名 Flutter Release 与 Xcode Archive 均通过。iPhone 16 Pro / iOS 26.5 的 CoreDevice 准备错误阻止安装，当前版本未上真机，11 项均待验收。此前 0.3.2+7 的 TestFlight 用户反馈与 09:43 正式送审是独立历史，本轮未操作 Apple；已推送文档提交 `668616f` 并创建 [草稿 PR #15](https://github.com/mhgd3250905/HipLab/pull/15)，未合并；详情见[iOS 本地验证记录](ios-device-validation-2026-10-18.md)。
-
-**Mac / iOS 11:40 更新：** 设备重连成功，0.3.3+8 已覆盖安装于 iPhone 16 Pro / iOS 26.5，安装后原 426 字节偏好保持；完成部分深浅 UI、六项课流程、六页自测及四个重点视频抽查。后台主屏幕对照可推进，关闭镜像的锁屏路径出现暂停，普通锁屏语音仍待复测；人工听音及系统中断/耳机未验收。测试文件已恢复，运行缓存等待用户重启复核；详见[iOS 真机记录](ios-device-validation-2026-10-18.md)。
-
-**Mac / iOS 11:45 更新：** 用户重启后确认首页已恢复“10 分钟、连续 0 天”，此前测试文件/运行缓存差异阶段已解决。已退出镜像，等待手机本机声音和普通锁屏复测反馈；[iOS 真机记录](ios-device-validation-2026-10-18.md) 记录用户观察来源，PR #15 保持草稿。
+**Mac / iOS 最新（11:51）：** 手机为 **0.3.3+8 / `bb828be` / iPhone 16 Pro / iOS 26.5**。Release、Archive、保留偏好覆盖安装及基本 UI/视频检查通过；退出镜像后，用户对本机长句/准备倒数、普通锁屏约 3 分钟及解锁恢复复测反馈“测试通过一切正常”（用户报告，非代理录音）。重启后原设置恢复已获确认。背景音乐 ducking、来电/Siri/闹钟、耳机等未执行项目仍待验收。Windows main 已到 **0.3.4+9 / Pose-Hub v0.2.0**，本次未重构建或安装它，不套用 0.3.3 的通过结论；过程与旧阶段记录见[iOS 真机记录](ios-device-validation-2026-10-18.md)，[PR #15](https://github.com/mhgd3250905/HipLab/pull/15) 交由 Windows 审查，未合并。
 
 ## App 与设备
 
@@ -14,17 +10,17 @@
 |---|---|
 | 产品 / 包名 | 开胯训练助手 HipLab / `com.ugk.hiplab` |
 | Android 已安装版本 | **0.3.2+7 debug / arm64**，Pose-Hub v0.1.0 接入后已保留数据覆盖安装；不是 Play 已发布版本 |
-| 已构建版本 | **0.3.3+8 debug / arm64**，源码 `1b35657`，已构建并核验，尚未安装 |
-| 已安装代码提交 | 手机仍为 `963db04` / 0.3.2+7；本轮运行源码 `1b35657dec153741e25ca095ac2764b18d14ac29` 仅构建，手机拔线未安装 |
+| 已构建版本 | 0.3.4+9 debug / arm64，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装 |
+| 已安装代码提交 | 手机仍为 `963db04` / 0.3.2+7；本轮未执行 ADB，不以新构建或推送改写安装身份 |
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 用户验收 | 2026-10-17，0.1.2+3 更新测试通过；2026-10-18，用户已验收 0.3.1+6 单屏自测 UI。此验收不覆盖后来 CSS 修复的原生首帧 |
 | 验证设备 | 2602BRT18C，Android 16 / API 36，arm64 |
-| 产品范围 | 中文、离线；main 已含浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 0.3.3+8 Release / Archive 和保留偏好安装已通过，已完成部分真机 UI/视频/后台检查，完整系统与听感验收未完成 |
-| 动作素材 | 46 项动作已取用 Pose-Hub v0.1.0 的 1080 dark 视频/封面，共 92 文件；另保留 HipLab 自有 `supine-cross-demo` 视频/封面 |
-| 自测素材 | 6 项自测均解析为视频；现有 20 张自测静图保留（含 #8 的 11 张修订），不在 Pose-Hub v0.1.0 ZIP / lock 内 |
-| 运行验证 | 行为检查源 `162a4e6b78a8640d367cac13ef5e1ae6cfa9b33a`：analyze 0，Flutter 156 项通过、1 项按设计跳过；本轮 APK 构建成功，网页证据边界见下文；未执行 ADB / iPhone 验收 |
+| 产品范围 | 中文、离线；main 已含浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 已安装 0.3.3+8，构建与基本真机检查通过，用户本机听音/普通锁屏复测正常；当前 main 0.3.4+9 / v0.2.0 尚未做 iPhone 构建或验收 |
+| 动作素材 | 当前冻结 Pose-Hub v0.2.0：46 条 1080 视频 / 46 张 540 封面，ID 和文件名保持；自有 supine-cross-demo 与20张 still 保留 |
+| 自测素材 | 既有 20 张自测 still 保留（含 #8 修订），不在 v0.2.0 ZIP / lock；不重新渲染 |
+| 运行验证 | analyze：exit 0，无问题；Flutter：单并发156通过、1条件跳过（未设置VOICE_TIMELINE_OUT），exit 0。本轮 native/iOS 未验，具体素材、APK、网页检查见[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md) |
 
-当前素材按仓库冻结的 `pose-hub.lock.json` / `tools/pose-hub-manifest.json` 取用。92 文件 `--check`、46 条视频 ffprobe、22 个保留文件及 APK 内资源检查通过；具体版本和检查证据见[版本台账](version-ledger.md)与[验证台账](verification.md)。浅色主题仍使用深色舞台，light 未发布；绿幕和透明母帧留在上游，App 不直接播放。历史 3D-Body 批次 QA 与体前屈 r3 警告保留在原验证记录，不能当成本轮全量真机验收。
+当前素材按仓库冻结 lock / manifest 取用 v0.2.0。同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied；元数据：本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG；保护文件：hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持。浅色主题仍用深色舞台，light不在包内；旧批次QA和历史验收保留，不能作为本轮全量真机结论。
 
 ## Git 与主线集成
 
@@ -32,7 +28,7 @@
 
 | 对象 | 2026-10-18 核对结果（历史日期另列） |
 |---|---|
-| HipLab `main` | 业务代码 `1b35657dec153741e25ca095ac2764b18d14ac29` 已于 2026-10-18 10:04 北京时间推送 main；PR #13：MERGED（a41e7e0）；PR #14：MERGED（4c563f9）；保留原 #7—#10 及 Pose-Hub v0.1.0 |
+| HipLab `main` | 业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main；此前 #7/#8/#9/#10/#13/#14 及 v0.1.0 集成历史保持 |
 | [HipLab #7](https://github.com/mhgd3250905/HipLab/pull/7) | MERGED，merge `ba591bf`；并合入 Android 首轮验证修复 |
 | [HipLab #8](https://github.com/mhgd3250905/HipLab/pull/8) | MERGED，merge `5bb43f0`；保留修订媒体与配套评分说明 |
 | [HipLab #9](https://github.com/mhgd3250905/HipLab/pull/9) | MERGED，merge `61979d8`；保留 iOS 配置及共享音视频安全处理 |
@@ -94,3 +90,9 @@ Pose-Hub 首版已发布并接入，版本冻结为 **v0.1.0**。新机器从已
 临时独立网页预览在 320×568、360×740、390×844、768×1024 上检查正方形示范区、按钮 bounds、无滚动、六项自测及结果完成；点按暂停/继续、键盘、分段拖动、快速 Tab 和训练暂停/继续通过。预览使用 silent-voice fixture 与 poster stub；普通 DOM locator 仍因 Flutter semantics root 空白而超时，保留失败证据。坐标 page.mouse 操作通过且未使用 force；原生 widget hitTest 回归通过。这不构成原生媒体、H.264、系统音频或正式 Web 支持验收，也不据此诊断透明旧页遮挡。倒计时改为 33 ms tick；Chrome 18 屏的 17 个相邻环区域中，完全相同对数由旧 100 ms 的 5 对降至 0 对，采样约 47–79 ms，不代表真机帧时或帧率
 
 [第二轮集成记录](round2-integration-2026-10-18.md)。本轮不上传商店，不改版本号以外的发布配置；没有新的手机安装或 native/iOS 通过结论。
+
+## Pose-Hub v0.2.0 当前快照（2026-10-18）
+
+Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持。App 0.3.4+9，源码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468`，已构建但未安装；业务代码 `03c3b5bcd1ebc0157e3789af21a4bf0188f52468` 已于 2026-10-18 11:40 北京时间推送 main。手机仍为 `963db04` / 0.3.2+7，本轮无 ADB 或商店操作。
+
+ZIP、云端冻结 manifest 已下载核验，安全解压 92 文件完成；App 同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied。[Pose-Hub v0.2.0 接入](posehub-v020-integration-2026-10-18.md)。人工观感、原生首帧/音频与 Mac/iPhone 仍待验收。
