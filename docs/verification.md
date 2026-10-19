@@ -1,6 +1,6 @@
 # 验证台账
 
-当前手机为 **0.3.6+11 debug / arm64**（源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`），2026-10-18 19:29保留数据安装，版本/冷启动首页/浅色新滑块及1356字节偏好保持已确认；见本页对应追加记录。0.3.5+10完整试听确认属于历史，不扩展为本版听音验收。以下V-01至V-13保留0.1.1+2 / `35f2a97`的原始检查，0.1.2+3 / `4cf5ca7`等各版本按日期独立登记，不能当作当前版本重新执行的结果。
+最新已核验安装为 **0.3.6+11 debug / arm64**，构建源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据安装；F9编辑/键盘原生通过，正常播放与用户听音确认见上一轮记录。main已合入同样运行内容；387pass/1条件skip、analyze0与APK证据按下方来源绑定复用，不把后续文档HEAD冒称为重新测试或构建。当前安装以该次核验为准，本次不执行ADB。原66f5da0/0.3.6首轮及0.3.5+10试听、V-01～V-13等均按日期保留历史。
 
 | 编号 | 范围 / 命令 | 已执行结果 | 证据与边界 |
 |---|---|---|---|
@@ -352,3 +352,24 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 ## PR #22 / #24 合入main核验（2026-10-19 23:32）
 
 用户明确同意后核对远端main=ab1425b、候选=b33ed21、PR22=a586de3、PR24=0ccef6b均未变；两来源都是候选祖先。main快进b33ed21并push成功，GitHub两PR均MERGED。合入树与已验9b22dcc在lib/android/assets/pubspec/lock/tests无差异，沿用387pass/1skip、analyze0及原生F9/键盘与上一轮正常播放证据；本次仅合并与文档，没有重跑SDK或安装。文档diff --check及本地链接核对通过。[精确身份](pr22-f9-reaudit-2026-10-19.md)。
+
+## PR22/24合并后文档收束：Preflight与证据绑定（2026-10-19）
+
+收束scope仅为#22/#24合并后的入口、当前状态、版本/验证/事项/日志/工作流对齐；不改运行代码、依赖、素材、版本、商店配置或副本位置，不重跑原生/SDK矩阵。
+
+- baseline `ab1425baeec1dd76a214652989864278434aa9a2`：本会话记录的main合并前起点，无另立基线ref；对象可解析且是收束前HEAD祖先。
+- 收束前HEAD `cdbb14c5bc973885aeb507f063144a0db9a7d411`；有限delta为43提交/65路径，36修改/29新增，分类android3、lib22、test25、test_screens5、docs10。
+- canonical discovery从根AGENTS.md、README.md一跳确认：docs/README.md为索引，docs/current-state.md为当前事实，docs/version-ledger.md为交付事实，docs/verification.md为检查记录，docs/development-roadmap.md为事项状态，docs/development-log.md为关键成果，docs/development-workflow.md为流程；pubspec.yaml提供版本事实。已标明日期的旧轮段落按archive/history使用，不能覆盖当前摘要。
+- 归属：完整porcelain/all结果为tracked/staged/unstaged/deleted/renamed均0，untracked4（.playwright-cli与.playwright-mcp各2）。它们已在阶段前记录为旧网页审核产物，路径集合本轮保持；未读内容、未暂存、未清理。65路径已提交delta来自获准集成的PR22/24及本机审核/合并文档，后续本次文档修改由本Agent负责。
+- findings：根README/工作流基线仍指旧阶段，交付及验证页首仍指66f5da0，当前限制仍称Android前台音频未完成，事项表复用了D-25并留待审状态；已对齐到合并事实，Android问题统一D-30，旧转场D-25和日期快照保留。
+
+| 既有证据命令 / 观察 | 结果、来源与source state | 对当前树的适用性 |
+|---|---|---|
+| `flutter pub get --enforce-lockfile` | 本会话2026-10-19 Windows，成功；最终组合源9b22dccc2bf2ca269a67b408198b9e3e9dbb742b | lock/版本无改动 |
+| `flutter analyze --no-pub` | 同一组合运行树，无问题；其后固化为9b22dcc | 到收束前HEAD仅9个docs路径有差异，运行与测试内容相同 |
+| `flutter test --no-pub --concurrency=1 --reporter expanded` | 同一组合树，387pass/1条件skip，6分10秒；条件skip为timeline导出 | 本轮继续只改文档，不影响该检查 |
+| `flutter build apk --debug --target-platform android-arm64 --no-pub` | 9b22dcc，Gradle41.8秒；包身份/资源/签名检查通过 | 这是9b22dcc的既有构建，不声称当前文档HEAD重新构建 |
+| `adb -s <当次核验设备> install -r hiplab-0.3.6+11-pr22-pr24-f9-arm64-debug.apk`及原生回读 | 2026-10-19 23:15:53，包SHA匹配、14键升级state保持；F9与键盘通过 | 既有设备观察，本次不重装/不重新读取用户数据；合并不扩大其强度 |
+| `gh pr view 22 --repo mhgd3250905/HipLab --json number,state,mergedAt,mergeCommit,headRefOid`，同参数查24 | 本次只读再核对，两PR均MERGED，来源a586de3/0ccef6b，UTC15:32:51合并 | 与当前Git祖先及主线集成点b33ed21一致；没有商店状态观察 |
+
+本次必要验证为文档事实、8份修改文档中261处本地链接引用（0缺失）、`git diff --check`、证据源到HEAD的有限差异及完整状态/归属复核；修改后只有本Agent的8份文档和原有4个未跟踪产物，没有新未知路径；不读取构建产物、原生日志、凭据或未跟踪产物内容。SDK/原生证据仅由本会话既有执行及已提交台账绑定，不能当成closeout重新执行。
