@@ -4,6 +4,7 @@
 
 | 日期 / 阶段 | 结果与决定 | 关联证据 |
 |---|---|---|
+| 2026-10-19 晚 / PR24 审核四项P2修复 | 同步main 6299a38后修F24-1～4：cancelAll无条件停输出并作废排队旧句（tailGrace只用于正常换句）；音量按最后请求下发；新增TrainingHold按训练会话持有前台服务+唤醒锁，自然完成/神经疼/自测结果/退出/dispose释放，上限随计划时长（≤2 h）；START/STOP带会话id，旧STOP不再关新会话。每项先写修复前失败的回归测试。analyze0、290pass/1skip；Kotlin未编译、未真机，未合并 | [Android语音记录第二轮](android-voice-playback-2026-10-19.md#第二轮pr-24-审核四项-p2-修复2026-10-19-晚) |
 | 2026-10-19 / Android语音三问题 | 开哥戴耳机反馈后台卡顿、句尾被掐、吞「3、2、1」。沙盒复现并修：后台无前台服务（加原生 mediaPlayback 前台服务+部分唤醒锁，无新依赖）；英文换边句被倒数切0.64 s（换边按句长取整秒加长、队列tailGrace 0.8 s）；控制器新句作废旧句致整段倒数消失（改为按序播放）。analyze0、277pass/1skip；未构建APK、未真机，分支`fix/android-voice-playback`待本机验收；Play需补前台服务声明 | [Android语音记录](android-voice-playback-2026-10-19.md) |
 | 2026-10-19 / PR22 F7复核 | 9fa0cc0的F1–F7代码问题均关闭；Windows322过/1跳、analyze0、Python19、独立原复现通过。原生验收待补，未合并、未构建安装 | [最新复核](pr22-reaudit-2026-10-19.md) |
 | 2026-10-17 / 接手 | 从 HipLab #1 源 `2865ed7` 建立独立接手分支；初始 48 项测试、4 项截图通过；确认紧侧计时缺陷，留 D-01 | [接手基线](project-takeover-2026-10-17.md) |

@@ -329,3 +329,7 @@ b12b0f5和9fa0cc0均enforce-lockfile pub get/debug arm64构建通过；两包CRC
 ## PR #24 Windows独立审核（2026-10-19）
 
 固定e3655e5与实际main fcffded；pub get enforce-lockfile成功、analyze0、277pass/1条件skip，debug arm64 Gradle20.6秒成功，新service/权限实际入包，debug签名/CRC/16KB对齐及575音频/94视频逐字节检查通过。独立手动暂停/真实D英文疼痛取消专项均失败；疼痛case替回main Queue/Controller通过。异步音量专项head失败，main Controller音量对照通过。另查实两项原生生命周期P2，无设备时序或耗电量实测。merge-tree仅verification.md冲突，未合并。未执行ADB、安装、锁屏/耳机/ducking或iOS；作者的旧PR22组合测试不冒充本轮执行。[精确链路、复现与日志](pr24-review-2026-10-19.md)。
+
+## PR #24 审核四项P2修复沙盒验证（2026-10-19 晚）
+
+分支 `fix/android-voice-playback` 同步 main `6299a38` 后修 F24-1～4，沙盒 Linux Flutter 3.44.7：pub get enforce-lockfile 成功；analyze 0；`flutter test` 290 pass / 1 条件 skip；`build_action_kits.py check` 0 problem（无 jsonschema）；`build_themed_media.py check` ok；Python 19 OK；`git diff --check origin/main HEAD` 干净。新增 16 项回归测试，其中 14 项在 e3655e5 代码上失败或编译不过（另 2 项为守护项）（明细见[Android语音记录第二轮](android-voice-playback-2026-10-19.md)）。**未执行**：Kotlin 编译（无 Android SDK）、APK、安装、真机；补充复测点见同一记录。

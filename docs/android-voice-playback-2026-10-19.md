@@ -58,7 +58,7 @@ main `d9338ea` 同一复现，全部 15 套路、等级 3：
 
 ## 修法（保持聚焦，无新依赖，未改 pubspec/lock）
 
-1. **Android 前台服务**（原生 Kotlin，无插件）：`TrainingSessionService`（`foregroundServiceType="mediaPlayback"`，`stopWithTask`，一条低优先级常驻通知“开胯训练进行中”，PARTIAL_WAKE_LOCK 上限 3 h）。`MainActivity` 加 `hiplab/training_session` 通道；Dart `lib/core/platform/training_service.dart` 由 `ScreenAwake` 引用计数驱动（训练播放器、自测页已有的持有点），不改页面代码。Manifest 加 `FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_MEDIA_PLAYBACK`、`WAKE_LOCK`。未申请 `POST_NOTIFICATIONS`：Android 13+ 未授权时通知不显示在通知栏（任务管理器里可见），服务照常生效。
+1. **Android 前台服务**（原生 Kotlin，无插件）：`TrainingSessionService`（`foregroundServiceType="mediaPlayback"`，`stopWithTask`，一条低优先级常驻通知“开胯训练进行中”，PARTIAL_WAKE_LOCK；第二轮改为按训练会话持有、上限随计划时长，见文末）。`MainActivity` 加 `hiplab/training_session` 通道；Dart `lib/core/platform/training_service.dart`（第一轮由 `ScreenAwake` 引用计数驱动，第二轮改为每次训练一个 `TrainingHold`）。Manifest 加 `FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_MEDIA_PLAYBACK`、`WAKE_LOCK`。未申请 `POST_NOTIFICATIONS`：Android 13+ 未授权时通知不显示在通知栏（任务管理器里可见），服务照常生效。
 2. **队列不丢句**（`VoiceLineController`）：句子按请求顺序排队播放；只有 `stopSpeech`（有意打断）和 `abandon`（中断/结束）会作废之前的句子。积压保护：排队超过 3 s 且后面已有更新的句子时才跳过（logcat `HipVoice skipped late line`）。音量未变时不再每句调 `setVolume`（少一次通道往返）。
 3. **不掐句尾**：`VoiceQueue.tailGrace = 0.8 s`——要打断的句子只剩 ≤0.8 s 时不切，新句紧跟其后播。换边阶段按“换边句 + 0.4 s 余量 + 3 s 倒数”取整秒自动加长（`SessionScript.switchSecondsFor`）：zh 慢慢还原类 5→6 s、en 5→7 s，计数类/无动作包仍 5 s；训练剂量不变。
 4. 可观测：`JustAudioVoiceOutput.loadVoice` prepare 超过 250 ms 打 logcat `HipVoice slow load N ms: …`。
@@ -94,3 +94,45 @@ main `d9338ea` 同一复现，全部 15 套路、等级 3：
 - Kotlin 未在沙盒编译（无 Android SDK），需本机构建确认。
 - 换边间隔变长（zh 慢慢还原类 +1 s、en +2 s），属 App 过渡时间，不是动作包训练剂量。
 - 与 PR #22（feat/training-library）重叠：`lib/hip/voice/session_script.dart`（本分支改 `workPhases` 的换边长度和 `cues()` 的 switchSide 分支，#22 改 `_dose/_holdCues/setsOf/_repCues`，同文件不同段落，预计可自动合并；#22 新增的组间「慢慢还原」后 5 s 间隔无倒数，不受影响）。本分支未改 `hip_player_page.dart`。
+
+## 第二轮：PR #24 审核四项 P2 修复（2026-10-19 晚）
+
+来源：[审核报告](pr24-review-2026-10-19.md)（Windows 独立审核 e3655e5，结论需修改、暂不合并）。先同步 main `6299a38`（merge，`docs/verification.md` 冲突保留双方，main 原文不改），每项先写在 e3655e5 代码上失败的回归测试，再修。
+
+| # | 根因 | 修法 | 提交 |
+|---|---|---|---|
+| F24-1 暂停／疼痛后仍播旧语音及倒数 | `tailGrace` 让新句排在尾音之后，但队列仍以“请求时刻 + 句长”预测新句结束；控制器实际按序播放、更晚结束。`cancelAll` 只在预测 `_busy` 时才通知输出停止，于是既不停旧句、也不作废排在后面的倒数 | `cancelAll` 无条件 `output.stopSpeech()`：控制器 epoch 递增，排队中的旧句（含倒数）全部作废，正在播的句子立即停；`tailGrace` 只用于正常换句，暂停/疼痛/跳过/停止/退出不再适用。跟随尾音的新句预测起点改为尾音预测结束处，日志中被取消的句子记 `cutAt` | `8e31528` |
+| F24-2 调低音量可能失效 | `await p.setVoiceVolume(volume)` 之后 `_lastVolume = volume` 重新读可变字段：调用期间滑块改成 0.25，缓存记 0.25 而平台实际是 1.0，此后 0.25 永远被当作已设置 | 调用前取局部 `target`，平台参数与缓存都用它；`abandon`（会话结束）清缓存。最后一次请求的音量总会被发送；音量不变时仍不重复调用 | `3698e62` |
+| F24-3 训练结束仍保活 | 前台服务跟随 `ScreenAwake` 的“页面打开”引用计数，只在 dispose 释放；后台自然完成、神经疼停止、自测出结果都不释放；唤醒锁固定 3 h | 新增 `TrainingHold`（每次训练一个）：播放器在 `_complete`（含后台自然结束、跳方向后结束）、神经疼停止后 6 s（留给收尾语音）释放，关闭与 dispose 立即释放；自测出结果后 6 s 释放；释放幂等，不会双重 stop。唤醒锁超时 = 计划时长 + 15 min，限 20 min–2 h（原生再夹 5 min–2 h），暂停后继续时按剩余时长重新计时。`ScreenAwake` 恢复为 main 的仅亮屏 | `c31179f` |
+| F24-4 快速退出再进入可能丢失保活 | 旧 STOP 在服务里无条件 `finish()`：释放锁、移除前台、`stopSelf()`，忽略 startId；静态 `running` 标记无法区分请求代次 | START/STOP 带会话 id。Dart 只为当前会话发 STOP（旧页面 dispose 时新会话已开始则不发）；原生 `desiredSession` 在主线程于发 intent 前写入，服务交付请求时按“最新期望”裁决（纯函数 `decide`）：START 且 id=期望 → 持有/重置超时；期望为空 → 结束并 `stopSelfResult(startId)`（若有更新的 START 未交付则服务保留）；其他 → 忽略，不动新会话的锁和前台状态。启动失败时清期望，Dart 也不再发 STOP | `c31179f` |
+
+### 回归测试（修复前失败证据）
+
+新增 `test/hip/hip_voice_pr24_review_test.dart`（10 项）与 `test/hip/hip_training_keepalive_test.dart`（6 项）；`hip_voice_android_fix_test.dart` 删除第一轮 `ScreenAwake` 驱动服务的 3 项（行为已替换，新文件覆盖）。
+
+| 测试 | e3655e5 代码上的结果 |
+|---|---|
+| pain after a tail-grace takeover: the old line stops and the queued count is never heard | 失败：疼痛后 30 ms 仍在播 `info` |
+| manual pause during a slow load (600 ms): the old line does not play on | 失败：`info` 播完 0.645–3.645 s，「已暂停」排到 4.245 s |
+| zh/en D, load 0/300 ms: after pause → 继续 → pain, nothing from before the pain sheet is heard（每项 1200 次扫描，真实 D 套路与 manifest） | zh 300 ms 6/1200、en 0 ms 30/1200、en 300 ms 78/1200 次在疼痛后仍听到旧句（如 `n.5`、`p.resume`）；zh 0 ms 通过 |
+| skip / stop: cancelAll always tells the output to stop | 失败：stops 0（期望 1） |
+| a count that follows a tail is predicted after it | 失败：start 2.4（期望 3.0） |
+| F24-2 lowered while the previous setVoiceVolume is in flight | 失败：applied `[1.0]`（期望 `[1.0, 0.25]`） |
+| a training that finishes on its own (page left open) stops the service（播放器整页） | 失败：通道调用 `['start']`（期望 `['start','stop']`） |
+| stop carries the session it ends / overlapping pages / wake-lock cap | e3655e5 无 `TrainingHold` 与会话参数（编译不过）；STOP 不带会话 id |
+
+保留的守护项（修复前后都通过）：音量不变不重复下发；zh D 0 ms 扫描。
+
+### 验证（沙盒 Linux，Flutter 3.44.7）
+
+`flutter pub get --enforce-lockfile` 成功、lock 未变；`flutter analyze --no-pub` 0；`flutter test` 全量 290 pass / 1 条件 skip（原 277/1：+16 新、−3 替换）；`build_action_kits.py check` 0 problem（无 jsonschema，仅结构）；`build_themed_media.py check` ok；`python3 -m unittest discover -s tools/tests` 19 OK；`git diff --check origin/main HEAD` 干净（顺带去掉 timeline 测试文件末尾空行）。未改依赖/lock/版本号。
+
+**Kotlin 未编译**（沙盒无 Java/Android SDK）：`TrainingSessionService.kt`、`MainActivity.kt` 仅源码自查（API：`stopSelfResult` API 1、`stopForeground(int)` API 24 = minSdk、非引用计数 `WakeLock.acquire(timeout)` 再次调用会重置超时；`onStartCommand` 与通道回调同在主线程）。需本机构建确认。
+
+### 本机 Android 复测补充（在上面真机清单之外）
+
+1. 暂停／疼痛：在一句话刚说到尾音、紧接倒数时点暂停或「疼」：立即无声，弹窗期间无旧句、无倒数；继续后先说「继续」，不补播旧倒数。中英各一次，前台与后台各一次。
+2. 音量：进度页把音量从最大连续拖到最小并反复点试听，再进训练：语音按最后设置的音量播放。
+3. 后台自然结束：锁屏开始一组短训练，不解锁等它自然结束约 10 s 后：`adb shell dumpsys activity services com.ugk.hiplab` 无 `TrainingSessionService`；`adb shell dumpsys power | findstr hiplab:training` 无该唤醒锁；通知栏“开胯训练进行中”消失；结束语完整。神经疼停止、自测出结果同样检查。
+4. 快速退出再进入：训练中退出后 1 s 内再进入训练，锁屏 ≥ 2 分钟：服务在、唤醒锁在、语音不卡；logcat `HipTrainingService` 可见 `stale request … ignored` 或正常 held/over 顺序。
+5. 训练中暂停超过 20 分钟再继续：继续后唤醒锁重新出现（`dumpsys power`）。
