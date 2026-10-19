@@ -3,6 +3,8 @@
 - 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是开发基线，本目录为日常开发入口；后续动作素材由 `mhgd3250905/3D-Pose-Hub` 按发布版本提供。开工先读 `docs/README.md`、`docs/current-state.md` 和 `docs/development-roadmap.md`，再检查实际 Git 状态；手机已安装、分支已推送、main 已合并分别记录，不能混用。
 - 本机 Windows 是主干线：按用户 2026-10-18 明确授权审核合并贡献 PR，验证后直接提交和推送 main，无需再开 PR；不要 force push。其他贡献方仍走分支 + PR。已有明确授权不重复询问。
 - 本仓库暂无 CI。提 PR 前本地跑 `flutter analyze` 和 `flutter test`，结果写进 PR 说明。
+- 本项目新建 worktree、审核/测试克隆及大体积构建产物一律放非 C 盘，先检查并优先复用已有非 C 盘副本。新工作副本默认 `E:/AII-3D/3D-Hip-worktrees/<task>/3D-Hip`，交付产物默认 `E:/AII-3D/hiplab-releases/`；禁止默认使用 C 盘 `.codex/worktrees`、`.config/superpowers/worktrees` 或 Temp。创建前核对工具的实际输出路径；工具不能指定位置且尚未核实其配置时，不使用会落到 C 盘的默认创建，改用显式指定 E 盘路径的 Git 工作副本，并说明工具限制。
+- 整理 Codex 托管副本前核对聊天绑定、Git 登记、未提交/未跟踪文件及忽略目录中的唯一产物；先在非 C 盘保存唯一产物，再通过可保持 Git 登记和聊天附件一致的流程归档。不得直接拖动或删除目录来迁移托管副本。具体执行流程见 `docs/development-workflow.md`。
 - 仅文档改动验证事实、链接和 `git diff --check`，不增加 App 版本、不重复构建。功能变更按影响范围测试，涉及原生播放或安装需补真机证据；未执行检查明确写出。
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。

@@ -133,6 +133,18 @@ Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持
 
 main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、analyze0、Python19及既有APK，不重复构建/安装。版本0.3.6+11，用户简单真机测试已登记，原生详细未验范围继续保留。原目录4个未跟踪文件未修改，不force push、不上传商店。随后仅提交并推送实际合并文档状态。
 
+## 2026-10-19：PR #22 练习库固定版本审核
+
+按用户要求使用cockpit-pr-audit，在独立副本审核a7992a6并与最新main243a812比较。analyze0、Flutter286pass/1skip、Python18、两工具check通过；专项复现1P1+5P2，GitHub和merge-tree均确认冲突（7文件），结论需要修改。未改实现、未合并、未提交GitHub review或评论、未操作手机/商店；主目录原Playwright文件保留。详情及复现证据见[审核报告](pr22-review-2026-10-19.md)。
+
+### PR #22 审核评论已发布（2026-10-19）
+
+用户明确要求评论PR，重新确认源/目标SHA未变后，已发布并回读[六项问题及合并要求](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6261726811)。作者后续确认修改；本机未改App实现、未提交GitHub review、未合并。
+
+## 2026-10-19：PR #22 修复复审
+
+用户提供作者反馈后，停止后续存储整理，使用E:/AII-3D/3D-Hip-worktrees/pr22-fix-review/3D-Hip固定f7271f6复审。原F1–F6闭环，Windows310pass/1skip、analyze0、Python19、工具checks与独立49步骤核对通过；另查实F7多组疼痛减半漏skip。未改App实现、未合并、未构建安装。原有本地审核文档及新非C盘协作规则一并保留，历史结论不改写。[复审报告](pr22-reaudit-2026-10-19.md)。
+
 ## 2026-10-19：练习库实现（feat/training-library，依赖 #19→#20→#21）
 
 按开哥 13:08 拍板实现练习库，并覆盖设计稿中的对应部分：

@@ -142,3 +142,11 @@ main保持`6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，原手机最后已记录�
 五项首轮运行修复、封面时刻工具guard、46动作包light引用和全部审核证据一并进入main。逐路径比较`lib/android/assets/tools/test/pubspec.yaml/pubspec.lock`，main与已验证源`c7def2869b789357b303d69d66eb8c18a0a748ae`无差异，因此本次不重跑全量或重构建APK；复用analyze0、254pass/1条件skip、Python19、媒体/动作包check及原arm64构建证据。用户报告安装及简单测试通过；完整原生14项试听、锁屏恢复、低端帧时/强光/iPhone等未验范围继续保留，不因合并自动通过。
 
 版本仍0.3.6+11，依赖/lock无新改动，未操作手机或上传商店；原目录4个`.playwright-cli/`、`.playwright-mcp/`未跟踪文件保持。本次业务集成点为b9646d4，之后只追加实际合并文档记录。
+
+## PR #22 审核（2026-10-19）
+
+练习库 PR #22（head `a7992a6`）已按最新 main `243a812` 隔离审核，结论需要修改：7个合并冲突文件，查实1项P1与5项P2。原PR analyze0、286pass/1条件skip、Python18及两工具check通过；专项复现证实缺陷，未修复、未合并、未提交GitHub review，未构建安装或扩大真机验收。详见[审核报告](pr22-review-2026-10-19.md)。原main运行版本与设备记录保持。
+
+### PR #22 修复复审（2026-10-19）
+
+作者反馈新head `f7271f6`已合入目标main243a812，GitHub可合并。Windows复审原F1–F6闭环，analyze0、310pass/1skip、Python19、两工具check及49步骤独立剂量比对通过；另复现F7/P2：多组计次动作疼痛减半保护仍按1/2组判断，深蹲1次×3组减至8秒空转而不skip。结论仍需修改，未合并、无APK/真机新验收。[复审报告](pr22-reaudit-2026-10-19.md)。审核副本和新产物均在E盘。
