@@ -126,3 +126,9 @@ Pose-Hub v0.2.0，视频 1080² / 封面 540²，46 个原 ID 与文件名保持
 用户收到运行源`c7def2869b789357b303d69d66eb8c18a0a748ae`、0.3.6+11 / arm64 debug交付包后，反馈真机安装与简单测试通过，并授权版本管理、保存提交和push。按cockpit-closeout先完成只读Preflight，再只对齐入口、当前状态、交付/验证/事项/过程记录和审核报告；完整专项未验范围保留，不将用户简单通过写成Agent仪器验收。
 
 收束基线为main `6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，收束前HEAD `8d8cb9d168adf27c08e5bcd4c060979143877687`，工作树tracked/untracked均0。c7def28之后只有文档/证据，复用原analyze0、254pass/1条件skip、Python19与APK构建证据。本次版本不递增、依赖/lock/运行代码不改，不重构建、不操作手机、不合main、不上传商店；成果提交到已推送审阅分支`codex/pr19-pr21-validation`。
+
+## 2026-10-19：获明确授权，三PR及全部修复推送main
+
+用户再次明确“推进合并”，回读三PR原head和main均未变化。main快进已审核合并链至`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`并普通push；GitHub于2026-10-19 14:00:39北京时间（06:00:39Z）确认#19/#20/#21均MERGED，merge commit依次2b552fd、18bf4ce、b6fd55e，第一父链顺序正确，全部修复和证据保留。
+
+main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、analyze0、Python19及既有APK，不重复构建/安装。版本0.3.6+11，用户简单真机测试已登记，原生详细未验范围继续保留。原目录4个未跟踪文件未修改，不force push、不上传商店。随后仅提交并推送实际合并文档状态。

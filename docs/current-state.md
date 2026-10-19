@@ -8,8 +8,8 @@
 |---|---|
 | 产品 / 包名 | 开胯训练助手 HipLab / `com.ugk.hiplab` |
 | Android 已安装版本 | **用户报告**已安装0.3.6+11 / debug arm64 engine审阅包（c7def28），简单测试通过；Agent本次未ADB回读，不推断数据保持或完整清单通过 |
-| 此前main已验基线包（历史） | **0.3.6+11 debug**，源 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`；150,903,412bytes，已保留数据安装 |
-| 本轮交付运行源码 | `c7def2869b789357b303d69d66eb8c18a0a748ae`；用户安装反馈绑定本会话交付包，设备实际版本未回读；与main基线6dd16ed运行内容不同 |
+| 合并前已验基线包（历史） | **0.3.6+11 debug**，源 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`；150,903,412bytes，已保留数据安装 |
+| 本轮交付运行源码 | `c7def2869b789357b303d69d66eb8c18a0a748ae`；用户安装反馈绑定本会话交付包，设备实际版本未回读；运行内容已进入main；此前基线6dd16ed另存历史 |
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 历史用户验收（本轮见下） | 2026-10-17，0.1.2+3 更新测试通过；2026-10-18，用户已验收 0.3.1+6 单屏自测 UI。此验收不覆盖后来 CSS 修复的原生首帧 |
 | 验证设备 | 此前Agent验证为2602BRT18C / Android16 / API36；本次用户自行安装，型号、WebView与系统设置未重新回读 |
@@ -18,7 +18,7 @@
 | 自测素材 | 既有 20 张自测 still 保留（含 #8 修订），不在 v0.2.0 ZIP / lock；不重新渲染 |
 | main基线运行验证（历史） | 组合analyze0、191pass/1条件skip，gallery2pass；两项P2首轮修复与当前Android复查通过。完整课程/ducking/低端帧时/强光/新结果页/iPhone仍待验；[证据](pr17-pr18-fixes-and-merge-2026-10-18.md) |
 
-当前素材按仓库冻结 lock / manifest 取用 v0.2.0。同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied；元数据：本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG；保护文件：hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持。该冻结ZIP/main基线仅深色；本审阅包另含47套light视频/封面及20张浅色自测图；旧批次QA和历史验收保留，不能作为本轮全量真机结论。
+当前素材按仓库冻结 lock / manifest 取用 v0.2.0。同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied；元数据：本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG；保护文件：hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持。该冻结ZIP仅深色；当前main/App包已含PR #20的47套light视频/封面及20张浅色自测图；旧批次QA和历史验收保留，不能作为本轮全量真机结论。
 
 ## Git 与主线集成
 
@@ -26,7 +26,7 @@
 
 | 对象 | 2026-10-18 核对结果（历史日期另列） |
 |---|---|
-| HipLab `main` | 当前基线 `6020d8e`；已顺序集成#17/#18，merge e98d0f1 / aac4b1d；main运行内容等于此前已验源6dd16ed；用户新安装反馈为c7def28审阅包。#19/#20/#21尚未合入 |
+| HipLab `main` | #19→#20→#21及五项修复已合入并推送，业务集成点`b9646d4`；GitHub均MERGED。运行内容与用户收到的c7def28包相同；下方未合并记录是此前快照 |
 | [HipLab #7](https://github.com/mhgd3250905/HipLab/pull/7) | MERGED，merge `ba591bf`；并合入 Android 首轮验证修复 |
 | [HipLab #8](https://github.com/mhgd3250905/HipLab/pull/8) | MERGED，merge `5bb43f0`；保留修订媒体与配套评分说明 |
 | [HipLab #9](https://github.com/mhgd3250905/HipLab/pull/9) | MERGED，merge `61979d8`；保留 iOS 配置及共享音视频安全处理 |
@@ -115,7 +115,7 @@ ZIP、云端冻结 manifest 已下载核验，安全解压 92 文件完成；App
 
 用户在初审后明确授权修复后直接推进合并。F1 Tab中途反向连续性、F2分段共享滑块下沉均首轮修复通过；#17独立169pass/1skip，组合191pass/1skip。23:35:52/23:36:26按顺序合入，源6dd16ed修复包已保留数据安装，本地main已对齐。原有自测和打卡保持，测试后1356字节偏好与测试前相同，浅色与系统动画值还原。本轮未新增假记录、未清数据/恢复备份或上传商店。剩余硬件/跨端边界见[本轮记录](pr17-pr18-fixes-and-merge-2026-10-18.md)。
 
-## PR #19/#20/#21 隔离审核交付（2026-10-19，Web通过，待真机）
+## PR #19/#20/#21 隔离审核交付快照（历史；最新合并见末节）
 
 main保持`6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，原手机最后已记录源6dd16ed/0.3.6+11，本轮未操作手机及原记录。隔离分支`codex/pr19-pr21-validation`按#19→#20→#21组合：四项原PR问题在e3fb1d3首轮修复，另一本地组合反馈字体问题在c7def28首轮修复；最终analyze0、254pass/1条件skip、Python19通过，themed-media/action-kit检查通过。依赖、lock、版本未改。
 
@@ -128,3 +128,17 @@ main保持`6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，原手机最后已记录�
 用户收到本会话交付APK后反馈真机安装及简单测试通过。交付源`c7def2869b789357b303d69d66eb8c18a0a748ae`，版本0.3.6+11，174,329,762bytes，SHA256 `7fdbdf81f567d064d2dcab356494087a552913a32812f3a4c80c091a767ec678`；身份见[版本台账](version-ledger.md)。本次Agent未连接手机或执行ADB，未获取新设备版本、截图、WebView、逐项测试清单、备份或数据完整性证据。
 
 当前状态为“已交付、用户报告安装及简单测试通过、审阅分支已推送、main未合入”。完整中英14项试听、原生切主题/退出专项、锁屏恢复、低端机/强光及iPhone等仍按实际未验范围保留；不把简单通过扩展为全部验收。本次只更新版本/验收记录，版本不递增、依赖/lock不改、不重构建、不上传商店。
+
+## PR #19 → #20 → #21 主线合并确认（2026-10-19）
+
+用户明确要求推进合并后，先回读原PR head与main，均与审核对象一致。将main从6020d8e快进至已审核合并链`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`并普通push；GitHub于2026-10-19 14:00:39北京时间（06:00:39Z）确认三PR均MERGED。该时间为一次push后GitHub统一确认时间，Git第一父链实际顺序为#19→#20→#21：
+
+| PR | GitHub确认的merge commit |
+|---|---|
+| [#19](https://github.com/mhgd3250905/HipLab/pull/19) | `2b552fd684a1a366433cf6544f1c721d4cd6209f` |
+| [#20](https://github.com/mhgd3250905/HipLab/pull/20) | `18bf4ce2f211c6593cc9322a0776d9aa1e1aba43` |
+| [#21](https://github.com/mhgd3250905/HipLab/pull/21) | `b6fd55ef1e00602a886d6bc62b2268b618639019` |
+
+五项首轮运行修复、封面时刻工具guard、46动作包light引用和全部审核证据一并进入main。逐路径比较`lib/android/assets/tools/test/pubspec.yaml/pubspec.lock`，main与已验证源`c7def2869b789357b303d69d66eb8c18a0a748ae`无差异，因此本次不重跑全量或重构建APK；复用analyze0、254pass/1条件skip、Python19、媒体/动作包check及原arm64构建证据。用户报告安装及简单测试通过；完整原生14项试听、锁屏恢复、低端帧时/强光/iPhone等未验范围继续保留，不因合并自动通过。
+
+版本仍0.3.6+11，依赖/lock无新改动，未操作手机或上传商店；原目录4个`.playwright-cli/`、`.playwright-mcp/`未跟踪文件保持。本次业务集成点为b9646d4，之后只追加实际合并文档记录。

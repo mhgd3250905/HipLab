@@ -297,3 +297,7 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 用户收到本轮c7def28 arm64 debug交付包后报告安装和简单测试通过；仅登记此范围。身份见[版本台账](version-ledger.md#用户真机安装及简单测试反馈2026-10-19)。本次没有Agent ADB、截图、设备版本/WebView回读或逐项测试证据；不推断现有记录保持、完整14项中英试听、原生切主题/退出、锁屏恢复、帧时/强光或iOS全部通过。
 
 复用已记录的运行源`c7def2869b789357b303d69d66eb8c18a0a748ae`验证：`flutter analyze --no-pub` 0问题、默认`flutter test --no-pub`全量254pass/1条件skip、`python -m unittest discover -s tools/tests`19过、`python tools/media/build_themed_media.py check`及`python tools/action_kits/build_action_kits.py check`通过。2026-10-19本会话执行；c7def28至收束前HEAD`8d8cb9d168adf27c08e5bcd4c060979143877687`仅文档/证据delta，本次也只改文档，故原代码验证继续适用，不将其冒称在新文档提交重新跑过。构建命令为`flutter build apk --debug --no-pub --target-platform android-arm64`，构建及签名结果按其原source state引用，不重构建。
+
+## 合并后验证适用性（2026-10-19）
+
+GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2b552fd/18bf4ce/b6fd55e；已推main业务集成点`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`。运行/工具/测试/资产/配置与`c7def2869b789357b303d69d66eb8c18a0a748ae`逐路径diff为空，之后仅文档更新。因此复用该source的analyze0、254pass/1条件skip、Python19、两工具check和arm64构建，本轮不重复全量/构建。合并记录文档执行链接存在性与git diff --check；不增加手机、听音或性能验收结论。原4个未跟踪文件保留。
