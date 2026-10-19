@@ -765,13 +765,19 @@ class LibDosePanel extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               if (kit.sided) tintTag(t.bothSides),
-              const Spacer(),
-              if (showTotal)
-                Text(
-                  t.about(t.duration(total)),
-                  key: const ValueKey('dose-total'),
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
-                ),
+              const SizedBox(width: 8),
+              // Wraps under large text instead of overflowing (390 ×1.5,
+              // sided drills: 5 px, found by the PR #22 F3 test).
+              Expanded(
+                child: showTotal
+                    ? Text(
+                        t.about(t.duration(total)),
+                        key: const ValueKey('dose-total'),
+                        textAlign: TextAlign.end,
+                        style: TextStyle(fontSize: 13, color: HipColors.muted),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ],
           ),
           const SizedBox(height: 10),

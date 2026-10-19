@@ -312,39 +312,55 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     final t = LibText.of(context);
     final store = widget.actions.store;
     final step = CustomStep(widget.drillId);
+    // Many groups scroll inside a sheet capped below the screen height
+    // instead of overflowing it (PR #22 F3).
     final picked = await showLibSheet<String>(
       context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          sheetTitle(t.addToWhich),
-          const SizedBox(height: 12),
-          _groupRow(
-            context,
-            key: const ValueKey('add-new-group'),
-            icon: HipGlyph.plus,
-            title: t.newGroup,
-            subtitle: t.newGroupHint,
-            onTap: () => Navigator.of(context).pop(''),
-          ),
-          for (final g in store.customRoutines) ...[
-            const SizedBox(height: 8),
-            _groupRow(
-              context,
-              key: ValueKey('add-to-${g.id}'),
-              icon: HipGlyph.library,
-              title: g.name,
-              subtitle: g.steps.length >= CustomRoutine.maxSteps
-                  ? t.groupFull
-                  : '${t.movesCount(g.steps.length)} · '
-                        '${t.duration(g.seconds(content))}',
-              onTap: g.steps.length >= CustomRoutine.maxSteps
-                  ? null
-                  : () => Navigator.of(context).pop(g.id),
+      builder: (context) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * .8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            sheetTitle(t.addToWhich),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView(
+                key: const ValueKey('add-group-list'),
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                children: [
+                  _groupRow(
+                    context,
+                    key: const ValueKey('add-new-group'),
+                    icon: HipGlyph.plus,
+                    title: t.newGroup,
+                    subtitle: t.newGroupHint,
+                    onTap: () => Navigator.of(context).pop(''),
+                  ),
+                  for (final g in store.customRoutines) ...[
+                    const SizedBox(height: 8),
+                    _groupRow(
+                      context,
+                      key: ValueKey('add-to-${g.id}'),
+                      icon: HipGlyph.library,
+                      title: g.name,
+                      subtitle: g.steps.length >= CustomRoutine.maxSteps
+                          ? t.groupFull
+                          : '${t.movesCount(g.steps.length)} · '
+                                '${t.duration(g.seconds(content))}',
+                      onTap: g.steps.length >= CustomRoutine.maxSteps
+                          ? null
+                          : () => Navigator.of(context).pop(g.id),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
-        ],
+        ),
       ),
     );
     if (picked == null || !mounted) return;
