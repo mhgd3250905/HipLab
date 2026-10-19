@@ -29,7 +29,10 @@ const hipAssessmentFocus = <String, Rect>{
 
 Widget _thumbArt(AssessmentItem item, String? still) => still == null
     ? const HipPendingArt()
-    : HipFocusImage(asset: still, focus: _focusOf(item));
+    : HipFocusImage(
+        asset: HipMediaVariants.themed(still),
+        focus: _focusOf(item),
+      );
 
 Rect _focusOf(AssessmentItem item) =>
     hipAssessmentFocus[item.id] ?? const Rect.fromLTRB(.15, .15, .85, .85);
@@ -499,7 +502,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   mirror: _side == HipSide.right,
                 )
               : fallback != null
-              ? Image.asset(fallback, fit: BoxFit.contain)
+              ? Image.asset(
+                  HipMediaVariants.themed(fallback),
+                  fit: BoxFit.contain,
+                )
               : const HipPendingArt(label: '动画待渲染'),
         ),
       ),
@@ -857,10 +863,14 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
             children: [
               Expanded(
                 child: ColoredBox(
-                  color: HipPalette.dark.mediaBackdrop,
+                  color: HipMediaVariants.stageFor(image),
                   child: image == null
                       ? const HipPendingArt(label: '对比图待渲染')
-                      : HipFocusImage(asset: image, focus: focus, margin: .06),
+                      : HipFocusImage(
+                          asset: HipMediaVariants.themed(image),
+                          focus: focus,
+                          margin: .06,
+                        ),
                 ),
               ),
               AnimatedContainer(

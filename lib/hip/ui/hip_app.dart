@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../control/hip_store.dart';
+import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_progress.dart';
@@ -46,12 +47,7 @@ class _HipAppState extends State<HipApp> {
   Future<(HipStore, HipVoice)> _load() async {
     final store = widget.store ?? HipStore(content: await loadHipContent());
     if (widget.store == null) await store.initialize();
-    try {
-      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      HipMediaVariants.assets = manifest.listAssets().toSet();
-    } on Object {
-      HipMediaVariants.assets = const {};
-    }
+    HipMediaVariants.media = await loadHipActionMedia();
     HipVoice voice;
     if (widget.voice != null) {
       voice = widget.voice!;
@@ -825,14 +821,20 @@ class _HipHomeState extends State<HipHome> {
     final hero =
         plan.steps.where((s) => s.drill.poster != null).firstOrNull?.drill ??
         first;
-    // The hero stays a dark "stage" in both themes: the renders are dark,
-    // and a dark tile on the light page reads as media, not as a grey card.
-    const stage = HipPalette.dark;
+    // The hero is the media stage of the theme in effect (2026-10-19): with
+    // light-stage renders bundled the light theme no longer carries a dark
+    // block; the card takes the exact colour the light clip is baked on, so
+    // clip, fade and card read as one surface. A drill without a light render
+    // keeps the dark stage (HipMediaVariants.stageFor).
+    final lightStage =
+        !HipColors.isDark && HipMediaVariants.hasLightVideo(hero?.video);
+    final stage = lightStage ? HipPalette.light : HipPalette.dark;
+    final surface = lightStage ? stage.mediaBackdrop : stage.surface;
     return SizedBox(
       height: 350,
       child: HipMediaFrame(
         radius: 26,
-        color: stage.surface,
+        color: surface,
         borderColor: HipColors.isDark ? stage.line : const Color(0x00000000),
         shadow: HipColors.cardShadow,
         child: Stack(
@@ -855,11 +857,15 @@ class _HipHomeState extends State<HipHome> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   stops: [.45, .8],
-                  colors: [stage.surface.withValues(alpha: 0), stage.surface],
+                  colors: [surface.withValues(alpha: 0), surface],
                 ),
               ),
             ),
-            Positioned(left: 14, top: 14, child: _chip(HipGlyph.loop, '预览')),
+            Positioned(
+              left: 14,
+              top: 14,
+              child: _chip(HipGlyph.loop, '预览', light: lightStage),
+            ),
             Positioned(
               left: 20,
               right: 130,
@@ -994,22 +1000,32 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  Widget _chip(HipGlyph icon, String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: .45),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HipIcon(icon, size: 14, color: Colors.white70),
-        const SizedBox(width: 4),
-        Text(text, style: const TextStyle(fontSize: 12, color: Colors.white70)),
-      ],
-    ),
-  );
+  /// Chip floating on the hero clip; [light] = on the light media stage.
+  Widget _chip(HipGlyph icon, String text, {bool light = false}) {
+    final ink = light ? HipPalette.light.muted : Colors.white70;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: light
+            ? Colors.white.withValues(alpha: .72)
+            : Colors.black.withValues(alpha: .45),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: light
+              ? HipPalette.light.line
+              : Colors.white.withValues(alpha: .12),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          HipIcon(icon, size: 14, color: ink),
+          const SizedBox(width: 4),
+          Text(text, style: TextStyle(fontSize: 12, color: ink)),
+        ],
+      ),
+    );
+  }
 
   /// The two home pickers share one control style (round 2 #1): the control
   /// is its own card (radius 22, like its neighbours) and the thumb is

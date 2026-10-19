@@ -38,7 +38,10 @@ flutter:
     - assets/hip/
     - assets/hip/posters/
     - assets/hip/assessment/
+    - assets/hip/assessment/light/
     - assets/hip/onboarding/
+    # Light-theme twins (tools/media/build_themed_media.py).
+    - assets/drill_media/light/
     - assets/voice/
     - assets/voice/zh/
     - assets/voice/en/
