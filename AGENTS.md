@@ -17,4 +17,5 @@
 
 - Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、媒体 lock、依赖和版本号；Mac 只改 `ios/` 及少量 iOS 专属平台代码，不升级依赖或素材版本。Mac 新机器可按 `docs/README.md` 用冻结 lock 执行 `sync --from-dir` / `--check` 恢复素材。两端 Flutter 统一 **3.44.7 stable**；版本由 Windows 统一递增。
 - Mac 从最新 main 开 `ios/…` 分支并提 PR，本机主干线负责审核集成；Windows 可直接在 main 推进已授权工作。跨端共享音视频改动必须补 Android 复查。
+- Mac 网页操作按用户2026-10-20指定，默认使用 Playwright MCP 复用 `~/.local/share/ugk-browser` 持久登录态（当前 profile 为其下 `chrome-profile`）；先盘点标签页并核对账号。连接方式见 `docs/development-workflow.md`，浏览器凭据不入库。
 - 本轮及后续未另获授权前，不上传 Play / App Store / TestFlight，不调整商店或发布配置；发布配置变更当前只允许 pubspec.yaml 共用版本号递增；本机完成本轮开发与验证后推送 main 已授权。手机拔线时不执行 ADB，网页结果不代替 native/iOS 验收。

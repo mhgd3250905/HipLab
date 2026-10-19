@@ -51,6 +51,16 @@ Codex 托管副本整理前，逐项核对对应任务与聊天附件、Git work
 
 Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器允许按 README 用 `--from-dir` 恢复冻结资源并 `--check`。禁止 force push，保留未提交工作与用户数据。
 
+### Mac / iOS 负责范围（2026-10-19 用户确认）
+
+用户明确“你这边就是ios的专用分支总负责人”。Mac 持续负责 iOS 适配、构建与验证，自有 `ios/…` 分支的普通 push、PR 创建/更新以及已被新 PR 完整替代的旧 iOS PR 收束直接推进，无需逐次确认。禁止 force push；main 集成仍交由 Windows 主干线审核，不自动纳入未合并的共享功能；商店上传、送审与发布授权范围保持独立。
+
+### Mac 浏览器登录态（2026-10-20 用户指定）
+
+后续网页操作默认使用 **Playwright MCP**，复用本机 `~/.local/share/ugk-browser`。当前 MCP 的 `--user-data-dir` 配置为 `~/.local/share/ugk-browser/chrome-profile`；持久 profile 由用户维护，先用 `browser_tabs` 盘点并复用目标页面，再读取快照核对当前账号与 App。2026-10-20 已实际通过此方式进入 HipLab App Store Connect / TestFlight 并确认登录态可用。
+
+仅记录连接方式，不把 profile、Cookies、密码、token 或含账号信息的原始快照提交 Git；登录失效时由用户在同一 profile 完成认证。浏览器方式不会扩大发布授权：上传 TestFlight、内部/外部测试和正式审核仍按用户当次明确范围执行；已获授权的动作不重复询问。归档、导出、上传与 TestFlight 分组不要求手机连接，真机结论继续绑定实际已验候选。
+
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
@@ -97,4 +107,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核，iOS 构建与正式发布仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。
+debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核。iOS 0.3.6+11 已完成本地签名 Release/Archive 与基础真机检查，未上传本候选；正式发布和完整系统矩阵见当前台账。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。

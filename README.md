@@ -6,7 +6,11 @@
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-19**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-20**；按页内日期保留历史交付与验证。
+
+**iOS当前（2026-10-20）：** main `2d47520`（含用户指定`cdbb14c`）已合入iOS分支；`af651ae` / 0.3.6+11开发签名Release已保留数据覆盖安装到iPhone。395项通过/1条件skip、analyze0，搜索、视频、单练重播、训练组保存重开及iOS隐私显示已验；听感及镜像未触发的删除手势不冒称通过。新增两条单练测试历史和`iosqa`测试组，原字段保持。[本轮记录](docs/ios-main-2d47520-2026-10-20.md)，[PR #23](https://github.com/mhgd3250905/HipLab/pull/23)待审核集成。
+
+**TestFlight（2026-10-20 01:16）：** 用户授权后0.3.6（11）已上传、Apple处理完成并加入既有HipLab Internal，群组独立回读“正在测试”，可在TestFlight获取。实际上传IPA/哈希、签名与代码段一致性及发布范围见[发布记录](docs/ios-testflight-036-2026-10-20.md)；本轮未重新连接手机或安装TestFlight包。浏览器默认Playwright MCP复用持久登录态，已写入[工作流](docs/development-workflow.md#mac-浏览器登录态2026-10-20-用户指定)。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
@@ -26,7 +30,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 **#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
-当前未验边界以AGENTS.md及验证/事项台账为准；上述历史“简单测试”不是本轮已完成原生检查的替代描述。锁屏/耳机/蓝牙/ducking等扩展矩阵本阶段不再续测，iOS仍未验。下列为通用构建命令，不代表本次执行发布。
+当前未验边界以AGENTS.md及验证/事项台账为准；上述历史“简单测试”不是本轮已完成原生检查的替代描述。锁屏/耳机/蓝牙/ducking等扩展矩阵本阶段不再续测；iOS本轮精简真机结果见页首独立记录。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get

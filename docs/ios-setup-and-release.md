@@ -1,8 +1,10 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-18，北京时间。当前共用版本 **0.3.5+10**，运行源 `b3bd499`；Android语音通道修复已推送并真机试听确认，iOS playback/mix/duck策略未改。Mac从最新main按README恢复冻结v0.2.0素材（视频1080/封面540），固定Flutter3.44.7，不升级lock/依赖；本次没有新Mac/Xcode或iPhone验收，已有iOS历史记录独立保留。
+更新日期：2026-10-20，北京时间。当前共用版本 **0.3.6+11**，main2d47520（含cdbb14c）已合入iOS分支，af651ae运行候选已保留数据安装并完成可操作核心真机检查，analyze0、395pass/1skip；见[当前真机记录](ios-main-2d47520-2026-10-20.md)。用户随后授权发布TestFlight，ab85a9f同运行内容已Archive/分发导出，01:09上传0.3.6（11），Apple处理完成、说明已保存，**01:16核验已在HipLab Internal“正在测试”**；[精确包与远端状态](ios-testflight-036-2026-10-20.md)。归档/导出/上传不要求连接手机；本轮手机已拔，没有重复安装TestFlight包或新增真机验收。网页默认使用Playwright MCP及用户指定持久profile，见[工作流](development-workflow.md#mac-浏览器登录态2026-10-20-用户指定)。
 
-> 原 #9 的 iOS 改动在 Linux 沙箱完成，后续 Windows 仅补共享代码和静态验证，**仍未执行 Xcode / `flutter build ios` 或 iPhone 真机检查**。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
+2026-10-19历史快照：当时共用版本 **0.3.6+11**，main `243a812` 已合#19～#21；Mac分支 `ios/main-alignment-20261019` / [PR #23](https://github.com/mhgd3250905/HipLab/pull/23) 保留iOS隐私适配。候选运行源 `1494958` 的262pass/1skip、签名Release和模拟器原生抽查通过；补充72屏、完整Schema、94视频/134图片解码已完成，570条语音留1条主线已知`en/sec.66`偏轻待听。当时无真机，新源未覆盖安装或Archive，安排晚上使用已保存App继续。固定Flutter3.44.7、SwiftPM，依赖/版本/媒体沿用main。见[当时候选与晚间清单](ios-main-243a812-2026-10-19.md#晚上设备连接后执行)。前轮main6020d8e/668f4bc记录仍见[旧候选报告](ios-main-6020d8e-2026-10-19.md)，不套用其结果。
+
+> 历史边界：原 #9 在 Linux 沙箱完成，彼时未执行 Mac/iPhone 检查。后续 Mac 已完成 0.3.3 首轮真机验证及本轮 0.3.6 本地构建；各候选结果分别记账，不将旧通过套用新版本。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
 ## 工程身份（已配置）
 
@@ -12,7 +14,7 @@
 | 入口 | `lib/main.dart`（就是开胯 App，无需单独 scheme/xcconfig；仓库没有 `main_hip.dart`） | `flutter run` 默认 |
 | 显示名 | 中文「开胯训练助手」、英文「HipLab」；`CFBundleName` = HipLab | `ios/Runner/{zh-Hans,en}.lproj/InfoPlist.strings`、`Info.plist` |
 | 开发区域 / 本地化 | `developmentRegion = zh-Hans`；`CFBundleLocalizations` = zh-Hans、en | pbxproj、Info.plist |
-| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.5+10 → 0.3.5 / 10）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
+| 版本 | `CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)`、`CFBundleVersion = $(FLUTTER_BUILD_NUMBER)`，取自 `pubspec.yaml`（0.3.6+11 → 0.3.6 / 11）；Windows 统一递增，Mac 不自行升版本 | Info.plist；`flutter build` 生成 `ios/Flutter/Generated.xcconfig`（不入库） |
 | 最低系统 | iOS 15.0（插件最高要求 13.0：wakelock_plus / shared_preferences / webview / package_info_plus；与 FlareLab 一致取 15.0） | pbxproj 三处 `IPHONEOS_DEPLOYMENT_TARGET` |
 | 设备 | 仅 iPhone（`TARGETED_DEVICE_FAMILY = 1`），仅竖屏，`UIRequiresFullScreen` | pbxproj、Info.plist |
 | 加密出口 | `ITSAppUsesNonExemptEncryption = false`（只有本机 127.0.0.1 回环 HTTP，无加密通信） | Info.plist |
@@ -30,15 +32,15 @@
 git fetch origin
 git switch main                # 使用已推送且包含 9ef59a1 的 main
 git pull --ff-only
-git switch -c ios/device-validation  # 只改 ios/ 与少量 iOS 专属平台代码
+git switch -c ios/next-task    # 新任务示例分支名；已有任务使用其现有分支
 flutter --version              # 必须为 3.44.7 stable
-# 先按 docs/README.md 校验 ZIP、恢复 v0.1.0 冻结素材并 --check
+# 先按 docs/README.md 校验 ZIP、恢复 v0.2.0 冻结素材并 --check
 flutter pub get --enforce-lockfile  # 不修改 lock 或升级依赖
 flutter analyze && flutter test --concurrency=1
 open ios/Runner.xcworkspace    # 用 workspace 打开
 ```
 
-新机器先完成 [README 新机器拉素材](README.md#新机器拉素材mac--windows) 的恢复步骤，再继续检查和构建。ZIP 根是动作 ID 文件夹，`--from-dir` 指向 `build/pose-hub/v0.1.0/extracted`；资源缓存不入库。Mac 仅恢复既定版本，不改 lock / manifest / pubspec 或生成新的素材版本。
+新机器先完成 [README 新机器拉素材](README.md#新机器拉素材mac--windows) 的恢复步骤，再继续检查和构建。ZIP 根是动作 ID 文件夹，`--from-dir` 指向 `build/pose-hub/v0.2.0/extracted`；资源缓存不入库。Mac 仅恢复既定版本，不改 lock / manifest / pubspec 或生成新的素材版本。
 
 Xcode 里：
 
@@ -94,7 +96,7 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 7. **来电 / FaceTime / Siri / 闹钟**：训练中来电，训练自动暂停且不再播报；挂断后仍停在暂停，点「继续」语音恢复。Siri 唤起同理。
 8. **耳机**：AirPods/有线耳机拔下或断开时训练暂停，语音不会从外放突然出来；重新连接点继续。
 9. **常亮**：训练与自测页 2 分钟以上不自动锁屏；离开后恢复系统自动锁屏。
-10. **自测**：自测页锁屏/切后台再回来的倒计时表现（自测计时由动画控制器的帧时间驱动，未显式按挂钟计算；记录是追上、停住还是直接跳完，见 D-13）。
+10. **自测**：自测页锁屏/切后台再回来的语音调度与视频恢复。当前实现已无可见倒计时环，指导口令按 `clock.now()` + `Timer` 调度并丢弃过时口令；旧 AnimationController 描述已失效，系统行为仍需听音验证，见 D-13。
 11. **审核风险**：后台音频保活使用静音循环片段，训练期间确有语音播报；若审核以 2.5.4 质疑，说明为跟练语音提示，或考虑仅在语音开启时启用后台（当前：语音和提示音都关时不建立音频会话）。
 
 ## 已知待办
@@ -111,6 +113,6 @@ flutter build ipa --release                  # 产物 build/ios/ipa/*.ipa 与 bu
 页面过渡/Hero 流畅度、iOS 右滑返回的跟手与回弹、浅色真机阴影/触觉以及 33 ms 倒计时 tick 的实际观感均待原生设备；Chrome 环区域比较不等于 native 帧率。原第 9 PR 的静态配置与历史 VP9/Chrome 探针记录保留，不能作为本轮系统行为验收。见[第二轮集成记录](round2-integration-2026-10-18.md)。
 
 
-## 共用版本更新（2026-10-18，Android音频通道修复）
+## 共用版本更新历史（2026-10-18，Android音频通道修复）
 
-Windows已统一递增至 **0.3.5+10**，Android usage由系统提示音改为MEDIA；iOS playback/mix/duck与焦点生命周期未改，回归测试保留其原策略。Mac后续从最新main取共用版本，不自行回退至0.3.4+9；本次没有新iOS构建或验收，没有商店上传。
+当时 Windows 已统一递增至 **0.3.5+10**，Android usage由系统提示音改为MEDIA；iOS playback/mix/duck与焦点生命周期未改，回归测试保留其原策略。该历史阶段没有新iOS构建或验收，没有商店上传。当前0.3.6+11的Mac构建与检查见本文开头及版本台账，不沿用历史阶段的“未构建”结论。
