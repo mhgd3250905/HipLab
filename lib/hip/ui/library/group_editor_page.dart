@@ -1,6 +1,8 @@
 // ⑥ 训练组编辑器 + ⑦ 挑选模式. Name (12 字), rest between drills
 // (segmented, 10/15/20/30 s), steps: drag to reorder, swipe left to delete,
 // tap for the dose sheet. 添加动作 opens the picker over 动作大全.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -42,13 +44,80 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
   ];
   static int _nextKey = 0;
 
+  /// Keys whose swipe-left delete is committed (confirmDismiss) while the
+  /// row still runs its resize animation; onDismissed drops them from
+  /// [_steps] ~300 ms later. Until then they are already gone for saving,
+  /// leaving, the step count and every check (PR #22 F9).
+  final Set<int> _deleting = {};
+
+  /// Rows being swiped right now (finger down, or sliding out / snapping
+  /// back after it lifted), key → progress. A released swipe past the
+  /// threshold commits only once its slide ends, so save / close wait for
+  /// these to resolve first.
+  final Map<int, double> _swiping = {};
+  Completer<void>? _swipesSettled;
+
+  /// One save / close at a time (a second tap while waiting is ignored).
+  bool _busy = false;
+
   HipContent get content => widget.actions.store.content;
+
+  /// The steps as they stand for the user: committed deletes left out.
+  List<(int, CustomStep)> get _live => [
+    for (final e in _steps)
+      if (!_deleting.contains(e.$1)) e,
+  ];
 
   CustomRoutine get _current => widget.initial.copyWith(
     name: _name.text,
     restSeconds: _rest,
-    steps: [for (final (_, s) in _steps) s],
+    steps: [for (final (_, s) in _live) s],
   );
+
+  void _onSwipe(int key, double progress) {
+    if (_deleting.contains(key)) return;
+    if (progress > 0) {
+      _swiping[key] = progress;
+    } else {
+      _swiping.remove(key);
+    }
+    _checkSwipesSettled();
+  }
+
+  /// The swipe on [key] has committed: it counts as deleted from now on.
+  Future<bool> _commitDelete(int key) async {
+    setState(() {
+      _deleting.add(key);
+      _swiping.remove(key);
+    });
+    _checkSwipesSettled();
+    return true;
+  }
+
+  void _finishDelete(int key) {
+    setState(() {
+      _steps.removeWhere((e) => e.$1 == key);
+      _deleting.remove(key);
+      _swiping.remove(key);
+    });
+    _checkSwipesSettled();
+  }
+
+  void _checkSwipesSettled() {
+    if (_swiping.isNotEmpty) return;
+    final c = _swipesSettled;
+    _swipesSettled = null;
+    if (c != null && !c.isCompleted) c.complete();
+  }
+
+  /// Waits until no row is mid-swipe: each one has either committed its
+  /// delete or snapped back (a slide is ≤ 200 ms). A finger still holding
+  /// a row past the cap leaves that row in.
+  Future<void> _settleSwipes() async {
+    if (_swiping.isEmpty) return;
+    final c = _swipesSettled ??= Completer<void>();
+    await c.future.timeout(const Duration(milliseconds: 800), onTimeout: () {});
+  }
 
   bool get _dirty {
     final c = _current;
@@ -69,6 +138,17 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
   }
 
   Future<void> _close() async {
+    if (_busy) return;
+    _busy = true;
+    try {
+      await _settleSwipes();
+      if (mounted) await _closeNow();
+    } finally {
+      _busy = false;
+    }
+  }
+
+  Future<void> _closeNow() async {
     if (!_dirty) {
       Navigator.of(context).pop();
       return;
@@ -96,9 +176,18 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
   }
 
   Future<void> _save() async {
-    if (_steps.isEmpty) return;
-    await widget.actions.store.saveCustomRoutine(_current);
-    if (mounted) Navigator.of(context).pop();
+    if (_busy) return;
+    _busy = true;
+    try {
+      // A delete the user just swiped must be in what is saved, even while
+      // its animation runs (PR #22 F9): never save the old list.
+      await _settleSwipes();
+      if (!mounted || _live.isEmpty) return;
+      await widget.actions.store.saveCustomRoutine(_current);
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      _busy = false;
+    }
   }
 
   Future<void> _delete() async {
@@ -134,15 +223,17 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
           groupName: _name.text.trim().isEmpty
               ? widget.initial.name
               : _name.text.trim(),
-          existing: [for (final (_, s) in _steps) s.kitId],
+          existing: [for (final (_, s) in _live) s.kitId],
         ),
       ),
     );
     if (ids == null || ids.isEmpty || !mounted) return;
     setState(() {
+      var n = _live.length;
       for (final id in ids) {
-        if (_steps.length >= CustomRoutine.maxSteps) break;
+        if (n >= CustomRoutine.maxSteps) break;
         _steps.add((_nextKey++, CustomStep(id)));
+        n++;
       }
     });
   }
@@ -155,7 +246,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
   Future<void> _editDose(int key) async {
     final t = LibText.of(context);
     final at = _indexOf(key);
-    if (at < 0) return;
+    if (at < 0 || _deleting.contains(key)) return;
     final step = _steps[at].$2;
     final kit = content.kit(step.kitId)!;
     var dose = step.dose(kit);
@@ -205,7 +296,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     if (result == null || !mounted) return;
     // Re-find the step by key: it may have moved or been deleted meanwhile.
     final now = _indexOf(key);
-    if (now < 0) return;
+    if (now < 0 || _deleting.contains(key)) return;
     setState(() => _steps[now] = (key, CustomStep.fromDose(kit, result)));
   }
 
@@ -215,6 +306,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     final store = widget.actions.store;
     final secs = _current.seconds(content);
     final profile = store.profile;
+    final count = _live.length;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -327,7 +419,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                     Row(
                       children: [
                         Text(
-                          t.stepsCount(_steps.length),
+                          t.stepsCount(count),
                           style: TextStyle(
                             fontSize: 13,
                             color: HipColors.muted,
@@ -388,9 +480,9 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                               key: ValueKey('dismiss-$key'),
                               direction: DismissDirection.endToStart,
                               background: _deleteBackground(t),
-                              onDismissed: (_) => setState(
-                                () => _steps.removeWhere((e) => e.$1 == key),
-                              ),
+                              onUpdate: (d) => _onSwipe(key, d.progress),
+                              confirmDismiss: (_) => _commitDelete(key),
+                              onDismissed: (_) => _finishDelete(key),
                               child: _row(i, key, s, profile),
                             ),
                           );
@@ -421,7 +513,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    t.summary(_steps.length, _rest),
+                    t.summary(count, _rest),
                     textAlign: TextAlign.end,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -437,9 +529,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
               child: HipSecondaryButton(
                 key: const ValueKey('editor-add'),
                 label: t.addMoves,
-                onPressed: _steps.length >= CustomRoutine.maxSteps
-                    ? null
-                    : _addMoves,
+                onPressed: count >= CustomRoutine.maxSteps ? null : _addMoves,
               ),
             ),
             const SizedBox(width: 12),
@@ -448,7 +538,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
               child: HipPrimaryButton(
                 key: const ValueKey('editor-save'),
                 label: t.save,
-                onPressed: _steps.isEmpty ? null : _save,
+                onPressed: count == 0 ? null : _save,
               ),
             ),
           ],
