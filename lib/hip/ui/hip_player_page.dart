@@ -14,7 +14,6 @@ import '../voice/session_engine.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
 import 'hip_icons.dart';
-import 'hip_routes.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -55,10 +54,8 @@ class HipPlayerPage extends StatefulWidget {
 }
 
 class _HipPlayerPageState extends State<HipPlayerPage> {
-  late final SessionPainLadder _ladder = SessionPainLadder(
-    widget.store.content,
-  );
-  final _clock = _ActiveClock();
+  late SessionPainLadder _ladder = SessionPainLadder(widget.store.content);
+  var _clock = _ActiveClock();
   late HipVoice _voice;
   late VoiceQueue _queue;
   late SessionEngine _engine;
@@ -88,14 +85,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     _ready = true;
     _voice = HipVoice.of(context);
     _queue = _voice.queue();
-    _engine = SessionEngine(
-      script: _voice.script(
-        routineIds: [for (final r in widget.plan.routines) r.id],
-        restSeconds: widget.plan.transitionSeconds,
-        kits: widget.store.content.kits,
-      ),
-      steps: widget.plan.steps,
-    );
+    _engine = _newEngine();
     if (_voice.settings.voice || _voice.settings.chimes) {
       unawaited(_voice.output.begin());
     }
@@ -104,6 +94,43 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     }
     ScreenAwake.acquire();
     _ticker = Timer.periodic(const Duration(milliseconds: 33), (_) => _tick());
+    _tick();
+  }
+
+  SessionEngine _newEngine() => SessionEngine(
+    script: _voice.script(
+      routineIds: [for (final r in widget.plan.routines) r.id],
+      restSeconds: widget.plan.transitionSeconds,
+      kits: widget.store.content.kits,
+    ),
+    steps: widget.plan.steps,
+  );
+
+  /// 再来一组 (PR #22 F1): a fresh session inside this same player. The
+  /// audio session stays open – no second page whose late dispose would
+  /// `end()` the shared [HipVoice.output] under the new round.
+  void _restart() {
+    _queue.cancelAll(_clock.t);
+    _queue = _voice.queue();
+    setState(() {
+      _ladder = SessionPainLadder(widget.store.content);
+      _clock = _ActiveClock();
+      _engine = _newEngine();
+      _finished = false;
+      _stopped = false;
+      _ladderCue = null;
+      _subtitle = null;
+      _shownSecond = -1;
+      _shownPhase = null;
+      _felt.clear();
+      _feltAt = null;
+      _ringProgress.value = 0;
+    });
+    if (_voice.settings.voice || _voice.settings.chimes) {
+      // Idempotent on an open session; re-opens one an OS interruption or
+      // a settings change may have closed.
+      unawaited(_voice.output.begin());
+    }
     _tick();
   }
 
@@ -954,11 +981,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             HipSecondaryButton(
               key: const ValueKey('player-again'),
               label: '再来一组',
-              onPressed: () => Navigator.of(context).pushReplacement(
-                HipRoute.rise<void>(
-                  (_) => HipPlayerPage(store: widget.store, plan: widget.plan),
-                ),
-              ),
+              onPressed: _restart,
             ),
             const SizedBox(height: 12),
           ],
