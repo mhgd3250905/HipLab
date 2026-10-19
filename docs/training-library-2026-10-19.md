@@ -1,6 +1,6 @@
 # 练习库：动作大全 / 单动作练 / 套路随便练 / 自定义训练组（2026-10-19）
 
-分支 `feat/training-library`（PR #22）。#19/#20/#21 已合入 main；2026-10-19 审核后本分支已 merge 对齐 main `243a812`（见 §7）。不改依赖、不改 `pubspec.lock`、不改版本号；`pubspec.yaml` 没有改动。
+分支 `feat/training-library`（PR #22）。#19/#20/#21 已合入 main；2026-10-19 审核后本分支已 merge 对齐 main `243a812`（见 §7），复审后再 merge 同步 main `b12b0f5`（见 §8）。不改依赖、不改 `pubspec.lock`、不改版本号；`pubspec.yaml` 没有改动。
 
 设计稿是 `training-library-design.md`（不在本仓库，位于工作区 `hiplab-library/deliver/`）。本文只记录**实际实现**和与设计稿不一样的地方。
 
@@ -274,3 +274,56 @@
 - 没有构建 APK，没有上真机，没有原生听音，没有 iOS。
 - Android 原生复查：§6 清单第 14 条，重点是「再来一组」第二轮的真实 just_audio 输出（中英），以及来电/锁屏后再来一组。
 - 保留数据升级：用 main 当前已装版本覆盖安装本分支，`hiplab.state.v1` 原有键逐字节不变，只新增 `customRoutines`、`sessions`；建一个复制 F 的组后杀进程重启，`holdSeconds`/`paceSeconds` 仍在。
+
+## 8. PR #22 复审 F7 修复与同步 main（2026-10-19，复审固定 head `f7271f6`）
+
+复审确认 F1–F6 已关闭，新增 F7 / P2；本轮首轮修复，没有用到第二轮。
+
+### 8.1 F7：多组计次动作疼痛减半时保护与脚本组数不一致
+
+- 问题：`hip_player_page.dart` 疼痛减半的短次数保护把组数写死为正常侧 1 / 紧侧 2，没算 `PlanStep.sets`；`SessionScript` 实际按 `sets + 紧侧额外 1 组` 排次数。单练 `h-squat` 1 次 × 3 组 → 疼 → 关节夹着疼：减半 8 秒，保护按 1 组得 1 次不跳过，脚本按 3 组每组 0 次，cues 为空却仍显示 8 秒倒计时。
+- 修法：组数规则抽到 `PlanStep`，三处共用。
+  - `PlanStep.tightOn(side)`：只有真实 `extraSide` 且是当前侧才算紧侧（F6 规则）。
+  - `PlanStep.countedSetsOn(side)` = `sets + 紧侧 1`（计次；内置套路 sets=1，紧侧仍 2，旧行为不变）。
+  - `PlanStep.holdSetsOn(side)` = `sets + (extraSet 且紧侧 ? 1 : 0)`（保持；内置套路仍连续加长，F5 规则）。
+  - `SessionScript.setsOf / holdSetsOf / tightSide` 改为委托上面三个函数；新增 `SessionScript.noFullRep(step, kit)`：任一侧按 `countedSetsOn` 放不下完整一次即为真。播放器疼痛减半只调用它，命中就 `skip` 当前动作并报「跳过」。
+- 提交：`ba0919d`（实现 + 回归测试）。
+
+### 8.2 回归测试（12 个）
+
+`test/hip/hip_player_multiset_pain_test.dart`（播放器 widget，真实 `HipPlayerPage`，跳过准备 → 疼 → 关节夹着疼）：
+
+| 测试 | 断言 |
+|---|---|
+| F7 单练 h-squat 1 次 × 2 组 (unsided) … reaches the end page | 无倒计时环，进入「练完了」结束页，有「再来一组」 |
+| F7 单练 h-squat 1 次 × 3 组 (unsided) … reaches the end page | 复审原复现，同上 |
+| F7 group h-squat 1 次 × 3 组 → skip, rest + feedback, then the next step runs | 进入 2/2 休息，倒计时在走，「舒服」反馈记录，休息结束后下一步正常开始 |
+| F7 sided glute-max-A 1 次 × 2 组 (no tight side) → … | 分侧，同上 |
+| F7 sided glute-max-A 1 次 × 3 组, left tight (+1 组) → … | 紧侧额外组，同上 |
+| F7 control: h-squat 4 次 × 2 组 … not skipped | 减半后每组仍放得下一次：不跳过，继续减半倒计时 |
+
+修复前（`f7271f6` 的实现 + 本测试文件）运行：**5 fail / 1 pass**（对照用例通过）。两个单练用例失败于「Expected: no matching candidates / Found 1 widget with key player-ring」——即仍显示减半倒计时、没进结束页；三个训练组用例失败于找不到「2/2」——没跳到下一步休息。修复后 6 项全部通过。
+
+`test/hip/hip_pain_multiset_sets_test.dart`（领域 / 脚本，依赖新函数，修复前无法编译）：不分侧 2 / 3 组、分侧 2 组、紧侧 3 组（右 3 / 左 4，与每个 work 相位的 `setsOf` 一致）、内置套路紧侧仍 1 → 2 组，以及「保护 ≡ 脚本」：h-squat、glute-max-A × 次数 1–6 × 组数 1–3 × 紧侧（无 / 左 / 右）减半后，`noFullRep` 为真当且仅当脚本有某个 work 相位 cues 为空，且两种结果都出现过。
+
+### 8.3 同步 main `b12b0f5`
+
+`git merge origin/main`（merge commit `b4db041`，不 force），只有 `docs/README.md`、`docs/development-log.md` 两处冲突，均为文档：main 原文一字不改放前面（PR #22 修复复审入口行；首轮审核、评论发布、修复复审三段历史），本分支的练习库入口行与两段实现/修复记录追加在后，入口行更新为含 F7、已同步 `b12b0f5`。`AGENTS.md`、`docs/current-state.md`、`development-roadmap.md`、`development-workflow.md`、`verification.md`、两份 PR #22 审核报告（含本机非 C 盘工作副本规则）按 main 进入，与 main 无差异；`git diff --numstat origin/main -- docs AGENTS.md` 无删除行。
+
+### 8.4 最终验证（最终代码，Flutter 3.44.7 / Dart 3.12.2，沙盒 Linux）
+
+| 命令 | 结果 |
+|---|---|
+| `flutter pub get --enforce-lockfile` | 通过，依赖与 lock 未变 |
+| `flutter analyze --no-pub` | 0 issue |
+| `flutter test --no-pub --concurrency=1` 全部 38 个测试文件 | **322 pass / 1 条件 skip**（310 + 新增 12）。沙盒单条命令 120 秒上限，按文件名排序分两批跑（158 + 164/1 skip） |
+| `python3 tools/action_kits/build_action_kits.py check` | 0 problem（沙盒无 jsonschema，只做结构检查） |
+| `python3 tools/media/build_themed_media.py check` | check ok |
+| `python3 -m unittest discover -s tools/tests` | 19 pass |
+| `git diff --check origin/main HEAD` | 无输出 |
+
+`pubspec.yaml`、`pubspec.lock`、版本号与 main 相同；未合并 main。
+
+### 8.5 仍需本机
+
+仍未构建 APK、未上真机、未做 iOS。§7.4 的 Android 原生听音、重复单练（再来一组）、中断/锁屏、保留数据升级仍由本机补；另建议真机过一遍 F7 复现（单练深蹲 1 次 × 3 组 → 疼 → 关节夹着疼 → 应直接到结束页、报「跳过」）。
