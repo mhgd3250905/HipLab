@@ -125,8 +125,9 @@ class _Pending {
 }
 
 /// Puts cues on the air one at a time (#13): never two voices at once, a
-/// count is never cut and cuts anything but another count, lower lines wait
-/// briefly and are dropped when their moment has passed. Chimes are layered
+/// count is never cut and cuts anything but another count (unless that line
+/// is within [tailGrace] of its end – then the count follows it), lower
+/// lines wait briefly and are dropped when their moment has passed. Chimes are layered
 /// on their own channel and never wait.
 ///
 /// Times are seconds on any monotonic clock the caller uses consistently
@@ -143,6 +144,11 @@ class VoiceQueue {
   final List<_Pending> _pending = [];
 
   String get lang => settings.language.clipLanguage;
+
+  /// A line with at most this much left (seconds) is not cut by a line
+  /// that takes over; the newcomer follows right after it (Android voice
+  /// fix 2026-10-19: endings were chopped ~0.5 s before their end).
+  static const tailGrace = 0.8;
 
   static double _wait(CuePriority p) => switch (p) {
     CuePriority.count => 0.25,
@@ -171,15 +177,17 @@ class VoiceQueue {
       return;
     }
     final cur = _current!;
-    if (trimmed.priority == CuePriority.count &&
-        cur.priority != CuePriority.count) {
-      _cut(now);
-      _start(trimmed, now);
-      return;
-    }
-    if (trimmed.priority.index > cur.priority.index &&
-        cur.priority.index <= CuePriority.info.index) {
-      _cut(now);
+    final takesOver =
+        (trimmed.priority == CuePriority.count &&
+            cur.priority != CuePriority.count) ||
+        (trimmed.priority.index > cur.priority.index &&
+            cur.priority.index <= CuePriority.info.index);
+    if (takesOver) {
+      // Only the last word or so is left: let it finish and start the new
+      // line right behind it (the output plays lines in order) instead of
+      // chopping the end off a sentence. Playback runs a little behind the
+      // queue's clock, so "nearly done" here is still sounding on device.
+      if (cur.end - now > tailGrace) _cut(now);
       _start(trimmed, now);
       return;
     }
