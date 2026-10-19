@@ -321,3 +321,16 @@ b12b0f5和9fa0cc0均enforce-lockfile pub get/debug arm64构建通过；两包CRC
 ## PR #22 Web补充验收（2026-10-19）
 
 真实main.dart及38/46文件身份核对通过；非空旧12键迁移仅增2键、复制F刷新剂量保持/自然约60秒、搜索筛选、常规编辑、F3/F4、安全、F7单练与自定义、8轮中英单练计时/记录通过。独立实测新增F8/P2动作覆盖，故不合并。Web音频实际哈希显示循环初始口令，准确main基线也复现；内容未通过。21张360宽2.0字号深浅截图中主按钮可达，P3文字截断保留。全部证据226文件/94PNG/5WebM约20.1MB在E盘，手机/iOS未操作，未改实现或重跑全量。[完整表与边界](pr22-web-acceptance-2026-10-19.md)。
+
+## PR #24 Windows独立审核（2026-10-19）
+
+固定e3655e5与实际main fcffded；pub get enforce-lockfile成功、analyze0、277pass/1条件skip，debug arm64 Gradle20.6秒成功，新service/权限实际入包，debug签名/CRC/16KB对齐及575音频/94视频逐字节检查通过。独立手动暂停/真实D英文疼痛取消专项均失败；疼痛case替回main Queue/Controller通过。异步音量专项head失败，main Controller音量对照通过。另查实两项原生生命周期P2，无设备时序或耗电量实测。merge-tree仅verification.md冲突，未合并。未执行ADB、安装、锁屏/耳机/ducking或iOS；作者的旧PR22组合测试不冒充本轮执行。[精确链路、复现与日志](pr24-review-2026-10-19.md)。
+
+## PR #22 / 2cc40e3 Android阶段复测（2026-10-19）
+
+Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575音频/94视频逐字节通过，install-r成功且安装SHA匹配，原state JSON语义保持。真机F8主场景[B2,C]正确；F9删除动画内保存失败，独立150ms失败/1000ms通过。中文计次和保持各两轮新增记录准确、doneDays保持；保持第二轮后台约50秒前无第二条、回前台才入账，英文保持首轮锁屏也在唤醒才入账，持续运行未通过。实际听音、系统中断、ducking及剩余英文待补，当前安全锁屏需解锁；原字号/密度已恢复，原语音/主题待恢复。极大字号按用户新要求取消门槛。未将无日志错误或最终追上进度作原生全通过。[细节和证据](pr22-native-retest-2026-10-19.md)。
+
+
+## PR #24返回修复与#22组合验证（2026-10-19）
+
+固定24=0ccef6b、22=2cc40e3、actual main=2d91688；组合5725c36。原暂停/疼痛取消/异步音量三独立专项均通过；新增0秒/7秒重播保活回归均先失败、修后通过；enforce-lockfile成功、analyze0、全量373pass/1条件skip，Gradle/Kotlin成功。APK证书连续、CRC/16KB对齐、575音频/94视频逐字节通过，ZIP空洞重打后最大间隙0。21:56:37保留数据安装且SHA匹配，升级14键JSON相同；中文h-squat 1次×1组两轮自然完成/再来一组通过、恰增2记录、其余数据保持、连续1天不变。两轮前台服务/CPU锁在、结束收尾后释放；用户正常听到/无播放异常。App PID日志383017bytes未检出播放/致命异常；自定义服务tag未采到，释放取dumpsys/Power快照。扩展系统矩阵按最新要求不再续测，iOS未验；F9仍待修，未合main。[完整报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。

@@ -6,6 +6,7 @@
 - 本项目新建 worktree、审核/测试克隆及大体积构建产物一律放非 C 盘，先检查并优先复用已有非 C 盘副本。新工作副本默认 `E:/AII-3D/3D-Hip-worktrees/<task>/3D-Hip`，交付产物默认 `E:/AII-3D/hiplab-releases/`；禁止默认使用 C 盘 `.codex/worktrees`、`.config/superpowers/worktrees` 或 Temp。创建前核对工具的实际输出路径；工具不能指定位置且尚未核实其配置时，不使用会落到 C 盘的默认创建，改用显式指定 E 盘路径的 Git 工作副本，并说明工具限制。
 - 整理 Codex 托管副本前核对聊天绑定、Git 登记、未提交/未跟踪文件及忽略目录中的唯一产物；先在非 C 盘保存唯一产物，再通过可保持 Git 登记和聊天附件一致的流程归档。不得直接拖动或删除目录来迁移托管副本。具体执行流程见 `docs/development-workflow.md`。
 - 仅文档改动验证事实、链接和 `git diff --check`，不增加 App 版本、不重复构建。功能变更按影响范围测试，涉及原生播放或安装需补真机证据；未执行检查明确写出。
+- 当前阶段按用户2026-10-19最新要求，以正常字号和日常设备使用为兼容性验收范围；极大系统字号等极端显示环境不列为当前合并门槛，不为其继续扩展实现或验收。已有记录保留历史，常规数据正确性继续验证。按用户同日最新要求，本轮原生验收以正常播放无误为门槛，不再扩展耳机/蓝牙、外部音乐ducking及锁屏/系统中断矩阵；未验项目与历史失败如实保留，不改记为通过。
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。
 - 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望），不在 HipLab 重渲。Pose-Hub v0.2.0 为当前冻结版本（视频1080、封面540）；使用仓库冻结的 pose-hub.lock.json / tools/pose-hub-manifest.json，按 docs/README.md 下载校验 ZIP 后用 --from-dir 恢复并 --check。后续升级由 Windows 更新冻结版本，保留旧母版、规格和 QA；旧 tools/sync_drill_media.py 仅保留历史兼容。

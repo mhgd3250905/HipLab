@@ -4,6 +4,9 @@
 
 | 文档 | 用途 | 何时更新 |
 |---|---|---|
+| [PR #24修复与#22组合验证](pr24-reaudit-and-pr22-integration-2026-10-19.md) | 0ccef6b原4P2闭环；组合5725c36的373项及Android正常播放通过，用户听音正常；F9仍待修，未合main | 作者F9修复及集成时 |
+| [PR #22 Android真机复测](pr22-native-retest-2026-10-19.md) | 2cc40e3已保留数据安装，F8主场景通过；F9立即保存待修；解锁后英文保持/闹铃已补，扩展系统矩阵及极大字号退出本阶段门槛 | 真机结果及作者修复后 |
+| [PR #24 Android后台语音审核](pr24-review-2026-10-19.md) | 四项P2、独立失败专项与main对照、APK身份及原生待验边界 | 作者修复后复审 |
 | [PR #22 Web补充验收](pr22-web-acceptance-2026-10-19.md) | 9fa0cc0界面/迁移/F3/F4/F7及重复单练记录补测；新增F8/P2快速左删后编辑覆盖动作，待修；原生清单已缩减 | 修复版本及验收证据变化后 |
 | [PR #22 修复复审](pr22-reaudit-2026-10-19.md) | F1–F7在9fa0cc0代码闭环、Windows322过/1跳；[Android包准备](pr22-android-acceptance-2026-10-19.md)及原生待验；[首轮报告](pr22-review-2026-10-19.md)保留 | 修复版本及验收证据变化后 |
 | [练习库实现](training-library-2026-10-19.md) | 拍板四条、动作大全/单练/套路/训练组的实现范围、custom_routines v1、PR #22 审核 F1–F6、复审 F7、Web 补充验收 F8/P3 修复、测试与真机清单（feat/training-library，已同步 main fcffded，未合并） | 练习库变化时 |

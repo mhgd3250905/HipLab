@@ -223,3 +223,16 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ### PR #22 Web验收构建追加（2026-10-19）
 
 同样准确两源在E盘临时Web壳构建真实lib/main.dart，未替换产品lib/依赖/入口；字号专项另包裹2.0 TextScaler，产品哈希不变。版本仍0.3.6+11，没有新APK、手机安装或商店动作。Web补测发现F8/P2待修，前述9fa APK不记验收通过；修复后需新候选来源与包身份。[来源/结果/证据](pr22-web-acceptance-2026-10-19.md)。
+
+## 0.3.6+11 PR #24 Android编译验证包（2026-10-19，未安装）
+
+源e3655e50e2ff7868d9d381489df90efe9cf208f1，debug arm64；E:/AII-3D/hiplab-releases/pr24-review-20261019/hiplab-0.3.6+11-pr24-e3655e5-arm64-debug.apk，174,483,026bytes，SHA256 `d8a2e01329d3f140dd5ca1ae861fc4d29ddd10da43528ff73bbab7a456edfe2a`。包名com.ugk.hiplab、versionCode11，debug证书SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`连续；Gradle20.6秒，新Kotlin服务/Manifest已入包，CRC/16KB对齐和575音频/94视频一致；最大ZIP间隙138,313bytes。版本、依赖、发布配置保持。4项P2待作者修，当前不是验收通过包；未ADB、未安装、未商店上传，手机安装记录不变。[完整身份和问题](pr24-review-2026-10-19.md)。
+
+## 0.3.6+11 PR #22 / 2cc40e3 真机复测包（2026-10-19）
+
+源2cc40e3e51730d14f87056afe76e2b0c51dfcb19，debug arm64；E:/AII-3D/hiplab-releases/pr22-2cc40e3-retest-20261019/hiplab-0.3.6+11-pr22-2cc40e3-arm64-debug.apk，174,481,110bytes，SHA256 `46dd0d0c4819ab4e29883fcdadcb3ccd2e6489d78d3f3f7395b6fc79f4f60342`。初编14.9秒，单个生成APK移出后重打15.0秒消除ZIP空洞；签名连续、CRC/16KB对齐、575音频/94视频一致。20:44:23向2602BRT18C / Android16 install-r成功，安装包hash相同；原安装包为9fa0cc0（ce978c5f…），原偏好备份且升级JSON相同。F8真机原场景通过，新F9及后台/锁屏待修，候选尚未验收或合main；版本未增、未上传商店。[完整记录](pr22-native-retest-2026-10-19.md)。
+
+
+## 0.3.6+11 PR #22/#24组合正常播放包（2026-10-19）
+
+组合源5725c3668baddbe844a9943ed81c9374bc7aa3f1（22的2cc40e3 + 24的0ccef6b + 本机重播hold适配），验证分支已推送，main未合入。APK `E:/AII-3D/hiplab-releases/pr24-0ccef6b-reaudit-20261019/hiplab-0.3.6+11-pr22-pr24-combined-arm64-debug.apk`，174512710bytes，SHA256 `922ca6a7e1fa6da07ad96479dde2e9fa32a218515d8d0a0a3235a6ce664f643e`；com.ugk.hiplab/versionCode11，既有debug证书连续、资源/CRC/16KB对齐通过。初编19.9秒、ZIP空洞单APK重打16.9秒；21:56:37向2602BRT18C / Android16覆盖安装成功，安装SHA相同、14键状态JSON保持。两轮正常播放及服务释放通过，用户现场听感正常；F9仍待修。没有增加版本、修改发布配置或上传商店。[本轮记录](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
