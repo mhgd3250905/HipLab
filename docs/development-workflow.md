@@ -55,6 +55,12 @@ Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`
 
 用户明确“你这边就是ios的专用分支总负责人”。Mac 持续负责 iOS 适配、构建与验证，自有 `ios/…` 分支的普通 push、PR 创建/更新以及已被新 PR 完整替代的旧 iOS PR 收束直接推进，无需逐次确认。禁止 force push；main 集成仍交由 Windows 主干线审核，不自动纳入未合并的共享功能；商店上传、送审与发布授权范围保持独立。
 
+### Mac 浏览器登录态（2026-10-20 用户指定）
+
+后续网页操作默认使用 **Playwright MCP**，复用本机 `~/.local/share/ugk-browser`。当前 MCP 的 `--user-data-dir` 配置为 `~/.local/share/ugk-browser/chrome-profile`；持久 profile 由用户维护，先用 `browser_tabs` 盘点并复用目标页面，再读取快照核对当前账号与 App。2026-10-20 已实际通过此方式进入 HipLab App Store Connect / TestFlight 并确认登录态可用。
+
+仅记录连接方式，不把 profile、Cookies、密码、token 或含账号信息的原始快照提交 Git；登录失效时由用户在同一 profile 完成认证。浏览器方式不会扩大发布授权：上传 TestFlight、内部/外部测试和正式审核仍按用户当次明确范围执行；已获授权的动作不重复询问。归档、导出、上传与 TestFlight 分组不要求手机连接，真机结论继续绑定实际已验候选。
+
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。

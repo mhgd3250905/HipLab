@@ -10,6 +10,8 @@
 
 **iOS当前（2026-10-20）：** main `2d47520`（含用户指定`cdbb14c`）已合入iOS分支；`af651ae` / 0.3.6+11开发签名Release已保留数据覆盖安装到iPhone。395项通过/1条件skip、analyze0，搜索、视频、单练重播、训练组保存重开及iOS隐私显示已验；听感及镜像未触发的删除手势不冒称通过。新增两条单练测试历史和`iosqa`测试组，原字段保持。[本轮记录](docs/ios-main-2d47520-2026-10-20.md)，[PR #23](https://github.com/mhgd3250905/HipLab/pull/23)待审核集成。
 
+**TestFlight（2026-10-20 01:16）：** 用户授权后0.3.6（11）已上传、Apple处理完成并加入既有HipLab Internal，群组独立回读“正在测试”，可在TestFlight获取。实际上传IPA/哈希、签名与代码段一致性及发布范围见[发布记录](docs/ios-testflight-036-2026-10-20.md)；本轮未重新连接手机或安装TestFlight包。浏览器默认Playwright MCP复用持久登录态，已写入[工作流](docs/development-workflow.md#mac-浏览器登录态2026-10-20-用户指定)。
+
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
 2026-10-19 23:32，**PR #22/#24及集成修复已获同意合入并推送main，GitHub均MERGED**，主线集成点 `b33ed21088c4d334548fb45cfeb9b85959dd755d`。最新已核验安装为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，23:15:53保留数据覆盖安装；main运行代码与该包一致。387项通过/1条件跳过、analyze无问题，F9编辑/键盘原生复测及正常播放听感已确认。安装、合并和后续文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。

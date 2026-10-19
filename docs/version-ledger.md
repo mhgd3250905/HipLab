@@ -307,3 +307,9 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 源 `af651ae7c1798c09312fe24e9deeb1366116b7d7`，普通merge main `2d47520574ff4160d74d7631cb4efcfc58b2388b`（含用户指定cdbb14c），保留iOS隐私适配。Apple Development签名Release arm64，`com.ugk.hiplab` /0.3.6+11，iOS15.0起、仅iPhone；构建37.4秒（Xcode26.2秒）、110.3MB，严格签名/profile兼容与当前设备授权、6份隐私清单及874份资源一致通过。AOT SHA256 `3b3e3f60d64d88efe1f0c36a102a51892c5a31ef711b9396e1e2fbff512d475d`。
 
 已对连接的iPhone16 Pro/iOS26.5保留数据覆盖安装并启动，安装后及首启偏好与即时备份754bytes逐字节相同。精简真机检查通过范围为入口/搜索/视频/单练暂停继续及完整重播/训练组剂量保存重开/iOS隐私显示；听感和未触发的删除手势未记通过。QA后原所有字段保持，仅新增2条single完成历史（不计连续天数）及1个`iosqa`训练组。签名App位于`build/ios/iphoneos/Runner.app`，本轮日志、清单、备份和截图位于忽略目录`build/ios-main-2d47520-20261020/`，不代表远端备份。前两次磁盘满构建失败保留为失败记录，最终成功；无新Archive/IPA、版本递增或商店上传。[完整身份与结果](ios-main-2d47520-2026-10-20.md)。
+
+## 0.3.6（11）iOS TestFlight上传（2026-10-20 01:09）
+
+用户明确授权TestFlight后，构建源ab85a9f（lib树与已验af651ae一致）完成Archive272.2MB及App Store分发导出，总62.2秒（Archive45.6/导出7.2）。实际Xcode上传IPA为`build/ios-testflight-036-20261020/HipLab-XcodeUpload.ipa`，104,377,339bytes，SHA256 `339335b9b2939b08e5c6a66f050934c455711ac621d02db26b33dcdc30d67837`；com.ugk.hiplab/0.3.6/11/arm64、get-task-allow=false、6清单及874资源通过，3个AOT有效段与真机候选一致。
+
+Xcode回执HipLab0.3.6（11）uploaded，Organizer01:09/Build11；Apple上传列表同一版本01:09收到，随后处理完成。测试说明已保存、手动加入既有HipLab Internal；**01:16独立核验群组1测试员/2构建，0.3.6（11）正在测试**，旧7保留。CLI预导出IPA104,377,327bytes/SHA21632d17…仅本地门禁，不作为上传身份；两份各自保留。本轮手机已拔，未重装精确TestFlight包，不新增正式审核、外部测试或公开发布。[来源与可测试证据](ios-testflight-036-2026-10-20.md)。

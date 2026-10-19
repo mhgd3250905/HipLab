@@ -428,3 +428,9 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 iPhone16 Pro/iOS26.5已覆盖安装新源0.3.6+11；安装后/首启偏好与即时备份字节一致。镜像实际操作通过三Tab、quadruped搜索、详情与训练视频、每侧1次单练暂停/继续/左右换侧/完整结束及再来一组完整结束、训练组添加两动作/剂量修改/保存重开、iOS隐私内容与/ios/链接显示。QA后原有全部字段保持，新增2条single完成历史、不增加练习日，以及1个`iosqa`测试组。历史仅有持久化、主线尚无“最近练习”列表UI，不声称已在界面查看列表。
 
 镜像横滑未提交删除，F9原精确时序由本轮自动回归覆盖，**未补得iOS删除手势真机通过证据**；镜像工具无音频输入，真实语音/提示音听感待用户使用确认。正常字号核心检查已收束，不扩大逐项媒体、长课程或锁屏/耳机/蓝牙/ducking/系统中断矩阵。前轮en/sec.66素材句内偏轻问题保留历史。本轮文档按实核对并执行diff --check及本地链接检查，不因后续仅文档提交重建App。[报告、清单与私密证据位置](ios-main-2d47520-2026-10-20.md)。
+
+## iOS TestFlight分发门禁（2026-10-20）
+
+发布preflight与iOS工程静态检查通过；复用现有有效分发证书及专用Store profile，匹配本地私钥identity，get-task-allow=false/beta-reports-active=true/无设备或企业名单。SDK文件在但generic iOS目标不可用，经Xcode官方Components恢复平台支持后可归档。最终Archive/导出exit0/62.2秒；前期磁盘满及目标不可用失败保留，不计成功。
+
+实际上传包SHA339335b9…0d67837于点击Upload前保存并执行verify_ipa.sh，strict/deep签名、ID/0.3.6/11、arm64、6清单语法通过；874资源逐字节匹配，Dart AOT3个有效section与CLI分发包和af651ae真机包相同。签名导致完整Mach-O哈希变化，运行内容不变；沿用af651ae的analyze0/395pass/1skip，未重复全量或真机矩阵。Xcode01:09上传成功、Apple随后处理完成；测试说明回读已保存、构建详情群组1，01:16独立进入HipLab Internal构建列表核验0.3.6（11）“正在测试”。截图保存群组区域，无账号/个人字段；未执行精确TestFlight真机安装。Playwright MCP复用持久profile实际登录可用；只提交脱敏记录，原始快照/账号/签名字段留本机。[完整报告](ios-testflight-036-2026-10-20.md)。
