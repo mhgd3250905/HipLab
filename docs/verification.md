@@ -301,3 +301,11 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 ## 合并后验证适用性（2026-10-19）
 
 GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2b552fd/18bf4ce/b6fd55e；已推main业务集成点`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`。运行/工具/测试/资产/配置与`c7def2869b789357b303d69d66eb8c18a0a748ae`逐路径diff为空，之后仅文档更新。因此复用该source的analyze0、254pass/1条件skip、Python19、两工具check和arm64构建，本轮不重复全量/构建。合并记录文档执行链接存在性与git diff --check；不增加手机、听音或性能验收结论。原4个未跟踪文件保留。
+
+## PR #22 固定head审核（2026-10-19）
+
+对象`a7992a6fd9367df749db49ab25b4aa8c21dfa9c0`，目标main `243a8128eabb8e955329d6ed015c559be963b988`，隔离副本执行Flutter3.44.7：analyze0、Flutter286pass/1条件skip、Python18pass、action-kit0问题、themed-media check通过；不是冲突解决后的组合验证。9条专项中，6条正确期望失败（复制剂量两条、紧侧间隔、多组面板、两条看放松），2条已知错误行为断言通过（重复单练音频失活、错误左侧提示），1条小屏键盘无缺陷通过。替换详情导航另修正复现控件定位后重跑，确认direction仍null。结论1P1+5P2需修改，7文件冲突；无原生/APK/手机操作，不将已有简单真机反馈算作本PR证据。完整复现、SHA、日志位置及检查范围见[审核报告](pr22-review-2026-10-19.md)。
+
+## PR #22 f7271f6 修复复审（2026-10-19）
+
+固定head f7271f6be2a838592f97768cb9cc6a815af48597，target243a812。E盘副本Windows Flutter3.44.7 analyze0、默认全量310pass/1条件skip、Python19、action-kit含jsonschema检查0问题、themed-media check通过。独立49步骤时长/相位、JSON往返和6种紧侧预算通过；新增播放器专项1pass（两轮自然完成/中断恢复）+1fail（F7多组疼痛减半漏skip，仍倒计时8秒）。原F1–F6已闭环，但F7及Android原生证据待补。无APK、ADB、手机或iOS操作，完整[复审记录](pr22-reaudit-2026-10-19.md)。
