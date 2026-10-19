@@ -1,0 +1,2999 @@
+{
+ "schema": "hiplab/action-media@1",
+ "generatedBy": "tools/media/build_themed_media.py",
+ "poseHub": "0.2.0",
+ "driveFolder": "1SYZ1Ww3LRpMX4MZOSZeV6gpWl0Tc7fJe",
+ "stage": {
+  "dark": "#101013",
+  "light": "#EFEFEF"
+ },
+ "lightShadow": {
+  "opacity": 0.14,
+  "sigma": 12,
+  "dy": 10
+ },
+ "encode": {
+  "video": {
+   "codec": "libx264",
+   "profile": "high",
+   "preset": "slow",
+   "crf": 22,
+   "gop": "whole clip (one keyframe, like the dark release)",
+   "pix_fmt": "yuv420p",
+   "matrix": "bt709",
+   "range": "tv"
+  },
+  "poster": {
+   "format": "jpeg",
+   "size": 540,
+   "qscale": 4
+  },
+  "still": {
+   "format": "webp",
+   "quality": 82
+  }
+ },
+ "actions": {
+  "glute-max-A": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "glute-max-A--a9df887b31edcaf2.zip"
+    ],
+    "zipSha256": [
+     "80f046871fbc78082d93bd60a765f07e80216e5e22d3eff864c5fd8c82d55cd8"
+    ],
+    "alphaSha256": "42ff3e07c37278d03bbbc4bef9a069534bed3b0e3a5bfbee6e8c296645bb6215",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.6
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-glute-max-a.mp4",
+     "sha256": "6abf4b421c44faf1fa4379f0005e20a3306b0256ebb8bc615e70f21a000a064a",
+     "bytes": 524324,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-glute-max-a.jpg",
+     "sha256": "1762ede74a0fddeb87831273de01fc6d1a8e40c85382254b22133491f153bf2d",
+     "bytes": 8028,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.1
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-glute-max-a.mp4",
+     "sha256": "95e5357296e1d123139636d6d6c15cb5fb157290900132feee64f0cb4eb954ff",
+     "bytes": 300398,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-glute-max-a.jpg",
+     "sha256": "c9308eacbedd21abfd0079ab09187cf601278b16ee0d0eae7faa6143b6866fa9",
+     "bytes": 10410,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.1
+    }
+   }
+  },
+  "h-9090-liftoff": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-9090-liftoff--21957ac0a110863a.zip"
+    ],
+    "zipSha256": [
+     "51087bdbd021fd112f4b7e714b05ddd30cc2084bca6700df40faf67533f21d61"
+    ],
+    "alphaSha256": "f8a6da3e00b2ff98dedc10f17722ad19cf8c19956c4f92611ac8449c0fba4652",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-9090-liftoff.mp4",
+     "sha256": "e514c7ebbc945c68ee6c5b734f1d0edc74cabe717c4825f04d8c396a20916ca4",
+     "bytes": 813203,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-9090-liftoff.jpg",
+     "sha256": "8efd422eb354c379fcdd8c25665aa0b28218abf67a589383169dfd2d75e0d624",
+     "bytes": 8234,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-9090-liftoff.mp4",
+     "sha256": "86630662dfc75689cdb5a4134e9060774e829e006cd84c8edba1eb199a176ebf",
+     "bytes": 470693,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-9090-liftoff.jpg",
+     "sha256": "744474612aa79db7c22556517ae2e8294aa0816ed12e8bf206a1a51bd35ec179",
+     "bytes": 9627,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "h-adductor-rock": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-adductor-rock--88b8194c4c00c671.zip"
+    ],
+    "zipSha256": [
+     "14ff189b7761e143025ea6dec4cc159db9396a02b8d0789babeb7003a33368c8"
+    ],
+    "alphaSha256": "394c73cc9e2f672e5bad950d895b18cc4e566dd08bfb5e5215da6a13fa4a7a1d",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.7
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-adductor-rock.mp4",
+     "sha256": "5203ab740be5ed9b09d39943b36a2568bc6a73329f2a2664132aa2fa4b6a5f1b",
+     "bytes": 1128681,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-adductor-rock.jpg",
+     "sha256": "c8cd6a809953ec840825b106d6941370ecf9716b5820fbf44e2de334f1c07d34",
+     "bytes": 11204,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.4
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-adductor-rock.mp4",
+     "sha256": "b1206bfae95a03928754fa3b2e02ea781f1e3bda3488eb4b48520db302679e3d",
+     "bytes": 605199,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-adductor-rock.jpg",
+     "sha256": "67fdea0190a38ed349f234509f467bf86309f25bd3c3b7303822c0ffe515c3b8",
+     "bytes": 13590,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.4
+    }
+   }
+  },
+  "h-band-hip-ir": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-band-hip-ir--49747570862fcca7.zip"
+    ],
+    "zipSha256": [
+     "79161385998a1c37ce2644b8da116654575376e4dcac9a7450c8813db6b16836"
+    ],
+    "alphaSha256": "c56b49f28a9df1671440037f6d9cd7728523cc7f2d1840cf5dc18ce0e364f7d0",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.0
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-band-hip-ir.mp4",
+     "sha256": "76bc9c905b0578b3ec8c307c699770578d28519902a53f3aed80fa62729e5242",
+     "bytes": 695382,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-band-hip-ir.jpg",
+     "sha256": "45912caca84ac13cacb959f17e24c1ae210515f05b88050d0dc50c4d2d7df808",
+     "bytes": 8555,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-band-hip-ir.mp4",
+     "sha256": "a7d7a550f6e2626a82abf25e0f744fc56bc1a92edba40dc3d2c0080b0774b6cf",
+     "bytes": 382204,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-band-hip-ir.jpg",
+     "sha256": "c885198c1ce46738fdf42a6bdc2f8645927a05ef5a8128ec1f9d62d2f9f3bf6d",
+     "bytes": 11104,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "h-band-leg-out": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-band-leg-out--407f480de9311d5f.zip"
+    ],
+    "zipSha256": [
+     "01edaa5aa19d704c18589b525c2441fac05138905e45260655ccd4781e43eccf"
+    ],
+    "alphaSha256": "455f5472bd07bb344e398be250c9e0d10b4f31f3beed2ea36051a918f163a092",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.6
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-band-leg-out.mp4",
+     "sha256": "767edac333558f688e5bef8a54ee7620e0cfb049abe3b89d527ea646a0f5a103",
+     "bytes": 1318861,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-band-leg-out.jpg",
+     "sha256": "e20919c7e837a0ff455a165340f2704f5e41f2fc29738039510c299fa503bfbc",
+     "bytes": 11463,
+     "width": 540,
+     "height": 540,
+     "timeSec": 4.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-band-leg-out.mp4",
+     "sha256": "d81606aa5a9ef20ef2b14c849b29e45a9e027ac957d3e716faa1c291b7baeffc",
+     "bytes": 778375,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-band-leg-out.jpg",
+     "sha256": "2a468ddc7cd75e54d1e0357a9141ed5be4fe1a4097f3b2c4ce8790dc4acd8dd1",
+     "bytes": 15822,
+     "width": 540,
+     "height": 540,
+     "timeSec": 4.0
+    }
+   }
+  },
+  "h-butterfly-active": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-butterfly-active--0519374d2a3efbe1.zip"
+    ],
+    "zipSha256": [
+     "62935c7b47afcf8d02aa8f483ed6b3eda5faa31e9db2840ef9d2aeca1516f0fa"
+    ],
+    "alphaSha256": "809e7e8b445f6b03f887d95ec7887b97db0422dd935677fb459c9c3450968746",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-butterfly-active.mp4",
+     "sha256": "0e49a8d3b860922fee3144297e7fad7f9c3a4a2876353287508850d1b8cf7684",
+     "bytes": 1300454,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-butterfly-active.jpg",
+     "sha256": "32fde0ca24d2c2056d0936451270fff069e7848a2727ba2b93609161481c2240",
+     "bytes": 11528,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.3
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-butterfly-active.mp4",
+     "sha256": "1accf72ff6537b5b4e330f0caf60f438895793b9092828b19bea387cfdb5f3fa",
+     "bytes": 757123,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-butterfly-active.jpg",
+     "sha256": "11e613dd40553efced1d8c6f372cff8a25d3ccafbd8f528326e00b594b395e1c",
+     "bytes": 14358,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.3
+    }
+   }
+  },
+  "h-couch-stretch": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-couch-stretch--eb84c7aea79edaba.zip"
+    ],
+    "zipSha256": [
+     "6dd162f73fae06ff3b02abd65717c4f606d39bd42103402b09ea09a389e36942"
+    ],
+    "alphaSha256": "b85ffd8ffec1fe893dc5d67d5a1cadf1486dad7eae84aa13983c394282f40a62",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.0
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-couch-stretch.mp4",
+     "sha256": "9bfe1a3a959f3fb23180296c84ceb282bc027b66be3673c1beaa16c0b16f512c",
+     "bytes": 853258,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-couch-stretch.jpg",
+     "sha256": "97d3c77525432095860c6c0e2a1addebd9045604e53c705fa5cf2b5089a8d3ae",
+     "bytes": 9862,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-couch-stretch.mp4",
+     "sha256": "bb6fa8bd9c806e9733f50f74cf8728eb2c16d3dc9d49c6b164c29c3152244162",
+     "bytes": 453076,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-couch-stretch.jpg",
+     "sha256": "6b1365511cb7e90e08a0925727866c4deaec3e06f45b2cdfffb6eae2eb7dedb6",
+     "bytes": 12924,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "h-hip-gate": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-hip-gate--0cf9dcbf5fb87d44.zip"
+    ],
+    "zipSha256": [
+     "66883db336c0f19df99049456942520f7dd2aba4a554808fc441724ffa2a6fc9"
+    ],
+    "alphaSha256": "07824a2d31c48c2ccd313aa346ce409926c9bdfc6a617c2cd88be37a182fa472",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-hip-gate.mp4",
+     "sha256": "700f6a6709a34a213a4e7f5c3489c46416a6c28a010289e43e11f562c81c3fe2",
+     "bytes": 755110,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-hip-gate.jpg",
+     "sha256": "2575414a98e90eb61ddb6bc6597fef700d7ea9df3b033a5ae795816450924bd6",
+     "bytes": 8260,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.6
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-hip-gate.mp4",
+     "sha256": "7ae94af8945fc2a125491eeb955e6b5881b9bceb20d0c4e5e8b0e25255418667",
+     "bytes": 433522,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-hip-gate.jpg",
+     "sha256": "0dbb03f96197cb2d796e07e4cba9ae907e0d3c30c2ee9b6bea719ec9a0e4a2b8",
+     "bytes": 11170,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.6
+    }
+   }
+  },
+  "h-knee-hug": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-knee-hug--70dca74ac9f3be13.zip"
+    ],
+    "zipSha256": [
+     "456a3366f826518d0a90c06b07ba602107e0b1d9b9359087884ee2e853161b84"
+    ],
+    "alphaSha256": "ed3d288b5b1af0f7aa66347699d5b2af05107c97a342085c992bec17f2f8addb",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.5
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-knee-hug.mp4",
+     "sha256": "08f47f1d469ab4e622e22bb2b40e38e9cfaf0b210b39d00f0fa56fd9f3803705",
+     "bytes": 853963,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-knee-hug.jpg",
+     "sha256": "63a1b4c7982d37106c7d75f7b910f075a8c3560e8abf397dc4e3fb3ad922f430",
+     "bytes": 10434,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.5
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-knee-hug.mp4",
+     "sha256": "fbdb81482d10af00f0758829d111c97eaf4228132016786bb19f8365280d43de",
+     "bytes": 455889,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-knee-hug.jpg",
+     "sha256": "5d285bda73e34292c46503c983bda6c0e7b17a6f3a5182c42f7b22fae6d7ed0c",
+     "bytes": 11603,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.5
+    }
+   }
+  },
+  "h-quad-cars": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-quad-cars--3f3e1d182d4379fd.zip"
+    ],
+    "zipSha256": [
+     "10d23858529122d05384e32776aeaf3e57a04aacbcacdec9ef795c8aa2cc049e"
+    ],
+    "alphaSha256": "47c8392b64fd75dd7d8559d1974ecc127e06766369ad3ab5978d7695b5a81d63",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-quad-cars.mp4",
+     "sha256": "3cd26f5daf2a9d7478556240cad8404bace15e091a65efec430eb1baba52ad45",
+     "bytes": 1025870,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-quad-cars.jpg",
+     "sha256": "401ce3d6a5e256773729204888fd37cd181314e2049709eb07e6e81f85aa352d",
+     "bytes": 9465,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-quad-cars.mp4",
+     "sha256": "e4f196065c0cf3f33038e202be05cfbc6308926cb1fc55affbf37968b3c03806",
+     "bytes": 577795,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-quad-cars.jpg",
+     "sha256": "01fa1485d56b156938e0990fefcefcd850b455f44702165d8d08529d1038b0af",
+     "bytes": 11711,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   }
+  },
+  "h-reverse-clam": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-reverse-clam--7f84aa72710b2273.zip"
+    ],
+    "zipSha256": [
+     "9c7c527bcb31aaf7b8f166e7d28448f25aa5c2644552214c9b21b8ce38691ffc"
+    ],
+    "alphaSha256": "2cd4680de5ed230955ab1a356fde6e5d62bd12f21671fed23b9116f50070f904",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-reverse-clam.mp4",
+     "sha256": "6bbfe5c41a5edd37e0026fe58351143226da8ce3f5ec24629a52eadbb6ad7b58",
+     "bytes": 976674,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-reverse-clam.jpg",
+     "sha256": "c7343410ee114e80d67941a51df65f66f27637780c56f99b56917f5420da9354",
+     "bytes": 10288,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-reverse-clam.mp4",
+     "sha256": "05bb9a56bc3ceba3eb3512f4854e669e2b8a62abc2f7342d794e633803149f8e",
+     "bytes": 542476,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-reverse-clam.jpg",
+     "sha256": "b8b58a11f9ed4c81903b89e9baba5c1109fa29fad95d391041bc849fccebabaf",
+     "bytes": 12855,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.8
+    }
+   }
+  },
+  "h-squat": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-squat--bf6cc2bfef87e07e.zip"
+    ],
+    "zipSha256": [
+     "bc324741d55dbc8f24e41e6d36ee67fb6e3957590b4e3ccaa744a5ae24133a4e"
+    ],
+    "alphaSha256": "853d7adf494b53235f594a13515052256331fb970a3f09f2ef2274685bda00d3",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-squat.mp4",
+     "sha256": "488bf4e35fb265342f657aab6a8d40fb61283720b99acb37edfa5360011c2898",
+     "bytes": 693325,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-squat.jpg",
+     "sha256": "f3eb854276c25172eaa056ebfdbb1da42319f91554186d978b0bbf691e5a05f1",
+     "bytes": 7697,
+     "width": 540,
+     "height": 540,
+     "timeSec": 0.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-squat.mp4",
+     "sha256": "3c87f18d8a09ad92b2a3c53e93ec3709ef0670c86ca9648e257f25f916881f3d",
+     "bytes": 432993,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-squat.jpg",
+     "sha256": "ce7810dab9cfe505cc5d0ed614886099bdbc6696527eb63de81e51cc52ea8e41",
+     "bytes": 9028,
+     "width": 540,
+     "height": 540,
+     "timeSec": 0.0
+    }
+   }
+  },
+  "h-sumo-pry": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-sumo-pry--bb6d0079d54e5235.zip"
+    ],
+    "zipSha256": [
+     "b6248d8dbe87468ddd63126e7591b08c38afbc34c7623310c3ef0fd0491e51c3"
+    ],
+    "alphaSha256": "23886a0deacb3765d9070e9cfabd72e31e679eaf82145de9eb470b2871d991af",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.1
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-sumo-pry.mp4",
+     "sha256": "896d8cb11b09a136fca3f2512b11c6ecd11d240bf53615a0bdae91e5b5f81747",
+     "bytes": 1004159,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-sumo-pry.jpg",
+     "sha256": "425eedf72dd8a6d7daae9ab123b9325f7994df7a35b0a5336be8ff928215a5ed",
+     "bytes": 9164,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.6
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-sumo-pry.mp4",
+     "sha256": "79f8b260e70c64cef9bcad0dfb9ad0fef692156be804e0004da19bf74df690d7",
+     "bytes": 535288,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-sumo-pry.jpg",
+     "sha256": "34d186f8f0af21d7c58ce1c797c1fad107337745efbc95f084ea4a87f20c4c55",
+     "bytes": 11655,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.6
+    }
+   }
+  },
+  "h-supine-twist": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-supine-twist--7a820029c2ae4f1b.zip"
+    ],
+    "zipSha256": [
+     "a512a1a4fbcaa4e5d9cad2b879b362b539201a687f9c9536eb49465bab797fab"
+    ],
+    "alphaSha256": "69344dcb11edac84586ce2465b07dcdaa87fecf20c05f203362dd0ce9dbcb413",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-supine-twist.mp4",
+     "sha256": "2986f7c7538c18d17a31a70e15e02252504c72759c50c829d5e09e3d25280073",
+     "bytes": 992016,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-supine-twist.jpg",
+     "sha256": "c97b6cba8e346080cd991f24e79103c60d1180ac5f2c41de6c6a1d8bb5bd6b78",
+     "bytes": 8798,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.3
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-supine-twist.mp4",
+     "sha256": "1581847d1903c6084167ca1b56cb1b8877f454a29728022fa78c988a6cd98cb4",
+     "bytes": 543817,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-supine-twist.jpg",
+     "sha256": "c3ae8249ed449530ced91e1ca38c694e7cf8cc760eb7217e1a921ce5d144a846",
+     "bytes": 11257,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.3
+    }
+   }
+  },
+  "h-wall-straddle": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "h-wall-straddle--a75c7b168a052226.zip"
+    ],
+    "zipSha256": [
+     "9b2b3137c882aa2c718eaa1449bd3ff0edcaa80f7aa6505fd1e38aec47e364f2"
+    ],
+    "alphaSha256": "ffe3ca710858e6d4293f1617bbd2d94007698e384e1fe4cdea1ca8518ee5c53a",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.6
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-h-wall-straddle.mp4",
+     "sha256": "e65ff8e641bd5cf34414cd679c0d3d892b047055285c203f0991d3a7881abb0a",
+     "bytes": 1236793,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-h-wall-straddle.jpg",
+     "sha256": "061f43d29ec7ba2145d0d2f91afe874ff7672983f2f067e3e94f33a7f4e4b5f9",
+     "bytes": 11763,
+     "width": 540,
+     "height": 540,
+     "timeSec": 4.5
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-h-wall-straddle.mp4",
+     "sha256": "3ae94698ee8e9c1945e37570d305dd493ba48020c88017bb36e963dc6a25049f",
+     "bytes": 770807,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-h-wall-straddle.jpg",
+     "sha256": "90d5d6b12d3fb9f98523dc3e50f06428d83c53862374ff60d94c9bebbea92a1e",
+     "bytes": 15601,
+     "width": 540,
+     "height": 540,
+     "timeSec": 4.5
+    }
+   }
+  },
+  "hip-flexors-A": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "hip-flexors-A--547d08095d35a7c0.zip"
+    ],
+    "zipSha256": [
+     "654a19226fef736e6b2111986597170d0fe23abfd76b5ca6431a2f0cad723535"
+    ],
+    "alphaSha256": "0154ad7a364db7ce482aa56c48741e5a9c3be00dcaa299ba92b21a2c72221cf2",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.0
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-hip-flexors-a.mp4",
+     "sha256": "576784a5667c1a03aba847d9d70289b33449b40562df53ae824ce15a3349e82c",
+     "bytes": 702480,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-hip-flexors-a.jpg",
+     "sha256": "c84f74e49e470de460764f673df0d768c03f16a2676866f3ee3716ca7d5bcc43",
+     "bytes": 11721,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.9
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-hip-flexors-a.mp4",
+     "sha256": "efef89a77fc938ef25a3d0c8b4e499958592a24a6906eb97d384c677bedc8990",
+     "bytes": 381854,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-hip-flexors-a.jpg",
+     "sha256": "ab168eee518bea429bc442bbb9af4b50d3e346b590d54cc79722c76876bcf8d6",
+     "bytes": 13015,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.9
+    }
+   }
+  },
+  "n-chair-wiper": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-chair-wiper--3e023fdb03cbc556.zip"
+    ],
+    "zipSha256": [
+     "cd945b1656c42d41e7d792c2839bcb0ade57fed6cfbdd9642ce8e18e2498d705"
+    ],
+    "alphaSha256": "51405d9854b6ea06245a39179fa1c924ef311d21e8d8a0b512152d6e896006dd",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-chair-wiper.mp4",
+     "sha256": "a2bb65f1963f2a58ee0a40253ace10027a77d248333dc1d1649dd66deab4182a",
+     "bytes": 660680,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-chair-wiper.jpg",
+     "sha256": "88544a48b1f76f434bb9564c6aa4add0e873988e13b1a178a88c981e1e95d904",
+     "bytes": 7816,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-chair-wiper.mp4",
+     "sha256": "5209c982a1d3d8c42fd02183d5978a081cef550803f2be12d42dfe88300fbd0d",
+     "bytes": 332019,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-chair-wiper.jpg",
+     "sha256": "3255a17c76974643544c9c7f2902b668431bc84eb7addf2d5f6b5968836f9851",
+     "bytes": 9704,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-half-split": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-half-split--c39af043980586c4.zip"
+    ],
+    "zipSha256": [
+     "98549eed31b77e9cda9567f6efb40d9d312c44baa05e8030114fb169c5c8fa01"
+    ],
+    "alphaSha256": "f531d33e77e6eb14e7819b527e2560d9d057bb50dd1f478fc84b989e177b85e1",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-half-split.mp4",
+     "sha256": "54c74f26a390d752c021cba5880a7c7d2099ea7c36e912e5c61b16fbed5306bb",
+     "bytes": 916209,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-half-split.jpg",
+     "sha256": "7b2eedc1c6e3e087f7be322de4a93cdba3f5e279c6ca627e84c2e4188c0f98e4",
+     "bytes": 10574,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-half-split.mp4",
+     "sha256": "3bf3ec81645022b3509e28eee8067bf28fb61f81e682fed777130acd19595ae9",
+     "bytes": 497528,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-half-split.jpg",
+     "sha256": "d85a56385a89c6584e256fa28c28e84776c64210dc8aa47d53f63c3b2e484ca8",
+     "bytes": 12988,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   }
+  },
+  "n-leg-circles": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-leg-circles--0d8ec0956ec27000.zip"
+    ],
+    "zipSha256": [
+     "a2e6c23bbd0ce283003005a00982732608fc2319d382225fcec3fb8e6f3cc5f6"
+    ],
+    "alphaSha256": "330d9d0e8a76d300c13d2051e8d3e0639c156215adc77016febdd66013b40bfa",
+    "alphaFrames": 360,
+    "darkReleasePsnrDb": 52.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-leg-circles.mp4",
+     "sha256": "15a78a1499cea49d9fd712987dae56105598f7865d44911df431420634bb8310",
+     "bytes": 1490103,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 12.0,
+     "fps": 30.0,
+     "frames": 360
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-leg-circles.jpg",
+     "sha256": "b17fcfce103423a47e68e82774b5ac8d3a635a023aad0a7170c90c54c418d20a",
+     "bytes": 9694,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-leg-circles.mp4",
+     "sha256": "d91e79c5a49371cd8488fdcbcd2c1436b572f81610834cb6e65c577e56dc7179",
+     "bytes": 838799,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 12.0,
+     "fps": 30.0,
+     "frames": 360
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-leg-circles.jpg",
+     "sha256": "9d0a1353dc6fdb0ec332f08627baed867debec2830ef729cc30366b4948a2cac",
+     "bytes": 12423,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-pelvis-circle": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-pelvis-circle--817cbfb0c9113f69.zip"
+    ],
+    "zipSha256": [
+     "e4445dae3212eebf65fa464cf0fde81287180140b335b9c3a767d102bfbaa2d5"
+    ],
+    "alphaSha256": "8bdcc479ea11d112c70214d552dcf8719a6c12ebf100960696b8e649ffb19dbc",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.6
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-pelvis-circle.mp4",
+     "sha256": "c01779e4aaa28c608f3005564f1aa32d01044ff7aa82e62bf411eb768117c5b6",
+     "bytes": 658914,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-pelvis-circle.jpg",
+     "sha256": "68397419c6b604c99d8ce5ffdc452e146f145e285f7484ecd96c720e8aa3b49d",
+     "bytes": 7411,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.1
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-pelvis-circle.mp4",
+     "sha256": "251768aab6f451749b40d9c63e97c56d47212e9cf5c43058da545b070f6c75cd",
+     "bytes": 318598,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-pelvis-circle.jpg",
+     "sha256": "3c5936aaa9e0a643916bd5054de71527abf140a9fff145bac5e03f13536add9a",
+     "bytes": 9397,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.1
+    }
+   }
+  },
+  "n-prone-hip-ext": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-prone-hip-ext--0b681ebb00783875.zip"
+    ],
+    "zipSha256": [
+     "0f5e0f83435387bbfb925c8519b45faec4fc09a76568955fda8fab9ca224b31a"
+    ],
+    "alphaSha256": "a2427dce1726694c35746807c076268c5f00241736a9cd32a9462046dc218730",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-prone-hip-ext.mp4",
+     "sha256": "a6db443a8708ff0b7f2c7caa2769e9b2cb934802faef1177ac22e8c9589ba7bf",
+     "bytes": 748490,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-prone-hip-ext.jpg",
+     "sha256": "f1280de9b46213ee3294ab0a470edc2c8cc9cce3c9c08d350c7082868661bf2a",
+     "bytes": 8042,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-prone-hip-ext.mp4",
+     "sha256": "f85f0ad8be1053d5b83ac5b11e4b6fcb40dea93e561271181a77ec0792509064",
+     "bytes": 406002,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-prone-hip-ext.jpg",
+     "sha256": "57bd6375a6cc8831ca3c9094d4faf60a35ce2d908335cf932b1327c38997869d",
+     "bytes": 10079,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-prone-ir": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-prone-ir--e0dfaad3e7b4fe84.zip"
+    ],
+    "zipSha256": [
+     "5da7f37296ac8e28f70bee3cb3aa55782a8ce34b9b08c68289af6c744d595a50"
+    ],
+    "alphaSha256": "bcccce7585c7adca7752ad09acff9be30fa2e7c38539de9caed9e76ee9a1d340",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.5
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-prone-ir.mp4",
+     "sha256": "e1c7826d397a8dfc4f481655c67ba04beffc449c34b2e7a9595c01469751b761",
+     "bytes": 1237794,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-prone-ir.jpg",
+     "sha256": "54fa2feb84396065613d66e580d3b3ec887f02e094b301a84f842524fb79461e",
+     "bytes": 11327,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-prone-ir.mp4",
+     "sha256": "e3a9f562436e4161b5cb5a1d9f98ce2a1479a82db6c6cf198c1bfe3a04a82ff0",
+     "bytes": 698948,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-prone-ir.jpg",
+     "sha256": "7a9026b0d3663cca2fa74d2dcbc2550ff4b402cbe73ba78b32e8cb86c93a3d71",
+     "bytes": 13150,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-seated-ir-drop": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-seated-ir-drop--6fe78f79e275f296.zip"
+    ],
+    "zipSha256": [
+     "c0e73967dd9baeb816d831be273c505d2f1db36c889faed257259558bac29f2f"
+    ],
+    "alphaSha256": "406c4ecaee0bb2f4047a88f97011bcbc7577e02236baf835790a5e5f8f4f953c",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-seated-ir-drop.mp4",
+     "sha256": "e58216c8bc9b7d90cb9d3fa0e9c79b54af115d84e9bac2abaa55bc85c324af96",
+     "bytes": 778618,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-seated-ir-drop.jpg",
+     "sha256": "34e12dccb484043e80646521ac3b6f6812461800f64f59a8f9034fd0a20ad8d8",
+     "bytes": 8173,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-seated-ir-drop.mp4",
+     "sha256": "f8693f38170db9aa67f1bf0ed8e202b765c5065f661a6190c2873a147ebfc1b5",
+     "bytes": 428102,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-seated-ir-drop.jpg",
+     "sha256": "45b82e37112d8b26eacb8677b576de1da5f071cc2e30b804a086d02234780da8",
+     "bytes": 10577,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   }
+  },
+  "n-seated-knee-lift": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-seated-knee-lift--fc58937fa326f30f.zip"
+    ],
+    "zipSha256": [
+     "ea28095963e88345d6f5854e26ac6afff67048d9e6e1251880244c685aaacad0"
+    ],
+    "alphaSha256": "db024a40c37d089ea6ef9047b3ec7b9445d48f93d6d2d5a514299cf674b445e2",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.0
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-seated-knee-lift.mp4",
+     "sha256": "e79b74a7c6075cce14d5b04a594d96d41e0d3850041d73e32a38e86727a96838",
+     "bytes": 663469,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-seated-knee-lift.jpg",
+     "sha256": "0f53ff9408b6bc1085d5fd93086fe8e70f08395b57b09fb8bb42f7480fcddc24",
+     "bytes": 8211,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-seated-knee-lift.mp4",
+     "sha256": "4d9775ca296ec2adb14851c83d713b01a57bda0ff444a93c4486c76cbfed5545",
+     "bytes": 388114,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-seated-knee-lift.jpg",
+     "sha256": "63f40e64fb10c4582135a4be8770cab59fc1e88e7782b40cfd72a6ee5a23ae18",
+     "bytes": 11487,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-seated-squeeze": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-seated-squeeze--2c18cfbd29ab172a.zip"
+    ],
+    "zipSha256": [
+     "b39e6c36315af179fae7834c9b6796df6d71047d523ce8d4f6f3e207354402f6"
+    ],
+    "alphaSha256": "16fe78aafbe540d7b379e2cba5aa7b00b8d91c603850212436ca39dc60e4223a",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-seated-squeeze.mp4",
+     "sha256": "1e9524706e2564b1b7e022fbfe661b946349a9f4cf487704c74f91e5d849a953",
+     "bytes": 605375,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-seated-squeeze.jpg",
+     "sha256": "f381c5b600903cfa7109896f488c33e8ff4394f4fe0ed2e086796423d3c1c419",
+     "bytes": 8553,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-seated-squeeze.mp4",
+     "sha256": "881ddc7347ae48418c1ba253e7f2f3024f2fbe6b0c5a697fcd5a0c08662d4f61",
+     "bytes": 297719,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-seated-squeeze.jpg",
+     "sha256": "8209f1459a0c26da6e5773f2aea09638feddb5efdc423a59cd54d1d115730721",
+     "bytes": 10517,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-slider-lateral": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-slider-lateral--25b19228e3b341c7.zip"
+    ],
+    "zipSha256": [
+     "b151762911650410b88d9dba146c6ce38235d8cf50c33af6118d7c903d192174"
+    ],
+    "alphaSha256": "8e108c879f3287a43a1ad1352fce3c33f79b46f8de7e4e61642454711cb1d186",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.4
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-slider-lateral.mp4",
+     "sha256": "b14fdd083f8f4d14c1b1a1d04b46afb6895341def65da5d894bc8154f41b1df1",
+     "bytes": 990613,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-slider-lateral.jpg",
+     "sha256": "622ad8078c2e92cffcef1d8bfa23f0384a3f938132f720a0091960306bc6b11a",
+     "bytes": 8487,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-slider-lateral.mp4",
+     "sha256": "f318cb851e0181720728466d72990657274208df8c84c1b39c01555281f797e3",
+     "bytes": 482617,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-slider-lateral.jpg",
+     "sha256": "468f2f129c6be8e52550bfd61351718adc9b5017ddba44ea13b94b5d54096a83",
+     "bytes": 10378,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  },
+  "n-squat-shift": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-squat-shift--4f84273c34083c2f.zip"
+    ],
+    "zipSha256": [
+     "8de8ea149381402f8502761a0e713c9187e5bf0946aac7719b93ef9d29a8675b"
+    ],
+    "alphaSha256": "75c1770a5e4d36dee12bd0ed53efab977d0fef1d35729d385215100707f5bbf8",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-squat-shift.mp4",
+     "sha256": "81ffed31c0c5dda4b2fccec499a34b2321a0a8b8e29b64e1e568dd945c1751f1",
+     "bytes": 951132,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-squat-shift.jpg",
+     "sha256": "f3d4c6fa9547029c45fbee661461614fbceeda48a7ba88f4251824f514f199c0",
+     "bytes": 9801,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-squat-shift.mp4",
+     "sha256": "5b403b2dbd7a7d7b6177410a042fb2f0f5443ca9820d0b20f32d40250bfd067f",
+     "bytes": 500149,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-squat-shift.jpg",
+     "sha256": "825dfda7f257ea51c27a240fc8c64f4240fa2e791beb2f891423f25ce6be9468",
+     "bytes": 11962,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   }
+  },
+  "n-straddle-fold": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-straddle-fold--e5d08d1ea781e75c.zip"
+    ],
+    "zipSha256": [
+     "4160f03b0c16db9b911c472447cbc2cf5c382f2a7a49a4df8beb6fc5db2ded94"
+    ],
+    "alphaSha256": "d56400417611e0693e4da9b142a04832861786351d99295553cba6fce9126857",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.7
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-straddle-fold.mp4",
+     "sha256": "332f375eb0ccd6ba500b4eb7a3bbfcde83b2f46c2c6460a16625c01c5c579856",
+     "bytes": 1151252,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-straddle-fold.jpg",
+     "sha256": "d7253fd3905b1647b24e3f7146c592a58894306a135e2debbc087f5c305dff8e",
+     "bytes": 12133,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-straddle-fold.mp4",
+     "sha256": "69b863cb8c10b456e62748fff4b7c2fcc8093a57a896fd3d7fdf69205b4fb23d",
+     "bytes": 675890,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-straddle-fold.jpg",
+     "sha256": "4f0723140794ffbde8e79d4a00f5211dfd1b90288383562dc873c383ef520734",
+     "bytes": 14922,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   }
+  },
+  "n-thomas-test": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-thomas-test--3be6067c8e337984.zip"
+    ],
+    "zipSha256": [
+     "c93ff5b3978e0fedcd4e8524c3c15016d1ea1bc6b694fad469bd6bfc7486c895"
+    ],
+    "alphaSha256": "86b35ca6ca3c296a90ba75b6dfc0c8956775f7ecf61d104aa6dd67806009c07d",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.9
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-thomas-test.mp4",
+     "sha256": "88b530578fec503bc9ef2f58fd77e3addbffc01438f64d49f2f783864307b40e",
+     "bytes": 649464,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-thomas-test.jpg",
+     "sha256": "bd4ce6d884acb639effea8e2bc68109bd5aab8ca71e1191da617c4ef121e6bbd",
+     "bytes": 7510,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.5
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-thomas-test.mp4",
+     "sha256": "463aa55fcab343a5341748a87bb6dd3daad4cc73ef74c13e94ff4d866b39d71c",
+     "bytes": 335536,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-thomas-test.jpg",
+     "sha256": "39cf1c814d43f5cf992720acc207153634c5376ad643dd0d92988ca286b751ab",
+     "bytes": 9245,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.5
+    }
+   }
+  },
+  "n-wide-fold": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-wide-fold--f594183bccb786d4.zip"
+    ],
+    "zipSha256": [
+     "dc46a44f628db957982f4490ba3da92b742876be5560e4fe4c4d1d644491139c"
+    ],
+    "alphaSha256": "90d9f57df7ac8ca4397dc232e788ea6571084d8a4d6f583770d2dd8663c124fc",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 50.6
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-wide-fold.mp4",
+     "sha256": "2d8429deeb80cc8ccb76974f1719b7f4c7e011330275a6103bc375c74c2ce453",
+     "bytes": 1332675,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-wide-fold.jpg",
+     "sha256": "dd6e0ee273a18ebc8aa0c748a44dd6ab316ad1bf2d6438183b0f112eb2ec8ae5",
+     "bytes": 14503,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-wide-fold.mp4",
+     "sha256": "e379f1808697215a26217d1f31a29c89973739d87751415dbf7a898756ecbcc9",
+     "bytes": 763009,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-wide-fold.jpg",
+     "sha256": "6678e4cf1645fe614e7e7c305f9c5731bbb79652822213536bd97026ad2157ae",
+     "bytes": 19187,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.0
+    }
+   }
+  },
+  "n-windshield": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-windshield--bac8919b9a0718bb.zip"
+    ],
+    "zipSha256": [
+     "308876c17c017e8803b9508f20d7878227f374c3110a446a39f097fc77b2e671"
+    ],
+    "alphaSha256": "c54d60ba0b5bac5eaf3057aafb6248044ad55c175a06e6d870232aadc1d8a918",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 51.1
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-n-windshield.mp4",
+     "sha256": "d05ed862e25abe4e52a8082de964c97e7a9d35807ac927263827c69299f2ea2b",
+     "bytes": 1314966,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-n-windshield.jpg",
+     "sha256": "bbe7db88b573a87c4dad0992f3192f616fe8b6fb85a3c4472c704fdcf8717346",
+     "bytes": 11608,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-n-windshield.mp4",
+     "sha256": "84df78f91a7bce3687ead82e1516dfbaceebf55ab9296e421283e76c3bdb072d",
+     "bytes": 732762,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-n-windshield.jpg",
+     "sha256": "439821a8e99f2246e31f85321cd7faf08b0b94272f5f68c343b590493c72e6ef",
+     "bytes": 13549,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.2
+    }
+   }
+  },
+  "o-seated-fig4": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "o-seated-fig4--550af546d3bba3f4.zip"
+    ],
+    "zipSha256": [
+     "443fe7947edf6d3888267ad0a34adff476783633284660c1940904ca21abfcde"
+    ],
+    "alphaSha256": "eb6247b67cb4203d979bad441da8c728558159fd83e954200d87d294738bf178",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.0
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-o-seated-fig4.mp4",
+     "sha256": "f44333331d01b4af0c166308eb1740f795d3a1ca094bf6b033d7a9661ce02fc2",
+     "bytes": 723766,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-o-seated-fig4.jpg",
+     "sha256": "aae25e884909968fe73f1ad63fc34abccbc24e3b90bd3cdb4fda7ca0530486f1",
+     "bytes": 9473,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-o-seated-fig4.mp4",
+     "sha256": "87719bfcdfe642d5b28333308f310fe0d301e64a4bcf01e1ec396bc02cdd775f",
+     "bytes": 395496,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-o-seated-fig4.jpg",
+     "sha256": "40c3069c1d2a0d9064df3e856d369fb8e103eead712388610b54cea7fdb24a17",
+     "bytes": 13011,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "o-seated-ham": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "o-seated-ham--3e46d07abc408748.zip"
+    ],
+    "zipSha256": [
+     "436bf55d0f03e21a40511cbef0056023b73c4a56812dc2f30b720d15e9d51a16"
+    ],
+    "alphaSha256": "ac396a038de1f9408cbed2a6ba34a6c5d51e59a14519863e053630d38c27d1dc",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.8
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-o-seated-ham.mp4",
+     "sha256": "0a472585bfbe1267c539a96150da0de083101c20dce0c38b50d73cf46fdeec7f",
+     "bytes": 545104,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-o-seated-ham.jpg",
+     "sha256": "21e1b12957ac16948e6d645fa79f5d8ab592d2f3d7567b7544ba0a39fc5b5f6f",
+     "bytes": 8301,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-o-seated-ham.mp4",
+     "sha256": "7be6c05463899df8e293e0bf6386eee8c0e62ccd2af36c43ed0042a60843a358",
+     "bytes": 295397,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-o-seated-ham.jpg",
+     "sha256": "28ffc0edb85ded591d33ef4067e410a8537b5f240c8868e4849341e3d7217cbd",
+     "bytes": 11647,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "o-stand-crossreach": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "o-stand-crossreach--195645e0201960f4.zip"
+    ],
+    "zipSha256": [
+     "734552de3deeac4fb8ef8ddb289c0bc1a82aa1dd4d644c7d3ea04f0f636cefa4"
+    ],
+    "alphaSha256": "67696b4321b10d78882aa8ae509772689c16e9b38b138611bf9165e5c457aeee",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 56.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-o-stand-crossreach.mp4",
+     "sha256": "2370d82345485cbf8a70883cdf35cf7b472d382b9aadf8b8859f503758c8184c",
+     "bytes": 396759,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-o-stand-crossreach.jpg",
+     "sha256": "39f4ff7978d316a20e48e9347943d77e2c68e39d8717d0105f8b5f24ddeb5598",
+     "bytes": 8076,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-o-stand-crossreach.mp4",
+     "sha256": "2d6ed214aab955cdfd5ae998bc0a96b97302f2ca0449d8dabca936f33695b389",
+     "bytes": 228495,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-o-stand-crossreach.jpg",
+     "sha256": "0e7b13d5ee54360e482dddb4f3286d5d41b395c3321e49d0dede4c59bca47a13",
+     "bytes": 11722,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "o-stand-lunge": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "o-stand-lunge--9f2d218bca25eb8e.zip"
+    ],
+    "zipSha256": [
+     "88ef0b31afce5758c1993ced6511632999359c5e35625134f488a0f9d1f9b9b3"
+    ],
+    "alphaSha256": "6e990d0eeff4ea1c27f2b789e4ad3cf745d9ccb70d0e40b1d14da646d1766d4d",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.9
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-o-stand-lunge.mp4",
+     "sha256": "21c2848abbdf03fdf19585ffcea8a8fcd8f68ab28c726ebd1a8a7823bf5391db",
+     "bytes": 595513,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-o-stand-lunge.jpg",
+     "sha256": "b0e0fef20c797ea42e99b0523f6f73c38a80dedd8b27e911a5c3c4a2eaae7961",
+     "bytes": 7561,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-o-stand-lunge.mp4",
+     "sha256": "fe9acadae3ea18e463bf98f543bc986d1a5579824746e6b3cf058ec704046221",
+     "bytes": 310615,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-o-stand-lunge.jpg",
+     "sha256": "1428476735dd350176343ed0e958525f652c561c1e23b282a853f6dd2809a088",
+     "bytes": 10658,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-9090": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-9090--2b8560077e50f467.zip"
+    ],
+    "zipSha256": [
+     "e2b5eb82480f59a4d75fa886a88106d0d3db98358ca81ddfe8397f8551fce652"
+    ],
+    "alphaSha256": "a06b73e62684aa95c3d38e4ca49515663521d877adeee136ee7964437c62ad91",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-9090.mp4",
+     "sha256": "394815a615ecd18b5e9d760ce0235491e29f028022b33fbb87a832a6a9a3c724",
+     "bytes": 671706,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-9090.jpg",
+     "sha256": "cd361b296bb8c0f0d4ac3e08c44ff3f6e57c6d7719ca903aab544f8757942b61",
+     "bytes": 7087,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-9090.mp4",
+     "sha256": "fc57e34d364730cd713caba8945d02d0e85910e0564674539bda1c1b24594608",
+     "bytes": 385067,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-9090.jpg",
+     "sha256": "8c7a3911659b6c45e71a736458f262c04d6530f7ead66f281016a2ac29f1d5e5",
+     "bytes": 8499,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-butterfly": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-butterfly--f5b86f4d9cefa6d8.zip"
+    ],
+    "zipSha256": [
+     "74cdab0cb7162aaca1feafc69e88af27bf19f1aba9e4e609052cdb4313ef6c1d"
+    ],
+    "alphaSha256": "c5ff6705f97ca01e6b72ba7e98d1e853480fc756133c951fffa59187f76eac97",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-butterfly.mp4",
+     "sha256": "bdd56f1df2cf7ce0865685ec04dd085a8a91d73a77bc60b2bacea0e9f02bf8ce",
+     "bytes": 839040,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-butterfly.jpg",
+     "sha256": "adebb5e7fb92fbbaead5d2d402b9f83e96931c801262f216dd65aa7bc1a008d8",
+     "bytes": 10174,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-butterfly.mp4",
+     "sha256": "f2cc1d919ea218bdde4611fcd76f8a514e4d744c1b5bf863e05377d334efc26b",
+     "bytes": 462924,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-butterfly.jpg",
+     "sha256": "c378149ba4451ed9704babece0d885f9209e339714902bb7fb3146ede5a5605a",
+     "bytes": 11889,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-figure4": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-figure4--45f7cfdc39f86a17.zip"
+    ],
+    "zipSha256": [
+     "623a573dd4325308f371a42f369d453d217d738bccaea941531fdbfbc9acb8ef"
+    ],
+    "alphaSha256": "7fc1a599ee6423590182a50cb341c87da302eec48b2aaf985934c11a27a704b2",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.8
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-figure4.mp4",
+     "sha256": "90aa9b4ce06768b627a9338f50373fb6f32a1ee1dc27d1edc1ba1e72afcfcb50",
+     "bytes": 830854,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-figure4.jpg",
+     "sha256": "c422ff0b904e65daee200b27fb0ef7f0d9f879b21e9fb33795cb06ae135443af",
+     "bytes": 11144,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-figure4.mp4",
+     "sha256": "4671378aab401db2e4d1af1170d04c45668b4f8479b3b79ec3e441b1ba02c2b6",
+     "bytes": 497916,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-figure4.jpg",
+     "sha256": "085760c21bc161aea7cb482b337cea9737c9c668bb726938ab1db943dc27804e",
+     "bytes": 14181,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-frog": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-frog--75ffce397c1887d4.zip"
+    ],
+    "zipSha256": [
+     "a6449aa7aab5ff9194dcbf3f3b5b4793698747115c46c3deb09e531c75b2d825"
+    ],
+    "alphaSha256": "608fa5bd493fc7d7474a0b4c730c799c10f529bcfc0953b80356a61a2060e7d5",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 55.7
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-frog.mp4",
+     "sha256": "6c8f90487b66cd4692a9182cbd62fd681c215647aded99df7b85116c4ddfbe55",
+     "bytes": 466202,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-frog.jpg",
+     "sha256": "27fe0e1af33cf8da3c5b82cf0f44cf33af63ba9e3ba4449136a0e657efd492d7",
+     "bytes": 6474,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-frog.mp4",
+     "sha256": "bec682840a591cc3ec5da7538cf22de50a505eff66ef68e6bf516adc541c29ed",
+     "bytes": 258019,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-frog.jpg",
+     "sha256": "9f0c93ba1bf1d5aa9db7509371d30fab84d2d12eb261b5de89f235b45aa3d9d7",
+     "bytes": 8492,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-kneel-hipflex": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-kneel-hipflex--866c46ba35d97340.zip"
+    ],
+    "zipSha256": [
+     "e9aefacf6d426bedd8276389c2fb887024c3610fd6f47e485de46f5f426ced55"
+    ],
+    "alphaSha256": "3e16c8006b26a70ccf418832d12c7ac6765e7f3d7fccb29703f2ebeb126e7552",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 55.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-kneel-hipflex.mp4",
+     "sha256": "b4b74268769f3798f9d72a04312aeea88e2b0463b25a8c8e9eb40ddd779ce1d2",
+     "bytes": 524563,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-kneel-hipflex.jpg",
+     "sha256": "0842fd0cf8625f436cad29e1cbb2bfb1b1ca7474c3f1f463e500ea2e97757e66",
+     "bytes": 7522,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-kneel-hipflex.mp4",
+     "sha256": "6d844b1571b397c41b82d230bd320935e40e41fc074a05d4133702a44d0c96e4",
+     "bytes": 265693,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-kneel-hipflex.jpg",
+     "sha256": "55ebcb0fbb991a4476c07be5a21b01abb33e718c4f512e2c7cbea0b386d535b5",
+     "bytes": 9591,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-lizard": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-lizard--26cd98fcfe28195c.zip"
+    ],
+    "zipSha256": [
+     "9bfbeff69a72083b54094bb3ae0bebf2eac93edf72f7720dcc7141874368cb15"
+    ],
+    "alphaSha256": "48770fc01eb823549fe8640acf1c9b7f0bea84159edda93f5d65781a29f1a404",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 54.3
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-lizard.mp4",
+     "sha256": "48490af5dbc1df91a2e867439f620d875994155869b3fb69aed51bfeb630134a",
+     "bytes": 581718,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-lizard.jpg",
+     "sha256": "605ebc6bfff58e3d61ea38b9c4885f1d27d3ddd6fb83561b94a3eaad650cd861",
+     "bytes": 7770,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-lizard.mp4",
+     "sha256": "6a3857fc9e1374d4f1edc088c7e575f51bf21a1ffa3316037b6a65e0db26333b",
+     "bytes": 306289,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-lizard.jpg",
+     "sha256": "4fce90605d035b7847116e1bc5e95ae5e0b3e4181e025fb681753bb6717dbc34",
+     "bytes": 10022,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-pigeon": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-pigeon--43dff4f47142901d.zip"
+    ],
+    "zipSha256": [
+     "bfa605f5f3218451c8e811b547d44c8a8df581e20057402027f7cb09b8b018d9"
+    ],
+    "alphaSha256": "e1e7034842821d3d4132b1fbaa6db2b138accea137c7f62f939124f6da4d063d",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 56.7
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-pigeon.mp4",
+     "sha256": "de2e3ec167d67380dba2064ceffe5f3d7c7bc45c55faf8191aca3d867ba22afa",
+     "bytes": 317184,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-pigeon.jpg",
+     "sha256": "38c9feec35ce76cb4f4c23e73bd62055061ac41850e9c41f65d4a8ed1bbd5727",
+     "bytes": 6355,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-pigeon.mp4",
+     "sha256": "f30fe3585523c3677fb25c5251888f9e9f30b74c4905e333412122d0b2deee84",
+     "bytes": 183379,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-pigeon.jpg",
+     "sha256": "242be07de6658a68fcb5b8b7379ad3bc64355adec873838f58d960641faa4a1d",
+     "bytes": 8543,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "s-seated-fold": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "s-seated-fold--0f604fa01e05b520.zip"
+    ],
+    "zipSha256": [
+     "795177121bfd762163fa10ed61d494d04cce700881dd9fecba112e6d2fd339e2"
+    ],
+    "alphaSha256": "9e6c237561e52facc8e072eb8b434a43ec954eb4dd2de1d51e90e6e396576086",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 55.5
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-s-seated-fold.mp4",
+     "sha256": "7fb4123cd2291578e14391c4ef30561e9b5837e43d5b8344951479f94405c2ea",
+     "bytes": 563852,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-s-seated-fold.jpg",
+     "sha256": "8eadd96329042bd3c68e393fd1ea8a074e126c0f79d614d4e893f49264cc2974",
+     "bytes": 7224,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-s-seated-fold.mp4",
+     "sha256": "b9318e8606aa83763bb45dc036c388549671e7ad4ead733e2d7aa6a7d061b035",
+     "bytes": 307289,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-s-seated-fold.jpg",
+     "sha256": "8062f9b31940ea1f0467e8f8ad4fcb4440d0a1def395446769edea5b6dd127a5",
+     "bytes": 8791,
+     "width": 540,
+     "height": 540,
+     "timeSec": 3.8
+    }
+   }
+  },
+  "supine-cross-demo": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "n-leg-circles--0d8ec0956ec27000.zip"
+    ],
+    "zipSha256": [
+     "a2e6c23bbd0ce283003005a00982732608fc2319d382225fcec3fb8e6f3cc5f6"
+    ],
+    "alphaSha256": "330d9d0e8a76d300c13d2051e8d3e0639c156215adc77016febdd66013b40bfa",
+    "cutOf": "n-leg-circles",
+    "startFrame": 216,
+    "alphaFrames": 144,
+    "darkReleasePsnrDb": 33.1,
+    "note": "dark cut is cut from n-leg-circles 7.2-12.0 s of an earlier batch (hiplab-hd-20261017); light cut uses the same frames of the v0.2.0 alpha masters"
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-supine-cross-demo.mp4",
+     "sha256": "0e7517bda894bb7b2f21394c5c41e90978ec313fcac03b3c5d2340d34f404ce1",
+     "bytes": 532205,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 4.8,
+     "fps": 30.0,
+     "frames": 144
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-supine-cross-demo.jpg",
+     "sha256": "6b8d63095c4a8d2f842a75f1116a3c38d7277ce52c644a5dabb8e916e900dee5",
+     "bytes": 28298,
+     "width": 1080,
+     "height": 1080,
+     "timeSec": 2.6
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-supine-cross-demo.mp4",
+     "sha256": "8fc4e24e8fba748ab417aa4031ca484ebea6e1b14170dfad8c6f7c8e3ff7462b",
+     "bytes": 324236,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 4.8,
+     "fps": 30.0,
+     "frames": 144
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-supine-cross-demo.jpg",
+     "sha256": "ea38c5eed5293ee1ed7c66f2ee9123a461fa1fccce36cdfff082b017408b8c6d",
+     "bytes": 35360,
+     "width": 1080,
+     "height": 1080,
+     "timeSec": 2.6
+    }
+   }
+  },
+  "t-seated-straddle-lift-1leg": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "t-seated-straddle-lift-1leg--b702eac5f0bd7b46.zip"
+    ],
+    "zipSha256": [
+     "24a44f8e3c6fbbe2a5007c3b16f14d541501155f735b7eb9549633d4f356321e"
+    ],
+    "alphaSha256": "13950f4cf26529a498504f7959508f515f277b9886cc1bfd199b5fa38b9a2c6b",
+    "alphaFrames": 300,
+    "darkReleasePsnrDb": 53.8
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-t-seated-straddle-lift-1leg.mp4",
+     "sha256": "17161a5028f5b7a4c06229c9071667907843f9e737f5c29e6840dc19ea8f9e3f",
+     "bytes": 1083739,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 10.0,
+     "fps": 30.0,
+     "frames": 300
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-t-seated-straddle-lift-1leg.jpg",
+     "sha256": "cbcd639cc98efe24a4a58028ef8e64518090b337ae02f374b904e0c7f723ac21",
+     "bytes": 8827,
+     "width": 540,
+     "height": 540,
+     "timeSec": 0.9
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-t-seated-straddle-lift-1leg.mp4",
+     "sha256": "f7df0ea4dced80fa9d1d3ea888673e7210132bd47e3e971523362291f23cd1bf",
+     "bytes": 581915,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 10.0,
+     "fps": 30.0,
+     "frames": 300
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-t-seated-straddle-lift-1leg.jpg",
+     "sha256": "7c2772091877cd9850c1e5c8de732a3f40f5f7578bf5ce75618b2c400dbc0c8c",
+     "bytes": 11232,
+     "width": 540,
+     "height": 540,
+     "timeSec": 0.9
+    }
+   }
+  },
+  "w-clamshell": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "w-clamshell--ef6449bb6055d9a3.zip"
+    ],
+    "zipSha256": [
+     "93c897918ab4379f19a504c806aafe48a7d5b3b5df3d466f1d31301bb37feb57"
+    ],
+    "alphaSha256": "3c8ea0e3075c534d19fd44bb684753f0606efb60c67bb2f05744613ecc5dc4de",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 52.9
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-w-clamshell.mp4",
+     "sha256": "c1d6c8d2796d21941b75f2ba1f51a66356cfaac9aa18977ca814bb93eadae333",
+     "bytes": 870577,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-w-clamshell.jpg",
+     "sha256": "b430d44a0a40a4331abc0a1fe079389329ac928302d4718935204d5012a01c0f",
+     "bytes": 8672,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.8
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-w-clamshell.mp4",
+     "sha256": "50b90340e9256f0a8df7bff8c4f70edc5d2b4aafc0b149695493f736358430aa",
+     "bytes": 497557,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-w-clamshell.jpg",
+     "sha256": "4b93be3eeb2e708fd45b39f57ffcd652cad878078bec2e086374c5527406e6ed",
+     "bytes": 10803,
+     "width": 540,
+     "height": 540,
+     "timeSec": 1.8
+    }
+   }
+  },
+  "w-feet-on-chair-bridge": {
+   "kind": "video",
+   "source": {
+    "zips": [
+     "w-feet-on-chair-bridge--076493b4c30f3b8b.zip"
+    ],
+    "zipSha256": [
+     "424a51394943db064cec3b069a5c259455cd41bb2508730857a1c88f131be600"
+    ],
+    "alphaSha256": "a741b4731e48fed8e2abac8a022d125156d66baa38374f7f8f6ca37849389c6c",
+    "alphaFrames": 240,
+    "darkReleasePsnrDb": 53.2
+   },
+   "dark": {
+    "video": {
+     "asset": "assets/drill_media/hip-w-feet-on-chair-bridge.mp4",
+     "sha256": "f57ca24c22d0c092552def5b6bd0302156c0d0de09bddada5047a10d49b55401",
+     "bytes": 677701,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/hip-w-feet-on-chair-bridge.jpg",
+     "sha256": "04f9d6684e50bedad65e2781a74aac0c8c7ec4bd41c86b90875fdb866750751e",
+     "bytes": 8924,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   },
+   "light": {
+    "video": {
+     "asset": "assets/drill_media/light/hip-w-feet-on-chair-bridge.mp4",
+     "sha256": "7d5e0dbf498131369beba190c8d345d5705e189083d8c39c9d7142cc8f34d656",
+     "bytes": 379084,
+     "width": 1080,
+     "height": 1080,
+     "durationSec": 8.0,
+     "fps": 30.0,
+     "frames": 240
+    },
+    "poster": {
+     "asset": "assets/drill_media/light/hip-w-feet-on-chair-bridge.jpg",
+     "sha256": "c77497db7ccce533f85f03348ad0b0e6205486e2062c83020fb85fa9055bd733",
+     "bytes": 11108,
+     "width": 540,
+     "height": 540,
+     "timeSec": 2.0
+    }
+   }
+  }
+ },
+ "stills": {
+  "a-9090": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-9090--6a7d54fff8fef205.zip"
+    ],
+    "zipSha256": [
+     "ff5ce5a15e401448db286a11feef36922748745a2e57ead6fc9ad1c5930d50fe"
+    ]
+   },
+   "items": {
+    "9090-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/9090-a.webp",
+      "sha256": "694e07565efd3822ac00bc406052c96551f71f504a12d28d9b2aa6e9cf4da6aa",
+      "bytes": 33584,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/9090-a.webp",
+      "sha256": "372a0b56bfd5d304e065ec0b43005ca6314ef661c05e0b667375d6dccdb75e7b",
+      "bytes": 19776,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-01"
+    },
+    "9090-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/9090-b.webp",
+      "sha256": "6278cd41a6bb9e3bdc6dd8daa34224791487de2450db4dfa895fe106667c755e",
+      "bytes": 33052,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/9090-b.webp",
+      "sha256": "af4f5bb0ffef9747c63a60bd86fd2496aec1dee234a81f1338b97ecbe923643d",
+      "bytes": 19608,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-02"
+    },
+    "9090-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/9090-c.webp",
+      "sha256": "e30c4f1b54642a52b00b36f35d8341fe4582b1fa0eb7a5f5b499bd3058ba22fe",
+      "bytes": 33852,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/9090-c.webp",
+      "sha256": "b594969124a70f083045a4a669247775f98c3fbac3652c3657123ace511014cc",
+      "bytes": 20916,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-03"
+    },
+    "9090-front": {
+     "dark": {
+      "asset": "assets/hip/assessment/9090-front.webp",
+      "sha256": "cb765dd4b2a19bf95d429268a6c08585cef37f85bd40b65421ffe3ce4ded4308",
+      "bytes": 33824,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/9090-front.webp",
+      "sha256": "3af4d463321620e29438809ede9deab463cfa15ef9e49a1afefb1639393879c0",
+      "bytes": 20904,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-04"
+    },
+    "9090-back": {
+     "dark": {
+      "asset": "assets/hip/assessment/9090-back.webp",
+      "sha256": "1f84b9ace0e1d74853530a9a15a1c9c07d353a548ef733250d2c7dedb452c2e1",
+      "bytes": 32410,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/9090-back.webp",
+      "sha256": "fddc03939739debe1753b8252862ad9224a42d80fb491ccc1b31f8f7d7e0fe6a",
+      "bytes": 19034,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-05"
+    }
+   }
+  },
+  "a-butterfly": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-butterfly--b495d1e7b5f7617f.zip"
+    ],
+    "zipSha256": [
+     "26846d9436ec801684168d76addee1fd0d6a15a700dda879338ebd882ad7b6d3"
+    ]
+   },
+   "items": {
+    "butterfly-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/butterfly-a.webp",
+      "sha256": "8d4d80077103b74e2e7032173785d8795aac5b8b993245c519b4fd215fd82f65",
+      "bytes": 6402,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/butterfly-a.webp",
+      "sha256": "bcaf9b02ee4fbd04caf34ebbb560ce392818ddac184af244425d7989a3a2c930",
+      "bytes": 5480,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-01"
+    },
+    "butterfly-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/butterfly-b.webp",
+      "sha256": "01f4b235ee8bec9f4369edaba48ce0d7ae923604499f33f1eb1974641acc8549",
+      "bytes": 6372,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/butterfly-b.webp",
+      "sha256": "9c3e4465c20c54947bfb419d8602254d73e0fe31485b3af469b4120679d4e68d",
+      "bytes": 5646,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-02"
+    },
+    "butterfly-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/butterfly-c.webp",
+      "sha256": "ecb0b600a64c7e819ae9cda4a585367c322b9c1ae27e3a8c207cbe1f08a64878",
+      "bytes": 5864,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/butterfly-c.webp",
+      "sha256": "49ebaa4a7b0bf47d1fc0336f1c71c940860352b8d32ecc5c802639246db67999",
+      "bytes": 4962,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-03"
+    }
+   }
+  },
+  "a-deep-squat": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-deep-squat--694241732a206976.zip"
+    ],
+    "zipSha256": [
+     "6bbd8fb070668bd8bdebd6a444f29f1724ee68edd824682ef998d30967ebb6ef"
+    ]
+   },
+   "items": {
+    "deep-squat-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/deep-squat-a.webp",
+      "sha256": "3e3cccde78c37d762a5e8445901db5c30683c18c1c2d665c651f2e2b273dfa7a",
+      "bytes": 26634,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/deep-squat-a.webp",
+      "sha256": "9e4e40b3790683315145ae5eecc7081da8537f531879094dc147eeec55204845",
+      "bytes": 13590,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-01"
+    },
+    "deep-squat-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/deep-squat-b.webp",
+      "sha256": "2ed7a85cc1d72a8f14a2ccfddd727e198e6fd571c96839924a6dbb50443c2cbc",
+      "bytes": 28114,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/deep-squat-b.webp",
+      "sha256": "44cc466a49dcded9d03dbaaa45ea2e9cda0dbddfd38299575f7e32d2825c1660",
+      "bytes": 14932,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-02"
+    },
+    "deep-squat-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/deep-squat-c.webp",
+      "sha256": "2020fa2db44f7f2f1747968b44c64317d5ddf3088e07e3efb102eaffea6a124f",
+      "bytes": 28396,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/deep-squat-c.webp",
+      "sha256": "728d70bcf2b8857da4b8b3a8d2c1a0d24f404b5097ec2a445d47f89fd84e4de0",
+      "bytes": 14934,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-03"
+    }
+   }
+  },
+  "a-seated-fold": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-seated-fold--6a192c6dac01ce8b.zip"
+    ],
+    "zipSha256": [
+     "26e2ffbd04f34eab1d7507f9f1360d43cf129ca42e5477329fa5d67cdb30d5ee"
+    ]
+   },
+   "items": {
+    "seated-fold-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/seated-fold-a.webp",
+      "sha256": "f07bdd9b7bd6de6d8dc704439f27b778b035371e1c7a72ea1ccc471ad7154602",
+      "bytes": 6142,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/seated-fold-a.webp",
+      "sha256": "d37aa83c75d4f1321d9cd7d4ab87cde7495596504617e52e51a74105c9a1eeaa",
+      "bytes": 5276,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-01"
+    },
+    "seated-fold-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/seated-fold-b.webp",
+      "sha256": "3f14099be645f3cb9383c3bebcb9a7c4ee1586760e91fde3507b55a737aa1c4f",
+      "bytes": 6242,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/seated-fold-b.webp",
+      "sha256": "fc6f57979af55001386aa53d5d7dfc0118538afd33cca2d5e3510bbeaa16e4f6",
+      "bytes": 5494,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-02"
+    },
+    "seated-fold-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/seated-fold-c.webp",
+      "sha256": "a7e1097a05b21901ce2bbff00d16ef8ddd754fbc4e64ce5743c516073ec22408",
+      "bytes": 6200,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/seated-fold-c.webp",
+      "sha256": "be47d576bcba9bbb7b5313444f7b9d0f13394760773070023f1c720adac967a1",
+      "bytes": 5372,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-03"
+    }
+   }
+  },
+  "a-supine-cross": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-supine-cross--dbf9579800657b76.zip"
+    ],
+    "zipSha256": [
+     "ecc8c510f3b4e08772eb83d1cd953e1d1d7d12593c6cb2e00ef1adeb33dea293"
+    ]
+   },
+   "items": {
+    "supine-cross-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/supine-cross-a.webp",
+      "sha256": "8d8a83d7bc71458fd7ff7b8c6cb6318e9349275bde6c747259ec26d84b29d9d1",
+      "bytes": 8006,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/supine-cross-a.webp",
+      "sha256": "ca9df15a02ec1a460cbbe8a94dfb0d0f6a123222e8616a4b07da55af98fc0f22",
+      "bytes": 7098,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-01"
+    },
+    "supine-cross-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/supine-cross-b.webp",
+      "sha256": "13b8a65e23da7206e9761e3c102006e1ca9186e612b1d0037ccd41e75288d0fc",
+      "bytes": 7968,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/supine-cross-b.webp",
+      "sha256": "2bdb1d6a545edb1eb9f9cdbb4dc0f0465b293770ca746ae51539826c8db413c0",
+      "bytes": 7034,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-02"
+    },
+    "supine-cross-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/supine-cross-c.webp",
+      "sha256": "1afc686540b1bc56dd927e5d884702e8a54e09ce66dba1e21e0b8c6147edf6ad",
+      "bytes": 7556,
+      "width": 540,
+      "height": 540
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/supine-cross-c.webp",
+      "sha256": "edf59180a46222044086076cd027a9497e53737aa60e933e900a4b6df6608bdd",
+      "bytes": 7006,
+      "width": 540,
+      "height": 540
+     },
+     "sourcePose": "pose-03"
+    }
+   }
+  },
+  "a-thomas": {
+   "kind": "stills",
+   "source": {
+    "zips": [
+     "a-thomas--4b5bb6035e5d8053.zip"
+    ],
+    "zipSha256": [
+     "d0227348d4dcb871f9000273ef9454e24d7ba3be5bfe1b8cb4dd5f08942617d7"
+    ]
+   },
+   "items": {
+    "thomas-a": {
+     "dark": {
+      "asset": "assets/hip/assessment/thomas-a.webp",
+      "sha256": "4dc0cf72761737f0b9d97e664e171fd3e5b5f4e08f20d8c766cd37cb15398fab",
+      "bytes": 24202,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/thomas-a.webp",
+      "sha256": "bd46da3ce744c649c00b61404177458e7dc908cc8ed8794078615d2649586a55",
+      "bytes": 12234,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-01"
+    },
+    "thomas-b": {
+     "dark": {
+      "asset": "assets/hip/assessment/thomas-b.webp",
+      "sha256": "2e31ffb42fa6b2569bb0bfb5afc4dda6e7a076554e4e22918d61df52bc7a538d",
+      "bytes": 24396,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/thomas-b.webp",
+      "sha256": "bf66a498b5251aa5f3d18157a7a47668b98ede5bd58781ddbc0c40231b3066b5",
+      "bytes": 12486,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-02"
+    },
+    "thomas-c": {
+     "dark": {
+      "asset": "assets/hip/assessment/thomas-c.webp",
+      "sha256": "7d9586228c737969230e4c53f5a60baa97ed898bdcba7686af57d3a55172ee7b",
+      "bytes": 25334,
+      "width": 1080,
+      "height": 1080
+     },
+     "light": {
+      "asset": "assets/hip/assessment/light/thomas-c.webp",
+      "sha256": "6bd2f46519827a4894c09446e7b576c10ca77ab194a58d74a7b48538d77596a4",
+      "bytes": 12860,
+      "width": 1080,
+      "height": 1080
+     },
+     "sourcePose": "pose-03"
+    }
+   }
+  }
+ }
+}

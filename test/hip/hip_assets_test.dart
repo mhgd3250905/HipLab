@@ -33,9 +33,12 @@ void main() {
 
   test('drill media holds only the player and hip-<id> clip pairs', () {
     final referenced = assetPaths(content).toSet();
+    // Files only: the light/ folder holds the light-stage twins of these
+    // clips and is checked against action-media.json in
+    // hip_action_media_test.dart.
     final names = Directory(
       'assets/drill_media',
-    ).listSync().map((e) => e.uri.pathSegments.last).toSet();
+    ).listSync().whereType<File>().map((e) => e.uri.pathSegments.last).toSet();
     final clip = RegExp(r'^(hip-[a-z0-9]+(?:-[a-z0-9]+)*)\.(mp4|jpg)$');
     for (final name in names) {
       if (name.startsWith('player.')) continue;

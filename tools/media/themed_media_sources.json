@@ -1,0 +1,709 @@
+{
+ "schema": "hiplab/themed-media-sources@1",
+ "driveFolder": "1SYZ1Ww3LRpMX4MZOSZeV6gpWl0Tc7fJe",
+ "poseHub": "0.2.0",
+ "note": "kind=registered entries of the Pose-Hub private archive; video entries must match the frozen v0.2.0 greenscreen master (same alpha masters as the dark release).",
+ "videos": {
+  "glute-max-A": {
+   "zips": [
+    {
+     "file": "glute-max-A--a9df887b31edcaf2.zip",
+     "driveId": "1gdd3TTsFBU5wlMt-JXSFemYEIV4q7o2e",
+     "sha256": "80f046871fbc78082d93bd60a765f07e80216e5e22d3eff864c5fd8c82d55cd8",
+     "bytes": 29883090
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "42ff3e07c37278d03bbbc4bef9a069534bed3b0e3a5bfbee6e8c296645bb6215",
+   "greenSha256": "75f37f7935dbf61d17cfaec38aa00f167d004b463af56dbdd9f4766c5fab8ce1"
+  },
+  "h-9090-liftoff": {
+   "zips": [
+    {
+     "file": "h-9090-liftoff--21957ac0a110863a.zip",
+     "driveId": "1_tgyzFuaKXSn2AXATvPJ0morTGZ8Gi92",
+     "sha256": "51087bdbd021fd112f4b7e714b05ddd30cc2084bca6700df40faf67533f21d61",
+     "bytes": 37257255
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "f8a6da3e00b2ff98dedc10f17722ad19cf8c19956c4f92611ac8449c0fba4652",
+   "greenSha256": "0bbafee65987fdbc64dfb0b2c2b05165c56ea8b9970bbad542f95b48e93ee522"
+  },
+  "h-adductor-rock": {
+   "zips": [
+    {
+     "file": "h-adductor-rock--88b8194c4c00c671.zip",
+     "driveId": "1wYPEtcFCc_KElUJzMkl1xyaFCpLikasW",
+     "sha256": "14ff189b7761e143025ea6dec4cc159db9396a02b8d0789babeb7003a33368c8",
+     "bytes": 54302405
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "394c73cc9e2f672e5bad950d895b18cc4e566dd08bfb5e5215da6a13fa4a7a1d",
+   "greenSha256": "d7ae0f0b77f011b5808e7726e8f723fa39ed1d3b03f8335af411658606741403"
+  },
+  "h-band-hip-ir": {
+   "zips": [
+    {
+     "file": "h-band-hip-ir--49747570862fcca7.zip",
+     "driveId": "1KGY2Ne260ygxS-K8yLaQh_J_c05AAO8d",
+     "sha256": "79161385998a1c37ce2644b8da116654575376e4dcac9a7450c8813db6b16836",
+     "bytes": 40049463
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "c56b49f28a9df1671440037f6d9cd7728523cc7f2d1840cf5dc18ce0e364f7d0",
+   "greenSha256": "47d89efe2c6f861fc0dfcec8187440b29bd38f4d688b30cf3f9cf5b36b0af781"
+  },
+  "h-band-leg-out": {
+   "zips": [
+    {
+     "file": "h-band-leg-out--407f480de9311d5f.zip",
+     "driveId": "1xEoO-AkecAvfk_fOfH4BjC7xbf76qmcB",
+     "sha256": "01edaa5aa19d704c18589b525c2441fac05138905e45260655ccd4781e43eccf",
+     "bytes": 58753688
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "455f5472bd07bb344e398be250c9e0d10b4f31f3beed2ea36051a918f163a092",
+   "greenSha256": "8d25cf2097ad15049d52835d46c23bec4c0842b32bdb76b394bc135b5e7fce6c"
+  },
+  "h-butterfly-active": {
+   "zips": [
+    {
+     "file": "h-butterfly-active--0519374d2a3efbe1.zip",
+     "driveId": "1kep3-SdK8JbGFGrvCCITKGcAoCwxnO0N",
+     "sha256": "62935c7b47afcf8d02aa8f483ed6b3eda5faa31e9db2840ef9d2aeca1516f0fa",
+     "bytes": 54179413
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "809e7e8b445f6b03f887d95ec7887b97db0422dd935677fb459c9c3450968746",
+   "greenSha256": "d75c5c3d938a69e9492379ba2fd0ba7d507c32f6e0312072e8f3421e4b8fe297"
+  },
+  "h-couch-stretch": {
+   "zips": [
+    {
+     "file": "h-couch-stretch--eb84c7aea79edaba.zip",
+     "driveId": "1smC-PhuIDLpOmIiezqpP8sPGvoOpWZzK",
+     "sha256": "6dd162f73fae06ff3b02abd65717c4f606d39bd42103402b09ea09a389e36942",
+     "bytes": 46203698
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "b85ffd8ffec1fe893dc5d67d5a1cadf1486dad7eae84aa13983c394282f40a62",
+   "greenSha256": "c64c13aee37ea6218fcfbb92290c6988bf1f93c13ccea358229e059369df46a3"
+  },
+  "h-hip-gate": {
+   "zips": [
+    {
+     "file": "h-hip-gate--0cf9dcbf5fb87d44.zip",
+     "driveId": "1ymcxgxrBcmUtrxN-lAMCBG1WFLn3FtOo",
+     "sha256": "66883db336c0f19df99049456942520f7dd2aba4a554808fc441724ffa2a6fc9",
+     "bytes": 39705319
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "07824a2d31c48c2ccd313aa346ce409926c9bdfc6a617c2cd88be37a182fa472",
+   "greenSha256": "127c58c9a5a3de3e6da5037a290851594dbbddcd7e561ec70e2e24b0f8c16a20"
+  },
+  "h-knee-hug": {
+   "zips": [
+    {
+     "file": "h-knee-hug--70dca74ac9f3be13.zip",
+     "driveId": "1KVGli0Si-AD3yGVzUVw65qTo6aBRZ987",
+     "sha256": "456a3366f826518d0a90c06b07ba602107e0b1d9b9359087884ee2e853161b84",
+     "bytes": 42664016
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "ed3d288b5b1af0f7aa66347699d5b2af05107c97a342085c992bec17f2f8addb",
+   "greenSha256": "17a9d6e00a72b03c1a10fdf8451c14f917653bcca830fc6faf7579f9dbc97a66"
+  },
+  "h-quad-cars": {
+   "zips": [
+    {
+     "file": "h-quad-cars--3f3e1d182d4379fd.zip",
+     "driveId": "1-J7Vk0-5AEhBQJYERmCeYpxGmhlMVwvF",
+     "sha256": "10d23858529122d05384e32776aeaf3e57a04aacbcacdec9ef795c8aa2cc049e",
+     "bytes": 43755516
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "47c8392b64fd75dd7d8559d1974ecc127e06766369ad3ab5978d7695b5a81d63",
+   "greenSha256": "190d1f0c0b392c9a2096fcf1d5ba8174ab459f0fee52c00b84ae329447e65492"
+  },
+  "h-reverse-clam": {
+   "zips": [
+    {
+     "file": "h-reverse-clam--7f84aa72710b2273.zip",
+     "driveId": "1_6-IJ-4tB414ITXfoJTY1UJYWjAO0bGU",
+     "sha256": "9c7c527bcb31aaf7b8f166e7d28448f25aa5c2644552214c9b21b8ce38691ffc",
+     "bytes": 45506094
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "2cd4680de5ed230955ab1a356fde6e5d62bd12f21671fed23b9116f50070f904",
+   "greenSha256": "ed82f8c1b687546ec09c4e4f99c8e200b57942e718d8619729a72afecb966033"
+  },
+  "h-squat": {
+   "zips": [
+    {
+     "file": "h-squat--bf6cc2bfef87e07e.zip",
+     "driveId": "1zcw7AB2kq6dhc_zVTJJ5FsCtmCK1UfCy",
+     "sha256": "bc324741d55dbc8f24e41e6d36ee67fb6e3957590b4e3ccaa744a5ae24133a4e",
+     "bytes": 36571111
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "853d7adf494b53235f594a13515052256331fb970a3f09f2ef2274685bda00d3",
+   "greenSha256": "0534e6d993e18b890e188fed51fe11b835e518da96b693d1eccea792a1112464"
+  },
+  "h-sumo-pry": {
+   "zips": [
+    {
+     "file": "h-sumo-pry--bb6d0079d54e5235.zip",
+     "driveId": "1Q8NzepH_325_N0qRK0FBWJvhsrlnmsKg",
+     "sha256": "b6248d8dbe87468ddd63126e7591b08c38afbc34c7623310c3ef0fd0491e51c3",
+     "bytes": 43684795
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "23886a0deacb3765d9070e9cfabd72e31e679eaf82145de9eb470b2871d991af",
+   "greenSha256": "c763b2b201719958d0e35774d9a1087be920d720aa55a03b2a6e52f501c7f186"
+  },
+  "h-supine-twist": {
+   "zips": [
+    {
+     "file": "h-supine-twist--7a820029c2ae4f1b.zip",
+     "driveId": "1piOhuoGd3YlxtargzvdkIkT4gyzLGDdN",
+     "sha256": "a512a1a4fbcaa4e5d9cad2b879b362b539201a687f9c9536eb49465bab797fab",
+     "bytes": 39970677
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "69344dcb11edac84586ce2465b07dcdaa87fecf20c05f203362dd0ce9dbcb413",
+   "greenSha256": "ace064cf1dc7b70b6f2725a927afa95a2b0209d2c2d98288f791bc56634264cf"
+  },
+  "h-wall-straddle": {
+   "zips": [
+    {
+     "file": "h-wall-straddle--a75c7b168a052226.zip",
+     "driveId": "1NhJFl3Ssvl-220zq4rfFP-OU06XBcw5b",
+     "sha256": "9b2b3137c882aa2c718eaa1449bd3ff0edcaa80f7aa6505fd1e38aec47e364f2",
+     "bytes": 54649472
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "ffe3ca710858e6d4293f1617bbd2d94007698e384e1fe4cdea1ca8518ee5c53a",
+   "greenSha256": "d112a569f9bf048e700304edb63b65c1e223d7985ce1ae60a017f3a0e86dab1f"
+  },
+  "hip-flexors-A": {
+   "zips": [
+    {
+     "file": "hip-flexors-A--547d08095d35a7c0.zip",
+     "driveId": "1XbI1BtFyl3bbApo3k7_Ec38_PEz4rgvj",
+     "sha256": "654a19226fef736e6b2111986597170d0fe23abfd76b5ca6431a2f0cad723535",
+     "bytes": 50908462
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "0154ad7a364db7ce482aa56c48741e5a9c3be00dcaa299ba92b21a2c72221cf2",
+   "greenSha256": "c803f8606676b9852d4f491151bf506b6ca8e0d6944bf3be31c319c4697d10e6"
+  },
+  "n-chair-wiper": {
+   "zips": [
+    {
+     "file": "n-chair-wiper--3e023fdb03cbc556.zip",
+     "driveId": "14cW_LVgyCeSg19yT7FQTiY-qxc60HAi4",
+     "sha256": "cd945b1656c42d41e7d792c2839bcb0ade57fed6cfbdd9642ce8e18e2498d705",
+     "bytes": 34181844
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "51405d9854b6ea06245a39179fa1c924ef311d21e8d8a0b512152d6e896006dd",
+   "greenSha256": "f3dd9890ceccd7142779a90dd2cbe15ace64de1abe32f611b62e947e0fca799d"
+  },
+  "n-half-split": {
+   "zips": [
+    {
+     "file": "n-half-split--c39af043980586c4.zip",
+     "driveId": "1UkTbL9XE0E-6PPHIdb-ik08aRL4smNoL",
+     "sha256": "98549eed31b77e9cda9567f6efb40d9d312c44baa05e8030114fb169c5c8fa01",
+     "bytes": 51614883
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "f531d33e77e6eb14e7819b527e2560d9d057bb50dd1f478fc84b989e177b85e1",
+   "greenSha256": "38f189d95ca26c6d91c73835ce1d9438ea2a68d3af1cbab217709b49e8b72729"
+  },
+  "n-leg-circles": {
+   "zips": [
+    {
+     "file": "n-leg-circles--0d8ec0956ec27000.zip",
+     "driveId": "1Oz7MTO8z3Jmr1c1_me2vEHFszUZrBJbn",
+     "sha256": "a2e6c23bbd0ce283003005a00982732608fc2319d382225fcec3fb8e6f3cc5f6",
+     "bytes": 73188040
+    }
+   ],
+   "alphaFrames": 360,
+   "alphaSha256": "330d9d0e8a76d300c13d2051e8d3e0639c156215adc77016febdd66013b40bfa",
+   "greenSha256": "b31f1b7d08958a4ed2bf053280c8f92e07d4afa3e252bb41fb05568b1f3ff471"
+  },
+  "n-pelvis-circle": {
+   "zips": [
+    {
+     "file": "n-pelvis-circle--817cbfb0c9113f69.zip",
+     "driveId": "1wP1WpIV45TcdJLwykHCWFWOG7dFJLVDe",
+     "sha256": "e4445dae3212eebf65fa464cf0fde81287180140b335b9c3a767d102bfbaa2d5",
+     "bytes": 34541185
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "8bdcc479ea11d112c70214d552dcf8719a6c12ebf100960696b8e649ffb19dbc",
+   "greenSha256": "58618a7287c4617ade04ccfef434ec45cdf3a5f1dd8d55a531252c1bdc4a7a87"
+  },
+  "n-prone-hip-ext": {
+   "zips": [
+    {
+     "file": "n-prone-hip-ext--0b681ebb00783875.zip",
+     "driveId": "1b8NlVyuUItFMOzXpMLo-o5ZMFbacUL-f",
+     "sha256": "0f5e0f83435387bbfb925c8519b45faec4fc09a76568955fda8fab9ca224b31a",
+     "bytes": 35753767
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "a2427dce1726694c35746807c076268c5f00241736a9cd32a9462046dc218730",
+   "greenSha256": "61ebd217407ab562b17d4a34c6e41dfd65b389e922310311da8ad20db99dbb61"
+  },
+  "n-prone-ir": {
+   "zips": [
+    {
+     "file": "n-prone-ir--e0dfaad3e7b4fe84.zip",
+     "driveId": "1Ri6lTX5nCnHGeMXMvXpLQWwRnaJPJEbf",
+     "sha256": "5da7f37296ac8e28f70bee3cb3aa55782a8ce34b9b08c68289af6c744d595a50",
+     "bytes": 51219113
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "bcccce7585c7adca7752ad09acff9be30fa2e7c38539de9caed9e76ee9a1d340",
+   "greenSha256": "530a56f97d51aefb3d949311a7f31e584883953976984eb19d1e8a34a6844250"
+  },
+  "n-seated-ir-drop": {
+   "zips": [
+    {
+     "file": "n-seated-ir-drop--6fe78f79e275f296.zip",
+     "driveId": "19kW9zFVmGjfXg4nFRjytlbs2Dhsj5zZO",
+     "sha256": "c0e73967dd9baeb816d831be273c505d2f1db36c889faed257259558bac29f2f",
+     "bytes": 37355383
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "406c4ecaee0bb2f4047a88f97011bcbc7577e02236baf835790a5e5f8f4f953c",
+   "greenSha256": "ef3d55a1478bac11bb98dca03bd9a122e71f81c24bdb9f105b8eb16e7ede228d"
+  },
+  "n-seated-knee-lift": {
+   "zips": [
+    {
+     "file": "n-seated-knee-lift--fc58937fa326f30f.zip",
+     "driveId": "1uE4AIyc1Ki-0bP7IiqfLAIXBq33gbzL9",
+     "sha256": "ea28095963e88345d6f5854e26ac6afff67048d9e6e1251880244c685aaacad0",
+     "bytes": 41703844
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "db024a40c37d089ea6ef9047b3ec7b9445d48f93d6d2d5a514299cf674b445e2",
+   "greenSha256": "befd6503ae6c9d3c4de7b5dc120b6031484e8fd486670db1bcd33f2ae99d3695"
+  },
+  "n-seated-squeeze": {
+   "zips": [
+    {
+     "file": "n-seated-squeeze--2c18cfbd29ab172a.zip",
+     "driveId": "1AYV-Ahztkax3FP2unDXqPwJ5ccoHwJnt",
+     "sha256": "b39e6c36315af179fae7834c9b6796df6d71047d523ce8d4f6f3e207354402f6",
+     "bytes": 38912982
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "16fe78aafbe540d7b379e2cba5aa7b00b8d91c603850212436ca39dc60e4223a",
+   "greenSha256": "54b63f7ad0882bcc12501e85d5e76200d384d21c274bf074c6c225edc437c8a6"
+  },
+  "n-slider-lateral": {
+   "zips": [
+    {
+     "file": "n-slider-lateral--25b19228e3b341c7.zip",
+     "driveId": "1UgHcPTRm4RP2B6kojhsHhjReaJv9Vwts",
+     "sha256": "b151762911650410b88d9dba146c6ce38235d8cf50c33af6118d7c903d192174",
+     "bytes": 38661283
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "8e108c879f3287a43a1ad1352fce3c33f79b46f8de7e4e61642454711cb1d186",
+   "greenSha256": "d897de837ea04ccf14d27c0d9c33d5bd03e8620a01a523763a13fb9ba5f5d4e2"
+  },
+  "n-squat-shift": {
+   "zips": [
+    {
+     "file": "n-squat-shift--4f84273c34083c2f.zip",
+     "driveId": "1wueIayF2M-wrp_FxrzQ2bm0DXavhQt9E",
+     "sha256": "8de8ea149381402f8502761a0e713c9187e5bf0946aac7719b93ef9d29a8675b",
+     "bytes": 43030868
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "75c1770a5e4d36dee12bd0ed53efab977d0fef1d35729d385215100707f5bbf8",
+   "greenSha256": "477d2fbbaeab5ad0ce025c898ea19f653c43a7be214c34c1ac67db8b21dd80ad"
+  },
+  "n-straddle-fold": {
+   "zips": [
+    {
+     "file": "n-straddle-fold--e5d08d1ea781e75c.zip",
+     "driveId": "1ytJv673R05I8ZCqVMC7Yzp_ob3D_Wr0D",
+     "sha256": "4160f03b0c16db9b911c472447cbc2cf5c382f2a7a49a4df8beb6fc5db2ded94",
+     "bytes": 62871120
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "d56400417611e0693e4da9b142a04832861786351d99295553cba6fce9126857",
+   "greenSha256": "3116d04ed45c1b750981ec3b2fde4af15cc5cc7acad4f1bad6490c0d62458bcd"
+  },
+  "n-thomas-test": {
+   "zips": [
+    {
+     "file": "n-thomas-test--3be6067c8e337984.zip",
+     "driveId": "18-DkvFSmsD_TkGXGdMIcu-khawJHRH5y",
+     "sha256": "c93ff5b3978e0fedcd4e8524c3c15016d1ea1bc6b694fad469bd6bfc7486c895",
+     "bytes": 31416404
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "86b35ca6ca3c296a90ba75b6dfc0c8956775f7ecf61d104aa6dd67806009c07d",
+   "greenSha256": "a43b5f05552e1a46d4f7cfe1196d51242d7e0b97c76924614175a7e99cc48ff0"
+  },
+  "n-wide-fold": {
+   "zips": [
+    {
+     "file": "n-wide-fold--f594183bccb786d4.zip",
+     "driveId": "1nWRYp1t_yla4MxpvhK_fSytXcC2D7Ri2",
+     "sha256": "dc46a44f628db957982f4490ba3da92b742876be5560e4fe4c4d1d644491139c",
+     "bytes": 72823051
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "90d9f57df7ac8ca4397dc232e788ea6571084d8a4d6f583770d2dd8663c124fc",
+   "greenSha256": "914c0020b89c92b58b2e7330cb480d1ea5ca6ee02ab83c810e7f5f01450bb31e"
+  },
+  "n-windshield": {
+   "zips": [
+    {
+     "file": "n-windshield--bac8919b9a0718bb.zip",
+     "driveId": "1ST-1wOfaBXWoiSEmB0dgs0XIzgKM488C",
+     "sha256": "308876c17c017e8803b9508f20d7878227f374c3110a446a39f097fc77b2e671",
+     "bytes": 56184738
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "c54d60ba0b5bac5eaf3057aafb6248044ad55c175a06e6d870232aadc1d8a918",
+   "greenSha256": "0dd87a5c2f6c1ec6d5566b6a0aadd59ce4cf301497ebde4633dd0641e76a2b4a"
+  },
+  "o-seated-fig4": {
+   "zips": [
+    {
+     "file": "o-seated-fig4--550af546d3bba3f4.zip",
+     "driveId": "1uZgpdc0WGKxNbeakXkTp-3kD56sh3nQY",
+     "sha256": "443fe7947edf6d3888267ad0a34adff476783633284660c1940904ca21abfcde",
+     "bytes": 43215665
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "eb6247b67cb4203d979bad441da8c728558159fd83e954200d87d294738bf178",
+   "greenSha256": "bb1457a999ca84989190e4155b796e84768f9e36417d1008fba8db78023fd5eb"
+  },
+  "o-seated-ham": {
+   "zips": [
+    {
+     "file": "o-seated-ham--3e46d07abc408748.zip",
+     "driveId": "1zn0QLUylVSTxechT60wA5Jlh6G8E3osg",
+     "sha256": "436bf55d0f03e21a40511cbef0056023b73c4a56812dc2f30b720d15e9d51a16",
+     "bytes": 38378830
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "ac396a038de1f9408cbed2a6ba34a6c5d51e59a14519863e053630d38c27d1dc",
+   "greenSha256": "87d0bc85e29637a6dbcbe71e3758d81d13b931cc0ff93df0961039efb4446037"
+  },
+  "o-stand-crossreach": {
+   "zips": [
+    {
+     "file": "o-stand-crossreach--195645e0201960f4.zip",
+     "driveId": "1xChpu75HVWAvZRR_5Nez4VShWHbM0sqy",
+     "sha256": "734552de3deeac4fb8ef8ddb289c0bc1a82aa1dd4d644c7d3ea04f0f636cefa4",
+     "bytes": 34590632
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "67696b4321b10d78882aa8ae509772689c16e9b38b138611bf9165e5c457aeee",
+   "greenSha256": "2a43e22a9649900171fafe999b582cede89c7494cddfc3c10974c4530262d6d5"
+  },
+  "o-stand-lunge": {
+   "zips": [
+    {
+     "file": "o-stand-lunge--9f2d218bca25eb8e.zip",
+     "driveId": "1OEAWh5Gbwewr9Tl3PECgv97DEUf7jZqj",
+     "sha256": "88ef0b31afce5758c1993ced6511632999359c5e35625134f488a0f9d1f9b9b3",
+     "bytes": 35976266
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "6e990d0eeff4ea1c27f2b789e4ad3cf745d9ccb70d0e40b1d14da646d1766d4d",
+   "greenSha256": "0b4f63af19715f550f791487d0c3569d3848a07d29ba9af1c629041e8d2c216e"
+  },
+  "s-9090": {
+   "zips": [
+    {
+     "file": "s-9090--2b8560077e50f467.zip",
+     "driveId": "1Wh5O2QiwV5MOhkKUTCWVzaVTvApPzGRQ",
+     "sha256": "e2b5eb82480f59a4d75fa886a88106d0d3db98358ca81ddfe8397f8551fce652",
+     "bytes": 27781699
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "a06b73e62684aa95c3d38e4ca49515663521d877adeee136ee7964437c62ad91",
+   "greenSha256": "34557e64acf0ced3627547d88cee3afaf83df572910bc48fab33df2f84507e0a"
+  },
+  "s-butterfly": {
+   "zips": [
+    {
+     "file": "s-butterfly--f5b86f4d9cefa6d8.zip",
+     "driveId": "1sgjMHuZFQfNxQrYHgUiWibKy2_BQ1ak7",
+     "sha256": "74cdab0cb7162aaca1feafc69e88af27bf19f1aba9e4e609052cdb4313ef6c1d",
+     "bytes": 48503963
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "c5ff6705f97ca01e6b72ba7e98d1e853480fc756133c951fffa59187f76eac97",
+   "greenSha256": "e67c050093d8e7cade268065884bc19aec17635e0c073117456bfc601fc0f09b"
+  },
+  "s-figure4": {
+   "zips": [
+    {
+     "file": "s-figure4--45f7cfdc39f86a17.zip",
+     "driveId": "1XbVSWL_zr567uC4IriPZD1x2HzrJZK7z",
+     "sha256": "623a573dd4325308f371a42f369d453d217d738bccaea941531fdbfbc9acb8ef",
+     "bytes": 56365091
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "7fc1a599ee6423590182a50cb341c87da302eec48b2aaf985934c11a27a704b2",
+   "greenSha256": "445e04295d477ea8ca07180e84f8317e162148f02a851cada9e7ab35e2a49bae"
+  },
+  "s-frog": {
+   "zips": [
+    {
+     "file": "s-frog--75ffce397c1887d4.zip",
+     "driveId": "1DLW2Xfc4wHL5V3QV_7dL3qFBrhbVn1D8",
+     "sha256": "a6449aa7aab5ff9194dcbf3f3b5b4793698747115c46c3deb09e531c75b2d825",
+     "bytes": 24835088
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "608fa5bd493fc7d7474a0b4c730c799c10f529bcfc0953b80356a61a2060e7d5",
+   "greenSha256": "7cc8f4bab9af28983e8704b3b5d6b43e7ea60a81fb3ffadc6e44eccce1d6c457"
+  },
+  "s-kneel-hipflex": {
+   "zips": [
+    {
+     "file": "s-kneel-hipflex--866c46ba35d97340.zip",
+     "driveId": "1iBxu_QJZLgBjow9PZUuNXFzpOJiEtYtn",
+     "sha256": "e9aefacf6d426bedd8276389c2fb887024c3610fd6f47e485de46f5f426ced55",
+     "bytes": 31273997
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "3e16c8006b26a70ccf418832d12c7ac6765e7f3d7fccb29703f2ebeb126e7552",
+   "greenSha256": "9bdaaf14e881900a60a6a4e379adf4348ed5492239a62e6b72210cec7db709e1"
+  },
+  "s-lizard": {
+   "zips": [
+    {
+     "file": "s-lizard--26cd98fcfe28195c.zip",
+     "driveId": "19gswtcMXeY7Xoa0j06nK-0DN_Jw1_KY2",
+     "sha256": "9bfbeff69a72083b54094bb3ae0bebf2eac93edf72f7720dcc7141874368cb15",
+     "bytes": 36218986
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "48770fc01eb823549fe8640acf1c9b7f0bea84159edda93f5d65781a29f1a404",
+   "greenSha256": "f6d89b640ee888452f26c5c7c5bd3ece028524a717ba583633c1ac72a066c040"
+  },
+  "s-pigeon": {
+   "zips": [
+    {
+     "file": "s-pigeon--43dff4f47142901d.zip",
+     "driveId": "13UHm2QPam5yKMwpBwciGIwDYOUPWpFvB",
+     "sha256": "bfa605f5f3218451c8e811b547d44c8a8df581e20057402027f7cb09b8b018d9",
+     "bytes": 25968680
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "e1e7034842821d3d4132b1fbaa6db2b138accea137c7f62f939124f6da4d063d",
+   "greenSha256": "8230cd7f28202e837c92f8ee67b292500f785f8007c77852371ab076cf2f2273"
+  },
+  "s-seated-fold": {
+   "zips": [
+    {
+     "file": "s-seated-fold--0f604fa01e05b520.zip",
+     "driveId": "1FGBCgauwNlTKdd4zY-iYIa51wR1attwD",
+     "sha256": "795177121bfd762163fa10ed61d494d04cce700881dd9fecba112e6d2fd339e2",
+     "bytes": 30194624
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "9e6c237561e52facc8e072eb8b434a43ec954eb4dd2de1d51e90e6e396576086",
+   "greenSha256": "bb89789fdefe80494c30eb959d60dc579b2c81bd3ce6f688d09f26ebbf208614"
+  },
+  "t-seated-straddle-lift-1leg": {
+   "zips": [
+    {
+     "file": "t-seated-straddle-lift-1leg--b702eac5f0bd7b46.zip",
+     "driveId": "1E5DqS6jVo5MTxgZPcfAIJc27nIeoNkiq",
+     "sha256": "24a44f8e3c6fbbe2a5007c3b16f14d541501155f735b7eb9549633d4f356321e",
+     "bytes": 54303810
+    }
+   ],
+   "alphaFrames": 300,
+   "alphaSha256": "13950f4cf26529a498504f7959508f515f277b9886cc1bfd199b5fa38b9a2c6b",
+   "greenSha256": "244a6dd853b8c31d1196cd09e9d21270be993c9f5c2878957626e49ebe6a93f8"
+  },
+  "w-clamshell": {
+   "zips": [
+    {
+     "file": "w-clamshell--ef6449bb6055d9a3.zip",
+     "driveId": "1oggjpEJLW0P0P-YMC-rpWnRDIAK85R9H",
+     "sha256": "93c897918ab4379f19a504c806aafe48a7d5b3b5df3d466f1d31301bb37feb57",
+     "bytes": 41114217
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "3c8ea0e3075c534d19fd44bb684753f0606efb60c67bb2f05744613ecc5dc4de",
+   "greenSha256": "36c0181c90fbd116505a8c43915c97fc6d4745948c0226d5e4f8471585c31625"
+  },
+  "w-feet-on-chair-bridge": {
+   "zips": [
+    {
+     "file": "w-feet-on-chair-bridge--076493b4c30f3b8b.zip",
+     "driveId": "1XH3QJMg2iw_tZioVtJ1MuZDeo8ajBSv3",
+     "sha256": "424a51394943db064cec3b069a5c259455cd41bb2508730857a1c88f131be600",
+     "bytes": 34511418
+    }
+   ],
+   "alphaFrames": 240,
+   "alphaSha256": "a741b4731e48fed8e2abac8a022d125156d66baa38374f7f8f6ca37849389c6c",
+   "greenSha256": "d188e91a13dc392704924311eaf29ff9ca60b99d246b27a5849da6adc7b1c21d"
+  }
+ },
+ "stills": {
+  "a-9090": {
+   "zips": [
+    {
+     "file": "a-9090--6a7d54fff8fef205.zip",
+     "driveId": "1wHQOgpHlFm2O6duM9_xy-Qnn7t_sEjPP",
+     "sha256": "ff5ce5a15e401448db286a11feef36922748745a2e57ead6fc9ad1c5930d50fe",
+     "bytes": 2062124
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/9090-a.webp",
+    "pose-02": "assets/hip/assessment/9090-b.webp",
+    "pose-03": "assets/hip/assessment/9090-c.webp",
+    "pose-04": "assets/hip/assessment/9090-front.webp",
+    "pose-05": "assets/hip/assessment/9090-back.webp"
+   }
+  },
+  "a-butterfly": {
+   "zips": [
+    {
+     "file": "a-butterfly--b495d1e7b5f7617f.zip",
+     "driveId": "1zYQ3JkAElT2wTNP5g_ue4UHYdV9vUArv",
+     "sha256": "26846d9436ec801684168d76addee1fd0d6a15a700dda879338ebd882ad7b6d3",
+     "bytes": 885873
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/butterfly-a.webp",
+    "pose-02": "assets/hip/assessment/butterfly-b.webp",
+    "pose-03": "assets/hip/assessment/butterfly-c.webp"
+   }
+  },
+  "a-deep-squat": {
+   "zips": [
+    {
+     "file": "a-deep-squat--694241732a206976.zip",
+     "driveId": "1Hj0eDEU7l9nWfJf4iq6XKCfeHtZ17azd",
+     "sha256": "6bbd8fb070668bd8bdebd6a444f29f1724ee68edd824682ef998d30967ebb6ef",
+     "bytes": 853302
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/deep-squat-a.webp",
+    "pose-02": "assets/hip/assessment/deep-squat-b.webp",
+    "pose-03": "assets/hip/assessment/deep-squat-c.webp"
+   }
+  },
+  "a-seated-fold": {
+   "zips": [
+    {
+     "file": "a-seated-fold--6a192c6dac01ce8b.zip",
+     "driveId": "190b09aJLILA2czROooGx9SNiB7ny85eo",
+     "sha256": "26e2ffbd04f34eab1d7507f9f1360d43cf129ca42e5477329fa5d67cdb30d5ee",
+     "bytes": 833312
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/seated-fold-a.webp",
+    "pose-02": "assets/hip/assessment/seated-fold-b.webp",
+    "pose-03": "assets/hip/assessment/seated-fold-c.webp"
+   }
+  },
+  "a-supine-cross": {
+   "zips": [
+    {
+     "file": "a-supine-cross--dbf9579800657b76.zip",
+     "driveId": "1Rgd6KFvtAAyBCZghZFCa6NZoO_G8K7aS",
+     "sha256": "ecc8c510f3b4e08772eb83d1cd953e1d1d7d12593c6cb2e00ef1adeb33dea293",
+     "bytes": 1069432
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/supine-cross-a.webp",
+    "pose-02": "assets/hip/assessment/supine-cross-b.webp",
+    "pose-03": "assets/hip/assessment/supine-cross-c.webp"
+   }
+  },
+  "a-thomas": {
+   "zips": [
+    {
+     "file": "a-thomas--4b5bb6035e5d8053.zip",
+     "driveId": "1UnMJ4AHayVOU0uFkH_RRTezvzIEaatiZ",
+     "sha256": "d0227348d4dcb871f9000273ef9454e24d7ba3be5bfe1b8cb4dd5f08942617d7",
+     "bytes": 726542
+    }
+   ],
+   "map": {
+    "pose-01": "assets/hip/assessment/thomas-a.webp",
+    "pose-02": "assets/hip/assessment/thomas-b.webp",
+    "pose-03": "assets/hip/assessment/thomas-c.webp"
+   }
+  }
+ },
+ "cuts": {
+  "supine-cross-demo": {
+   "parent": "n-leg-circles",
+   "startFrame": 216,
+   "frames": 144,
+   "minDarkPsnrDb": 30,
+   "note": "dark cut is cut from n-leg-circles 7.2-12.0 s of an earlier batch (hiplab-hd-20261017); light cut uses the same frames of the v0.2.0 alpha masters"
+  }
+ }
+}
