@@ -4,7 +4,8 @@
 
 | 文档 | 用途 | 何时更新 |
 |---|---|---|
-| [PR #22 修复复审](pr22-reaudit-2026-10-19.md) | f7271f6 原六项修复闭环、Windows310过/1跳；新增多组疼痛降级F7待修，原生仍待验；[首轮报告](pr22-review-2026-10-19.md)保留 | 修复版本及验收证据变化后 |
+| [PR #22 Web补充验收](pr22-web-acceptance-2026-10-19.md) | 9fa0cc0界面/迁移/F3/F4/F7及重复单练记录补测；新增F8/P2快速左删后编辑覆盖动作，待修；原生清单已缩减 | 修复版本及验收证据变化后 |
+| [PR #22 修复复审](pr22-reaudit-2026-10-19.md) | F1–F7在9fa0cc0代码闭环、Windows322过/1跳；[Android包准备](pr22-android-acceptance-2026-10-19.md)及原生待验；[首轮报告](pr22-review-2026-10-19.md)保留 | 修复版本及验收证据变化后 |
 | [练习库实现](training-library-2026-10-19.md) | 拍板四条、动作大全/单练/套路/训练组的实现范围、custom_routines v1、PR #22 审核 F1–F6 与复审 F7 修复、测试与真机清单（feat/training-library，已同步 main b12b0f5，未合并） | 练习库变化时 |
 | [PR #19/#20/#21隔离审核](pr19-pr21-review-2026-10-19.md) | 五项首轮修复、254过/1跳、Python19、Web复核及arm64交付；用户报告安装/简单真机测试通过；已顺序合入main | 本轮审核与原生证据变化后 |
 | [轻拟物有选择引入：审美考据](tactile-design-rationale-2026-10-19.md) | 引用 HIG / M3 / Refactoring UI / NN/g / Rams 推导的 6 条规则、逐控件判定、预算回归测试（#19已合main） | 拟物使用范围变化时 |

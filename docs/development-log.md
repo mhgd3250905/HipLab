@@ -4,6 +4,7 @@
 
 | 日期 / 阶段 | 结果与决定 | 关联证据 |
 |---|---|---|
+| 2026-10-19 / PR22 F7复核 | 9fa0cc0的F1–F7代码问题均关闭；Windows322过/1跳、analyze0、Python19、独立原复现通过。原生验收待补，未合并、未构建安装 | [最新复核](pr22-reaudit-2026-10-19.md) |
 | 2026-10-17 / 接手 | 从 HipLab #1 源 `2865ed7` 建立独立接手分支；初始 48 项测试、4 项截图通过；确认紧侧计时缺陷，留 D-01 | [接手基线](project-takeover-2026-10-17.md) |
 | 2026-10-17 / Android 首跑 | 首次 debug 安装 0.1.0+1，安全引导显示正常 | [Android 记录](android-first-run-2026-10-17.md) |
 | 2026-10-17 10:29 / 动作源 | 按明确授权审核合并 3D-Body #119，merge `ae81d96`；原规格、模型与 QA 不改 | [制作记录](local-hd-render-2026-10-17.md) |
@@ -174,3 +175,11 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 ## 2026-10-19：PR #22 复审 F7 修复与同步 main（feat/training-library）
 
 复审（固定 f7271f6）关闭 F1–F6，新增 F7 / P2：疼痛减半的短次数保护组数写死为 1 / 2，没算 `PlanStep.sets`，与 SessionScript 不一致（单练深蹲 1 次 × 3 组减半后脚本无口令仍倒计时 8 秒）。首轮修复（ba0919d）：组数规则抽成 `PlanStep.countedSetsOn / holdSetsOn / tightOn`，SessionScript 与播放器共用，新增 `SessionScript.noFullRep`，任一侧/组放不下完整一次就跳过当前动作；内置套路旧行为不变。新增 12 个回归（播放器 widget 6：不分侧 2/3 组进结束页、训练组/分侧/紧侧额外组跳过后休息+反馈+下一步正常、对照不跳过；领域 6：组数与保护≡脚本），widget 用例修复前 5 fail / 1 pass。随后 merge 同步 main b12b0f5（b4db041），仅 docs/README.md、development-log.md 冲突，main 原文不改、本分支追加，非 C 盘规则与主线审核记录保留。最终 analyze 0、322 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §8。
+
+## 2026-10-19：PR #22 Android验收准备
+
+按用户明确清单，复用E盘审核副本顺序构建b12b0f5基线和9fa0cc0候选，锁定依赖获取与包身份/资源校验通过，候选增量APK空洞已重新打包消除。用户随后安排先准备包、稍后接手机，尚未执行ADB或安装，原生各项继续未执行。最终PR评论待真实采证后汇总；全部通过仍须开哥同意再合并。[包与清单](pr22-android-acceptance-2026-10-19.md)。
+
+## 2026-10-19：PR #22 Web代验与新增F8
+
+按用户要求将能代做的界面和数据流程转为真实Web验收，并行独立迁移/语音/字号资料，全部产物在E盘。补齐大量界面流程，但发现快速左删后编辑导致C被B覆盖的P2（F8），独立三步案例确认后已[评论PR](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)并回读一致。Web声音循环初始片段的异常也在准确main基线复现，不能把实际playing计数当口令正确。D-29维持待修/待原生，未改App、未合并；辅助浏览器/HTTP服务已关闭。[全表与缩减后的手机清单](pr22-web-acceptance-2026-10-19.md)。
