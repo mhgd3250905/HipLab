@@ -151,6 +151,7 @@ class _PracticePageState extends State<PracticePage> {
                         highlight: result.tightest.toSet(),
                         warn: result.painDirections,
                         compact: true,
+                        labels: false,
                       ),
               ),
               const SizedBox(width: 12),
@@ -159,11 +160,16 @@ class _PracticePageState extends State<PracticePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${t.myHip} · ${t.checkTitle}',
+                      t.myHip,
+                      maxLines: 1,
+                      style: TextStyle(fontSize: 12.5, color: HipColors.muted),
+                    ),
+                    Text(
+                      t.checkTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

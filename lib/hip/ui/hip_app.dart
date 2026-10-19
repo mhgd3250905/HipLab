@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -916,7 +917,7 @@ class _HipHomeState extends State<HipHome> {
                                 Expanded(
                                   child: Text(
                                     '${t.movesCount(g.steps.length)} · '
-                                    '${t.duration(g.seconds(store.content))}',
+                                    '${t.minutes(math.max(1, (g.seconds(store.content) / 60).round()))}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(

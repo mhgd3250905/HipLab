@@ -625,11 +625,16 @@ class HipRadar extends StatelessWidget {
     this.highlight = const {},
     this.warn = const {},
     this.compact = false,
+    this.labels = true,
   });
   final Map<HipDirection, double> values;
   final Set<HipDirection> highlight;
   final Set<HipDirection> warn;
   final bool compact;
+
+  /// Direction labels around the chart; off for a thumbnail-sized radar
+  /// (练习 · 我的髋部 card), which then fills its box.
+  final bool labels;
 
   static const order = [
     HipDirection.flexion,
@@ -644,7 +649,7 @@ class HipRadar extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) {
       final size = math.min(c.maxWidth, c.maxHeight);
-      final r = size * (compact ? .3 : .34);
+      final r = size * (!labels ? .42 : (compact ? .3 : .34));
       final labelStyle = TextStyle(
         fontSize: compact ? 10 : 15,
         color: HipColors.muted,
@@ -667,7 +672,7 @@ class HipRadar extends StatelessWidget {
                 ),
               ),
             ),
-            for (var i = 0; i < order.length; i++)
+            for (var i = 0; labels && i < order.length; i++)
               Builder(
                 builder: (_) {
                   final a = -math.pi / 2 + i * math.pi / 3;
@@ -1093,9 +1098,7 @@ class _HipFlatFace extends StatelessWidget {
         decoration: ShapeDecoration(
           color: Color.lerp(color, pressedColor, t),
           shape: StadiumBorder(
-            side: border == null
-                ? BorderSide.none
-                : BorderSide(color: border!),
+            side: border == null ? BorderSide.none : BorderSide(color: border!),
           ),
         ),
         child: child,

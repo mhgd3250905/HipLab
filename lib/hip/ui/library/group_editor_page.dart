@@ -482,7 +482,8 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       scale: .98,
       onTap: () => _editDose(i),
       child: Container(
-        height: 68,
+        // Grows with the system text size instead of clipping the dose line.
+        constraints: const BoxConstraints(minHeight: 68),
         padding: const EdgeInsets.fromLTRB(0, 8, 14, 8),
         decoration: BoxDecoration(
           color: HipColors.surface,
