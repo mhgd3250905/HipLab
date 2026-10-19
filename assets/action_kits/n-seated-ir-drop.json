@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-seated-ir-drop.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-seated-ir-drop.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.2
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-seated-ir-drop.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.2,
+    "sha256": "f8693f38170db9aa67f1bf0ed8e202b765c5065f661a6190c2873a147ebfc1b5",
+    "bytes": 428102
+   }
   }
  },
  "animation": {

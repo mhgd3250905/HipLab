@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-hip-gate.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-hip-gate.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 1.6
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-hip-gate.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.6,
+    "sha256": "7ae94af8945fc2a125491eeb955e6b5881b9bceb20d0c4e5e8b0e25255418667",
+    "bytes": 433522
+   }
   }
  },
  "animation": {

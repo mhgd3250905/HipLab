@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-supine-twist.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-supine-twist.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.3
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-supine-twist.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.3,
+    "sha256": "1581847d1903c6084167ca1b56cb1b8877f454a29728022fa78c988a6cd98cb4",
+    "bytes": 543817
+   }
   }
  },
  "animation": {

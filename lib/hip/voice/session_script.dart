@@ -294,12 +294,9 @@ class SessionScript {
   /// rep gets its full cycle: it ends exactly when the phase ends, so the
   /// next "很好 / 换边" never cuts it short.
   List<VoiceCue> _repCues(SessionPhase phase, PlanStep s, ActionKit kit) {
-    final plan = kit.repPlan(
-      s.kitDose,
-      phase.seconds,
-      sets: setsOf(phase, s),
-    );
+    final plan = kit.repPlan(s.kitDose, phase.seconds, sets: setsOf(phase, s));
     final v = kit.voice;
+    if (plan.reps == 0) return const [];
     final out = <VoiceCue>[
       VoiceCue(0, ['chime.start', v.go], CuePriority.call),
     ];

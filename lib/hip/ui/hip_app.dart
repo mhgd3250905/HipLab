@@ -532,7 +532,11 @@ class _HipHomeState extends State<HipHome> {
 
   /// The player grows out of the 开始 button (container transform); from
   /// the assessment result, which has already closed, it rises.
-  Future<void> _startPlan(TrainingPlan plan, {BuildContext? from}) async {
+  Future<void> _startPlan(
+    TrainingPlan plan, {
+    BuildContext? from,
+    Color? originColor,
+  }) async {
     Widget page(BuildContext _) => HipPlayerPage(store: store, plan: plan);
     await Navigator.of(context).push(
       from == null
@@ -541,7 +545,7 @@ class _HipHomeState extends State<HipHome> {
               from,
               page,
               radius: 52,
-              color: HipPalette.dark.jade,
+              color: originColor ?? HipColors.jade,
             ),
     );
   }
@@ -925,7 +929,11 @@ class _HipHomeState extends State<HipHome> {
                 stage: stage,
                 onTap: plan.steps.isEmpty
                     ? null
-                    : () => _startPlan(plan, from: _startKey.currentContext),
+                    : () => _startPlan(
+                        plan,
+                        from: _startKey.currentContext,
+                        originColor: stage.jade,
+                      ),
               ),
             ),
           ],

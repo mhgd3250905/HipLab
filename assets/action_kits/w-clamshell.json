@@ -23,7 +23,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-w-clamshell.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-w-clamshell.jpg"
   }
  },
  "media": {
@@ -38,7 +38,13 @@
     "loopSeconds": 8.0,
     "posterTime": 1.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-w-clamshell.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.8,
+    "sha256": "50b90340e9256f0a8df7bff8c4f70edc5d2b4aafc0b149695493f736358430aa",
+    "bytes": 497557
+   }
   }
  },
  "animation": {

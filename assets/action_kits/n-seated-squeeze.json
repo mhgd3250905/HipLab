@@ -22,7 +22,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-seated-squeeze.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-seated-squeeze.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-seated-squeeze.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "881ddc7347ae48418c1ba253e7f2f3024f2fbe6b0c5a697fcd5a0c08662d4f61",
+    "bytes": 297719
+   }
   }
  },
  "animation": {

@@ -24,7 +24,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-windshield.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-windshield.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.2
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-windshield.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.2,
+    "sha256": "84df78f91a7bce3687ead82e1516dfbaceebf55ab9296e421283e76c3bdb072d",
+    "bytes": 732762
+   }
   }
  },
  "animation": {

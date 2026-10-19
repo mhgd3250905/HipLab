@@ -26,7 +26,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-straddle-fold.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-straddle-fold.jpg"
   }
  },
  "media": {
@@ -41,7 +41,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-straddle-fold.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.0,
+    "sha256": "69b863cb8c10b456e62748fff4b7c2fcc8093a57a896fd3d7fdf69205b4fb23d",
+    "bytes": 675890
+   }
   }
  },
  "animation": {

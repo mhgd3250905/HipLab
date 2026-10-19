@@ -26,7 +26,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-slider-lateral.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-slider-lateral.jpg"
   }
  },
  "media": {
@@ -41,7 +41,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-slider-lateral.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "f318cb851e0181720728466d72990657274208df8c84c1b39c01555281f797e3",
+    "bytes": 482617
+   }
   }
  },
  "animation": {

@@ -27,7 +27,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-h-sumo-pry.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-sumo-pry.jpg"
   }
  },
  "media": {
@@ -42,7 +42,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.6
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-sumo-pry.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.6,
+    "sha256": "79f8b260e70c64cef9bcad0dfb9ad0fef692156be804e0004da19bf74df690d7",
+    "bytes": 535288
+   }
   }
  },
  "animation": {

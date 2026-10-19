@@ -25,7 +25,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-s-butterfly.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-butterfly.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-butterfly.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "f2cc1d919ea218bdde4611fcd76f8a514e4d744c1b5bf863e05377d334efc26b",
+    "bytes": 462924
+   }
   }
  },
  "animation": {

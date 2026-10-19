@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-band-leg-out.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-band-leg-out.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 4.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-band-leg-out.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 4.0,
+    "sha256": "d81606aa5a9ef20ef2b14c849b29e45a9e027ac957d3e716faa1c291b7baeffc",
+    "bytes": 778375
+   }
   }
  },
  "animation": {

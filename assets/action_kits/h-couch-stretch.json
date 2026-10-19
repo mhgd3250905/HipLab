@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-couch-stretch.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-couch-stretch.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-couch-stretch.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "bb6fa8bd9c806e9733f50f74cf8728eb2c16d3dc9d49c6b164c29c3152244162",
+    "bytes": 453076
+   }
   }
  },
  "animation": {

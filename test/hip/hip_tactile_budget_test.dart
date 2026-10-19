@@ -106,7 +106,9 @@ void main() {
               find.descendant(of: start, matching: find.byType(HipTactile)),
             )
             .style,
-        HipTactileStyle.accent(HipPalette.dark),
+        HipTactileStyle.accent(
+          tester.widget<HipStartButton>(find.byType(HipStartButton)).stage,
+        ),
       );
 
       // Tab glyphs: filled when selected, outline otherwise (T4).

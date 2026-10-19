@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-o-stand-lunge.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-o-stand-lunge.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-o-stand-lunge.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "fe9acadae3ea18e463bf98f543bc986d1a5579824746e6b3cf058ec704046221",
+    "bytes": 310615
+   }
   }
  },
  "animation": {

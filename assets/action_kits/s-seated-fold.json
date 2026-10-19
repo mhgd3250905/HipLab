@@ -24,7 +24,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-s-seated-fold.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-seated-fold.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-seated-fold.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "b9318e8606aa83763bb45dc036c388549671e7ad4ead733e2d7aa6a7d061b035",
+    "bytes": 307289
+   }
   }
  },
  "animation": {

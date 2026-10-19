@@ -25,7 +25,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-pelvis-circle.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-pelvis-circle.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 1.1
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-pelvis-circle.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.1,
+    "sha256": "251768aab6f451749b40d9c63e97c56d47212e9cf5c43058da545b070f6c75cd",
+    "bytes": 318598
+   }
   }
  },
  "animation": {

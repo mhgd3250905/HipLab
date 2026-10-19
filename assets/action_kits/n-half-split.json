@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-half-split.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-half-split.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-half-split.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.0,
+    "sha256": "3bf3ec81645022b3509e28eee8067bf28fb61f81e682fed777130acd19595ae9",
+    "bytes": 497528
+   }
   }
  },
  "animation": {

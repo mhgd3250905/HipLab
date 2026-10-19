@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-thomas-test.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-thomas-test.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.5
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-thomas-test.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.5,
+    "sha256": "463aa55fcab343a5341748a87bb6dd3daad4cc73ef74c13e94ff4d866b39d71c",
+    "bytes": 335536
+   }
   }
  },
  "animation": {

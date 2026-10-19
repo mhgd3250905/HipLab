@@ -22,7 +22,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-o-stand-crossreach.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-o-stand-crossreach.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-o-stand-crossreach.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "2d6ed214aab955cdfd5ae998bc0a96b97302f2ca0449d8dabca936f33695b389",
+    "bytes": 228495
+   }
   }
  },
  "animation": {

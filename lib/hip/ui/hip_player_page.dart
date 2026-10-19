@@ -321,11 +321,32 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         // Half the range and half the time; after a finished drill this only
         // shortens the drill's later appearances.
         if (!afterStep) {
+          final reduced = _steps[i].copyWith(
+            seconds: (target.seconds / 2).ceil(),
+          );
+          final kit = widget.store.content.kit(reduced.drill.id);
+          if (kit != null &&
+              kit.kind.counted &&
+              reduced.segments.any((segment) {
+                final sets =
+                    reduced.extraSide != null && reduced.extraSide == segment.$1
+                    ? 2
+                    : 1;
+                return kit
+                        .repPlan(
+                          reduced.kitDose,
+                          segment.$2.toDouble(),
+                          sets: sets,
+                        )
+                        .reps ==
+                    0;
+              })) {
+            _engine.skip(t);
+            _queue.submit(const VoiceCue(0, ['p.skip'], CuePriority.call), t);
+            break;
+          }
           final rest = _steps.sublist(i + 1);
-          _engine.replaceFrom(i, [
-            _steps[i].copyWith(seconds: (target.seconds / 2).ceil()),
-            ...rest,
-          ], t);
+          _engine.replaceFrom(i, [reduced, ...rest], t);
           _queue.submit(
             const VoiceCue(0, ['cue.half_range'], CuePriority.info),
             t,
@@ -656,30 +677,33 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
-  /// A pill floating on the playing clip: the glass tactile material
-  /// (edge light + hairline, no opaque fill or cast shadow).
   Widget _mediaButton({
     required Key key,
     required HipGlyph icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
-  }) => HipPressable(
+  }) => Semantics(
     key: key,
-    semanticLabel: label,
-    onTap: onTap,
-    child: HipTactile(
-      style: HipTactileStyle.glass(),
-      radius: 18,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HipIcon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: color, fontSize: 14)),
-          ],
+    button: true,
+    child: Material(
+      color: Colors.black.withValues(alpha: .45),
+      shape: StadiumBorder(
+        side: BorderSide(color: Colors.white.withValues(alpha: .12)),
+      ),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HipIcon(icon, color: color, size: 16),
+              const SizedBox(width: 4),
+              Text(label, style: TextStyle(color: color, fontSize: 14)),
+            ],
+          ),
         ),
       ),
     ),

@@ -24,7 +24,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-h-squat.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-squat.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-squat.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 0.0,
+    "sha256": "3c87f18d8a09ad92b2a3c53e93ec3709ef0670c86ca9648e257f25f916881f3d",
+    "bytes": 432993
+   }
   }
  },
  "animation": {

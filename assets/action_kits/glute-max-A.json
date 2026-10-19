@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-glute-max-a.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-glute-max-a.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.1
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-glute-max-a.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.1,
+    "sha256": "95e5357296e1d123139636d6d6c15cb5fb157290900132feee64f0cb4eb954ff",
+    "bytes": 300398
+   }
   }
  },
  "animation": {

@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-s-pigeon.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-pigeon.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-pigeon.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "f30fe3585523c3677fb25c5251888f9e9f30b74c4905e333412122d0b2deee84",
+    "bytes": 183379
+   }
   }
  },
  "animation": {

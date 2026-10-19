@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-adductor-rock.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-adductor-rock.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.4
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-adductor-rock.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.4,
+    "sha256": "b1206bfae95a03928754fa3b2e02ea781f1e3bda3488eb4b48520db302679e3d",
+    "bytes": 605199
+   }
   }
  },
  "animation": {

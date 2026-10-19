@@ -25,7 +25,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-wide-fold.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-wide-fold.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-wide-fold.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.0,
+    "sha256": "e379f1808697215a26217d1f31a29c89973739d87751415dbf7a898756ecbcc9",
+    "bytes": 763009
+   }
   }
  },
  "animation": {
