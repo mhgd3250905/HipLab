@@ -2,8 +2,6 @@
 // The full-session reproduction is hip_voice_android_timeline_test.dart.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/core/platform/screen_awake.dart';
-import 'package:hiplab/core/platform/training_service.dart';
 import 'package:hiplab/hip/voice/session_script.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_line_controller.dart';
@@ -113,51 +111,7 @@ void main() {
     });
   });
 
-  group('1: background keep-alive (Android foreground service)', () {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    final calls = <String>[];
-    final messenger =
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-
-    setUp(() {
-      calls.clear();
-      messenger.setMockMethodCallHandler(TrainingService.channel, (call) async {
-        calls.add(call.method);
-        return true;
-      });
-    });
-    tearDown(() {
-      messenger.setMockMethodCallHandler(TrainingService.channel, null);
-      TrainingService.isAndroid = () => true;
-    });
-
-    test('a session hold starts the service once and stops it when the '
-        'last hold is released', () async {
-      TrainingService.isAndroid = () => true;
-      ScreenAwake.acquire();
-      ScreenAwake.acquire(); // nested session page
-      ScreenAwake.release();
-      await pumpEventQueue();
-      expect(calls, ['start']);
-      ScreenAwake.release();
-      await pumpEventQueue();
-      expect(calls, ['start', 'stop']);
-    });
-
-    test('not on iOS / web', () async {
-      TrainingService.isAndroid = () => false;
-      ScreenAwake.acquire();
-      ScreenAwake.release();
-      await pumpEventQueue();
-      expect(calls, isEmpty);
-    });
-
-    test('a missing platform side never throws', () async {
-      messenger.setMockMethodCallHandler(TrainingService.channel, null);
-      TrainingService.isAndroid = () => true;
-      ScreenAwake.acquire();
-      ScreenAwake.release();
-      await pumpEventQueue();
-    });
-  });
+  // 1: background keep-alive – now owned per training session
+  // (TrainingHold); see hip_training_keepalive_test.dart (PR #24 review
+  // F24-3 / F24-4).
 }

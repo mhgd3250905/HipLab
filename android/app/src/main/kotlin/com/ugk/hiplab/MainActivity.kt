@@ -11,9 +11,17 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hiplab/training_session")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "start" -> result.success(TrainingSessionService.start(applicationContext))
+                    "start" -> {
+                        val session = (call.argument<Number>("session") ?: 0).toLong()
+                        val maxMs = (call.argument<Number>("maxMs") ?: 0).toLong()
+                        result.success(
+                            session != 0L &&
+                                TrainingSessionService.start(applicationContext, session, maxMs),
+                        )
+                    }
                     "stop" -> {
-                        TrainingSessionService.stop(applicationContext)
+                        val session = (call.argument<Number>("session") ?: 0).toLong()
+                        TrainingSessionService.stop(applicationContext, session)
                         result.success(true)
                     }
                     else -> result.notImplemented()

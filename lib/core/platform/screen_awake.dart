@@ -13,6 +13,11 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 /// manifest service, no Play Console declaration). A manual lock with the
 /// power button is still not covered – see docs/development-roadmap.md D-10.
 ///
+/// The screen only. Keeping time with the screen locked or the app in the
+/// background is the Android training service, owned per training session by
+/// `TrainingHold` (training_service.dart; PR #24 review, 2026-10-19: tied to this page-open count
+/// it outlived trainings that had finished).
+///
 /// Reference-counted so nested sessions don't release each other's hold.
 /// Platform errors are swallowed: in widget tests (no plugin) and on
 /// unsupported platforms this is a no-op.
