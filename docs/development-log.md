@@ -173,3 +173,14 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 从根AGENTS/README直接发现的当前来源为docs/README、current-state、version-ledger、verification、development-roadmap、development-log、development-workflow及ios-setup-and-release。核对版本/安装/提交/PR/商店状态分开记账；0.3.3真机报告与0.3.2商店报告只作历史。修正入口和当前限制中仍笼统写iOS构建/真机待完成的表述、详细报告旧“最新状态”，并显式标记0.3.5版本段落为历史。没有改变各时间点的原始结果或扩大通过范围。
 
 验证绑定：0.3.6+11候选完整源 `2f8aeb099fae965e764fc41fd38c2c3154064766`；2026-10-18 20:17记录的flutter analyze无问题、flutter test --concurrency=1为160 pass/1条件skip、flutter build ios --release --no-pub成功44.1秒及Xcode Archive观察结果保持。该源至入场HEAD及本次收束仅文档变化，故复用既有运行证据，不将当前文档HEAD冒称新构建。#17/#18的178项测试绑定独立源 `5711b4215ee26f35a20a342168fcf91747020ecf`，不能套用当前候选。仅文档收束检查事实、链接、完整状态和git diff --check；不增加App版本、不重复构建、不读私有日志/产物或操作手机、商店。
+
+
+
+## 2026-10-19 / 接入 Cockpit 并同步主线
+
+用户显式init后返回active，已有改动保留；主目录feat/ios及五份历史台账未动。独立iOS分支合入main 6020d8e，继承已合并#17/#18最终修复，并保留#16隐私平台分支与双平台测试。仅处理双方台账冲突，保留历史并消除D-25编号冲突（iOS改D-26，矩阵改D-27）。#19/#20/#21尚未合main，本轮不纳入。组合测试与构建单独记源，不上传商店。
+
+
+## 2026-10-19 / iOS main6020d8e组合候选
+
+完整源 `668f4bcdf28887b3595cf087bb405d0c72b6aac0`，普通合入main `6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，保留#16隐私适配。固定Flutter3.44.7，锁定依赖解析、analyze0、193pass/1skip、工程静态与92冻结素材核对通过；31.9秒开发签名Release成功，com.ugk.hiplab/0.3.6+11/arm64、严格验签、6隐私清单和611资源SHA一致。AOT SHA-256 `0b6c0a2c0ba767b622d7a34948738959213daeab4b50ac385176c7559d83aaee`。本轮无Archive/IPA、未安装、未操作手机或商店；旧手机候选2f8aeb0和产物保留。D-26为iOS适配（原D-25），D-27为系统矩阵（原D-26），旧报告保留当时编号。[完整记录](ios-main-6020d8e-2026-10-19.md)。
