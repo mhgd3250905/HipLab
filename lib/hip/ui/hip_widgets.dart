@@ -414,6 +414,9 @@ class _HipDrillArtState extends State<HipDrillArt> {
           // The poster stays on top until the clip has a frame, then fades.
           IgnorePointer(
             child: AnimatedOpacity(
+              // A new platform surface must start fully covered. Reusing the
+              // old fade would animate from zero while the new clip is blank.
+              key: ObjectKey(controller),
               opacity: _shown ? 0 : 1,
               duration: HipMotion.medium,
               curve: Curves.easeOut,

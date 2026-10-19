@@ -107,7 +107,6 @@ void main() {
               find.descendant(of: start, matching: find.byType(HipTactile)),
             )
             .style,
-        // #20 themes the stage under the disc; the accent follows it.
         HipTactileStyle.accent(
           tester.widget<HipStartButton>(find.byType(HipStartButton)).stage,
         ),

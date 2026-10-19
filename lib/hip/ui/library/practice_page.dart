@@ -700,7 +700,7 @@ Future<void> startGroup(
     plan,
     from: origin,
     radius: 17,
-    color: tintOf(HipColors.jade),
+    originColor: tintOf(HipColors.jade),
   );
 }
 

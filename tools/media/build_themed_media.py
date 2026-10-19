@@ -484,10 +484,16 @@ def cmd_check(args) -> None:
         elif os.path.getsize(p) != e['bytes'] or sha256(p) != e['sha256']:
             problems.append(f'{label}: sha/bytes differ from manifest')
     videos = {a[t]['video']['asset'] for a in m['actions'].values() for t in ('dark', 'light')}
+    by_video = {a['dark']['video']['asset']: a for a in m['actions'].values()}
     for name, media in content_media(content).items():
         v = media['video']
         if v not in videos or light_path(v) not in videos:
             problems.append(f'{name}: no dark+light clip in manifest')
+        action = by_video.get(v)
+        if action is not None:
+            for theme in ('dark', 'light'):
+                if action[theme]['poster'].get('timeSec') != media.get('poster_time_seconds'):
+                    problems.append(f'{name}.{theme}: poster_time_seconds changed; rebuild poster')
     still_assets = {it[t]['asset'] for s in m['stills'].values()
                     for it in s['items'].values() for t in ('dark', 'light')}
     for item in content['assessment']['items']:

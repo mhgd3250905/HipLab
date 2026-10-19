@@ -304,7 +304,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
       plan,
       from: _startKey.currentContext,
       radius: 28,
-      color: HipColors.jade,
+      originColor: HipColors.jade,
     );
   }
 

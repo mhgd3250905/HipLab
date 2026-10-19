@@ -1,0 +1,125 @@
+{
+  "runtimeSource": "e3fb1d31d3d490dbe46afe5f0461f6d273dba404",
+  "preview": "real product lib, synthetic memory, real VoiceLibrary + MutedVoiceOutput, poster media",
+  "press": {
+    "home-light-390.png": {
+      "width": 104,
+      "height": 104,
+      "pixels": 8192
+    },
+    "home-light-held.png": {
+      "width": 102,
+      "height": 102,
+      "pixels": 7733
+    },
+    "reduced-idle.png": {
+      "width": 104,
+      "height": 104,
+      "pixels": 8192
+    },
+    "reduced-held.png": {
+      "width": 104,
+      "height": 104,
+      "pixels": 8175
+    }
+  },
+  "reducedMaterial": {
+    "changedRgbPixels": 8712,
+    "meanAbsRgb": 7.518133333333333,
+    "crop": [
+      250,
+      310,
+      350,
+      410
+    ],
+    "reducedMotionDimensionsUnchanged": true
+  },
+  "painSkip": {
+    "before": [
+      "结束",
+      "4/4",
+      "大腿后侧",
+      "疼",
+      "右",
+      "左",
+      "坐姿抬膝悬停",
+      "慢一点，控制住",
+      "暂停",
+      "8",
+      "秒",
+      "跳过"
+    ],
+    "after": [
+      "今天练完了",
+      "连续 1 天",
+      "回首页"
+    ],
+    "source": "e3fb1d3",
+    "microSeconds": 16,
+    "halfSideSeconds": 4,
+    "fullRepSeconds": 7
+  },
+  "rapidTabs": {
+    "redirects": 12,
+    "requestedGapMs": 55,
+    "targets": {
+      "自测": {
+        "x": 195,
+        "y": 812
+      },
+      "进度": {
+        "x": 325,
+        "y": 812
+      },
+      "今日": {
+        "x": 65,
+        "y": 812
+      }
+    },
+    "texts": [
+      "周一 · 10 月 19 日\n今日训练\n1",
+      "开始",
+      "5\n分",
+      "10\n分",
+      "15\n分",
+      "办公椅",
+      "居家",
+      "连续\n1 天\n我的髋部\n3 分半自测",
+      "今日",
+      "自测",
+      "进度"
+    ],
+    "method": "real mouse at observed nav bounds; no force",
+    "passed": true
+  },
+  "pause": {
+    "observedSeconds": 30,
+    "unchangedOverAtLeastSeconds": 10
+  },
+  "feedback": {
+    "step": "3/9",
+    "timerBefore": 15,
+    "timerAfter": 13,
+    "recorded": true,
+    "painCancelRemainsRest": true
+  },
+  "transitions": {
+    "light": [
+      "prep close",
+      "work close"
+    ],
+    "dark": [
+      "prep close",
+      "work close"
+    ],
+    "evidence": [
+      "light-expand-close-verified.webm",
+      "dark-expand-close.webm"
+    ],
+    "mediaIsPoster": true
+  },
+  "console": "initial localhost favicon.ico404 only; final navigation errors0",
+  "semanticLocatorLimitation": "Flutter full-page semantics overlay blocked some role clicks; retried with actual mouse at freshly observed bounds, no force",
+  "finalSource": "c7def2869b789357b303d69d66eb8c18a0a748ae",
+  "reuseBoundary": "Interaction baseline is e3fb1d3; only feedback font style changed later. c7def28 passed 254/1 and separate cold font/layout retests."
+}

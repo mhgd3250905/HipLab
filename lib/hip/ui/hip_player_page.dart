@@ -330,11 +330,32 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         // Half the range and half the time; after a finished drill this only
         // shortens the drill's later appearances.
         if (!afterStep) {
+          final reduced = _steps[i].copyWith(
+            seconds: (target.seconds / 2).ceil(),
+          );
+          final kit = widget.store.content.kit(reduced.drill.id);
+          if (kit != null &&
+              kit.kind.counted &&
+              reduced.segments.any((segment) {
+                final sets =
+                    reduced.extraSide != null && reduced.extraSide == segment.$1
+                    ? 2
+                    : 1;
+                return kit
+                        .repPlan(
+                          reduced.kitDose,
+                          segment.$2.toDouble(),
+                          sets: sets,
+                        )
+                        .reps ==
+                    0;
+              })) {
+            _engine.skip(t);
+            _queue.submit(const VoiceCue(0, ['p.skip'], CuePriority.call), t);
+            break;
+          }
           final rest = _steps.sublist(i + 1);
-          _engine.replaceFrom(i, [
-            _steps[i].copyWith(seconds: (target.seconds / 2).ceil()),
-            ...rest,
-          ], t);
+          _engine.replaceFrom(i, [reduced, ...rest], t);
           _queue.submit(
             const VoiceCue(0, ['cue.half_range'], CuePriority.info),
             t,
@@ -671,24 +692,27 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     required String label,
     required Color color,
     required VoidCallback onTap,
-  }) => Material(
-    color: Colors.black.withValues(alpha: .45),
-    shape: StadiumBorder(
-      side: BorderSide(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: InkWell(
-      key: key,
-      customBorder: const StadiumBorder(),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HipIcon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: color, fontSize: 14)),
-          ],
+  }) => Semantics(
+    key: key,
+    button: true,
+    child: Material(
+      color: Colors.black.withValues(alpha: .45),
+      shape: StadiumBorder(
+        side: BorderSide(color: Colors.white.withValues(alpha: .12)),
+      ),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HipIcon(icon, color: color, size: 16),
+              const SizedBox(width: 4),
+              Text(label, style: TextStyle(color: color, fontSize: 14)),
+            ],
+          ),
         ),
       ),
     ),
@@ -795,34 +819,37 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                   ('pain', '疼', HipColors.pain),
                 ]) ...[
                   if (key != 'ok') const SizedBox(width: 8),
-                  // #19 R5: colored outlined capsule (no tactile material).
-                  Builder(
-                    builder: (context) {
-                      final c = picked == null || picked == key
+                  OutlinedButton(
+                    key: ValueKey('feel-$key'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: picked == null || picked == key
                           ? color
-                          : HipColors.muted;
-                      return OutlinedButton(
-                        key: ValueKey('feel-$key'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: c,
-                          side: BorderSide(color: c.withValues(alpha: .55)),
-                          minimumSize: const Size(76, 36),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          shape: const StadiumBorder(),
-                        ),
-                        onPressed: () => _feel(doneStep, key),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (picked == key) ...[
-                              HipIcon(HipGlyph.check, size: 16, color: c),
-                              const SizedBox(width: 4),
-                            ],
-                            Text(label, style: const TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      );
-                    },
+                          : HipColors.muted,
+                      side: BorderSide(
+                        color:
+                            (picked == null || picked == key
+                                    ? color
+                                    : HipColors.muted)
+                                .withValues(alpha: .55),
+                      ),
+                      minimumSize: const Size(76, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: const StadiumBorder(),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(fontSize: 14),
+                    ),
+                    onPressed: () => _feel(doneStep, key),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (picked == key) ...[
+                          const HipIcon(HipGlyph.check, size: 14),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(label),
+                      ],
+                    ),
                   ),
                 ],
               ],

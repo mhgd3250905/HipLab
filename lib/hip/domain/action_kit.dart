@@ -150,8 +150,8 @@ class ActionKit {
       defaultReps: d['reps'] as int?,
       defaultSeconds: d['seconds'] as int?,
       defaultHold: d['holdSeconds'] as int?,
-      entrySeconds:
-          ((t['hold'] as Map?)?['entrySeconds'] as num? ?? 2).toDouble(),
+      entrySeconds: ((t['hold'] as Map?)?['entrySeconds'] as num? ?? 2)
+          .toDouble(),
       voice: KitVoice.fromJson(Map<String, dynamic>.from(j['voice'] as Map)),
       raw: j,
     );
@@ -239,7 +239,9 @@ class ActionKit {
         phases: stretch(ph, (per - lead) / reps),
       );
     }
-    reps = math.max(1, math.min(reps, ((per - lead) / cycle).floor()));
+    // A shortened phase must never start a rep it cannot finish. The
+    // player skips the action when pain reduction leaves no whole rep.
+    reps = math.max(0, math.min(reps, ((per - lead + 1e-9) / cycle).floor()));
     return RepPlan(
       lead: math.max(0.0, per - reps * cycle),
       reps: reps,

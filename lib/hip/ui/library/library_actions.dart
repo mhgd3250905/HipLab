@@ -12,7 +12,7 @@ typedef StartPlan =
       TrainingPlan plan, {
       BuildContext? from,
       double radius,
-      Color? color,
+      Color? originColor,
     });
 
 class LibraryActions {

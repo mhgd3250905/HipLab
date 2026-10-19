@@ -287,7 +287,7 @@ def cmd_build(a):
             raise SystemExit(f'{did}: missing from kit_rules.RULES')
         kit = build_kit(d, K.RULES[did], anims[did], specs[did], olds.get(did))
         light = themed.get(did, {}).get('light')
-        if light:  # PR #20 light-stage media (assets/hip/action-media.json)
+        if light:
             video, poster = light['video'], light['poster']
             kit['display']['poster']['light'] = poster['asset']
             kit['media']['video']['light'] = {
@@ -296,11 +296,11 @@ def cmd_build(a):
                 'sha256': video['sha256'], 'bytes': video['bytes'],
             }
         (KITS / f'{did}.json').write_text(json.dumps(kit, ensure_ascii=False, indent=1) + '\n',
-                                          encoding='utf-8')
+                                          encoding='utf-8', newline='\n')
         ids.append(did)
     index = {'schema': 'action-kit-index@1', 'poseHub': specs[ids[0]][0],
              'kits': [f'assets/action_kits/{i}.json' for i in sorted(ids)]}
-    (KITS / 'index.json').write_text(json.dumps(index, indent=1) + '\n', encoding='utf-8')
+    (KITS / 'index.json').write_text(json.dumps(index, indent=1) + '\n', encoding='utf-8', newline='\n')
     print(f'wrote {len(ids)} kits to {KITS}')
 
 

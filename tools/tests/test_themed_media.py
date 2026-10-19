@@ -1,9 +1,13 @@
 """Themed media pipeline: path rules, neutral light stage, bundle check."""
 import importlib.util
+import contextlib
+import copy
+import io
 from pathlib import Path
 import subprocess
 import sys
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
@@ -36,6 +40,18 @@ class ThemedMediaTest(unittest.TestCase):
         out = subprocess.run([sys.executable, str(ROOT / 'tools/media/build_themed_media.py'),
                               'check'], capture_output=True, text=True)
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+
+    def test_changed_poster_time_requires_rebuilding_the_poster(self):
+        load = tm.load_json
+        content = copy.deepcopy(load(tm.CONTENT))
+        content['drills'][0]['media']['poster_time_seconds'] += .1
+        output = io.StringIO()
+        with mock.patch.object(tm, 'load_json', side_effect=lambda path:
+                               content if path == tm.CONTENT else load(path)):
+            with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as error:
+                tm.cmd_check(None)
+        self.assertEqual(error.exception.code, 1)
+        self.assertIn('poster_time_seconds changed', output.getvalue())
 
 
 if __name__ == '__main__':

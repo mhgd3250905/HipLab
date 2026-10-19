@@ -544,7 +544,7 @@ class _HipHomeState extends State<HipHome> {
     TrainingPlan plan, {
     BuildContext? from,
     double radius = 52,
-    Color? color,
+    Color? originColor,
   }) async {
     Widget page(BuildContext _) => HipPlayerPage(store: store, plan: plan);
     await Navigator.of(context).push(
@@ -554,7 +554,7 @@ class _HipHomeState extends State<HipHome> {
               from,
               page,
               radius: radius,
-              color: color ?? HipPalette.dark.jade,
+              color: originColor ?? HipColors.jade,
             ),
     );
   }
@@ -1071,7 +1071,11 @@ class _HipHomeState extends State<HipHome> {
                 stage: stage,
                 onTap: plan.steps.isEmpty
                     ? null
-                    : () => _startPlan(plan, from: _startKey.currentContext),
+                    : () => _startPlan(
+                        plan,
+                        from: _startKey.currentContext,
+                        originColor: stage.jade,
+                      ),
               ),
             ),
           ],

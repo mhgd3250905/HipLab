@@ -6,11 +6,11 @@
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-18**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-19**；按页内日期保留历史交付与验证。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-Android 16 真机当前为 **0.3.6+11 debug / arm64 engine**，源码 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`，已保留数据覆盖安装。PR #17/#18 已按顺序合入 main；中途反向 Tab 跳变与分段无按压反馈均修复，深浅/减少动画及原生视频退出已复查，用户偏好保持。见[修复与合并记录](docs/pr17-pr18-fixes-and-merge-2026-10-18.md)、[版本台账](docs/version-ledger.md)。此前源66f5da0的19:29安装及0.3.5+10完整试听保留历史，不扩大为本版完整听音验收。
+用户于2026-10-19反馈：已安装本轮 **0.3.6+11 debug / arm64 engine** 包并完成简单真机测试，运行源码 `c7def2869b789357b303d69d66eb8c18a0a748ae`。这是用户报告，Agent未再次ADB回读设备、版本或数据状态，不代表完整14项试听/锁屏/性能清单通过。#19→#20→#21及五项修复已顺序合入并推送main（业务集成点b9646d4）；GitHub确认三PR均MERGED。此前#17/#18的6dd16ed安装、偏好保持和专项验证保留历史，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)及[本轮审核](docs/pr19-pr21-review-2026-10-19.md)。
 
 制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
 
@@ -18,7 +18,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮组合源6dd16ed：analyze0、191pass/1条件skip，debug APK已构建并保留数据安装；深浅gallery另2pass。真机结论限本轮修复路径，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get

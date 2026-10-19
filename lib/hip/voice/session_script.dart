@@ -319,6 +319,7 @@ class SessionScript {
   List<VoiceCue> _repCues(SessionPhase phase, PlanStep s, ActionKit kit) {
     final plan = kit.repPlan(s.kitDose, phase.seconds, sets: setsOf(phase, s));
     final v = kit.voice;
+    if (plan.reps == 0) return const [];
     final out = <VoiceCue>[
       VoiceCue(0, ['chime.start', v.go], CuePriority.call),
     ];

@@ -135,7 +135,7 @@ class RoutineDetailPage extends StatelessWidget {
                             p,
                             from: _startKey.currentContext,
                             radius: 28,
-                            color: HipColors.jade,
+                            originColor: HipColors.jade,
                           );
                         },
                 ),

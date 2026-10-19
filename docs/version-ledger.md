@@ -184,3 +184,34 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ## 0.3.6+11转场与按钮修复包（2026-10-18）
 
 源码 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`；包名与debug签名连续，Gradle49s构建。APK `E:/AII-3D/hiplab-releases/pr17-pr18-fixes-20261018/hiplab-0.3.6+11-pr17-pr18-fixed-debug-arm64.apk`，150,903,412bytes，SHA256 `34bae5ac3a17a1906f390336e17292a5ba7078d0f822413c9a2a25e822286c0a`。`install -r`成功，设备0.3.6/code11，冷启动1316ms；测试前/安装后/复查后1356字节偏好相同。#17/#18随后23:35:52/23:36:26顺序合入main，运行内容保持。本轮版本未递增、不上传商店；[完整证据](pr17-pr18-fixes-and-merge-2026-10-18.md)。
+
+## 0.3.6+11 PR #19/#20/#21 隔离构建与模拟器安装（2026-10-19，未合main）
+
+两份APK均源于 `e3fb1d31d3d490dbe46afe5f0461f6d273dba404`，包名 `com.ugk.hiplab`，版本仍0.3.6+11。使用 `flutter build apk --debug --no-pub --target-platform android-arm64` / `android-x64` 构建，Gradle分别125.9秒、46.3秒。仅命令环境 `GRADLE_OPTS` 关闭Kotlin增量编译，未为构建修改项目配置、依赖或lock。
+
+| 产物 | 字节数 / SHA-256 | 当前安装边界 |
+|---|---|---|
+| `hiplab-0.3.6+11-pr19-pr21-arm64-debug.apk` | 174,333,226 / `fb959b061a09f907e826a846dae2badca397f735d02603621b3841b834e2e785` | 已构建，未安装手机；较上一轮150,903,412bytes增加23,429,814bytes |
+| `hiplab-0.3.6+11-pr19-pr21-x64-debug.apk` | 213,174,642 / `292c7b4fb7aa0a5e85546d8d642e46ae0e9eb9b6eaf57ec52dd524eed4f33051` | 已安装专用AVD `codex_hiplab_pr19_21_api35`；不代表手机更新 |
+
+两份签名证据均为既有debug证书SHA-256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`。本机目录 `E:/AII-3D/hiplab-releases/pr19-pr21-review-20261019/` 保存上述APK、`apk-identity.json`、`apk-build-arm64.log`、`apk-build-x64.log`、`apk-arm64-signature.txt`、`apk-x64-signature.txt`；不代表远端备份。
+
+构建之后仅补主题媒体工具的封面时刻防漂移check及mutation回归，最终Python19通过，themed-media/action-kit检查均通过；没有改变App或资产，APK来源仍为e3fb1d3，不因工具/文档改动重新构建。两段录屏698帧未发现全卡黑屏/中部单色空白候选，逐秒图与原图未见内容脱离圆角；录屏和模拟器GPU色差限制见[审核报告](pr19-pr21-review-2026-10-19.md)，不作为物理真机或iOS结论。
+
+用户本轮改用模拟器。专用AVD为Android15/API35、1080×2400/density420，WebView124.0.6367.219；原有 `codex_api35` 正式0.2.0包未覆盖。手机安装状态沿用上次源6dd16ed的记录，原记录本轮未操作。原生训练、主题切换与休息反馈已进行，模拟器9个合成场景后已停止，按用户最新安排转Web复核、晚上再真机；最终模拟器验收由[审核报告](pr19-pr21-review-2026-10-19.md)补记。尚未合main或推送，需本轮最后同意；未上传商店。
+
+### 最终晚间arm64候选（c7def28）
+
+`hiplab-0.3.6+11-pr19-pr21-c7def28-arm64-debug-repacked.apk`：**174,329,762 bytes**，SHA-256 `7fdbdf81f567d064d2dcab356494087a552913a32812f3a4c80c091a767ec678`，包名com.ugk.hiplab、0.3.6+11，沿用上述debug证书。构建含字体运行修复，未安装手机/AVD。命令仍debug/no-pub/android-arm64；首次构建69.1秒，发现增量APK含37,584,896 bytes ZIP空洞（总211,931,209 bytes）后，仅删除隔离副本的单个生成APK并重建33.2秒。重新打包的1478条ZIP项大小/CRC与原c7包完全一致，Flutter引擎仅arm64，未改源码、依赖或配置；APK v2签名校验、16KB页对齐检查通过。异常包保留为本地调查历史，不作为晚间安装候选。
+
+本轮晚间候选比上一轮6dd16ed包增加23,426,350 bytes；与早期本轮e3arm64差−3,464 bytes，不能把含空洞的增长归因素材/字体。候选保存在本机`E:/AII-3D/hiplab-releases/pr19-pr21-review-20261019/`，不入Git；身份与打包日志也在该目录。晚上仅在确认连接、备份及身份后覆盖安装，保留现有记录，不清数据。
+
+## 用户真机安装及简单测试反馈（2026-10-19）
+
+本会话向用户交付`hiplab-0.3.6+11-pr19-pr21-c7def28-arm64-debug-repacked.apk`，用户随后报告“真机安装、简单测试通过”。运行源`c7def2869b789357b303d69d66eb8c18a0a748ae`，包名com.ugk.hiplab、0.3.6+11 / debug arm64 engine，174,329,762bytes，SHA256 `7fdbdf81f567d064d2dcab356494087a552913a32812f3a4c80c091a767ec678`，沿用既有debug证书。本次未重新构建、重命名版本或发布商店；APK本身继续留本机忽略目录，Git仅保存身份和记录。
+
+证据来源是用户在当前会话的安装及简单测试反馈，非Agent再次ADB安装或仪器核验；设备型号/WebView、本机安装后版本、测试明细、备份及用户数据保持未重新核对，不推断这些项目已通过。原“未安装”段落保留为构建时历史；本轮交付现更新为用户报告已安装/简单测试通过。main仍`6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，审阅分支`codex/pr19-pr21-validation`保存组合修复；尚未合入main或上传商店。
+
+## 0.3.6+11 对应代码合入main（2026-10-19）
+
+用户随后明确要求推进合并，#19→#20→#21及五项修复随已审核合并链普通push至main；业务集成点`b9646d4a15b4e3727d8e11ea5ee3106f0e396603`。GitHub于2026-10-19 14:00:39北京时间（06:00:39Z）确认三PR均MERGED，merge依次2b552fd/18bf4ce/b6fd55e；[完整合并身份](pr19-pr21-review-2026-10-19.md#pr-19--20--21-主线合并确认2026-10-19)。运行内容与上述用户收到的c7def28 APK一致，本次没有新构建/安装/版本递增/商店上传；用户简单真机通过和完整专项未验范围保持独立。
