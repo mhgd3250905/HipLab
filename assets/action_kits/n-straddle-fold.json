@@ -1,0 +1,115 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-straddle-fold",
+ "display": {
+  "name": {
+   "zh": "坐姿分腿体前屈",
+   "en": "Seated straddle fold"
+  },
+  "point": {
+   "zh": "分腿坐直，从髋部慢慢往前倾",
+   "en": "Sit tall in a straddle and lean forward from the hips"
+  },
+  "cautions": [
+   "内收肌根",
+   "腰"
+  ],
+  "targets": [
+   "abduction",
+   "flexion"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-n-straddle-fold.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-straddle-fold.js",
+   "specSha256": "d23a2d5ae7bd9f218232dd0c0b4cac85af427ef46054b445d1f587a20a954d9d"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-straddle-fold.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "fold",
+  "reps": [
+   [
+    0.74,
+    2.37,
+    4.85,
+    6.56
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 75,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 1.65
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-straddle-fold": {
+    "zh": "坐姿分腿体前屈",
+    "en": "Seated straddle fold"
+   },
+   "point.n-straddle-fold": {
+    "zh": "分腿坐直，从髋部慢慢往前倾",
+    "en": "Sit tall in a straddle and lean forward from the hips"
+   }
+  },
+  "prepare": [
+   "drill.n-straddle-fold",
+   "point.n-straddle-fold"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

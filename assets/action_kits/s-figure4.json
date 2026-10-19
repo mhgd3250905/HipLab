@@ -1,0 +1,112 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-figure4",
+ "display": {
+  "name": {
+   "zh": "仰卧 4 字拉伸",
+   "en": "Supine figure four"
+  },
+  "point": {
+   "zh": "脚踝搭在另一侧膝盖上，把腿拉向胸口",
+   "en": "Ankle over the other knee, pull the legs toward your chest"
+  },
+  "cautions": [],
+  "targets": [
+   "external_rotation"
+  ],
+  "methods": [
+   "relax",
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-s-figure4.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-figure4.js",
+   "specSha256": "cca7676b36347c5c44a56efa9847eef733182d4bfeea5954da55fee148278800"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-figure4.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 40,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-figure4": {
+    "zh": "仰卧 4 字拉伸",
+    "en": "Supine figure four"
+   },
+   "point.s-figure4": {
+    "zh": "脚踝搭在另一侧膝盖上，把腿拉向胸口",
+    "en": "Ankle over the other knee, pull the legs toward your chest"
+   }
+  },
+  "prepare": [
+   "drill.s-figure4",
+   "point.s-figure4"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.relax.1",
+   "cue.relax.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import voice_lines as L  # noqa: E402
 
 CONTENT = ROOT / 'assets/hip/hip-content.json'
+KITS_INDEX = ROOT / 'assets/action_kits/index.json'
 OUT = ROOT / 'assets/voice'
 CACHE = ROOT / 'tools/voice/.voice-cache'
 RAW_CACHE = ROOT / 'tools/voice/.raw-cache'
@@ -94,10 +95,16 @@ def collect_lines():
         lines[f'sec.{s}'] = L.seconds_text(s)
     for m in range(1, 31):
         lines[f'min.{m}'] = (f'{m} 分钟', f'{m} minute' + ('s' if m > 1 else ''))
-    for d in c['drills']:
-        point_zh, name_en, point_en = L.DRILLS[d['id']]
-        lines[f"drill.{d['id']}"] = (spoken_name(d['name']), name_en)
-        lines[f"point.{d['id']}"] = (point_zh, point_en)
+    # Action names, key points and phase words come from the action kits
+    # (assets/action_kits, tools/action_kits/build_action_kits.py).
+    kits = json.loads(KITS_INDEX.read_text(encoding='utf-8'))['kits']
+    for path in kits:
+        kit = json.loads((ROOT / path).read_text(encoding='utf-8'))
+        for key, t in kit['voice']['lines'].items():
+            zh = spoken_name(t['zh']) if key.startswith('drill.') else t['zh']
+            if key in lines and lines[key] != (zh, t['en']):
+                raise SystemExit(f'{key}: two kits word it differently')
+            lines[key] = (zh, t['en'])
     for i, item in enumerate(c['assessment']['items']):
         title_en, cue_en = L.ASSESSMENT_EN[item['id']]
         lines[f"a.item.{item['id']}"] = (
@@ -316,20 +323,36 @@ def cmd_build(a):
     lines, texts = collect_lines()
     voices = {'zh': a.zh_voice, 'en': a.en_voice}
     jobs = []
+    # --keep-existing: a clip whose text and voice did not change is kept as
+    # it is (no re-render, no binary churn); only new / reworded lines are made.
+    old = {}
+    if a.keep_existing and (OUT / 'manifest.json').exists():
+        m = json.loads((OUT / 'manifest.json').read_text(encoding='utf-8'))
+        if m.get('voices') == voices:
+            old = m.get('lines', {})
+    kept = 0
     for lang, idx in (('zh', 0), ('en', 1)):
         d = OUT / lang
         if d.exists():
             for f in d.glob('*.m4a'):
+                k = f.stem
+                if k in lines and old.get(k, {}).get(lang) == lines[k][idx]:
+                    continue
                 f.unlink()
         for key, pair in lines.items():
             text = pair[idx]
+            if (d / f'{key}.m4a').exists():
+                kept += 1
+                continue
             jobs.append((text, voices[lang], RATE[lang], d / f'{key}.m4a'))
+    print(f'kept {kept} unchanged clips')
     print(f'{len(lines)} lines × 2 languages')
     asyncio.run(synth_all(jobs))
     # the length the app schedules with = what actually decodes
     clips = {lang: {k: _decoded_ms(OUT / lang / f'{k}.m4a') for k in lines}
              for lang in ('zh', 'en')}
-    chimes = build_chimes()
+    chimes = (json.loads((OUT / 'manifest.json').read_text(encoding='utf-8'))['chimes']
+              if a.keep_existing else build_chimes())
     manifest = {
         'schema': 1,
         'generated_by': 'tools/voice/build_voice.py',
@@ -400,6 +423,8 @@ def main():
     b = sub.add_parser('build')
     b.add_argument('--zh-voice', default=DEFAULT_VOICE['zh'])
     b.add_argument('--en-voice', default=DEFAULT_VOICE['en'])
+    b.add_argument('--keep-existing', action='store_true',
+                   help='keep clips whose text and voice are unchanged')
     s = sub.add_parser('samples')
     s.add_argument('--out', required=True)
     d = sub.add_parser('demo')

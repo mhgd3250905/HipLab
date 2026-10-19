@@ -1864,12 +1864,16 @@
    "kind": "routine",
    "name": "办公室 5 分钟",
    "scene": "chair",
-   "seconds": 300,
+   "seconds": 304,
    "steps": [
     {
      "alternative": null,
      "dose": "正反各 4 圈",
      "drill": "n-pelvis-circle",
+     "kit": {
+      "id": "n-pelvis-circle",
+      "reps": 4
+     },
      "seconds": 40,
      "sided": false,
      "tip": ""
@@ -1878,6 +1882,10 @@
      "alternative": null,
      "dose": "每侧 30 秒",
      "drill": "o-stand-lunge",
+     "kit": {
+      "id": "o-stand-lunge",
+      "seconds": 30
+     },
      "seconds": 60,
      "sided": true,
      "tip": ""
@@ -1886,6 +1894,10 @@
      "alternative": null,
      "dose": "每侧 开 3 次 + 关 3 次",
      "drill": "h-hip-gate",
+     "kit": {
+      "id": "h-hip-gate",
+      "reps": 6
+     },
      "seconds": 60,
      "sided": true,
      "tip": ""
@@ -1894,6 +1906,10 @@
      "alternative": null,
      "dose": "每侧 25 秒",
      "drill": "o-seated-fig4",
+     "kit": {
+      "id": "o-seated-fig4",
+      "seconds": 25
+     },
      "seconds": 50,
      "sided": true,
      "tip": "膝不舒服：只把脚踝搭上、不前压"
@@ -1902,15 +1918,25 @@
      "alternative": null,
      "dose": "左右交替 6 次",
      "drill": "n-chair-wiper",
+     "kit": {
+      "id": "n-chair-wiper",
+      "reps": 6
+     },
      "seconds": 25,
      "sided": false,
      "tip": ""
     },
     {
      "alternative": null,
+     "authored_seconds": 40,
      "dose": "每侧 3 次 × 停 5 秒",
      "drill": "n-seated-knee-lift",
-     "seconds": 40,
+     "kit": {
+      "holdSeconds": 5,
+      "id": "n-seated-knee-lift",
+      "reps": 3
+     },
+     "seconds": 44,
      "sided": true,
      "tip": ""
     }
@@ -1929,6 +1955,10 @@
      "alternative": null,
      "dose": "慢呼吸 6 次",
      "drill": "h-knee-hug",
+     "kit": {
+      "id": "h-knee-hug",
+      "reps": 6
+     },
      "seconds": 45,
      "sided": false,
      "tip": ""
@@ -1937,6 +1967,10 @@
      "alternative": null,
      "dose": "左右慢慢倒 8 次",
      "drill": "n-windshield",
+     "kit": {
+      "id": "n-windshield",
+      "reps": 8
+     },
      "seconds": 45,
      "sided": false,
      "tip": ""
@@ -1945,6 +1979,10 @@
      "alternative": null,
      "dose": "每侧 40 秒",
      "drill": "s-figure4",
+     "kit": {
+      "id": "s-figure4",
+      "seconds": 40
+     },
      "seconds": 80,
      "sided": true,
      "tip": ""
@@ -1953,6 +1991,10 @@
      "alternative": null,
      "dose": "每侧 40 秒（用毛巾）",
      "drill": "h-band-leg-out",
+     "kit": {
+      "id": "h-band-leg-out",
+      "seconds": 40
+     },
      "seconds": 80,
      "sided": true,
      "tip": "没有毛巾：手扶大腿内侧"
@@ -1961,6 +2003,10 @@
      "alternative": null,
      "dose": "慢开慢合 6 次",
      "drill": "h-butterfly-active",
+     "kit": {
+      "id": "h-butterfly-active",
+      "reps": 6
+     },
      "seconds": 60,
      "sided": false,
      "tip": ""
@@ -1969,6 +2015,10 @@
      "alternative": null,
      "dose": "每侧 40 秒",
      "drill": "h-supine-twist",
+     "kit": {
+      "id": "h-supine-twist",
+      "seconds": 40
+     },
      "seconds": 80,
      "sided": true,
      "tip": ""
@@ -1977,6 +2027,10 @@
      "alternative": null,
      "dose": "停 60 秒（床头靠墙也可以）",
      "drill": "h-wall-straddle",
+     "kit": {
+      "id": "h-wall-straddle",
+      "seconds": 60
+     },
      "seconds": 60,
      "sided": false,
      "tip": "不想挪位置：换成仰卧蝴蝶停留"
@@ -1990,13 +2044,18 @@
    "kind": "routine",
    "name": "晨起唤醒 6 分钟",
    "scene": "home",
-   "seconds": 360,
+   "seconds": 365,
    "steps": [
     {
      "alternative": null,
+     "authored_seconds": 60,
      "dose": "每侧 正反各 4 圈",
      "drill": "n-leg-circles",
-     "seconds": 60,
+     "kit": {
+      "id": "n-leg-circles",
+      "reps": 4
+     },
+     "seconds": 66,
      "sided": true,
      "tip": ""
     },
@@ -2004,6 +2063,10 @@
      "alternative": "h-hip-gate",
      "dose": "每侧 3 圈",
      "drill": "h-quad-cars",
+     "kit": {
+      "id": "h-quad-cars",
+      "reps": 3
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2012,6 +2075,10 @@
      "alternative": null,
      "dose": "每侧 5 次",
      "drill": "h-adductor-rock",
+     "kit": {
+      "id": "h-adductor-rock",
+      "reps": 5
+     },
      "seconds": 50,
      "sided": true,
      "tip": ""
@@ -2020,15 +2087,24 @@
      "alternative": null,
      "dose": "每侧 30 秒",
      "drill": "s-kneel-hipflex",
+     "kit": {
+      "id": "s-kneel-hipflex",
+      "seconds": 30
+     },
      "seconds": 60,
      "sided": true,
      "tip": ""
     },
     {
      "alternative": "w-feet-on-chair-bridge",
+     "authored_seconds": 55,
      "dose": "每侧 6 次",
      "drill": "glute-max-A",
-     "seconds": 55,
+     "kit": {
+      "id": "glute-max-A",
+      "reps": 6
+     },
+     "seconds": 54,
      "sided": true,
      "tip": ""
     },
@@ -2036,6 +2112,10 @@
      "alternative": null,
      "dose": "6 次",
      "drill": "h-squat",
+     "kit": {
+      "id": "h-squat",
+      "reps": 6
+     },
      "seconds": 40,
      "sided": false,
      "tip": ""
@@ -2049,12 +2129,16 @@
    "kind": "routine",
    "name": "久坐解压 10 分钟",
    "scene": "home",
-   "seconds": 600,
+   "seconds": 606,
    "steps": [
     {
      "alternative": null,
      "dose": "每侧 40 秒",
      "drill": "s-kneel-hipflex",
+     "kit": {
+      "id": "s-kneel-hipflex",
+      "seconds": 40
+     },
      "seconds": 80,
      "sided": true,
      "tip": ""
@@ -2063,6 +2147,10 @@
      "alternative": "o-stand-lunge",
      "dose": "每侧 35 秒",
      "drill": "s-lizard",
+     "kit": {
+      "id": "s-lizard",
+      "seconds": 35
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2071,6 +2159,10 @@
      "alternative": null,
      "dose": "每侧 35 秒",
      "drill": "s-9090",
+     "kit": {
+      "id": "s-9090",
+      "seconds": 35
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2079,15 +2171,24 @@
      "alternative": null,
      "dose": "每侧 30 秒",
      "drill": "n-seated-ir-drop",
+     "kit": {
+      "id": "n-seated-ir-drop",
+      "seconds": 30
+     },
      "seconds": 60,
      "sided": true,
      "tip": ""
     },
     {
      "alternative": null,
+     "authored_seconds": 60,
      "dose": "每侧 8 次",
      "drill": "h-reverse-clam",
-     "seconds": 60,
+     "kit": {
+      "id": "h-reverse-clam",
+      "reps": 8
+     },
+     "seconds": 66,
      "sided": true,
      "tip": ""
     },
@@ -2095,6 +2196,10 @@
      "alternative": null,
      "dose": "每侧 8 次",
      "drill": "glute-max-A",
+     "kit": {
+      "id": "glute-max-A",
+      "reps": 8
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2103,6 +2208,10 @@
      "alternative": "s-figure4",
      "dose": "每侧 35 秒",
      "drill": "s-pigeon",
+     "kit": {
+      "id": "s-pigeon",
+      "seconds": 35
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2111,6 +2220,10 @@
      "alternative": null,
      "dose": "慢呼吸 6 次",
      "drill": "h-knee-hug",
+     "kit": {
+      "id": "h-knee-hug",
+      "reps": 6
+     },
      "seconds": 40,
      "sided": false,
      "tip": ""
@@ -2119,6 +2232,10 @@
      "alternative": null,
      "dose": "停 40 秒",
      "drill": "s-seated-fold",
+     "kit": {
+      "id": "s-seated-fold",
+      "seconds": 40
+     },
      "seconds": 40,
      "sided": false,
      "tip": ""
@@ -2132,12 +2249,16 @@
    "kind": "routine",
    "name": "训练前激活 7 分钟",
    "scene": "home",
-   "seconds": 420,
+   "seconds": 442,
    "steps": [
     {
      "alternative": null,
      "dose": "正反各 3 圈",
      "drill": "n-pelvis-circle",
+     "kit": {
+      "id": "n-pelvis-circle",
+      "reps": 3
+     },
      "seconds": 30,
      "sided": false,
      "tip": ""
@@ -2146,6 +2267,10 @@
      "alternative": null,
      "dose": "每侧 开 3 + 关 3",
      "drill": "h-hip-gate",
+     "kit": {
+      "id": "h-hip-gate",
+      "reps": 6
+     },
      "seconds": 60,
      "sided": true,
      "tip": ""
@@ -2154,15 +2279,24 @@
      "alternative": "n-leg-circles",
      "dose": "每侧 3 圈",
      "drill": "h-quad-cars",
+     "kit": {
+      "id": "h-quad-cars",
+      "reps": 3
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
     },
     {
      "alternative": null,
+     "authored_seconds": 60,
      "dose": "每侧 10 次",
      "drill": "w-clamshell",
-     "seconds": 60,
+     "kit": {
+      "id": "w-clamshell",
+      "reps": 10
+     },
+     "seconds": 82,
      "sided": true,
      "tip": ""
     },
@@ -2170,6 +2304,10 @@
      "alternative": null,
      "dose": "每侧 8 次",
      "drill": "glute-max-A",
+     "kit": {
+      "id": "glute-max-A",
+      "reps": 8
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2178,6 +2316,11 @@
      "alternative": "h-squat",
      "dose": "停 3 次 × 10 秒",
      "drill": "h-sumo-pry",
+     "kit": {
+      "holdSeconds": 10,
+      "id": "h-sumo-pry",
+      "reps": 3
+     },
      "seconds": 50,
      "sided": false,
      "tip": ""
@@ -2186,6 +2329,10 @@
      "alternative": null,
      "dose": "8 次",
      "drill": "h-squat",
+     "kit": {
+      "id": "h-squat",
+      "reps": 8
+     },
      "seconds": 50,
      "sided": false,
      "tip": ""
@@ -2205,6 +2352,10 @@
      "alternative": null,
      "dose": "每侧 3 圈",
      "drill": "h-quad-cars",
+     "kit": {
+      "id": "h-quad-cars",
+      "reps": 3
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2213,6 +2364,10 @@
      "alternative": null,
      "dose": "停 60 秒",
      "drill": "s-frog",
+     "kit": {
+      "id": "s-frog",
+      "seconds": 60
+     },
      "seconds": 60,
      "sided": false,
      "tip": ""
@@ -2221,6 +2376,10 @@
      "alternative": "h-adductor-rock",
      "dose": "每侧 6 次",
      "drill": "n-slider-lateral",
+     "kit": {
+      "id": "n-slider-lateral",
+      "reps": 6
+     },
      "seconds": 80,
      "sided": true,
      "tip": ""
@@ -2229,6 +2388,10 @@
      "alternative": null,
      "dose": "停 75 秒",
      "drill": "n-straddle-fold",
+     "kit": {
+      "id": "n-straddle-fold",
+      "seconds": 75
+     },
      "seconds": 75,
      "sided": false,
      "tip": ""
@@ -2237,6 +2400,10 @@
      "alternative": "n-leg-circles",
      "dose": "每侧 6 次",
      "drill": "t-seated-straddle-lift-1leg",
+     "kit": {
+      "id": "t-seated-straddle-lift-1leg",
+      "reps": 6
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2245,6 +2412,10 @@
      "alternative": null,
      "dose": "8 次",
      "drill": "hip-flexors-A",
+     "kit": {
+      "id": "hip-flexors-A",
+      "reps": 8
+     },
      "seconds": 50,
      "sided": false,
      "tip": ""
@@ -2253,6 +2424,10 @@
      "alternative": "h-reverse-clam",
      "dose": "每侧 6 次",
      "drill": "h-9090-liftoff",
+     "kit": {
+      "id": "h-9090-liftoff",
+      "reps": 6
+     },
      "seconds": 70,
      "sided": true,
      "tip": ""
@@ -2261,6 +2436,10 @@
      "alternative": null,
      "dose": "左右 8 次",
      "drill": "n-squat-shift",
+     "kit": {
+      "id": "n-squat-shift",
+      "reps": 8
+     },
      "seconds": 60,
      "sided": false,
      "tip": ""
@@ -2269,6 +2448,10 @@
      "alternative": null,
      "dose": "每侧 40 秒",
      "drill": "n-half-split",
+     "kit": {
+      "id": "n-half-split",
+      "seconds": 40
+     },
      "seconds": 80,
      "sided": true,
      "tip": ""
@@ -2277,6 +2460,11 @@
      "alternative": null,
      "dose": "停 3 次 × 15 秒",
      "drill": "h-sumo-pry",
+     "kit": {
+      "holdSeconds": 15,
+      "id": "h-sumo-pry",
+      "reps": 3
+     },
      "seconds": 60,
      "sided": false,
      "tip": ""
@@ -2290,13 +2478,18 @@
    "kind": "micro",
    "name": "久坐提醒 · 椅边 2 分钟",
    "scene": "chair",
-   "seconds": 120,
+   "seconds": 126,
    "steps": [
     {
      "alternative": null,
+     "authored_seconds": 20,
      "dose": "正反各 3 圈",
      "drill": "n-pelvis-circle",
-     "seconds": 20,
+     "kit": {
+      "id": "n-pelvis-circle",
+      "reps": 3
+     },
+     "seconds": 25,
      "sided": false,
      "tip": ""
     },
@@ -2304,6 +2497,10 @@
      "alternative": null,
      "dose": "每侧 20 秒",
      "drill": "o-stand-lunge",
+     "kit": {
+      "id": "o-stand-lunge",
+      "seconds": 20
+     },
      "seconds": 40,
      "sided": true,
      "tip": ""
@@ -2312,15 +2509,25 @@
      "alternative": null,
      "dose": "每侧 15 秒",
      "drill": "o-seated-fig4",
+     "kit": {
+      "id": "o-seated-fig4",
+      "seconds": 15
+     },
      "seconds": 30,
      "sided": true,
      "tip": ""
     },
     {
      "alternative": null,
+     "authored_seconds": 15,
      "dose": "每侧 1 次 × 停 5 秒",
      "drill": "n-seated-knee-lift",
-     "seconds": 15,
+     "kit": {
+      "holdSeconds": 5,
+      "id": "n-seated-knee-lift",
+      "reps": 1
+     },
+     "seconds": 16,
      "sided": true,
      "tip": ""
     }

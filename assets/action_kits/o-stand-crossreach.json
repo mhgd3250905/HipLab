@@ -1,0 +1,111 @@
+{
+ "schema": "action-kit@1",
+ "id": "o-stand-crossreach",
+ "display": {
+  "name": {
+   "zh": "扶椅站姿交叉侧伸",
+   "en": "Standing cross-reach"
+  },
+  "point": {
+   "zh": "一条腿交叉到后面，手臂向上向侧面伸",
+   "en": "Cross one leg behind and reach up and over"
+  },
+  "cautions": [],
+  "targets": [
+   "adduction"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-o-stand-crossreach.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/o-stand-crossreach.js",
+   "specSha256": "9c79a2e76a8b7f87134ccec346740dc0a7122305579dd839a422056cdb464b3b"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-o-stand-crossreach.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 30,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.o-stand-crossreach": {
+    "zh": "扶椅站姿交叉侧伸",
+    "en": "Standing cross-reach"
+   },
+   "point.o-stand-crossreach": {
+    "zh": "一条腿交叉到后面，手臂向上向侧面伸",
+    "en": "Cross one leg behind and reach up and over"
+   }
+  },
+  "prepare": [
+   "drill.o-stand-crossreach",
+   "point.o-stand-crossreach"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

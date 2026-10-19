@@ -1,0 +1,147 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-slider-lateral",
+ "display": {
+  "name": {
+   "zh": "滑垫侧向滑",
+   "en": "Lateral slider"
+  },
+  "point": {
+   "zh": "一只脚向侧面滑出去，再收回来",
+   "en": "Slide one foot out to the side and pull it back"
+  },
+  "cautions": [
+   "膝",
+   "内收肌根"
+  ],
+  "targets": [
+   "abduction"
+  ],
+  "methods": [
+   "flexibility",
+   "control"
+  ],
+  "level": "advanced",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-n-slider-lateral.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-slider-lateral.js",
+   "specSha256": "a6f6463269d394ad688df00a0174dd3514b52d9ead41f28be19ef7cc6f2da5b8"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-slider-lateral.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "out",
+  "reps": [
+   [
+    0.37,
+    1.54,
+    2.46,
+    3.55
+   ],
+   [
+    4.37,
+    5.54,
+    6.46,
+    7.55
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 6,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.37,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 1.15,
+     "cue": "w.slide_out"
+    },
+    {
+     "id": "hold",
+     "seconds": 0.9
+    },
+    {
+     "id": "back",
+     "seconds": 1.1,
+     "cue": "w.pull_in"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.85
+    }
+   ],
+   "source": "measured: track 'out' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-slider-lateral": {
+    "zh": "滑垫侧向滑",
+    "en": "Lateral slider"
+   },
+   "point.n-slider-lateral": {
+    "zh": "一只脚向侧面滑出去，再收回来",
+    "en": "Slide one foot out to the side and pull it back"
+   },
+   "w.slide_out": {
+    "zh": "滑出去",
+    "en": "Slide out"
+   },
+   "w.pull_in": {
+    "zh": "收回来",
+    "en": "Pull it in"
+   }
+  },
+  "prepare": [
+   "drill.n-slider-lateral",
+   "point.n-slider-lateral"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s: 1.5 s out, 0.6 s hold, 1.4 s in",
+  "flags": []
+ }
+}

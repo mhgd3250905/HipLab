@@ -144,7 +144,7 @@ void main() {
     await tester.pumpAndSettle();
     final plan = store.todayPlan!;
     // Lead-in first ("准备开始" + the first drill), then skip into the drill.
-    expect(find.text('准备开始'), findsWidgets);
+    expect(find.textContaining('准备开始'), findsWidgets);
     expect(find.text(plan.steps.first.drill.name), findsWidgets);
     expect(find.text('1/${plan.steps.length}'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('player-skip')));

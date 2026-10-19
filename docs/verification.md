@@ -260,3 +260,18 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 
 基于 main `6020d8e`。按[审美考据](tactile-design-rationale-2026-10-19.md)收敛 #18：只保留分段控件滑块（neutral）与首页「开始」（accent）两处轻拟物；底部 Tab 完全恢复 #18 前样式；主 / 次 / 圆形 / 卡片内 / 播放器按钮回到改前扁平外观（主按钮去掉 jade 外发光，浅色圆形按钮以细描边替代旧柔阴影）；删除 `HipChipButton` 与 `glass` / `flat` 令牌。新增 `hip_tactile_budget_test`（深浅两主题、首页 / 自测 / 进度 / 设置滚动，断言拟物只在分段控件内、accent ≤ 1、Tab 无拟物且实心 / 描边图标正确），该测试在 #18 版本上运行会失败（已验证）。`flutter analyze` 0；全量 194 pass / 1 条件 skip；四尺寸单屏回归在全量内通过；「开始」与「开始自测」按住→松手容器展开首帧连续性测试通过（第一轮直接退回 Material 按钮导致「开始自测」首帧快照丢失，第二轮改为共享 HipPressable 平涂面后通过）。仅沙盒无头验证；未构建 APK、未安装手机。未改依赖、lock、版本或商店配置；未合入 main。
 
+
+## 动作节奏与语音 + 动作包 v1（2026-10-19，分支 feat/rep-rhythm-voice）
+
+基于 main `6020d8e`，沙盒 Linux、Flutter 3.44.7（本地 `.dart_tool/package_config.json` 的 `shared_preferences_android` 路径改为 lock 对应的 2.4.28，不入库；未改 pubspec.lock/依赖/版本号）。详见[节奏审计](rep-rhythm-audit-2026-10-19.md)与[动作包规格](action-kit-spec-v1.md)。
+
+| 范围 / 命令 | 结果 | 边界 |
+|---|---|---|
+| `flutter analyze --no-pub` | 无问题 | 首轮 3 error + 1 warning：测试共享函数名 `loadLibrary` 与 Dart 延迟加载保留名冲突，改名 `loadVoiceLibrary` 后为 0 |
+| `flutter test --no-pub test` | **236 pass / 1 条件 skip**（main 191 + 新增 45：`hip_rep_rhythm_test` 33、`action_kit_test` 5、`hip_player_transition_test` 7） | skip 为 `voice_timeline_export_test`（需环境变量）；不含 `test_screens/` |
+| `python3 tools/action_kits/build_action_kits.py check` | 0 问题（含 JSON Schema 校验，jsonschema 4.26） | 46 个动作包结构、Pose-Hub 冻结 SHA、语音齐全、每句话放得进相位窗口、路线引用与秒数 |
+| `python3 -m unittest discover -s tools/tests` | 13 项通过 | 含 `test_action_kits.py` |
+| 四尺寸单屏（320×568、360×740×1.5、390×844、430×932） | 准备 + 休息期无溢出，在全量内通过 | 修复 360×740×1.5 “下一个”卡片训练期溢出 8 px（main 已存在） |
+| 语音新条目 `audit_voice.py` | 92 条中 1 条提示（`en/sec.66` 尾音偏轻，兜底条目） | 原有条目未重生成 |
+
+未执行：APK 构建、真机安装与试听、iOS。画面与语音只对齐周期未对齐起点（播放器无重播/倍速指令），需真机按 PR 内试听清单确认。

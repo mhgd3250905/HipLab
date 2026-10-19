@@ -1,0 +1,153 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-squat-shift",
+ "display": {
+  "name": {
+   "zh": "低位蹲姿左右移重心",
+   "en": "Deep squat side shift"
+  },
+  "point": {
+   "zh": "低蹲，重心慢慢左右移",
+   "en": "Stay low and shift your weight side to side"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "abduction",
+   "flexion"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "advanced",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-n-squat-shift.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-squat-shift.js",
+   "specSha256": "273960ac6a819c7b0438f4647efa7606926b3e1e23a5b6d67b26ec59c25e2191"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-squat-shift.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.2
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "shift",
+  "reps": [
+   [
+    0.47,
+    1.64,
+    2.94,
+    3.87
+   ],
+   [
+    4.47,
+    5.64,
+    6.94,
+    7.87
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_alternate",
+  "unit": "reps",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.47,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 1.15,
+     "cue": [
+      "w.shift_left",
+      "w.shift_right"
+     ]
+    },
+    {
+     "id": "hold",
+     "seconds": 1.3
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.center"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.6
+    }
+   ],
+   "source": "measured: track 'shift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-squat-shift": {
+    "zh": "低位蹲姿左右移重心",
+    "en": "Deep squat side shift"
+   },
+   "point.n-squat-shift": {
+    "zh": "低蹲，重心慢慢左右移",
+    "en": "Stay low and shift your weight side to side"
+   },
+   "w.shift_left": {
+    "zh": "移到左边",
+    "en": "Shift left"
+   },
+   "w.shift_right": {
+    "zh": "移到右边",
+    "en": "Shift right"
+   },
+   "w.center": {
+    "zh": "回正",
+    "en": "Back to center"
+   }
+  },
+  "prepare": [
+   "drill.n-squat-shift",
+   "point.n-squat-shift"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: one cycle (both sides) / 8 s, left first",
+  "flags": []
+ }
+}
