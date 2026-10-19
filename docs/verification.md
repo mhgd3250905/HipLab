@@ -309,3 +309,7 @@ GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2
 ## PR #22 f7271f6 修复复审（2026-10-19）
 
 固定head f7271f6be2a838592f97768cb9cc6a815af48597，target243a812。E盘副本Windows Flutter3.44.7 analyze0、默认全量310pass/1条件skip、Python19、action-kit含jsonschema检查0问题、themed-media check通过。独立49步骤时长/相位、JSON往返和6种紧侧预算通过；新增播放器专项1pass（两轮自然完成/中断恢复）+1fail（F7多组疼痛减半漏skip，仍倒计时8秒）。原F1–F6已闭环，但F7及Android原生证据待补。无APK、ADB、手机或iOS操作，完整[复审记录](pr22-reaudit-2026-10-19.md)。
+
+## PR #22 9fa0cc0 F7复核（2026-10-19）
+
+对象9fa0cc09c085df619297c59c886c7bd836a98ff6，目标b12b0f5；E盘副本Windows Flutter3.44.7 analyze0、默认全量322pass/1条件skip、Python19pass、含jsonschema的action-kit0问题、themed-media和diff check通过。原独立播放器脚本2pass（F7旧失败变通过，F1自然两轮/中断恢复保持通过），领域49步骤及6种紧侧预算通过。F1–F7全部关闭，仍无APK、Android原生听音/中断/锁屏/保留数据升级或iOS证据。[完整记录](pr22-reaudit-2026-10-19.md)。
