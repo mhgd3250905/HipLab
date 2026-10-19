@@ -41,6 +41,10 @@ flutter test --no-pub --concurrency=1
 
 Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器允许按 README 用 `--from-dir` 恢复冻结资源并 `--check`。禁止 force push，保留未提交工作与用户数据。
 
+### Mac / iOS 负责范围（2026-10-19 用户确认）
+
+用户明确“你这边就是ios的专用分支总负责人”。Mac 持续负责 iOS 适配、构建与验证，自有 `ios/…` 分支的普通 push、PR 创建/更新以及已被新 PR 完整替代的旧 iOS PR 收束直接推进，无需逐次确认。禁止 force push；main 集成仍交由 Windows 主干线审核，不自动纳入未合并的共享功能；商店上传、送审与发布授权范围保持独立。
+
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。

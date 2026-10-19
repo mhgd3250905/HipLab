@@ -189,3 +189,8 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 ## 2026-10-19 / iOS rebase 已合并主线 #19～#21
 
 用户在Windows合并push后提供main243a812。新本地ios/main-alignment-20261019从旧e6f8ad8完成rebase，保留原远端分支与主目录五份dirty台账；文档冲突保留双方历史，当前iOS事项迁D-29/D-30。源1494958继承全部共享优化及iOS隐私适配，新增6项iOS回归通过，33.8秒签名Release和874资源核验通过；真机unavailable，新源未安装，未推送/更新PR或上传商店。[本轮记录](ios-main-243a812-2026-10-19.md)。
+
+
+## 2026-10-19 / iOS 负责人交付 PR #23
+
+用户明确Mac为iOS专用分支总负责人，常规适配/验证、自有分支普通push及PR交付直接推进，不再拆成逐次确认。`ios/main-alignment-20261019` 已正常push并创建 [PR #23](https://github.com/mhgd3250905/HipLab/pull/23)，替代旧#16；旧PR关闭但分支/历史保留。运行候选仍1494958，之后仅文档，无需重复构建；尚未合main或安装真实手机。
