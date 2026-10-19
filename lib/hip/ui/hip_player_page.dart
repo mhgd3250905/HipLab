@@ -361,22 +361,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             seconds: (target.seconds / 2).ceil(),
           );
           final kit = widget.store.content.kit(reduced.drill.id);
-          if (kit != null &&
-              kit.kind.counted &&
-              reduced.segments.any((segment) {
-                final sets =
-                    reduced.extraSide != null && reduced.extraSide == segment.$1
-                    ? 2
-                    : 1;
-                return kit
-                        .repPlan(
-                          reduced.kitDose,
-                          segment.$2.toDouble(),
-                          sets: sets,
-                        )
-                        .reps ==
-                    0;
-              })) {
+          // Same sets per side as the voice script (PR #22 F7): any side /
+          // set without one full rep skips the action.
+          if (kit != null && SessionScript.noFullRep(reduced, kit)) {
             _engine.skip(t);
             _queue.submit(const VoiceCue(0, ['p.skip'], CuePriority.call), t);
             break;

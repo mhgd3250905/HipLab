@@ -307,18 +307,36 @@ class SessionScript {
   /// [PlanStep.extraSide] against the side played – an unsided step or the
   /// other side never is (PR #22 F6).
   static bool tightSide(SessionPhase phase, PlanStep s) =>
-      s.extraSide != null && phase.side != null && s.extraSide == phase.side;
+      s.tightOn(phase.side);
 
   /// Sets of a counted step on this phase: the step's sets (练习库 1–3),
-  /// plus one on the tight side (D-01).
+  /// plus one on the tight side (D-01). Same rule as the player's pain
+  /// guard ([PlanStep.countedSetsOn], PR #22 F7).
   static int setsOf(SessionPhase phase, PlanStep s) =>
-      s.sets + (tightSide(phase, s) ? 1 : 0);
+      s.countedSetsOn(phase.side);
 
   /// Sets of a hold on this phase, as actually done on this side (PR #22
   /// F5): a 练习库 group's tight side does one more set (1 set → 2 sets with
   /// a 5 s gap); a built-in routine's tight side keeps one longer hold.
   static int holdSetsOf(SessionPhase phase, PlanStep s) =>
-      s.sets + (s.extraSet && tightSide(phase, s) ? 1 : 0);
+      s.holdSetsOn(phase.side);
+
+  /// A counted [s] leaves some side or set without one full rep (PR #22 F7):
+  /// the script would play that side with no cues. The player skips the
+  /// action instead (pain halving, 「任一侧/组放不下完整一次就跳过」).
+  static bool noFullRep(PlanStep s, ActionKit kit) =>
+      kit.kind.counted &&
+      s.segments.any(
+        (segment) =>
+            kit
+                .repPlan(
+                  s.kitDose,
+                  segment.$2.toDouble(),
+                  sets: s.countedSetsOn(segment.$1),
+                )
+                .reps ==
+            0,
+      );
 
   /// Count clips exist for 1…10; a higher count says only its phase word.
   static const maxCountClip = 10;

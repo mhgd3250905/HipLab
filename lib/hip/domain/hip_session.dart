@@ -100,6 +100,22 @@ class PlanStep {
     return [(HipSide.right, right), (HipSide.left, left)];
   }
 
+  /// [side] is the tight side that does more (D-01). An unsided step
+  /// (null [side]) or the other side never is (PR #22 F6).
+  bool tightOn(HipSide? side) =>
+      extraSide != null && side != null && extraSide == side;
+
+  /// Sets a counted step really plays on [side] (PR #22 F7): the step's sets
+  /// (练习库 1–3; built-in routines 1) plus one on the tight side (D-01, a
+  /// built-in routine's counted step included). Shared by the voice script
+  /// and the player's pain-halving short-rep guard so both agree.
+  int countedSetsOn(HipSide? side) => sets + (tightOn(side) ? 1 : 0);
+
+  /// Sets a hold really plays on [side] (PR #22 F5): a 练习库 group's tight
+  /// side does one more set; a built-in routine's tight side keeps one
+  /// longer hold instead.
+  int holdSetsOn(HipSide? side) => sets + (extraSet && tightOn(side) ? 1 : 0);
+
   PlanStep copyWith({HipDrill? drill, int? seconds, String? replaced}) {
     final scale = seconds == null || this.seconds == 0
         ? 1.0
