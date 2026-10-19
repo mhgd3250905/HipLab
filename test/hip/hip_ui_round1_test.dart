@@ -12,6 +12,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 void main() {
   final content = loadContent();
@@ -43,8 +44,7 @@ void main() {
   }
 
   Future<void> openAssessment(WidgetTester tester) async {
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
-    await tester.pumpAndSettle();
+    await openCheckupIntro(tester);
     await tester.tap(find.byKey(const ValueKey('assessment-start')));
     await tester.pumpAndSettle();
   }
@@ -106,8 +106,7 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
-    await tester.pumpAndSettle();
+    await openCheckupIntro(tester);
     for (final item in content.rules.items) {
       expect(find.byKey(ValueKey('intro-item-${item.id}')), findsOneWidget);
     }

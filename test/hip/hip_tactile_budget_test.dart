@@ -20,6 +20,7 @@ import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 bool _inside<T>(Element e) {
   var found = false;
@@ -123,9 +124,21 @@ void main() {
           .filled;
       expect([filled(0), filled(1), filled(2)], [true, false, false]);
 
-      // Check-up intro: the primary CTA is flat (T3).
+      // 练习: only the 动作 | 套路 | 我的 thumb is tactile (T1); the check-up
+      // card's 开始自测 is a flat tinted pill.
       await tester.tap(find.byKey(const ValueKey('tab-1')));
       await tester.pumpAndSettle();
+      _expectBudget(tester, p, 'practice');
+      expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
+      expect([filled(0), filled(1), filled(2)], [false, true, false]);
+      for (final seg in [1, 2]) {
+        await tester.tap(find.byKey(ValueKey('practice-$seg')));
+        await tester.pumpAndSettle();
+        _expectBudget(tester, p, 'practice segment $seg');
+      }
+
+      // Check-up intro (from the card): the primary CTA is flat (T3).
+      await openCheckupIntro(tester);
       _expectBudget(tester, p, 'check-up');
       final cta = find.byKey(const ValueKey('assessment-start'));
       expect(tester.widget(cta), isA<HipPrimaryButton>());
@@ -134,7 +147,8 @@ void main() {
         findsNothing,
       );
       expect(find.byType(HipTactile), findsNothing, reason: 'no accent here');
-      expect([filled(0), filled(1), filled(2)], [false, true, false]);
+      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
+      await tester.pumpAndSettle();
 
       // Progress + settings (scrolled): only segmented thumbs (T1).
       await tester.tap(find.byKey(const ValueKey('tab-2')));

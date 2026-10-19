@@ -14,6 +14,7 @@ import '../voice/session_engine.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
 import 'hip_icons.dart';
+import 'hip_routes.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -884,42 +885,65 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
-  Widget _finishedView() => Padding(
-    padding: const EdgeInsets.all(24),
-    child: Column(
-      children: [
-        const Spacer(),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: .6, end: 1),
-          duration: HipMotion.slow,
-          curve: Curves.easeOutBack,
-          builder: (_, v, child) => Transform.scale(scale: v, child: child),
-          child: HipIcon(
-            HipGlyph.checkCircle,
-            filled: true,
-            size: 88,
-            color: HipColors.jade,
+  bool get _single => widget.plan.source == PlanSource.single;
+
+  Widget _finishedView() {
+    // 单练 (拍板 3): logged, not counted for the streak; 再来一组 replays the
+    // same dose from the lead-in. After 疼 skipped its direction: relax only.
+    final skipped = _ladder.skippedDirections.isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const Spacer(),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: .6, end: 1),
+            duration: HipMotion.slow,
+            curve: Curves.easeOutBack,
+            builder: (_, v, child) => Transform.scale(scale: v, child: child),
+            child: HipIcon(
+              HipGlyph.checkCircle,
+              filled: true,
+              size: 88,
+              color: HipColors.jade,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '今天练完了',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '连续 ${widget.store.streak} 天',
-          style: TextStyle(fontSize: 18, color: HipColors.muted),
-        ),
-        const Spacer(),
-        HipPrimaryButton(
-          key: const ValueKey('player-done'),
-          label: '回首页',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 16),
+          Text(
+            _single ? '练完了' : '今天练完了',
+            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _single
+                ? (skipped ? '这里今天只做放松，别勉强' : '单练记入练习记录，不计连续天数')
+                : '连续 ${widget.store.streak} 天',
+            key: const ValueKey('player-done-note'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, color: HipColors.muted),
+          ),
+          const Spacer(),
+          if (_single && !skipped) ...[
+            HipSecondaryButton(
+              key: const ValueKey('player-again'),
+              label: '再来一组',
+              onPressed: () => Navigator.of(context).pushReplacement(
+                HipRoute.rise<void>(
+                  (_) => HipPlayerPage(store: widget.store, plan: widget.plan),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          HipPrimaryButton(
+            key: const ValueKey('player-done'),
+            label: _single ? '完成' : '回首页',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _stoppedView() => Padding(
     padding: const EdgeInsets.all(24),

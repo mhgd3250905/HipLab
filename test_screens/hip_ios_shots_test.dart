@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../test/hip/hip_domain_test.dart' show MemoryStorage, loadContent;
+import '../test/hip/checkup_entry.dart';
 
 const _dir = 'test/_shots/ios';
 
@@ -183,8 +184,7 @@ void main() {
         '$t assessment intro + items',
         (tester) async {
           await boot(tester, theme: theme, phone: phone);
-          await tester.tap(find.byKey(const ValueKey('tab-1')));
-          await tester.pumpAndSettle();
+          await openCheckupIntro(tester);
           await _shot(tester, '$t/03-assessment-intro');
           await tester.tap(find.byKey(const ValueKey('assessment-start')));
           await tester.pumpAndSettle();

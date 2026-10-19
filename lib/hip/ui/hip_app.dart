@@ -22,6 +22,10 @@ import 'hip_routes.dart';
 import 'hip_segmented.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+import 'library/lib_text.dart';
+import 'library/library_actions.dart';
+import 'library/library_widgets.dart';
+import 'library/practice_page.dart';
 
 const hipAppName = '开胯训练助手';
 
@@ -517,10 +521,13 @@ class HipHome extends StatefulWidget {
 class _HipHomeState extends State<HipHome> {
   int _tab = 0;
   final _startKey = GlobalKey();
-  final _assessKey = GlobalKey();
   final _hipTileKey = GlobalKey();
   int _tabDir = 1;
   HipStore get store => widget.store;
+
+  /// 练习 tab: segment and filter survive tab switches.
+  final _practice = PracticeMemory();
+  late final _library = LibraryActions(store: store, startPlan: _startPlan);
 
   void _selectTab(int i) {
     if (i == _tab) return;
@@ -532,7 +539,12 @@ class _HipHomeState extends State<HipHome> {
 
   /// The player grows out of the 开始 button (container transform); from
   /// the assessment result, which has already closed, it rises.
-  Future<void> _startPlan(TrainingPlan plan, {BuildContext? from}) async {
+  Future<void> _startPlan(
+    TrainingPlan plan, {
+    BuildContext? from,
+    double radius = 52,
+    Color? color,
+  }) async {
     Widget page(BuildContext _) => HipPlayerPage(store: store, plan: plan);
     await Navigator.of(context).push(
       from == null
@@ -540,8 +552,8 @@ class _HipHomeState extends State<HipHome> {
           : HipRoute.expandFrom<void>(
               from,
               page,
-              radius: 52,
-              color: HipPalette.dark.jade,
+              radius: radius,
+              color: color ?? HipPalette.dark.jade,
             ),
     );
   }
@@ -555,7 +567,7 @@ class _HipHomeState extends State<HipHome> {
   }) async {
     await Navigator.of(context).push(
       HipRoute.expandFrom<void>(
-        from ?? _assessKey.currentContext,
+        from,
         (_) => HipAssessmentPage(store: store, onStartPlan: _startPlan),
         radius: radius,
         color: color ?? HipColors.jade,
@@ -573,10 +585,12 @@ class _HipHomeState extends State<HipHome> {
         child: KeyedSubtree(
           key: ValueKey('tab-body-$_tab'),
           child: switch (_tab) {
-            1 => HipAssessmentIntro(
-              store: store,
-              startKey: _assessKey,
-              onStart: _startAssessment,
+            // 练习 (拍板 2026-10-19): the former 自测 tab lives in its
+            // 「我的髋部 · 3 分半自测」 card.
+            1 => PracticePage(
+              actions: _library,
+              memory: _practice,
+              onStartAssessment: _startAssessment,
             ),
             2 => HipProgressPage(store: store),
             _ => _today(),
@@ -600,7 +614,7 @@ class _HipHomeState extends State<HipHome> {
           children: [
             for (final (i, glyph, label) in [
               (0, HipGlyph.today, '今日'),
-              (1, HipGlyph.checkup, '自测'),
+              (1, HipGlyph.library, '练习'),
               (2, HipGlyph.progress, '进度'),
             ])
               Expanded(
@@ -810,6 +824,137 @@ class _HipHomeState extends State<HipHome> {
                 ),
               ),
             ],
+          ),
+        ),
+        if (store.customRoutines.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          _myGroupsRow(),
+        ],
+      ],
+    );
+  }
+
+  /// 我的训练组 on 今日 (secondary): a horizontal row of small cards; a tap
+  /// plays the group, growing the player out of the card.
+  Widget _myGroupsRow() {
+    final t = LibText.of(context);
+    final groups = store.customRoutines;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                t.myGroupsHome,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: HipColors.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            HipPressable(
+              key: const ValueKey('home-groups-more'),
+              semanticLabel: t.practice,
+              onTap: () {
+                _practice.segment = 2;
+                _selectTab(1);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: HipIcon(
+                  HipGlyph.chevronRight,
+                  size: 18,
+                  color: HipColors.muted,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 84 + MediaQuery.textScalerOf(context).scale(20) - 20,
+          child: ListView.separated(
+            key: const ValueKey('home-groups'),
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: groups.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            itemBuilder: (context, i) {
+              final g = groups[i];
+              return Builder(
+                builder: (cardContext) => HipPressable(
+                  key: ValueKey('home-group-${g.id}'),
+                  semanticLabel: g.name,
+                  scale: .97,
+                  onTap: store.blocked || g.steps.isEmpty
+                      ? null
+                      : () =>
+                            startGroup(context, _library, g, from: cardContext),
+                  child: SizedBox(
+                    width: 184,
+                    child: RepaintBoundary(
+                      child: HipPanel(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                        radius: 20,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              g.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '${t.movesCount(g.steps.length)} · '
+                                    '${t.duration(g.seconds(store.content))}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: HipColors.muted,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: store.blocked
+                                        ? HipColors.surfaceHigh
+                                        : tintOf(HipColors.jade),
+                                  ),
+                                  child: HipIcon(
+                                    HipGlyph.play,
+                                    size: 14,
+                                    filled: true,
+                                    color: store.blocked
+                                        ? HipColors.faint
+                                        : HipColors.jadeText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],

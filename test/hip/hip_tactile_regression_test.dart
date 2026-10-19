@@ -18,6 +18,7 @@ import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 double _paintedScale(WidgetTester tester, String key) =>
     tester.widget<Transform>(find.byKey(ValueKey(key))).transform.storage[0];
@@ -402,8 +403,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       if (assessment) {
-        await tester.tap(find.byKey(const ValueKey('tab-1')));
-        await tester.pumpAndSettle();
+        await openCheckupIntro(tester);
       }
       final button = find.byKey(
         ValueKey(assessment ? 'assessment-start' : 'start-today'),
