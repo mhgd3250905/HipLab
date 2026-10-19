@@ -1,6 +1,6 @@
 # 练习库：动作大全 / 单动作练 / 套路随便练 / 自定义训练组（2026-10-19）
 
-分支 `feat/training-library`。依赖三个尚未合并的 PR，合并顺序 **#19 → #20 → #21 → 本分支**。不改依赖、不改 `pubspec.lock`、不改版本号；`pubspec.yaml` 没有改动。
+分支 `feat/training-library`（PR #22）。#19/#20/#21 已合入 main；2026-10-19 审核后本分支已 merge 对齐 main `243a812`（见 §7）。不改依赖、不改 `pubspec.lock`、不改版本号；`pubspec.yaml` 没有改动。
 
 设计稿是 `training-library-design.md`（不在本仓库，位于工作区 `hiplab-library/deliver/`）。本文只记录**实际实现**和与设计稿不一样的地方。
 
@@ -39,7 +39,7 @@
 
 集成后的基线：analyze 0，**246 pass / 1 条件 skip**。#19/#20/#21 的分支都没有改动，也没有推送。
 
-> 远端还有一个 `codex/pr19-pr21-validation` 分支，是本机 agent 做的组合验证。它比三个 PR 多了几项修复（`e3fb1d3` 媒体封面和路线色、疼痛减时的短次数、`c7def28` 反馈字体、`572d9c0` 封面时间戳检查）。这些修复**不在** #19/#20/#21 分支上，所以本分支**没有包含**。如果它们后续并进 PR，本分支需要 rebase 一次，预计只会在 `hip_player_page.dart` 和 `hip_app.dart` 的开始按钮颜色处有少量文本冲突。
+> （已过时，见 §7：这些修复已随 main `243a812` 进入本分支。）远端还有一个 `codex/pr19-pr21-validation` 分支，是本机 agent 做的组合验证。它比三个 PR 多了几项修复（`e3fb1d3` 媒体封面和路线色、疼痛减时的短次数、`c7def28` 反馈字体、`572d9c0` 封面时间戳检查）。这些修复**不在** #19/#20/#21 分支上，所以本分支**没有包含**。如果它们后续并进 PR，本分支需要 rebase 一次，预计只会在 `hip_player_page.dart` 和 `hip_app.dart` 的开始按钮颜色处有少量文本冲突。
 
 ## 2. 实现范围
 
@@ -216,3 +216,61 @@
 11. **小屏和大字号**：360 宽、系统字号最大，检查练习页三个分段、详情、编辑器、挑选、首页小卡，都不溢出。
 12. **主题**：深浅主题来回切换，练习页各屏和详情视频舞台都正确。
 13. **后台、锁屏、音乐 ducking、来电打断**：单练和自定义组的表现与以往一致（它们用的是同一个播放器）。
+14. **PR #22 审核修复（§7）**
+    - 单练结束点「再来一组」：第二轮语音、提示音都在；再结束点「完成」后语音停止。用英文语音再过一遍。
+    - 复制套路 F（等级 3、舞者解锁）：编辑器里 h-sumo-pry 显示「3 次 × 停 15 秒」，播放时每次停 15 秒，步骤约 60 秒。
+    - 动作详情「加入训练组」：建 12 个组后面板可滚动到最后一个，大字号下不溢出。
+    - 有紧侧的自定义组里放一个 1 组的保持动作（如鸽子式）：紧侧听到「慢慢还原 → 5 秒 → 再来一组」；内置套路的紧侧仍是一次连续加长保持。
+    - 蝴蝶式 20 秒 × 3 组中点「疼 → 关节夹着疼」：不出现「左边多做一组」。
+
+## 7. PR #22 审核修复（2026-10-19，开哥 15:09「合并审核：需要修改」）
+
+审核固定 head `a7992a6`，目标 main `243a812`。1 项 P1、5 项 P2 全部首轮修复，没有用到第二轮。
+
+### 7.1 对齐 main
+
+`git merge origin/main`（merge commit `144e260`，没有 force、没有改写已推送历史）。7 个冲突文件逐块手工解决：
+
+| 文件 | 处理 |
+|---|---|
+| `tools/action_kits/build_action_kits.py` | 浅色视频引用 builder 修复两边重复，保留 main 版本；合并后与 main 无差异 |
+| `test/hip/hip_tactile_budget_test.dart` | 开始圆盘 accent 断言取 main；练习页三分段的预算用例（自动合并部分）保留 |
+| `lib/hip/ui/hip_player_page.dart` | 反馈按钮取 main（c7def28 主题字体、`labelLarge` 14px、语义）；单练结束页（自动合并部分）保留。疼痛短剂量 skip、媒体按钮语义等 main 修复都在非冲突区，原样保留 |
+| `lib/hip/ui/hip_app.dart` | `_startPlan` 同时保留本分支的 `radius`（练习库各入口展开半径）和 main 的 `originColor`，缺省色取 main 的 `HipColors.jade`；首页开始圆盘仍传 `stage.jade`（main 开始展开颜色修复）。`StartPlan` typedef 与三个练习库调用改名为 `originColor` |
+| `docs/README.md` | main 的 PR #19–#21 审核行与轻拟物行原样保留，本分支练习库行更新后放在前面 |
+| `docs/development-log.md`、`docs/verification.md` | main 内容逐字保留（包括原有空行），练习库条目追加在末尾；verification.md 与 main 相同。PR 版 development-log 第 129 行尾部多余空行随之消失 |
+
+封面主题交接、媒体工具 guard（`build_themed_media.py`、`tools/tests`）等其余 main 修复没有冲突，按 main 进入。合并后基线：analyze 0，**294 pass / 1 条件 skip**。
+
+### 7.2 F1–F6
+
+| 项 | 处理 | 提交 | 回归测试 |
+|---|---|---|---|
+| F1 P1 再来一组第二轮无声 | 不再 `pushReplacement` 新页面；`_restart()` 在同一播放器里重建会话（新 ladder、时钟、engine、queue），音频会话保持打开，只在播放器关闭时 `end()` 一次 | `2f27355` | `hip_library_review_ui_test`「F1 再来一组 restarts in the same player…」：真实路由（详情 → expandFrom 播放器），`NativeLikeOutput` 与 JustAudioVoiceOutput 同语义（begin 已开时 no-op，end 立即关闭，关闭后 speak/chime 丢弃）。断言无 end、第二轮有新语音、丢弃 0、同一 State；完成后 end 恰 1 次 |
+| F2 P2 复制 F 丢停留 | `LibraryDose`/`CustomStep` 增 `holdSeconds`（rep_hold）和 `paceSeconds`（套路每侧秒数，即节奏预算）。v1 可选键，缺省 null = 动作包默认，越界 clamp；进编辑器文案、`kitDose`、步骤秒数、语音 repPlan。剂量面板改次数保留停留、丢掉 pace；「恢复默认」两者都清 | `53f7082` | 「F2 copied F: h-sumo-pry hold stays 15 s and the step 60 s」「F2 holdSeconds survives custom_routines v1 round trip…」「F2 changing reps keeps the hold…」「F2 copy F → editor row says 停 15 秒」 |
+| F3 P2 加入训练组溢出 | 组列表改为 `Flexible` + shrinkWrap `ListView`（key `add-group-list`），面板最高 80% 屏高。测试还发现剂量面板标题行在 390 ×1.5 的分侧动作上溢出 5.3 px（详情页本身），时长改为可换行 | `2111d6f` | 「F3 12 groups at 390×844 ×1.0 / ×1.5、320×568 ×1.3」：无溢出、滚到第 12 个并加入成功。修复前复现 211 px |
+| F4 P2 看放松结果丢失 | 套路详情步骤 await 动作详情并把 `LibraryJump` 继续 pop 给动作大全；入门版改为 push 并转发结果（替换路由会提前用 null 结束等待）；`practice_page` 用 `_applyJump` 统一处理动作卡和套路卡 | `ac449ac` | 「F4 recent extension pain → 套路 A → 站姿弓步 → 看放松…」「F4 recent internalRotation pain → h-9090-liftoff → 侧卧反向蚌式 → 看放松…」 |
+| F5 P2 1 组保持紧侧无组间休息 | `PlanStep.extraSet`（自定义组 true）；`extraSetSeconds` 保持类一律 + 5 秒；`SessionScript.holdSetsOf` 按本侧实际组数分组。内置套路 `extraSet=false`，紧侧仍是连续加长保持（原 D-01 行为） | `8783f7e` | 「F5 custom 鸽子式 35 s × 1 + tight set: 40 s extra, 2 sets…」「F5 extra-set budget…」「F5 built-in routine keeps the continuous longer hold…」 |
+| F6 P2 不分侧误报左侧加练 | `SessionScript.tightSide` 检查真实 `extraSide` 与当前侧；「多做一组」只在紧侧、只在第一组说 | `8783f7e` | 「F6 蝴蝶式 20 s × 3, pain halved to 35 s…」「F6 normal multi-set sided hold…」 |
+
+测试提交 `a38190f`：`test/hip/hip_library_review_test.dart`（9）+ `test/hip/hip_library_review_ui_test.dart`（7）。在合并后、修复前的代码上运行：领域测试因缺少新字段编译失败，UI 7 项全部失败（F1 同一 State 断言失败、F2 找不到「3 次 × 停 15 秒」、F3 211/485/651 px 溢出、F4 两条筛选数量对不上），与审核复现一致。
+
+### 7.3 最终验证（冲突解决后的最终代码，Flutter 3.44.7 / Dart 3.12.2，沙盒 Linux）
+
+| 命令 | 结果 |
+|---|---|
+| `flutter pub get --enforce-lockfile` | 通过，依赖与 lock 未变 |
+| `flutter analyze --no-pub` | 0 issue |
+| `flutter test --no-pub --concurrency=1 test` | **310 pass / 1 条件 skip**（合并基线 294 + 新增 16） |
+| `python3 tools/action_kits/build_action_kits.py check` | 0 problem（沙盒无 jsonschema，只做结构检查） |
+| `python3 tools/media/build_themed_media.py check` | check ok |
+| `python3 -m unittest discover -s tools/tests` | 19 pass |
+| `git diff --check origin/main HEAD` | 无输出 |
+
+`pubspec.yaml`、`pubspec.lock`、版本号与 main 相同。
+
+### 7.4 仍需本机
+
+- 没有构建 APK，没有上真机，没有原生听音，没有 iOS。
+- Android 原生复查：§6 清单第 14 条，重点是「再来一组」第二轮的真实 just_audio 输出（中英），以及来电/锁屏后再来一组。
+- 保留数据升级：用 main 当前已装版本覆盖安装本分支，`hiplab.state.v1` 原有键逐字节不变，只新增 `customRoutines`、`sessions`；建一个复制 F 的组后杀进程重启，`holdSeconds`/`paceSeconds` 仍在。

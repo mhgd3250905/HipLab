@@ -152,3 +152,9 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 验证：analyze 0；286 pass / 1 条件 skip（新增 40 个测试）；kits check 0；Python 测试 OK。小屏测试发现编辑器行在 ×1.5 字号下溢出 12 px，已修复。12 屏 × 深浅截图逐张检查过。
 
 未做：进度页「最近练习」列表、练习页「还麻吗」卡、英文界面实际切换、APK 构建与真机验证。远端 `codex/pr19-pr21-validation` 上的额外修复不在三个 PR 中，本分支未包含。详见[练习库实现记录](training-library-2026-10-19.md)。
+
+## 2026-10-19：PR #22 审核修复与对齐 main（feat/training-library）
+
+开哥 15:09 合并审核（固定 head a7992a6）提出 F1 P1 + F2–F6 P2，并要求先对齐 main 243a812。`git merge origin/main`（144e260），7 个冲突文件逐块手工解决：builder 浅色引用去重取 main；预算测试、播放器反馈按钮取 main 的断言与字体修复；`_startPlan` 同时保留 radius 和 main 的 originColor；docs 保留 main 原文后追加。疼痛短剂量 skip、媒体按钮语义、封面主题交接、开始展开颜色、反馈字体、媒体工具 guard 均保留；合并基线 294 pass / 1 skip。
+
+六项均首轮修复：F1 再来一组改为同一播放器内重建会话，共享音频输出不再被旧页 dispose 关掉（2f27355）；F2 训练组步骤保留套路的停留与节奏，复制 F 后 h-sumo-pry 仍 15 秒、步骤 60 秒，v1 可选键向后兼容（53f7082）；F3 加入训练组面板改为受高度约束的滚动列表，顺带修剂量面板标题在 ×1.5 下 5 px 溢出（2111d6f）；F4 套路详情和入门版都把「看放松」结果传回动作大全（ac449ac）；F5/F6 紧侧按本侧实际组数分组和计预算，内置套路保留连续加时，「多做一组」只看真实 extraSide（8783f7e）。新增 16 个回归测试（a38190f），修复前全部失败。最终 analyze 0、310 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。未构建 APK、未真机，Android 原生复查与保留数据升级留给本机。见[练习库实现记录](training-library-2026-10-19.md) §7。
