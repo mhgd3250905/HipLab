@@ -202,3 +202,11 @@ Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨�
 ## 2026-10-19：PR #24修复返回、#22组合正常播放验证
 
 固定24新head0ccef6b复审，原四P2源码闭环，原3失败专项本机均通过。E盘副本组合22的2cc40e3，保留_complete的plan记录与6秒释放，并修复同State「再来一组」未取得新hold；新增两例先失败后通过。组合5725c36已普通推送验证分支，373pass/1skip、analyze0及Kotlin编译/包身份通过。21:56:37保留数据安装，升级JSON相同；中文深蹲两轮自然完成，恰增2记录、其余字段保持，两轮服务/CPU锁结束后释放，用户现场确认正常听到/播放无异常。按用户要求停止扩展系统矩阵，规则写入AGENTS；PR22 F9仍待作者修复，不合main、不approve、不上传商店，仅保存当前证据与文档。[报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
+
+## 2026-10-19：PR #22 F9 修复、搜索框键盘排查与同步 main（feat/training-library）
+
+真机复测（固定 2cc40e3）的 F9 / P2：训练组编辑器左删后在动画内立即保存，重开被删项仍在。根因是 `_save` 与放弃判断读旧 `_steps`，删除要到 `onDismissed` 才生效。修法 `7018fcb`：`confirmDismiss` 时记入待删 key，保存、放弃判断、步骤数、0 项禁用、添加上限、剂量面板都排除；松手后仍在滑出的行由保存/关闭先等其确认或弹回（上限 800 ms）。新增 8 个真实手势回归（`6b4b101`，修复前 6 fail / 2 pass），F8 回归照常通过。
+
+用户新报练习页搜索框有光标不弹键盘：P3 只改了容器高度/内边距/提示文案，`TextField` 无 readOnly/maxLines/keyboardType 变化，无抢焦点或 unfocus；组件测试里点按即发 `TextInput.show`，1×/2.0 及 inset、切 tab、详情页返回后都正常，P3 之前代码结果相同。Flutter 侧找不到原因，未改产品代码，加 6 个键盘契约测试（`ff85de6`），真机取证步骤见 training-library §10.2（优先排查投屏/实体键盘，其次 WebView 焦点）。
+
+merge main `76ff846`（`0d2c625`），冲突仅本文件，两边保留、main 原文不改。analyze 0，349 pass / 1 条件 skip，工具检查通过；未构建 APK、未上真机。
