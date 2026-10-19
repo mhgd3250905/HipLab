@@ -1,6 +1,6 @@
 # iOS 运行与上架说明
 
-更新日期：2026-10-19，北京时间。当前共用版本 **0.3.6+11**，Windows main `6020d8e`；Mac分支ios/main-ui-036已普通合入主线，含#17/#18最终修复与iOS隐私适配。组合候选 `668f4bc` 的193项测试/1 skip及开发签名Release通过，本源尚未Archive或安装；手机最后确认的旧候选2f8aeb0已做过Release/Archive与基础真机抽查，结果按源区分。见[当前候选记录](ios-main-6020d8e-2026-10-19.md)。固定Flutter3.44.7与冻结素材v0.2.0，系统听音/完整11项仍待验。
+更新日期：2026-10-19，北京时间。当前共用版本 **0.3.6+11**，main `243a812` 已合#19～#21；Mac分支 `ios/main-alignment-20261019` / [PR #23](https://github.com/mhgd3250905/HipLab/pull/23) 保留iOS隐私适配。候选运行源 `1494958` 的262pass/1skip、签名Release和模拟器原生抽查通过；补充72屏、完整Schema、94视频/134图片解码已完成，570条语音留1条主线已知`en/sec.66`偏轻待听。当前无真机，新源未覆盖安装或Archive，晚上使用已保存App继续。固定Flutter3.44.7、SwiftPM，依赖/版本/媒体沿用main。见[当前候选与晚间清单](ios-main-243a812-2026-10-19.md#晚上设备连接后执行)。前轮main6020d8e/668f4bc记录仍见[旧候选报告](ios-main-6020d8e-2026-10-19.md)，不套用其结果。
 
 > 历史边界：原 #9 在 Linux 沙箱完成，彼时未执行 Mac/iPhone 检查。后续 Mac 已完成 0.3.3 首轮真机验证及本轮 0.3.6 本地构建；各候选结果分别记账，不将旧通过套用新版本。下文「已做」是静态检查与 iOS 目标平台的 widget 测试；凡是系统行为（后台、ducking、静音键、中断、WKWebView 首帧）都必须真机确认。
 
@@ -30,7 +30,7 @@
 git fetch origin
 git switch main                # 使用已推送且包含 9ef59a1 的 main
 git pull --ff-only
-git switch -c ios/main-ui-036  # 只改 ios/ 与少量 iOS 专属平台代码
+git switch -c ios/next-task    # 新任务示例分支名；已有任务使用其现有分支
 flutter --version              # 必须为 3.44.7 stable
 # 先按 docs/README.md 校验 ZIP、恢复 v0.2.0 冻结素材并 --check
 flutter pub get --enforce-lockfile  # 不修改 lock 或升级依赖
