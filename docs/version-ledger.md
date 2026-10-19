@@ -257,3 +257,10 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ## 2026-10-19 / iOS main6020d8e组合候选
 
 完整源 `668f4bcdf28887b3595cf087bb405d0c72b6aac0`，普通合入main `6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，保留#16隐私适配。固定Flutter3.44.7，锁定依赖解析、analyze0、193pass/1skip、工程静态与92冻结素材核对通过；31.9秒开发签名Release成功，com.ugk.hiplab/0.3.6+11/arm64、严格验签、6隐私清单和611资源SHA一致。AOT SHA-256 `0b6c0a2c0ba767b622d7a34948738959213daeab4b50ac385176c7559d83aaee`。本轮无Archive/IPA、未安装、未操作手机或商店；旧手机候选2f8aeb0和产物保留。D-26为iOS适配（原D-25），D-27为系统矩阵（原D-26），旧报告保留当时编号。[完整记录](ios-main-6020d8e-2026-10-19.md)。
+
+
+## 2026-10-19 / iOS main243a812 开发签名候选
+
+源 `1494958ae5bed9bdf56acb8a087840ec844626e9`，0.3.6+11 /com.ugk.hiplab/arm64；Release 33.8秒成功，严格验签、6隐私清单、874资源SHA匹配；AOT `da7046bd468ef5f5c5af381af3838b6d5fd234eb8ea4cf970cec07c7516699ee`。无新Archive/IPA、未装真机/未上传。原2f8aeb0与668f4bc产物保留，构建与安装分开记录。[详情](ios-main-243a812-2026-10-19.md)。
+
+本轮另有独立iPhone16 Pro/iOS26.5模拟器Debug（Xcode79.4秒），已安装并启动于新建隔离模拟器，抽查深浅原生视频/暂停继续/自测与隐私复制；真实手机安装状态不变。

@@ -7,7 +7,8 @@
 | [PR #19/#20/#21隔离审核](pr19-pr21-review-2026-10-19.md) | 五项首轮修复、254过/1跳、Python19、Web复核及arm64交付；用户报告安装/简单真机测试通过；已顺序合入main | 本轮审核与原生证据变化后 |
 | [轻拟物有选择引入：审美考据](tactile-design-rationale-2026-10-19.md) | 引用 HIG / M3 / Refactoring UI / NN/g / Rams 推导的 6 条规则、逐控件判定、预算回归测试（#19已合main） | 拟物使用范围变化时 |
 | [PR #17/#18修复与合并](pr17-pr18-fixes-and-merge-2026-10-18.md) | 两项P2、191项回归、真机数据保持与合并身份 | 本轮实际状态变化后 |
-| [iOS 跟进当前main](ios-main-6020d8e-2026-10-19.md) | 组合源668f4bc、193项回归与签名Release，未安装 | iOS候选或验证改变时 |
+| [iOS rebase main243a812](ios-main-243a812-2026-10-19.md) | #19～#21 的 iOS 候选、六项集成回归和签名构建；真机待验 | iOS 对齐或验收变化后 |
+| [iOS 前轮 main6020d8e](ios-main-6020d8e-2026-10-19.md) | 组合源668f4bc、193项回归与签名Release，未安装 | iOS候选或验证改变时 |
 | [iOS 首轮送审历史](ios-store-release-2026-10-18.md) | PR #12 的0.3.2+7 TestFlight与09:43正式送审快照，非最新审核查询 | 保留历史；平台状态另记 |
 | [iOS 新转场与按钮验证](ios-pr-ui-validation-2026-10-18.md) | #17/#18 固定源 Mac/真机检查、原候选恢复和旧 PR 关闭 | iOS 集成或验证事实变化后 |
 | [iOS 0.3.6 对齐与验证](ios-main-ui-036-2026-10-18.md) | Mac rebase、iOS 平台差异、本地构建与真机安装状态 | iOS 本轮事实改变后 |

@@ -184,3 +184,8 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 ## 2026-10-19 / iOS main6020d8e组合候选
 
 完整源 `668f4bcdf28887b3595cf087bb405d0c72b6aac0`，普通合入main `6020d8e8bf26700e56785b029ef8d5ef4a379f2c`，保留#16隐私适配。固定Flutter3.44.7，锁定依赖解析、analyze0、193pass/1skip、工程静态与92冻结素材核对通过；31.9秒开发签名Release成功，com.ugk.hiplab/0.3.6+11/arm64、严格验签、6隐私清单和611资源SHA一致。AOT SHA-256 `0b6c0a2c0ba767b622d7a34948738959213daeab4b50ac385176c7559d83aaee`。本轮无Archive/IPA、未安装、未操作手机或商店；旧手机候选2f8aeb0和产物保留。D-26为iOS适配（原D-25），D-27为系统矩阵（原D-26），旧报告保留当时编号。[完整记录](ios-main-6020d8e-2026-10-19.md)。
+
+
+## 2026-10-19 / iOS rebase 已合并主线 #19～#21
+
+用户在Windows合并push后提供main243a812。新本地ios/main-alignment-20261019从旧e6f8ad8完成rebase，保留原远端分支与主目录五份dirty台账；文档冲突保留双方历史，当前iOS事项迁D-29/D-30。源1494958继承全部共享优化及iOS隐私适配，新增6项iOS回归通过，33.8秒签名Release和874资源核验通过；真机unavailable，新源未安装，未推送/更新PR或上传商店。[本轮记录](ios-main-243a812-2026-10-19.md)。
