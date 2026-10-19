@@ -223,3 +223,7 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ### PR #22 Web验收构建追加（2026-10-19）
 
 同样准确两源在E盘临时Web壳构建真实lib/main.dart，未替换产品lib/依赖/入口；字号专项另包裹2.0 TextScaler，产品哈希不变。版本仍0.3.6+11，没有新APK、手机安装或商店动作。Web补测发现F8/P2待修，前述9fa APK不记验收通过；修复后需新候选来源与包身份。[来源/结果/证据](pr22-web-acceptance-2026-10-19.md)。
+
+## 0.3.6+11 PR #24 Android编译验证包（2026-10-19，未安装）
+
+源e3655e50e2ff7868d9d381489df90efe9cf208f1，debug arm64；E:/AII-3D/hiplab-releases/pr24-review-20261019/hiplab-0.3.6+11-pr24-e3655e5-arm64-debug.apk，174,483,026bytes，SHA256 `d8a2e01329d3f140dd5ca1ae861fc4d29ddd10da43528ff73bbab7a456edfe2a`。包名com.ugk.hiplab、versionCode11，debug证书SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`连续；Gradle20.6秒，新Kotlin服务/Manifest已入包，CRC/16KB对齐和575音频/94视频一致；最大ZIP间隙138,313bytes。版本、依赖、发布配置保持。4项P2待作者修，当前不是验收通过包；未ADB、未安装、未商店上传，手机安装记录不变。[完整身份和问题](pr24-review-2026-10-19.md)。
