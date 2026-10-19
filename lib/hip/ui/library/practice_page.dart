@@ -118,6 +118,49 @@ class _PracticePageState extends State<PracticePage> {
         ),
       ),
     );
+    final radar = SizedBox(
+      width: 64,
+      height: 64,
+      child: result == null
+          ? Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: tintOf(HipColors.jade),
+              ),
+              alignment: Alignment.center,
+              child: HipIcon(HipGlyph.radar, size: 34, color: HipColors.jade),
+            )
+          : HipRadar(
+              key: const ValueKey('check-radar'),
+              values: result.radar,
+              highlight: result.tightest.toSet(),
+              warn: result.painDirections,
+              compact: true,
+              labels: false,
+            ),
+    );
+    // Title and caption wrap rather than cut (PR #22 P3).
+    final texts = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(t.myHip, style: TextStyle(fontSize: 12.5, color: HipColors.muted)),
+        Text(
+          t.checkTitle,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          result == null || last == null
+              ? t.checkUntested
+              : '${t.lastChecked(last)} · ${t.levelName(result.level.level)}',
+          key: const ValueKey('check-caption'),
+          style: TextStyle(fontSize: 13, color: HipColors.muted),
+        ),
+      ],
+    );
+    // Very large text: the pill moves under the texts so they keep the
+    // card's width.
+    final large = libLargeText(context);
     return HipPressable(
       key: const ValueKey('hip-check-card'),
       semanticLabel: '${t.myHip} · ${t.checkTitle}',
@@ -127,69 +170,30 @@ class _PracticePageState extends State<PracticePage> {
         key: _cardKey,
         child: HipPanel(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 64,
-                height: 64,
-                child: result == null
-                    ? Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: tintOf(HipColors.jade),
-                        ),
-                        alignment: Alignment.center,
-                        child: HipIcon(
-                          HipGlyph.radar,
-                          size: 34,
-                          color: HipColors.jade,
-                        ),
-                      )
-                    : HipRadar(
-                        key: const ValueKey('check-radar'),
-                        values: result.radar,
-                        highlight: result.tightest.toSet(),
-                        warn: result.painDirections,
-                        compact: true,
-                        labels: false,
-                      ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+          child: large
+              ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      t.myHip,
-                      maxLines: 1,
-                      style: TextStyle(fontSize: 12.5, color: HipColors.muted),
+                    Row(
+                      children: [
+                        radar,
+                        const SizedBox(width: 12),
+                        Expanded(child: texts),
+                      ],
                     ),
-                    Text(
-                      t.checkTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      result == null || last == null
-                          ? t.checkUntested
-                          : '${t.lastChecked(last)} · ${t.levelName(result.level.level)}',
-                      key: const ValueKey('check-caption'),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 13, color: HipColors.muted),
-                    ),
+                    const SizedBox(height: 10),
+                    pill,
+                  ],
+                )
+              : Row(
+                  children: [
+                    radar,
+                    const SizedBox(width: 12),
+                    Expanded(child: texts),
+                    const SizedBox(width: 8),
+                    pill,
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              pill,
-            ],
-          ),
         ),
       ),
     );
@@ -324,89 +328,88 @@ class _PracticePageState extends State<PracticePage> {
     ];
   }
 
-  Widget _routineCard(
-    LibText t,
-    HipRoutine r,
-    bool rec,
-    bool dancer,
-  ) => HipPressable(
-    key: ValueKey('routine-card-${r.id}'),
-    semanticLabel: routineShortName(r),
-    scale: .98,
-    onTap: () async => _applyJump(
-      await Navigator.of(context).push<Object?>(
-        HipRoute.push<Object?>(
-          (_) => RoutineDetailPage(actions: actions, routineId: r.id),
+  Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
+    const nameStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.w800);
+    final minutes = Text(
+      t.minutes(r.minutes),
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+    );
+    return HipPressable(
+      key: ValueKey('routine-card-${r.id}'),
+      semanticLabel: routineShortName(r),
+      scale: .98,
+      onTap: () async => _applyJump(
+        await Navigator.of(context).push<Object?>(
+          HipRoute.push<Object?>(
+            (_) => RoutineDetailPage(actions: actions, routineId: r.id),
+          ),
         ),
       ),
-    ),
-    child: HipPanel(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  routineShortName(r),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
+      child: HipPanel(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Very large text: name on its own line, tag + minutes under it
+            // (side by side the name was squeezed to one character a line).
+            if (libLargeText(context)) ...[
+              Text(routineShortName(r), style: nameStyle),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [if (rec) tintTag(t.recommended), minutes],
+              ),
+            ] else
+              Row(
+                children: [
+                  Expanded(child: Text(routineShortName(r), style: nameStyle)),
+                  if (rec) ...[
+                    tintTag(t.recommended),
+                    const SizedBox(width: 8),
+                  ],
+                  minutes,
+                ],
+              ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                HipIcon(
+                  r.scene == HipScene.chair ? HipGlyph.chair : HipGlyph.home,
+                  size: 15,
+                  color: HipColors.muted,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
+                    '${r.audience.split('；').first}',
+                    style: TextStyle(fontSize: 13, color: HipColors.muted),
                   ),
                 ),
-              ),
-              if (rec) ...[tintTag(t.recommended), const SizedBox(width: 8)],
+              ],
+            ),
+            if (r.id == 'F' && !dancer) ...[
+              const SizedBox(height: 6),
               Text(
-                t.minutes(r.minutes),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                t.dancerNote,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: HipColors.tight,
+                  height: 1.35,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              HipIcon(
-                r.scene == HipScene.chair ? HipGlyph.chair : HipGlyph.home,
-                size: 15,
-                color: HipColors.muted,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
-                  '${r.audience.split('；').first}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
-                ),
-              ),
-            ],
-          ),
-          if (r.id == 'F' && !dancer) ...[
-            const SizedBox(height: 6),
-            Text(
-              t.dancerNote,
-              style: TextStyle(
-                fontSize: 12.5,
-                color: HipColors.tight,
-                height: 1.35,
-              ),
+            const SizedBox(height: 10),
+            LibThumbStrip(
+              drills: [for (final s in r.steps) content.drill(s.drillId)],
             ),
           ],
-          const SizedBox(height: 10),
-          LibThumbStrip(
-            drills: [for (final s in r.steps) content.drill(s.drillId)],
-          ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   // ── ⑤ 我的 ──
 
@@ -566,6 +569,7 @@ class GroupCard extends StatelessWidget {
       for (final s in g.steps)
         if (content.drills.containsKey(s.kitId)) content.drill(s.kitId),
     ];
+    final large = libLargeText(context);
     final from = g.fromRoutine == null
         ? null
         : content.routines.where((r) => r.id == g.fromRoutine).firstOrNull;
@@ -583,17 +587,21 @@ class GroupCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Very large text: 开始 goes under the texts instead of
+            // squeezing them (PR #22 P3).
+            Flex(
+              direction: large ? Axis.vertical : Axis.horizontal,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
+                Flexible(
+                  flex: large ? 0 : 1,
+                  fit: FlexFit.tight,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         g.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -602,15 +610,11 @@ class GroupCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 13, color: HipColors.muted),
                       ),
                       if (from != null)
                         Text(
                           t.fromRoutine(routineShortName(from)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12,
                             color: HipColors.faint,
@@ -627,7 +631,7 @@ class GroupCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 8, height: 10),
                 KeyedSubtree(
                   key: _startKey,
                   child: RepaintBoundary(

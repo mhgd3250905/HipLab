@@ -41,6 +41,9 @@ class LibText {
 
   // ── 动作大全 ──
   String get searchHint => _('搜动作，中文或英文都行', 'Search moves (中文 / English)');
+
+  /// The search hint when the system text is very large (fits one line).
+  String get searchHintShort => _('搜动作', 'Search');
   String get all => _('全部', 'All');
   String get filter => _('筛选', 'Filter');
   String filterN(int n) => n == 0 ? filter : '$filter $n';

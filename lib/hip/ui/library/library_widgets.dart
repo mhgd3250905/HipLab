@@ -36,6 +36,11 @@ String drillAltName(HipContent c, HipDrill d, String lang) =>
 String drillPoint(HipContent c, HipDrill d, String lang) =>
     _pick(_display(c, d.id)?['point'], lang);
 
+/// System text at ≥1.6× (PR #22 P3: 360 wide ×2.0 cut the 练习 page's
+/// key text): cards stack or go one per row and copy wraps instead.
+bool libLargeText(BuildContext context) =>
+    MediaQuery.textScalerOf(context).scale(10) >= 16;
+
 // ───────────────────────── filter ─────────────────────────
 
 /// 动作大全 filter: 练哪里 chip, search text and the 筛选 sheet. Within a
@@ -273,8 +278,8 @@ class LibSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = LibText.of(context);
     return Container(
-      height: 44,
-      padding: const EdgeInsets.only(left: 14, right: 4),
+      constraints: const BoxConstraints(minHeight: 44),
+      padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
       decoration: BoxDecoration(
         color: HipColors.surface,
         borderRadius: BorderRadius.circular(14),
@@ -294,7 +299,9 @@ class LibSearchField extends StatelessWidget {
               decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
-                hintText: t.searchHint,
+                hintText: libLargeText(context)
+                    ? t.searchHintShort
+                    : t.searchHint,
                 hintStyle: TextStyle(fontSize: 15, color: HipColors.faint),
               ),
             ),
@@ -410,6 +417,12 @@ class LibDrillCard extends StatelessWidget {
     final t = LibText.of(context);
     final on = check == true;
     final name = drillName(content, drill, t.lang);
+    final large = libLargeText(context);
+    const nameStyle = TextStyle(
+      fontSize: 15,
+      height: 1.33,
+      fontWeight: FontWeight.w700,
+    );
     return Builder(
       builder: (cardContext) => HipPressable(
         semanticLabel: name,
@@ -487,24 +500,23 @@ class LibDrillCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: MediaQuery.textScalerOf(context).scale(40),
-                          child: Text(
-                            name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              height: 1.33,
-                              fontWeight: FontWeight.w700,
+                        if (large)
+                          Text(name, style: nameStyle)
+                        else
+                          SizedBox(
+                            height: MediaQuery.textScalerOf(context).scale(40),
+                            child: Text(
+                              name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: nameStyle,
                             ),
                           ),
-                        ),
                         const SizedBox(height: 3),
                         Text(
                           inGroup ? t.inGroup(dose) : dose,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          maxLines: large ? null : 1,
+                          overflow: large ? null : TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12.5,
                             height: 1.3,
@@ -553,7 +565,8 @@ class LibDrillGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
-      final w = (box.maxWidth - 12) / 2;
+      // One card per row under very large text, so names are not cut.
+      final w = libLargeText(context) ? box.maxWidth : (box.maxWidth - 12) / 2;
       return Wrap(
         spacing: 12,
         runSpacing: 12,
