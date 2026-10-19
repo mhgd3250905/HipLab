@@ -147,9 +147,16 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     });
   }
 
-  Future<void> _editDose(int index) async {
+  /// Index of the step with stable [key] now, or -1 once it is gone.
+  /// Indexes shift while the sheet is up (a swipe-left delete finishing
+  /// under it, PR #22 F8), so never hold one across an await.
+  int _indexOf(int key) => _steps.indexWhere((e) => e.$1 == key);
+
+  Future<void> _editDose(int key) async {
     final t = LibText.of(context);
-    final (key, step) = _steps[index];
+    final at = _indexOf(key);
+    if (at < 0) return;
+    final step = _steps[at].$2;
     final kit = content.kit(step.kitId)!;
     var dose = step.dose(kit);
     final result = await showLibSheet<LibraryDose>(
@@ -196,7 +203,10 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       ),
     );
     if (result == null || !mounted) return;
-    setState(() => _steps[index] = (key, CustomStep.fromDose(kit, result)));
+    // Re-find the step by key: it may have moved or been deleted meanwhile.
+    final now = _indexOf(key);
+    if (now < 0) return;
+    setState(() => _steps[now] = (key, CustomStep.fromDose(kit, result)));
   }
 
   @override
@@ -378,9 +388,10 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                               key: ValueKey('dismiss-$key'),
                               direction: DismissDirection.endToStart,
                               background: _deleteBackground(t),
-                              onDismissed: (_) =>
-                                  setState(() => _steps.removeAt(i)),
-                              child: _row(i, s, profile),
+                              onDismissed: (_) => setState(
+                                () => _steps.removeWhere((e) => e.$1 == key),
+                              ),
+                              child: _row(i, key, s, profile),
                             ),
                           );
                         },
@@ -470,7 +481,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     ),
   );
 
-  Widget _row(int i, CustomStep s, TrainingProfile profile) {
+  Widget _row(int i, int key, CustomStep s, TrainingProfile profile) {
     final t = LibText.of(context);
     final k = content.kit(s.kitId)!;
     final d = content.drill(s.kitId);
@@ -480,7 +491,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       key: ValueKey('editor-row-$i'),
       semanticLabel: drillName(content, d, t.lang),
       scale: .98,
-      onTap: () => _editDose(i),
+      onTap: () => _editDose(key),
       child: Container(
         // Grows with the system text size instead of clipping the dose line.
         constraints: const BoxConstraints(minHeight: 68),
