@@ -1,5 +1,6 @@
-// Tactile button material (button audit 2026-10-18): tokens, press
-// feedback, reduce motion and the 开始 container transform's first frame.
+// Tactile material (button audit 2026-10-18, curated 2026-10-19): tokens,
+// which buttons are (not) tactile, press feedback, reduce motion and the 开始
+// container transform's first frame.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -79,47 +80,94 @@ void main() {
     });
   });
 
-  group('shared buttons are tactile', () {
+  group('only the curated elements are tactile (rationale 2026-10-19)', () {
     Future<void> show(WidgetTester tester, Widget child) => tester.pumpWidget(
       MaterialApp(
         home: Scaffold(body: Center(child: child)),
       ),
     );
 
-    testWidgets('primary: accent, disabled: flat without shadow', (
-      tester,
-    ) async {
-      HipColors.palette = HipPalette.dark;
-      await show(tester, HipPrimaryButton(label: '开始自测', onPressed: () {}));
-      expect(
-        tester.widget<HipTactile>(find.byType(HipTactile)).style,
-        HipTactileStyle.accent(),
-      );
-      await show(tester, const HipPrimaryButton(label: '下一项', onPressed: null));
-      final flat = tester.widget<HipTactile>(find.byType(HipTactile)).style;
-      expect(flat.shadows, isEmpty);
-      expect(flat.highlight.a, 0);
-    });
-
-    testWidgets('secondary, circle and chip use the neutral tile', (
-      tester,
-    ) async {
-      for (final p in [HipPalette.dark, HipPalette.light]) {
+    for (final p in [HipPalette.dark, HipPalette.light]) {
+      final t = p.isDark ? 'dark' : 'light';
+      testWidgets('primary ($t): flat filled jade, no shadow or glow (R3)', (
+        tester,
+      ) async {
         HipColors.palette = p;
-        for (final w in <Widget>[
-          HipSecondaryButton(label: '有', onPressed: () {}),
+        addTearDown(() => HipColors.palette = HipPalette.dark);
+        await show(tester, HipPrimaryButton(label: '开始自测', onPressed: () {}));
+        expect(find.byType(HipTactile), findsNothing);
+        final faces = tester
+            .widgetList<DecoratedBox>(
+              find.descendant(
+                of: find.byType(HipPrimaryButton),
+                matching: find.byType(DecoratedBox),
+              ),
+            )
+            .map((d) => d.decoration)
+            .toList();
+        expect(faces, hasLength(1));
+        final face = faces.single as ShapeDecoration;
+        expect(face.color, p.jade);
+        expect(face.gradient, isNull);
+        expect(face.shadows, anyOf(isNull, isEmpty));
+        // No ink splash: nothing repaints mid-tap (container transform).
+        expect(
+          find.descendant(
+            of: find.byType(HipPrimaryButton),
+            matching: find.byType(InkWell),
+          ),
+          findsNothing,
+        );
+      });
+
+      testWidgets('secondary and circle ($t): flat, no tactile (R4, R5)', (
+        tester,
+      ) async {
+        HipColors.palette = p;
+        addTearDown(() => HipColors.palette = HipPalette.dark);
+        await show(
+          tester,
+          SizedBox(
+            width: 200,
+            child: HipSecondaryButton(label: '有', onPressed: () {}),
+          ),
+        );
+        expect(find.byType(HipTactile), findsNothing);
+        final edge =
+            tester
+                    .widget<DecoratedBox>(
+                      find.descendant(
+                        of: find.byType(HipSecondaryButton),
+                        matching: find.byType(DecoratedBox),
+                      ),
+                    )
+                    .decoration
+                as ShapeDecoration;
+        expect(edge.color, p.surface);
+        expect((edge.shape as StadiumBorder).side.color, p.line);
+        expect(edge.shadows, anyOf(isNull, isEmpty));
+
+        await show(
+          tester,
           HipCircleButton(icon: HipGlyph.close, onPressed: () {}),
-          HipChipButton(label: '试听', onPressed: () {}),
-        ]) {
-          await show(tester, SizedBox(width: 200, child: w));
-          expect(
-            tester.widget<HipTactile>(find.byType(HipTactile)).style,
-            HipTactileStyle.neutral(p),
-          );
+        );
+        expect(find.byType(HipTactile), findsNothing);
+        final disc = tester.widget<Container>(
+          find.descendant(
+            of: find.byType(HipCircleButton),
+            matching: find.byType(Container),
+          ),
+        );
+        final d = disc.decoration! as BoxDecoration;
+        expect(d.color, p.surfaceHigh);
+        expect(d.boxShadow, isNull, reason: 'tonal only, no soft shadow');
+        if (p.isDark) {
+          expect(d.border, isNull);
+        } else {
+          expect((d.border! as Border).top.color, p.line, reason: 'hairline');
         }
-      }
-      HipColors.palette = HipPalette.dark;
-    });
+      });
+    }
 
     testWidgets('开始 has no halo or radial glow', (tester) async {
       await show(tester, HipStartButton(onTap: () {}, stage: HipPalette.dark));
@@ -136,14 +184,6 @@ void main() {
       // Nothing is painted far outside the button any more.
       expect(tester.getSize(find.byType(HipStartButton)), const Size(104, 104));
     });
-
-    testWidgets('chip tap target is at least 48 px tall', (tester) async {
-      await show(tester, HipChipButton(label: '是', onPressed: () {}));
-      expect(
-        tester.getSize(find.byType(HipChipButton)).height,
-        greaterThanOrEqualTo(48),
-      );
-    });
   });
 
   group('press', () {
@@ -154,13 +194,10 @@ void main() {
               data: MediaQueryData(disableAnimations: reduce),
               child: Scaffold(
                 body: Center(
-                  child: SizedBox(
-                    width: 240,
-                    child: HipPrimaryButton(
-                      key: const ValueKey('b'),
-                      label: '开始自测',
-                      onPressed: () {},
-                    ),
+                  child: HipStartButton(
+                    buttonKey: const ValueKey('b'),
+                    stage: HipPalette.dark,
+                    onTap: () {},
                   ),
                 ),
               ),
@@ -182,13 +219,15 @@ void main() {
                 .widget<CustomPaint>(
                   find.descendant(
                     of: find.byType(HipTactile),
-                    matching: find.byType(CustomPaint),
+                    matching: find.byWidgetPredicate(
+                      (w) => w is CustomPaint && w.painter is HipTactilePainter,
+                    ),
                   ),
                 )
                 .painter!
             as HipTactilePainter;
 
-    testWidgets('sinks to 0.97 in ~100 ms and comes back', (tester) async {
+    testWidgets('开始 sinks to 0.97 in ~100 ms and comes back', (tester) async {
       HipColors.palette = HipPalette.dark;
       await show(tester);
       final idle = painter(tester).style;
@@ -209,7 +248,7 @@ void main() {
       expect(painter(tester).style, idle);
     });
 
-    testWidgets('reduce motion: no scale, the tile still sinks', (
+    testWidgets('reduce motion: no scale, the disc still sinks', (
       tester,
     ) async {
       HipColors.palette = HipPalette.dark;

@@ -245,3 +245,8 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 ## PR #17/#18修复后验收与合并（2026-10-18）
 
 初审两项P2及2pass/4fail保留为[历史审核](https://github.com/mhgd3250905/HipLab/blob/be782b74b3eefe782803aebf26b5224c33c0c3d7/docs/pr17-pr18-device-review-2026-10-18.md)。F1/F2均首轮运行修复；#17独立analyze0、169pass/1条件skip，组合6dd16ed analyze0、191pass/1条件skip，合并main另生成深浅gallery2pass。新回归共13项，两个原失败类别已转通过；零时间Tab前后图相同，深浅/移除动画的原生分段持按有变化、松开回原像素。连续单指流采样、快速Tab录屏及播放中关闭抽帧完成，当前进程无FATAL/E/flutter标记。保留数据覆盖安装，用户偏好1356字节与原始相同；未新增自测/打卡，系统设置还原。main顺序merge e98d0f1/aac4b1d与已安装6dd16ed运行内容相同，仅文档不重构建。低端帧时、强光、新结果页/iPhone仍保持待验，不扩大旧结论。[逐项与证据](pr17-pr18-fixes-and-merge-2026-10-18.md)。
+
+## 轻拟物有选择引入（2026-10-19，分支 fix/tactile-curation）
+
+基于 main `6020d8e`。按[审美考据](tactile-design-rationale-2026-10-19.md)收敛 #18：只保留分段控件滑块（neutral）与首页「开始」（accent）两处轻拟物；底部 Tab 完全恢复 #18 前样式；主 / 次 / 圆形 / 卡片内 / 播放器按钮回到改前扁平外观（主按钮去掉 jade 外发光，浅色圆形按钮以细描边替代旧柔阴影）；删除 `HipChipButton` 与 `glass` / `flat` 令牌。新增 `hip_tactile_budget_test`（深浅两主题、首页 / 自测 / 进度 / 设置滚动，断言拟物只在分段控件内、accent ≤ 1、Tab 无拟物且实心 / 描边图标正确），该测试在 #18 版本上运行会失败（已验证）。`flutter analyze` 0；全量 194 pass / 1 条件 skip；四尺寸单屏回归在全量内通过；「开始」与「开始自测」按住→松手容器展开首帧连续性测试通过（第一轮直接退回 Material 按钮导致「开始自测」首帧快照丢失，第二轮改为共享 HipPressable 平涂面后通过）。仅沙盒无头验证；未构建 APK、未安装手机。未改依赖、lock、版本或商店配置；未合入 main。
+

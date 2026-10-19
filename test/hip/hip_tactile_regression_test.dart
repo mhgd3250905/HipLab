@@ -409,15 +409,17 @@ void main() {
         ValueKey(assessment ? 'assessment-start' : 'start-today'),
       );
       final origin = tester.getRect(button);
-      final face = find.descendant(
-        of: button,
-        matching: find.byType(HipTactile),
-      );
+      // 开始 is the one raised (tactile) button; 开始自测 is a flat filled
+      // CTA since the tactile curation (rationale 2026-10-19, R2/R3). Both
+      // must really paint a held press before the snapshot is taken.
       HipTactileStyle paintedStyle() =>
           (tester
                       .widget<CustomPaint>(
                         find.descendant(
-                          of: face,
+                          of: find.descendant(
+                            of: button,
+                            matching: find.byType(HipTactile),
+                          ),
                           matching: find.byWidgetPredicate(
                             (widget) =>
                                 widget is CustomPaint &&
@@ -428,22 +430,44 @@ void main() {
                       .painter!
                   as HipTactilePainter)
               .style;
-      final idle = paintedStyle();
+      final idle = assessment ? null : paintedStyle();
+      final idleScreen = assessment
+          ? await _screenPixels(tester, screenKey, 'review-assessment-idle')
+          : null;
       final pointer = await tester.startGesture(tester.getCenter(button));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));
       await tester.pump(const Duration(milliseconds: 120));
-      expect(
-        paintedStyle().highlight.a,
-        lessThan(idle.highlight.a),
-        reason: 'the fixture must really paint a held press before capture',
-      );
+      if (assessment) {
+        expect(
+          find.descendant(of: button, matching: find.byType(HipTactile)),
+          findsNothing,
+          reason: '开始自测 is flat (R3)',
+        );
+      } else {
+        expect(
+          paintedStyle().highlight.a,
+          lessThan(idle!.highlight.a),
+          reason: 'the fixture must really paint a held press before capture',
+        );
+      }
       final evidence = assessment ? 'assessment' : 'start';
       final heldScreen = await _screenPixels(
         tester,
         screenKey,
         'review-$evidence-held',
       );
+      if (idleScreen != null) {
+        var changed = 0;
+        for (var i = 0; i < idleScreen.length; i++) {
+          if (idleScreen[i] != heldScreen[i]) changed++;
+        }
+        expect(
+          changed,
+          greaterThan(0),
+          reason: 'the fixture must really paint a held press before capture',
+        );
+      }
       await pointer.up();
       // No elapsed time: this is the first route paint, before expansion.
       await tester.pump();

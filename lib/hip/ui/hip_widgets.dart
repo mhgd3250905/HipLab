@@ -1023,8 +1023,51 @@ class _HipPressableState extends State<HipPressable> {
   }
 }
 
-/// Full-width primary CTA (开始自测, 下一项, 回首页 …): a brand-green
-/// tactile stadium (see [HipTactileStyle.accent]); disabled it goes flat.
+/// A flat button face (no gradient, no light, no shadow) whose fill dips a
+/// touch while the enclosing [HipPressable] is held — the press state for
+/// the flat buttons (rationale 2026-10-19, R3–R5). It is not an ink
+/// splash, so the face is never repainting mid-tap and the 开始自测
+/// container transform can still snapshot it (HipRoute.expandFrom).
+class _HipFlatFace extends StatelessWidget {
+  const _HipFlatFace({
+    required this.color,
+    required this.pressedColor,
+    required this.child,
+    this.border,
+  });
+  final Color color;
+  final Color pressedColor;
+  final Color? border;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final down = HipPressedScope.of(context);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: down ? 1 : 0),
+      duration: down ? HipMotion.press : HipMotion.release,
+      curve: down ? Curves.easeOut : Curves.easeOutCubic,
+      builder: (context, t, child) => DecoratedBox(
+        decoration: ShapeDecoration(
+          color: Color.lerp(color, pressedColor, t),
+          shape: StadiumBorder(
+            side: border == null
+                ? BorderSide.none
+                : BorderSide(color: border!),
+          ),
+        ),
+        child: child,
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Full-width primary CTA (开始自测, 下一项, 回首页 …): a flat brand-green
+/// fill. Emphasis comes from colour, not height: no gradient, no shadow and
+/// no coloured glow (tactile rationale 2026-10-19, rule R3 — only the home
+/// 开始 disc is raised). Pressed: the shared [HipPressable] scale and a
+/// slightly deeper fill.
 class HipPrimaryButton extends StatelessWidget {
   const HipPrimaryButton({
     super.key,
@@ -1041,15 +1084,16 @@ class HipPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final fg = enabled ? HipColors.onJade : HipColors.faint;
+    final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: HipPressable(
         semanticLabel: label,
         onTap: onPressed,
-        child: HipTactile(
-          style: enabled ? HipTactileStyle.accent() : HipTactileStyle.flat(),
-          radius: 28,
+        child: _HipFlatFace(
+          color: fill,
+          pressedColor: Color.lerp(fill, const Color(0xff000000), .10)!,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Center(
@@ -1086,8 +1130,9 @@ class HipPrimaryButton extends StatelessWidget {
   }
 }
 
-/// Stadium neutral button paired with [HipPrimaryButton]: the same
-/// tactile tile as the segmented thumb ([HipTactileStyle.neutral]).
+/// Stadium outline button paired with [HipPrimaryButton] (medium emphasis,
+/// rule R5): surface fill and a hairline [HipColors.line] edge, as before
+/// the tactile pass; pressed it dips toward [HipColors.surfaceHigh].
 class HipSecondaryButton extends StatelessWidget {
   const HipSecondaryButton({
     super.key,
@@ -1097,123 +1142,42 @@ class HipSecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   @override
-  Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    return SizedBox(
-      height: 56,
-      width: double.infinity,
-      child: HipPressable(
-        semanticLabel: label,
-        onTap: onPressed,
-        child: HipTactile(
-          style: enabled ? HipTactileStyle.neutral() : HipTactileStyle.flat(),
-          radius: 28,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontFamily: hipFontFamily,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: enabled ? HipColors.text : HipColors.faint,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Small tactile pill for in-card actions (试听, 是 / 否, 复制链接 …) and the
-/// player's after-drill feedback. [color] tints the label (and icon);
-/// [palette] fixes the material for controls on the dark media stage.
-/// The tap target is at least 48 px tall whatever the visual [height].
-class HipChipButton extends StatelessWidget {
-  const HipChipButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.color,
-    this.palette,
-    this.height = 40,
-    this.minWidth = 0,
-    this.fontSize = 14,
-  });
-  final String label;
-  final VoidCallback? onPressed;
-  final HipGlyph? icon;
-  final Color? color;
-  final HipPalette? palette;
-  final double height;
-  final double minWidth;
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = palette ?? HipColors.palette;
-    final enabled = onPressed != null;
-    final fg = enabled ? (color ?? p.text) : p.faint;
-    return HipPressable(
+  Widget build(BuildContext context) => SizedBox(
+    height: 56,
+    width: double.infinity,
+    child: HipPressable(
       semanticLabel: label,
       onTap: onPressed,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: math.max(height, 48)),
+      child: _HipFlatFace(
+        color: HipColors.surface,
+        pressedColor: HipColors.surfaceHigh,
+        border: HipColors.line,
         child: Center(
-          widthFactor: 1,
-          child: HipTactile(
-            style: enabled
-                ? HipTactileStyle.neutral(p)
-                : HipTactileStyle.flat(p),
-            radius: height / 2,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minWidth: minWidth),
-              child: SizedBox(
-                height: height,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: height * .4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (icon != null) ...[
-                        HipIcon(icon!, size: fontSize + 4, color: fg),
-                        const SizedBox(width: 6),
-                      ],
-                      Flexible(
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: hipFontFamily,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w600,
-                            color: fg,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: hipFontFamily,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: onPressed == null ? HipColors.faint : HipColors.text,
                 ),
               ),
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// Round icon button (top-bar close / back 44, player pause / skip 64): a
-/// neutral tactile disc.
+/// flat tonal disc ([HipColors.surfaceHigh], plus a hairline edge on light)
+/// — a tool on the functional layer, not a raised object (rule R4); no
+/// shadow.
 class HipCircleButton extends StatelessWidget {
   const HipCircleButton({
     super.key,
@@ -1230,41 +1194,44 @@ class HipCircleButton extends StatelessWidget {
   Widget build(BuildContext context) => HipPressable(
     semanticLabel: tooltip,
     onTap: onPressed,
-    child: SizedBox.square(
-      dimension: size,
-      child: HipTactile(
-        style: onPressed == null
-            ? HipTactileStyle.flat()
-            : HipTactileStyle.neutral(),
-        circle: true,
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: HipMotion.fast,
-            transitionBuilder: (child, a) => FadeTransition(
-              opacity: a,
-              child: ScaleTransition(
-                scale: Tween(begin: .6, end: 1.0).animate(a),
-                child: child,
-              ),
-            ),
-            child: HipIcon(
-              icon,
-              key: ValueKey(icon),
-              size: size * (size > 50 ? .42 : .45),
-              color: onPressed == null ? HipColors.faint : HipColors.text,
-              filled: true,
-              strokeWidth: size > 50 ? 1.75 : 2,
-            ),
+    scale: .9,
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: HipColors.surfaceHigh,
+        shape: BoxShape.circle,
+        // Light: a hairline instead of the old soft shadow, so the grey disc
+        // still reads on the near-white page (R4, R6④). Dark needs none.
+        border: HipColors.isDark ? null : Border.all(color: HipColors.line),
+      ),
+      alignment: Alignment.center,
+      child: AnimatedSwitcher(
+        duration: HipMotion.fast,
+        transitionBuilder: (child, a) => FadeTransition(
+          opacity: a,
+          child: ScaleTransition(
+            scale: Tween(begin: .6, end: 1.0).animate(a),
+            child: child,
           ),
+        ),
+        child: HipIcon(
+          icon,
+          key: ValueKey(icon),
+          size: size * (size > 50 ? .42 : .45),
+          color: onPressed == null ? HipColors.faint : HipColors.text,
+          filled: true,
+          strokeWidth: size > 50 ? 1.75 : 2,
         ),
       ),
     ),
   );
 }
 
-/// The home hero's round 开始 button: a brand-green tactile disc (button
-/// audit 2026-10-18: no halo, no coloured glow) with a rounded, optically
-/// centred play glyph; pressing sinks it like the other buttons.
+/// The home hero's round 开始 button: the app's one raised accent object
+/// (tactile rationale 2026-10-19, rule R2) — a brand-green tactile disc with
+/// no halo and no coloured glow, a rounded, optically centred play glyph,
+/// and a press that sinks it.
 class HipStartButton extends StatelessWidget {
   const HipStartButton({
     super.key,

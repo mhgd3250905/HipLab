@@ -84,9 +84,9 @@ class _HipAppState extends State<HipApp> {
           snap.hasError
               ? Scaffold(
                   body: Center(
-                    child: HipChipButton(
-                      label: '读取失败，点一下重试',
+                    child: TextButton(
                       onPressed: () => setState(() => _loading = _load()),
+                      child: const Text('读取失败，点一下重试'),
                     ),
                   ),
                 )
@@ -610,6 +610,9 @@ class _HipHomeState extends State<HipHome> {
               Expanded(
                 child: HipPressable(
                   key: ValueKey('tab-$i'),
+                  // Flat nav item, as before the tactile pass (rationale
+                  // 2026-10-19, R4): the pre-#18 press scale.
+                  scale: .94,
                   semanticLabel: label,
                   selected: _tab == i,
                   onTap: () => _selectTab(i),
@@ -622,50 +625,33 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  /// Selected tab: filled glyph in jade on a small raised tactile pill
-  /// (the segmented thumb's material, button audit 2026-10-18) that fades
-  /// in with a small settle; others are an outline glyph on the bar.
+  /// Selected tab: filled glyph in jade with a small settle; others outline.
   Widget _navItem(int i, HipGlyph glyph, String label) {
     final on = _tab == i;
     final color = on ? HipColors.jadeText : HipColors.muted;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            AnimatedOpacity(
-              key: ValueKey('tab-pill-$i'),
-              opacity: on ? 1 : 0,
-              duration: HipMotion.fast,
-              child: SizedBox(
-                width: 56,
-                height: 30,
-                child: HipTactile(style: HipTactileStyle.neutral(), radius: 15),
-              ),
+        AnimatedScale(
+          scale: on ? 1 : .94,
+          duration: HipMotion.medium,
+          curve: HipMotion.spring,
+          child: AnimatedSwitcher(
+            duration: HipMotion.fast,
+            // Leave transition keys to AnimatedSwitcher so rapid on/off/on
+            // changes cannot reuse a still-outgoing glyph's transition key.
+            transitionBuilder: (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
+            child: HipIcon(
+              glyph,
+              key: ValueKey('$glyph-$on'),
+              size: 24,
+              filled: on,
+              color: color,
             ),
-            AnimatedScale(
-              scale: on ? 1 : .94,
-              duration: HipMotion.medium,
-              curve: HipMotion.spring,
-              child: AnimatedSwitcher(
-                duration: HipMotion.fast,
-                // Leave transition keys to AnimatedSwitcher so rapid on/off/on
-                // changes cannot reuse a still-outgoing glyph's transition key.
-                transitionBuilder: (child, animation) =>
-                    FadeTransition(opacity: animation, child: child),
-                child: HipIcon(
-                  glyph,
-                  key: ValueKey('$glyph-$on'),
-                  size: 24,
-                  filled: on,
-                  color: color,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 3),
         AnimatedDefaultTextStyle(
           duration: HipMotion.fast,
           style: TextStyle(
@@ -957,14 +943,13 @@ class _HipHomeState extends State<HipHome> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          HipChipButton(
-            label: '重新选择安全提示',
-            color: HipColors.jadeText,
+          TextButton(
             onPressed: () => Navigator.of(context).push(
               HipRoute.push<void>(
                 (_) => HipOnboarding(store: store, review: true),
               ),
             ),
+            child: const Text('重新选择安全提示'),
           ),
         ],
       ),
@@ -981,18 +966,13 @@ class _HipHomeState extends State<HipHome> {
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
           ),
         ),
-        HipChipButton(
-          label: '是',
-          minWidth: 56,
-          color: HipColors.jadeText,
+        TextButton(
           onPressed: () => store.answerNumbness(stillNumb: true),
+          child: const Text('是'),
         ),
-        const SizedBox(width: 8),
-        HipChipButton(
-          label: '否',
-          minWidth: 56,
-          color: HipColors.jadeText,
+        TextButton(
           onPressed: () => store.answerNumbness(stillNumb: false),
+          child: const Text('否'),
         ),
       ],
     ),
@@ -1427,12 +1407,11 @@ class HipVoiceSettingsPanel extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: HipChipButton(
+            child: TextButton.icon(
               key: const ValueKey('voice-preview'),
               onPressed: v.voice || v.chimes ? () => _preview(context) : null,
-              icon: HipGlyph.today,
-              color: HipColors.jadeText,
-              label: '试听',
+              icon: const HipIcon(HipGlyph.today, size: 20),
+              label: const Text('试听'),
             ),
           ),
         ],
