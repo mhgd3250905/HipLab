@@ -156,8 +156,7 @@ class VoiceLineController {
       await prev.timeout(backlogLimit, onTimeout: () {});
     }
     if (!_alive(epoch)) return;
-    if (gen != _generation &&
-        clock.now().difference(asked) > staleAfter) {
+    if (gen != _generation && clock.now().difference(asked) > staleAfter) {
       // Far behind and a newer line is waiting: skip the backlog.
       onSkip?.call(assets);
       return;
@@ -174,9 +173,13 @@ class VoiceLineController {
         if (!_alive(epoch)) return;
         await _duck(true, current: () => _alive(epoch));
         if (!_alive(epoch)) return;
-        if (_lastVolume != volume) {
-          await p.setVoiceVolume(volume);
-          _lastVolume = volume;
+        // Capture the value once: the slider can move while the platform
+        // call is in flight, and the cache must record what was really
+        // applied, or the newer value is never sent (PR #24 review F24-2).
+        final target = volume;
+        if (_lastVolume != target) {
+          await p.setVoiceVolume(target);
+          _lastVolume = target;
         }
         if (!_alive(epoch)) return;
         await p.loadVoice(assets);
@@ -227,6 +230,8 @@ class VoiceLineController {
     _generation++;
     _epoch++;
     _cut = false;
+    // A new session (or a re-activated one) sets the volume again.
+    _lastVolume = null;
   }
 
   /// Mark the duck as gone without touching the session (an interruption
