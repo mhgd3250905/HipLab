@@ -327,3 +327,53 @@
 ### 8.5 仍需本机
 
 仍未构建 APK、未上真机、未做 iOS。§7.4 的 Android 原生听音、重复单练（再来一组）、中断/锁屏、保留数据升级仍由本机补；另建议真机过一遍 F7 复现（单练深蹲 1 次 × 3 组 → 疼 → 关节夹着疼 → 应直接到结束页、报「跳过」）。
+
+## 9. PR #22 Web 补充验收 F8 / P3 修复与同步 main（2026-10-19，验收固定 head `9fa0cc0`）
+
+验收报告：[pr22-web-acceptance-2026-10-19.md](pr22-web-acceptance-2026-10-19.md)（main `fcffded`）与 [PR 评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)。
+
+### 9.1 F8 / P2：左删未结束时编辑下一动作，覆盖其他动作
+
+根因：`GroupEditorPage._editDose(int index)` 在 `await showLibSheet` 前取了行号，面板返回后仍按原行号写回 `_steps[index]`。左滑删除的 `onDismissed` 在滑出 + 收起动画结束才触发；若前项删除在面板打开期间完成，后面各项行号前移一位，写回就落到下一个动作上，还复用了被编辑动作的 key（A、B、C → 删 A、编辑 B → `[B 默认, B 2 组]`，C 丢失；重复 key 也解释了保存前有时只渲染一行）。行号越界时（多个待完成删除）直接 RangeError，编辑丢失。
+
+修法（`d352552`，只改 `lib/hip/ui/library/group_editor_page.dart`）：每步已有的稳定 key 贯穿到底——行的 onTap 传 key，`_editDose(int key)` 打开前、面板返回后都用 `_indexOf(key)` 重新定位，已删除（-1）则不写回；`onDismissed` 改为按 key `removeWhere`，不再依赖构建时的行号。拖动排序的 `ReorderableDragStartListener` 仍用当前行号（它本来就是每帧重建的位置）。
+
+回归：`test/hip/hip_editor_race_test.dart`（5 个，真实界面手势：`tester.drag` 左滑、点行、剂量面板「组数 +」、完成、保存；按 100 ms 逐帧推进让删除动画真正走完，并断言面板标题与面板打开期间的行数）：
+
+| 用例 | 修复前（`6306214`） | 修复后 |
+|---|---|---|
+| F8 delete A, tap B 150 ms later, A finishes, B → 2 组: saves [B(2), C] | **fail**：Actual `[(h-adductor-rock,1),(h-adductor-rock,2)]`（与验收复现一致） | pass |
+| F8 two pending deletes (A and B), edit C: saves [C(2)] | **fail**：`RangeError … Only valid value is 0: 2`，C 编辑丢失 | pass |
+| F8 two pending deletes (A and C) around the edited B in four steps: saves [B(2), D] | **fail**：Actual `[(B,1),(B,2)]`，D 被覆盖 | pass |
+| F8 the sheet target is deleted while the sheet is open: nothing is written back, saves [A, C] | **fail**：Actual `[A, (B,2)]`，C 被已删的 B 覆盖 | pass |
+| F8 reorder (A to the end) then edit A: saves [B, C, A(2)] | pass（护栏：排序后编辑原本就对） | pass |
+
+修复前合计 **4 fail / 1 pass**。
+
+### 9.2 P3：360 宽、TextScaler 2.0 深浅主题下练习页关键文字截断
+
+修法（`f366276`）：新增 `libLargeText(context)`（系统字号 ≥1.6×）。大字号下：自测卡「开始自测 / 重测」移到文字下方，「我的髋部 / 3 分半自测 / 说明」占满卡宽；动作大全改一行一张卡，名称与剂量完整换行；套路卡名称独占一行，「为你推荐」和分钟数放下一行；训练组卡「开始」移到文字下方；搜索框用短提示「搜动作」并允许增高。所有字号下自测卡标题/说明、套路卡名称/副标题、训练组名称/副标题/来源都改为换行而不是省略号。1× 和 1.5× 的原布局不变（原有 ×1.3/×1.5 测试全部通过）。
+
+回归：`test/hip/hip_practice_large_text_test.dart`（8 个：浅/深 × 未自测/已自测 × 〔自测卡；动作/套路/我的三段从上滚到底〕，360×780、textScaleFactor 2.0、HipThemeChoice 显式设为浅/深）：检查无溢出异常、练习列表里所有文字 `RenderParagraph.didExceedMaxLines == false`、自测卡含「3 分半自测」且按钮整个在卡内。修复前 **0 pass / 8 fail**（例：自测卡「我的髋部」「3 分半自测」被截、搜索提示、动作名、套路副标题等）。另用 Noto Sans SC 渲染 12 张截图人工看过（沙盒工作区，未入库）。筛选行的方向 chip 是横向滚动列表，末尾半个 chip 是滚动提示，不属于截断。
+
+### 9.3 不在本 PR 范围：Web 语音内容异常
+
+验收发现 Web 播放循环初始口令；独立 main 基线也复现，属既有 Web 兼容问题，本 PR 不修，不据 Web `playing` 事件宣称语音通过。
+
+### 9.4 同步 main `fcffded`
+
+`git merge origin/main`（merge commit `c0af7f0`，不 force）。冲突仅 `docs/README.md`、`docs/development-log.md`：README 表头部取 main 的两行（Web 补充验收、更新后的修复复审）原文，本分支的练习库入口行接在后面（本轮更新为含 F8/P3）；development-log 本分支三段（实现、F1–F6、F7）在前、main 两段（Android 验收准备、Web 代验与新增 F8）在后，均原文保留。按行比对 main 版本这两个文件，main 的每一行都在合并结果中（无删改）。
+
+### 9.5 最终验证（最终代码，Flutter 3.44.7 / Dart 3.12.2，沙盒 Linux）
+
+| 命令 | 结果 |
+|---|---|
+| `flutter pub get --enforce-lockfile` | 通过，依赖与 lock 未变 |
+| `flutter analyze --no-pub` | 0 issue |
+| `flutter test --no-pub` 全部 40 个测试文件，分 4 批 | **335 pass / 1 条件 skip**（322 + 新增 13）：68 + 88 + 74 + 105/1 skip |
+| `python3 tools/action_kits/build_action_kits.py check` | 0 problem（沙盒无 jsonschema，只做结构检查） |
+| `python3 tools/media/build_themed_media.py check` | check ok |
+| `python3 -m unittest discover -s tools/tests` | 19 pass |
+| `git diff --check origin/main HEAD` | 无输出 |
+
+`pubspec.yaml`、`pubspec.lock`、版本号与 main 相同；未合并 main。仍未构建 APK、未上真机、未做 iOS；建议真机补一遍 F8 复现手势和系统最大字号下的练习页。

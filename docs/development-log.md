@@ -183,3 +183,7 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 ## 2026-10-19：PR #22 Web代验与新增F8
 
 按用户要求将能代做的界面和数据流程转为真实Web验收，并行独立迁移/语音/字号资料，全部产物在E盘。补齐大量界面流程，但发现快速左删后编辑导致C被B覆盖的P2（F8），独立三步案例确认后已[评论PR](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)并回读一致。Web声音循环初始片段的异常也在准确main基线复现，不能把实际playing计数当口令正确。D-29维持待修/待原生，未改App、未合并；辅助浏览器/HTTP服务已关闭。[全表与缩减后的手机清单](pr22-web-acceptance-2026-10-19.md)。
+
+## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
+
+Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
