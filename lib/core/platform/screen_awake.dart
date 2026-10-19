@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import 'training_service.dart';
+
 /// Keeps the screen on while a timed session (training player, hip check)
 /// is open, so the device's auto-lock never sends the app to the background
 /// mid-session.
@@ -11,7 +13,11 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 /// Doze), which would stall the 100 ms session ticker and the voice cues.
 /// Keeping the screen on is the lowest-risk guard (no permission, no
 /// manifest service, no Play Console declaration). A manual lock with the
-/// power button is still not covered – see docs/development-roadmap.md D-10.
+/// power button or switching to another app was not covered (D-10).
+///
+/// 2026-10-19 (Android voice fix): the same hold now also runs the Android
+/// training foreground service ([TrainingService]), so the session keeps
+/// time with the app in the background or the screen locked.
 ///
 /// Reference-counted so nested sessions don't release each other's hold.
 /// Platform errors are swallowed: in widget tests (no plugin) and on
@@ -31,6 +37,7 @@ class ScreenAwake {
   }
 
   static void _set(bool on) {
+    TrainingService.set(on);
     try {
       unawaited(WakelockPlus.toggle(enable: on).catchError((Object _) {}));
     } catch (_) {
