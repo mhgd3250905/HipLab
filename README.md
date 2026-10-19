@@ -18,7 +18,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮组合源6dd16ed：analyze0、191pass/1条件skip，debug APK已构建并保留数据安装；深浅gallery另2pass。真机结论限本轮修复路径，完整课程/音乐ducking、低端帧时、强光、新自测结果页仍保持待验；iOS旧候选基础检查已完成，最新main组合正在重新验证，见[iOS记录](docs/ios-main-ui-036-2026-10-18.md)。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮组合源6dd16ed：analyze0、191pass/1条件skip，debug APK已构建并保留数据安装；深浅gallery另2pass。真机结论限本轮修复路径，完整课程/音乐ducking、低端帧时、强光、新自测结果页仍保持待验；iOS旧候选基础检查已完成，最新main组合源668f4bc已通过193项测试和签名Release、未安装，见[iOS记录](docs/ios-main-6020d8e-2026-10-19.md)。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
 
 ```bash
