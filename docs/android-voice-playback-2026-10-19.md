@@ -90,7 +90,7 @@ main `d9338ea` 同一复现，全部 15 套路、等级 3：
 
 ## 风险与待定
 
-- **Play Console**：新增 `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 后，下次上传前需在 Play Console 填前台服务声明（媒体播放，附简短视频说明用途）。本分支未改任何商店/发布配置；是否接受前台服务方案由开哥决定（不接受可单独回退 `android/` 与 `lib/core/platform/` 两处，队列/换边修复独立有效）。
+- **Play Console**：新增 `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 后，下次上传前需在 Play Console 填前台服务声明（媒体播放，附简短视频说明用途）。本分支未改任何商店/发布配置；是否接受前台服务方案由开哥决定（不接受可回退提交 `fd8d285`——`android/` 与 `lib/core/platform/`——并删去 `hip_voice_android_fix_test.dart` 第 1 组；队列/换边修复独立有效）。
 - Kotlin 未在沙盒编译（无 Android SDK），需本机构建确认。
 - 换边间隔变长（zh 慢慢还原类 +1 s、en +2 s），属 App 过渡时间，不是动作包训练剂量。
 - 与 PR #22（feat/training-library）重叠：`lib/hip/voice/session_script.dart`（本分支改 `workPhases` 的换边长度和 `cues()` 的 switchSide 分支，#22 改 `_dose/_holdCues/setsOf/_repCues`，同文件不同段落，预计可自动合并；#22 新增的组间「慢慢还原」后 5 s 间隔无倒数，不受影响）。本分支未改 `hip_player_page.dart`。
