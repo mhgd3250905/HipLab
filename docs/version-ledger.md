@@ -241,3 +241,8 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ## 0.3.6+11 PR22 F9 / PR24组合复审包（2026-10-19）
 
 准确组合9b22dccc2bf2ca269a67b408198b9e3e9dbb742b（a586de3+既有PR24/重播hold修复），已推验证分支；APK位于E:/AII-3D/hiplab-releases/pr22-a586de3-f9-reaudit-20261019/hiplab-0.3.6+11-pr22-pr24-f9-arm64-debug.apk，174518862bytes，SHA256 `f40f5956fa3bdae49872e525fced310257102c6b4f7638eb28911e18ec4b91bd`。Gradle41.8秒，证书连续、资源/CRC/16KB对齐通过，间隙0；23:15:53对2602BRT18C / Android16覆盖安装成功，安装SHA匹配、14键state相同。F9编辑与键盘原生通过，尚未合main，未改版本或上传商店。[报告](pr22-f9-reaudit-2026-10-19.md)。
+
+
+### PR22/24合并状态追加（2026-10-19 23:32）
+
+开哥同意后，已安装9b22dcc的运行代码随b33ed21合入并推送main；GitHub22/24均MERGED。版本保持0.3.6+11，APK仍为上述174518862bytes / SHA f40f5956…，23:15:53安装事实保持。本次无新构建、无重新安装、无商店上传；主线SHA变化不冒称新APK。[合并确认](pr22-f9-reaudit-2026-10-19.md)。

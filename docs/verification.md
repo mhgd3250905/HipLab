@@ -347,3 +347,8 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 ## PR #22 a586de3 / F9返回复审（2026-10-19）
 
 原独立150ms/1000ms保存两项通过；作者F9 8项+F8 5项+键盘6项，共21专项通过，组合9b22dcc全量387pass/1条件skip、analyze0、enforce-lockfile成功。Gradle41.8秒、APK签名/CRC/16KB对齐/575音频94视频逐字节通过。23:15:53保留数据安装、APK SHA与14键state一致。真机唯一项禁止空保存、ABC立即保存得[B,C]、BCA连删立即保存得[A]、立即取消提示并放弃保留存储均通过；另一组/10条记录/非组字段保持。新包正常字号首次/视频详情返回键盘真实出现；未认定硬件键盘或WebView根因。F9关闭，无新阻断，iOS及扩展系统矩阵未验。[全部来源与证据](pr22-f9-reaudit-2026-10-19.md)。
+
+
+## PR #22 / #24 合入main核验（2026-10-19 23:32）
+
+用户明确同意后核对远端main=ab1425b、候选=b33ed21、PR22=a586de3、PR24=0ccef6b均未变；两来源都是候选祖先。main快进b33ed21并push成功，GitHub两PR均MERGED。合入树与已验9b22dcc在lib/android/assets/pubspec/lock/tests无差异，沿用387pass/1skip、analyze0及原生F9/键盘与上一轮正常播放证据；本次仅合并与文档，没有重跑SDK或安装。文档diff --check及本地链接核对通过。[精确身份](pr22-f9-reaudit-2026-10-19.md)。
