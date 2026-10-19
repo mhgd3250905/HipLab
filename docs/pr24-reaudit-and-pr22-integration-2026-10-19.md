@@ -64,3 +64,6 @@ PR24未发布GitHub评论或review；PR22既有授权评论更新本轮实际证
 身份见 `apk-identity.json`；数据/服务断言见 `normal-playback-audit.json`；听音原答复见 `user-listening-confirmation.md`；另有两轮准备/结束截图、服务/电源/音频快照及状态回读。上述证据和APK保存在本机E盘，不随Git推送，也未公开上传私有偏好。
 
 结束前再次inspect：两PR均OPEN、无checks或现有review决定；PR24 head0ccef6b、MERGEABLE/CLEAN，PR22 head2cc40e3、CONFLICTING/DIRTY；actual targetHeadOid均2d91688未变。PR24 baseRefOid为2d91688；PR22报告的baseRefOid为fcffded5288b2ad62253dc1c7661918d5eac5e4c，未把它误用为最新main。组合仅解决本机合并冲突并保留双方历史，不代表远端PR22冲突已消除。以后main若仅推进本轮文档，运行验证不因此重复构建。
+
+
+后续更新：PR22 a586de3已修F9并在组合9b22dcc完成原生复核，旧F9待修结论为当时快照；详见[最新F9复审](pr22-f9-reaudit-2026-10-19.md)。

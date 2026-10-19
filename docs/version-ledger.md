@@ -236,3 +236,8 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 ## 0.3.6+11 PR #22/#24组合正常播放包（2026-10-19）
 
 组合源5725c3668baddbe844a9943ed81c9374bc7aa3f1（22的2cc40e3 + 24的0ccef6b + 本机重播hold适配），验证分支已推送，main未合入。APK `E:/AII-3D/hiplab-releases/pr24-0ccef6b-reaudit-20261019/hiplab-0.3.6+11-pr22-pr24-combined-arm64-debug.apk`，174512710bytes，SHA256 `922ca6a7e1fa6da07ad96479dde2e9fa32a218515d8d0a0a3235a6ce664f643e`；com.ugk.hiplab/versionCode11，既有debug证书连续、资源/CRC/16KB对齐通过。初编19.9秒、ZIP空洞单APK重打16.9秒；21:56:37向2602BRT18C / Android16覆盖安装成功，安装SHA相同、14键状态JSON保持。两轮正常播放及服务释放通过，用户现场听感正常；F9仍待修。没有增加版本、修改发布配置或上传商店。[本轮记录](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
+
+
+## 0.3.6+11 PR22 F9 / PR24组合复审包（2026-10-19）
+
+准确组合9b22dccc2bf2ca269a67b408198b9e3e9dbb742b（a586de3+既有PR24/重播hold修复），已推验证分支；APK位于E:/AII-3D/hiplab-releases/pr22-a586de3-f9-reaudit-20261019/hiplab-0.3.6+11-pr22-pr24-f9-arm64-debug.apk，174518862bytes，SHA256 `f40f5956fa3bdae49872e525fced310257102c6b4f7638eb28911e18ec4b91bd`。Gradle41.8秒，证书连续、资源/CRC/16KB对齐通过，间隙0；23:15:53对2602BRT18C / Android16覆盖安装成功，安装SHA匹配、14键state相同。F9编辑与键盘原生通过，尚未合main，未改版本或上传商店。[报告](pr22-f9-reaudit-2026-10-19.md)。
