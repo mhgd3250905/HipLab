@@ -321,3 +321,11 @@ b12b0f5和9fa0cc0均enforce-lockfile pub get/debug arm64构建通过；两包CRC
 ## Android 语音播报修复沙盒验证（2026-10-19）
 
 分支 `fix/android-voice-playback`，基于 main `d9338ea`，沙盒 Linux Flutter 3.44.7：`flutter analyze` 0 问题；`flutter test` 277 pass / 1 条件 skip（同机 main 基线 254 / 1，新增 23 项、改 1 项）；`python3 -m unittest discover -s tools/tests` 19 OK；`build_action_kits.py check` 0 problem（无 jsonschema）；`audit_voice.py` 570 条 1 条既有不合格（en `sec.66`，未改素材）。时间线复现前后对比见[Android语音记录](android-voice-playback-2026-10-19.md)。**未执行**：Kotlin/APK 构建、安装、真机听音、logcat——按该记录的真机清单由本机补。
+
+## PR #22 Web补充验收（2026-10-19）
+
+真实main.dart及38/46文件身份核对通过；非空旧12键迁移仅增2键、复制F刷新剂量保持/自然约60秒、搜索筛选、常规编辑、F3/F4、安全、F7单练与自定义、8轮中英单练计时/记录通过。独立实测新增F8/P2动作覆盖，故不合并。Web音频实际哈希显示循环初始口令，准确main基线也复现；内容未通过。21张360宽2.0字号深浅截图中主按钮可达，P3文字截断保留。全部证据226文件/94PNG/5WebM约20.1MB在E盘，手机/iOS未操作，未改实现或重跑全量。[完整表与边界](pr22-web-acceptance-2026-10-19.md)。
+
+## PR #24 Windows独立审核（2026-10-19）
+
+固定e3655e5与实际main fcffded；pub get enforce-lockfile成功、analyze0、277pass/1条件skip，debug arm64 Gradle20.6秒成功，新service/权限实际入包，debug签名/CRC/16KB对齐及575音频/94视频逐字节检查通过。独立手动暂停/真实D英文疼痛取消专项均失败；疼痛case替回main Queue/Controller通过。异步音量专项head失败，main Controller音量对照通过。另查实两项原生生命周期P2，无设备时序或耗电量实测。merge-tree仅verification.md冲突，未合并。未执行ADB、安装、锁屏/耳机/ducking或iOS；作者的旧PR22组合测试不冒充本轮执行。[精确链路、复现与日志](pr24-review-2026-10-19.md)。
