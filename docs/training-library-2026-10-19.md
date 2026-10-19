@@ -377,3 +377,71 @@
 | `git diff --check origin/main HEAD` | 无输出 |
 
 `pubspec.yaml`、`pubspec.lock`、版本号与 main 相同；未合并 main。仍未构建 APK、未上真机、未做 iOS；建议真机补一遍 F8 复现手势和系统最大字号下的练习页。
+
+## 10. PR #22 F9 与搜索框键盘（2026-10-19，复测固定 head `2cc40e3`）
+
+来源：[PR #22 真机复测评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6268054160)、main 上 [pr22-native-retest-2026-10-19.md](pr22-native-retest-2026-10-19.md) 的 F9 段；用户新报 Android 真机「练习页搜索框点了有光标、不弹键盘」。
+
+### 10.1 F9 / P2：左删后动画内立即保存，被删项重开后仍在
+
+根因：`GroupEditorPage._save` 直接保存 `_current`（由 `_steps` 生成），而左滑删除要等 `Dismissible.onDismissed` 才从 `_steps` 移除。onDismissed 在「滑出 200 ms + 收起 300 ms」都结束后才触发；在这之前点保存，写入的是旧列表。离开页的放弃判断 `_dirty` 读的也是旧列表，所以删除后立即返回不会提示、删除丢失；只剩 1 项时左删再立即保存，会把这 1 项照样存回去。
+
+修法（`7018fcb`，只改 `lib/hip/ui/library/group_editor_page.dart`）：
+- `confirmDismiss` 触发（滑出结束、确认删除）时把该稳定 key 记入 `_deleting`；`_live` = `_steps` 去掉 `_deleting`。保存内容、`_dirty`、步骤数文案、底部摘要、保存按钮是否可用（0 项禁用）、「添加动作」上限、挑选页「已在组里」、剂量面板打开前和写回前，都只读 `_live`。`onDismissed` 再从 `_steps` 真正移除并清掉 `_deleting`；列表行数与 Dismissible 生命周期不变，不会重复删除，也不会 RangeError。
+- 松手已过阈值、但还在滑出的 ≤200 ms 内，确认尚未发生。为此用 `onUpdate` 记录正在滑动的行（progress>0），保存 / 关闭（含系统返回）先等这些行要么确认删除、要么弹回，再读列表；最多等 800 ms（手指一直按住不放时按未删处理）。同一时间只处理一次保存或关闭，等待期间重复点按会被忽略。
+- 与 F8 的稳定 key 修法兼容：`_indexOf(key)` 不变，待删 key 的剂量面板不再打开、也不写回。
+
+回归：`test/hip/hip_editor_pending_save_test.dart`（8 个，真实 `tester.drag` 左滑，在动画结束前操作；“重开”用同一存储新建 `HipStore` 读回，主用例另在界面重开编辑器数行）。
+
+| 用例 | 修复前（`2cc40e3` 的 lib + 本测试） | 修复后 |
+|---|---|---|
+| F9 delete the first step, save 150 ms later: reopened group has [B, C] | **fail**：Actual `[A, B, C]` | pass |
+| F9 delete the first step, save in the very next frame: saves [B, C] | **fail**：Actual `[A, B, C]` | pass |
+| F9 delete two steps back to back, save at once: saves [C] | **fail**：Actual `[A, B, C]` | pass |
+| F9 delete then close at once: asks to discard; discard keeps the stored [A, B, C] | **fail**：没有放弃提示，直接离开 | pass |
+| F9 delete then system back at once: asks; keep editing, then save: saves [B, C] | **fail**：没有放弃提示 | pass |
+| F9 delete the only step, save at once: same as after the animation (nothing saved, editor stays, save disabled) | **fail**：保存并离开了编辑器 | pass |
+| F9 control: delete, wait for the animation, save: [B, C] | pass（对照） | pass |
+| F9 a swipe that snaps back (under the threshold) is not a delete: save right after keeps [A, B, C] | pass（护栏） | pass |
+
+修复前 **6 fail / 2 pass**（测试先提交为 `6b4b101`）。F8 的 5 个回归在修复后照常通过。
+
+### 10.2 练习页搜索框：有光标、不弹软键盘（Android 真机）
+
+结论：**在 Flutter 这一侧没有找到原因，组件测试复现不了；只能真机确认。** 本轮没有改产品代码，只加了键盘契约回归测试。
+
+排查过的点：
+- 上一轮 P3（`f366276`）对 `LibSearchField` 只改了容器：`height: 44` → `minHeight: 44`、上下各 6 的内边距、大字号用短提示「搜动作」。`TextField` 本身没动：`maxLines` 仍为默认 1，没有设 `minLines` / `keyboardType`（仍是 text）/ `readOnly` / `showCursor`。
+- 没有外层 `GestureDetector` / `InkWell` / `Listener` 抢点按；全仓库 `lib/` 没有 `unfocus`、`FocusManager`、`TextInput.hide`、`SystemChannels.textInput`；练习页 `ListView` 没设 `keyboardDismissBehavior`；`TextField` 没传 `focusNode`，用的是自己 State 里的节点，不会每次 build 重建。底栏 tab 切换器给每个 tab 包了 `FocusScope(canRequestFocus: 当前 tab)`，当前 tab 可获取焦点。
+- main 上没有任何 `TextField`（练习库是本 PR 新增），没有可对比的 main 搜索框；这也是本 App 第一次有文字输入。
+- 组件测试（Flutter 3.44.7，Android 目标平台）：点按后 `TextInput.setClient` → `TextInput.show` 按序发出，`hasAnyClients` / `isVisible` 为真；键盘 inset 逐步升到 320 后连接仍在；收起键盘后再点会再次 show；切到别的 tab 再回来、从动作详情页返回后点按都会 show；能输入并过滤。1× 与 2.0 字号都一样；把 lib 换回 P3 之前（`f366276^`）结果相同，排除 P3。
+
+由此推断：Flutter 已经发出 `TextInput.show`，键盘没出来发生在 Android 侧（引擎 `TextInputPlugin` → `InputMethodManager.showSoftInput`）。按可能性排序，需要真机区分：
+1. **系统认为接了实体键盘**：Android 默认在有实体键盘时不弹软键盘，表现正好是「有光标、无键盘」。本轮复测通过 ADB/投屏控制手机，scrcpy 的 UHID 键盘或蓝牙键盘都会被当作实体键盘。查 `adb shell dumpsys input_method | grep -iE "mInputShown|mShowRequested|hardKeyboard"`、`adb shell settings get secure show_ime_with_hard_keyboard`，以及 `dumpsys input` 里的键盘设备；断开投屏/键盘或打开「显示虚拟键盘」再试。
+2. **WebView 平台视图拿走了 Android 焦点**：动作详情页的示范视频是 webview_flutter 平台视图，上游有未关闭的同类问题（[flutter#156659](https://github.com/flutter/flutter/issues/156659)：点过 WebView 后，Flutter 输入框仍有光标但键盘不工作）。分别在冷启动后直接点搜索框、和打开过动作详情（视频播放）返回后点搜索框，各试一次；只有后者复现就是这一条。
+3. 以上都排除时，抓 `adb logcat -s InputMethodManager:* ImeTracker:* TextInputPlugin:*`，看 show 请求是否到达、被谁拒绝。
+
+回归：`test/hip/hip_search_keyboard_test.dart`（6 个）：`search ×1.0` / `search ×2.0` 各两例（点按弹键盘 + inset 后保持 + 输入过滤；收起后再点再弹），`search: leave for another tab and come back…`，`添加动作 picker search ×2.0…`。这些在修复前后都通过，锁的是 Flutter 侧契约，不等于真机键盘已验证。
+
+### 10.3 同步 main `76ff846`
+
+`git merge origin/main`（merge commit `0d2c625`，不 force）。冲突只有 `docs/development-log.md`：本分支的 F8/P3 段与 main 的 PR #24 审核、PR #22 真机复测、组合验证三段都保留，main 原文未改。其余 main 文档（AGENTS.md、README、current-state、roadmap、verification、version-ledger 及三份新审核文档）自动合入。
+
+### 10.4 最终验证（最终代码，Flutter 3.44.7 / Dart 3.12.2，沙盒 Linux）
+
+| 命令 | 结果 |
+|---|---|
+| `flutter pub get --enforce-lockfile` | 通过，依赖与 lock 未变 |
+| `flutter analyze --no-pub` | 0 issue |
+| `flutter test --no-pub` 全部 42 个测试文件，分批 | **349 pass / 1 条件 skip**（335 + 新增 14）：61 + 59 + 51 + 8 + 50 + 49 + 71/1 skip |
+| `python3 tools/action_kits/build_action_kits.py check` | 0 problem（沙盒无 jsonschema，只做结构检查） |
+| `python3 tools/media/build_themed_media.py check` | check ok |
+| `python3 -m unittest discover -s tools/tests` | 19 pass |
+| `git diff --check origin/main HEAD` | 无输出 |
+
+`pubspec.yaml`、`pubspec.lock`、版本号与 main 相同；未合并 main。**未构建 APK，未上真机，未做 iOS。**
+
+### 10.5 本机 Android 复测点
+
+- F9：至少两项的训练组，左滑删首项，150 ms 内点保存，回列表重开，应不含被删项；连删两项后立即保存；删除后立即点关闭 / 系统返回，应出现「放弃修改？」；只剩 1 项时删掉立即点保存，应停在编辑器、保存按钮置灰、存储不变。
+- 搜索框：冷启动进练习页点搜索框，键盘应弹出并能输入过滤；再从动作详情页（视频播放过）返回后点一次；系统最大字号下各一次。不弹时按 10.2 的三步取证（先确认没有实体/投屏键盘）。

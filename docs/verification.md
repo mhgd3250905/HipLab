@@ -337,3 +337,8 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 ## PR #24 审核四项P2修复沙盒验证（2026-10-19 晚）
 
 分支 `fix/android-voice-playback` 同步 main `6299a38` 后修 F24-1～4，沙盒 Linux Flutter 3.44.7：pub get enforce-lockfile 成功；analyze 0；`flutter test` 290 pass / 1 条件 skip；`build_action_kits.py check` 0 problem（无 jsonschema）；`build_themed_media.py check` ok；Python 19 OK；`git diff --check origin/main HEAD` 干净。新增 16 项回归测试，其中 14 项在 e3655e5 代码上失败或编译不过（另 2 项为守护项）（明细见[Android语音记录第二轮](android-voice-playback-2026-10-19.md)）。**未执行**：Kotlin 编译（无 Android SDK）、APK、安装、真机；补充复测点见同一记录。
+
+
+## PR #24返回修复与#22组合验证（2026-10-19）
+
+固定24=0ccef6b、22=2cc40e3、actual main=2d91688；组合5725c36。原暂停/疼痛取消/异步音量三独立专项均通过；新增0秒/7秒重播保活回归均先失败、修后通过；enforce-lockfile成功、analyze0、全量373pass/1条件skip，Gradle/Kotlin成功。APK证书连续、CRC/16KB对齐、575音频/94视频逐字节通过，ZIP空洞重打后最大间隙0。21:56:37保留数据安装且SHA匹配，升级14键JSON相同；中文h-squat 1次×1组两轮自然完成/再来一组通过、恰增2记录、其余数据保持、连续1天不变。两轮前台服务/CPU锁在、结束收尾后释放；用户正常听到/无播放异常。App PID日志383017bytes未检出播放/致命异常；自定义服务tag未采到，释放取dumpsys/Power快照。扩展系统矩阵按最新要求不再续测，iOS未验；F9仍待修，未合main。[完整报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。

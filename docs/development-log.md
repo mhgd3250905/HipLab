@@ -186,6 +186,12 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 
 按用户要求将能代做的界面和数据流程转为真实Web验收，并行独立迁移/语音/字号资料，全部产物在E盘。补齐大量界面流程，但发现快速左删后编辑导致C被B覆盖的P2（F8），独立三步案例确认后已[评论PR](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)并回读一致。Web声音循环初始片段的异常也在准确main基线复现，不能把实际playing计数当口令正确。D-29维持待修/待原生，未改App、未合并；辅助浏览器/HTTP服务已关闭。[全表与缩减后的手机清单](pr22-web-acceptance-2026-10-19.md)。
 
+
+
+## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
+
+Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
+
 ## 2026-10-19：PR #24 Android后台语音审核
 
 用户安排作者处理PR22评论后，转审核PR24 e3655e5，复用E盘原干净审核副本。并行代码审阅及Windows锁定依赖/analyze0/277pass1skip通过，APK新增Kotlin编译和身份资源检查通过。独立暂停/疼痛及音量专项确认两项回归，main组件控制组通过；另查实终态保活泄漏与STOP/START时序两项P2。源/目标结束前回读一致，GitHub存在verification文档冲突；本轮只保存审核文档与证据，未修改App、未评论/review、未合并或ADB安装，不改变手机/商店事实。[审核报告](pr24-review-2026-10-19.md)。
@@ -196,6 +202,14 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 
 [阶段复测评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6268054160)已发布并回读与本机草稿完全一致。当前仍等待安全解锁，未将阶段结果写成原生全验通过。
 
-## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
+## 2026-10-19：PR #24修复返回、#22组合正常播放验证
 
-Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
+固定24新head0ccef6b复审，原四P2源码闭环，原3失败专项本机均通过。E盘副本组合22的2cc40e3，保留_complete的plan记录与6秒释放，并修复同State「再来一组」未取得新hold；新增两例先失败后通过。组合5725c36已普通推送验证分支，373pass/1skip、analyze0及Kotlin编译/包身份通过。21:56:37保留数据安装，升级JSON相同；中文深蹲两轮自然完成，恰增2记录、其余字段保持，两轮服务/CPU锁结束后释放，用户现场确认正常听到/播放无异常。按用户要求停止扩展系统矩阵，规则写入AGENTS；PR22 F9仍待作者修复，不合main、不approve、不上传商店，仅保存当前证据与文档。[报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
+
+## 2026-10-19：PR #22 F9 修复、搜索框键盘排查与同步 main（feat/training-library）
+
+真机复测（固定 2cc40e3）的 F9 / P2：训练组编辑器左删后在动画内立即保存，重开被删项仍在。根因是 `_save` 与放弃判断读旧 `_steps`，删除要到 `onDismissed` 才生效。修法 `7018fcb`：`confirmDismiss` 时记入待删 key，保存、放弃判断、步骤数、0 项禁用、添加上限、剂量面板都排除；松手后仍在滑出的行由保存/关闭先等其确认或弹回（上限 800 ms）。新增 8 个真实手势回归（`6b4b101`，修复前 6 fail / 2 pass），F8 回归照常通过。
+
+用户新报练习页搜索框有光标不弹键盘：P3 只改了容器高度/内边距/提示文案，`TextField` 无 readOnly/maxLines/keyboardType 变化，无抢焦点或 unfocus；组件测试里点按即发 `TextInput.show`，1×/2.0 及 inset、切 tab、详情页返回后都正常，P3 之前代码结果相同。Flutter 侧找不到原因，未改产品代码，加 6 个键盘契约测试（`ff85de6`），真机取证步骤见 training-library §10.2（优先排查投屏/实体键盘，其次 WebView 焦点）。
+
+merge main `76ff846`（`0d2c625`），冲突仅本文件，两边保留、main 原文不改。analyze 0，349 pass / 1 条件 skip，工具检查通过；未构建 APK、未上真机。
