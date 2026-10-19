@@ -187,8 +187,15 @@ class VoiceQueue {
       // line right behind it (the output plays lines in order) instead of
       // chopping the end off a sentence. Playback runs a little behind the
       // queue's clock, so "nearly done" here is still sounding on device.
-      if (cur.end - now > tailGrace) _cut(now);
-      _start(trimmed, now);
+      if (cur.end - now > tailGrace) {
+        _cut(now);
+        _start(trimmed, now);
+      } else {
+        // The output plays the newcomer after the tail: predict it there,
+        // so the air stays busy until it has really been said (PR #24
+        // review F24-1).
+        _start(trimmed, cur.end);
+      }
       return;
     }
     _pending.add(_Pending(trimmed, now + _wait(trimmed.priority)));
@@ -224,10 +231,22 @@ class VoiceQueue {
     output.stopSpeech();
   }
 
-  /// Pause / skip / close: silence now and forget anything waiting.
+  /// Pause / pain / skip / stop / close: silence now and forget anything
+  /// waiting.
+  ///
+  /// Always tells the output to stop, whatever this queue predicts: the
+  /// output plays lines in order and runs behind this clock (a slow load, a
+  /// tail let through by [tailGrace]), so a line the queue thinks is over can
+  /// still be sounding and a count can still be waiting behind it. The
+  /// output's stop drops every line asked for before it (PR #24 review
+  /// F24-1). The tail grace applies to a normal takeover only, never here.
   void cancelAll(double now) {
     _pending.clear();
-    if (_busy(now)) _cut(now);
+    for (final line in log.reversed) {
+      if (line.end <= now) break;
+      line.cutAt ??= now < line.start ? line.start : now;
+    }
     _current = null;
+    output.stopSpeech();
   }
 }
