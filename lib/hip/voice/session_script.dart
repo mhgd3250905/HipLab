@@ -303,10 +303,22 @@ class SessionScript {
     return _legacyWorkCues(phase, s);
   }
 
-  /// Sets on this phase: the step's sets (练习库 1–3), plus one on the tight
-  /// side (D-01).
+  /// This phase is the tight side that does more (D-01). Checks the real
+  /// [PlanStep.extraSide] against the side played – an unsided step or the
+  /// other side never is (PR #22 F6).
+  static bool tightSide(SessionPhase phase, PlanStep s) =>
+      s.extraSide != null && phase.side != null && s.extraSide == phase.side;
+
+  /// Sets of a counted step on this phase: the step's sets (练习库 1–3),
+  /// plus one on the tight side (D-01).
   static int setsOf(SessionPhase phase, PlanStep s) =>
-      s.sets + (s.extraSide != null && s.extraSide == phase.side ? 1 : 0);
+      s.sets + (tightSide(phase, s) ? 1 : 0);
+
+  /// Sets of a hold on this phase, as actually done on this side (PR #22
+  /// F5): a 练习库 group's tight side does one more set (1 set → 2 sets with
+  /// a 5 s gap); a built-in routine's tight side keeps one longer hold.
+  static int holdSetsOf(SessionPhase phase, PlanStep s) =>
+      s.sets + (s.extraSet && tightSide(phase, s) ? 1 : 0);
 
   /// Count clips exist for 1…10; a higher count says only its phase word.
   static const maxCountClip = 10;
@@ -373,7 +385,9 @@ class SessionScript {
   /// Hold (保持计时): start, coaching in the gaps, halfway, last 10 s, a
   /// 5-4-3-2-1; "慢慢还原" is said by the switch / rest that follows.
   List<VoiceCue> _holdCues(SessionPhase phase, PlanStep s, ActionKit kit) {
-    if (s.sets <= 1) return _timedHold(phase, s, kit.voice.coach, kit.voice);
+    if (holdSetsOf(phase, s) <= 1) {
+      return _timedHold(phase, s, kit.voice.coach, kit.voice);
+    }
     return _setHolds(phase, s, kit);
   }
 
@@ -382,7 +396,7 @@ class SessionScript {
   /// short for that (pain ladder halved it) it is one continuous hold.
   List<VoiceCue> _setHolds(SessionPhase phase, PlanStep s, ActionKit kit) {
     const gap = 5.0; // DoseRules.holdSetGap
-    final n = setsOf(phase, s);
+    final n = holdSetsOf(phase, s);
     final per = (phase.seconds - (n - 1) * gap) / n;
     if (per < 10) return _timedHold(phase, s, kit.voice.coach, kit.voice);
     final v = kit.voice;
@@ -395,7 +409,8 @@ class SessionScript {
         per,
         side: phase.side,
       );
-      for (final c in _timedHold(one, s, v.coach, v, extraCue: false)) {
+      // The tight side's 「右边多做一组」 is said once, on the first set.
+      for (final c in _timedHold(one, s, v.coach, v, extraCue: j == 0)) {
         final clips = j > 0 && c.at == 0 ? ['chime.start', v.nextSet] : c.clips;
         out.add(VoiceCue(o + c.at, clips, c.priority, subtitle: c.subtitle));
       }
@@ -505,8 +520,7 @@ class SessionScript {
       VoiceCue(0, ['chime.start', v.go], CuePriority.call),
     ];
     var busyUntil = _len([v.go]) + .3;
-    final sets = setsOf(phase, s);
-    if (extraCue && sets > 1) {
+    if (extraCue && tightSide(phase, s)) {
       final clip = s.extraSide == HipSide.right
           ? 'cue.extra_right'
           : 'cue.extra_left';

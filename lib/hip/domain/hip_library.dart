@@ -240,14 +240,14 @@ abstract final class DoseRules {
       sideSeconds(k, d, single: single) * (k.sided ? 2 : 1);
 
   /// The extra set on the tight side (assessment asymmetry): one set of one
-  /// side, plus the hold gap in front of it.
+  /// side, plus – for a hold – the gap in front of it. The tight side then
+  /// does sets + 1 ≥ 2 sets, so a hold always rests [holdSetGap] before the
+  /// extra one, also when the step itself has 1 set (PR #22 F5).
   static int extraSetSeconds(
     ActionKit k,
     LibraryDose d, {
     required bool single,
-  }) =>
-      setSeconds(k, d, single: single) +
-      (k.kind.counted || d.sets <= 1 ? 0 : holdSetGap);
+  }) => setSeconds(k, d, single: single) + (k.kind.counted ? 0 : holdSetGap);
 }
 
 /// Short dose text for cards, rows and the player ("每侧 60 秒 × 2 组").

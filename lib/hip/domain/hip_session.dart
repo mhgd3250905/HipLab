@@ -62,8 +62,15 @@ class PlanStep {
     this.alternative,
     this.kitDose = const KitDose(),
     this.sets = 1,
+    this.extraSet = false,
   });
   final HipDrill drill;
+
+  /// How the tight side's [extraSeconds] are done (PR #22 F5). True (练习库
+  /// 我的训练组): one more set, a hold resting 5 s before it. False (built-in
+  /// routines, D-01 as shipped): a counted step adds a set, a hold just
+  /// keeps going for longer.
+  final bool extraSet;
 
   /// Sets per side (1–3, 练习库). The tight side does one more (D-01).
   final int sets;
@@ -109,6 +116,7 @@ class PlanStep {
       alternative: alternative,
       kitDose: kitDose,
       sets: sets,
+      extraSet: extraSet,
     );
   }
 
@@ -379,6 +387,7 @@ class TrainingPlanner {
           sets: d.sets,
           extraSide: extra,
           extraSeconds: extraSeconds,
+          extraSet: extra != null,
           kitDose: DoseRules.kitDose(kit, d, single: false),
           alternative: drill.alternative,
         ),
