@@ -291,3 +291,9 @@ ZIP 39,151,634 bytes / `f422c051eab2b4e973fe637d5f2a3dec07207e21b960f10800efe77d
 第五项为本地组合反馈按钮独立14px样式丢失主题字体，真实RenderParagraph回归先红后绿，c7def28首轮修复；最终analyze0、254pass/1条件skip。Python19及两媒体工具check通过。实际Chrome共用播放器51/51、重点循环暂停7/7、核心脚本1/1；88自测/追问+8结果四尺寸组合、完整深浅自测→结果→训练、设置和按压/减少动态/暂停/疼痛skip/快速Tab通过。最终字体增量深浅冷上下文360×740×1.5复核通过，休息起无新增字体请求。基线矩阵源e3fb1d3，仅字体增量在c7def28重测，详见[报告及证据](pr19-pr21-review-2026-10-19.md#本轮web复核按最新安排)。
 
 按用户最新安排停止模拟器；Web采用合成存储、静音输出与封面替身，共用JS播放器另验实际H.264。保留语义locator父层拦截、启动Roboto网络、原生视频/声音/锁屏/性能待验边界；未宣称14项原生全通过。最终arm64候选未装手机，晚上继续真机；未合入或推送main。
+
+## 用户真机简单测试追加（2026-10-19）
+
+用户收到本轮c7def28 arm64 debug交付包后报告安装和简单测试通过；仅登记此范围。身份见[版本台账](version-ledger.md#用户真机安装及简单测试反馈2026-10-19)。本次没有Agent ADB、截图、设备版本/WebView回读或逐项测试证据；不推断现有记录保持、完整14项中英试听、原生切主题/退出、锁屏恢复、帧时/强光或iOS全部通过。
+
+复用已记录的运行源`c7def2869b789357b303d69d66eb8c18a0a748ae`验证：`flutter analyze --no-pub` 0问题、默认`flutter test --no-pub`全量254pass/1条件skip、`python -m unittest discover -s tools/tests`19过、`python tools/media/build_themed_media.py check`及`python tools/action_kits/build_action_kits.py check`通过。2026-10-19本会话执行；c7def28至收束前HEAD`8d8cb9d168adf27c08e5bcd4c060979143877687`仅文档/证据delta，本次也只改文档，故原代码验证继续适用，不将其冒称在新文档提交重新跑过。构建命令为`flutter build apk --debug --no-pub --target-platform android-arm64`，构建及签名结果按其原source state引用，不重构建。

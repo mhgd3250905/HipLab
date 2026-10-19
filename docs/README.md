@@ -1,10 +1,10 @@
 # HipLab 文档与开发台账
 
-本目录是 HipLab 主仓库文档入口。**PR #17/#18 已修复两项P2并顺序合入main，Android当前已保留数据安装0.3.6+11修复包（源码6dd16ed）**；analyze0、191pass/1条件skip，深浅及减少动画分段下沉、快速Tab、原生视频退出已复查，偏好逐字节保持，见[修复与合并记录](pr17-pr18-fixes-and-merge-2026-10-18.md)。此前[0.3.6样式安装](theme-polish-2026-10-18.md)和[0.3.5语音试听](android-voice-media-routing-2026-10-18.md)保留历史；当前冻结Pose-Hub v0.2.0（46条1080视频/46张540封面）。完整课程、音乐ducking、低端帧时、强光及iPhone仍待补。
+本目录是 HipLab 主仓库文档入口。**2026-10-19：本轮c7def28 / 0.3.6+11审阅包已交付，用户报告真机安装及简单测试通过；审阅分支已推送，main尚未合入。** 完整试听/锁屏/性能等待验范围见[本轮审核](pr19-pr21-review-2026-10-19.md)。以下#17/#18事实为此前主线交付历史。**PR #17/#18 已修复两项P2并顺序合入main，Android当前已保留数据安装0.3.6+11修复包（源码6dd16ed）**；analyze0、191pass/1条件skip，深浅及减少动画分段下沉、快速Tab、原生视频退出已复查，偏好逐字节保持，见[修复与合并记录](pr17-pr18-fixes-and-merge-2026-10-18.md)。此前[0.3.6样式安装](theme-polish-2026-10-18.md)和[0.3.5语音试听](android-voice-media-routing-2026-10-18.md)保留历史；当前冻结Pose-Hub v0.2.0（46条1080视频/46张540封面）。完整课程、音乐ducking、低端帧时、强光及iPhone仍待补。
 
 | 文档 | 用途 | 何时更新 |
 |---|---|---|
-| [PR #19/#20/#21隔离审核](pr19-pr21-review-2026-10-19.md) | 五项首轮修复、254过/1跳、Python19、Web复核及最终arm64候选；晚上真机，未合main | 本轮审核与原生证据变化后 |
+| [PR #19/#20/#21隔离审核](pr19-pr21-review-2026-10-19.md) | 五项首轮修复、254过/1跳、Python19、Web复核及arm64交付；用户报告安装/简单真机测试通过，未合main | 本轮审核与原生证据变化后 |
 | [轻拟物有选择引入：审美考据](tactile-design-rationale-2026-10-19.md) | 引用 HIG / M3 / Refactoring UI / NN/g / Rams 推导的 6 条规则、逐控件判定、预算回归测试（分支 fix/tactile-curation，未合并） | 拟物使用范围变化时 |
 | [PR #17/#18修复与合并](pr17-pr18-fixes-and-merge-2026-10-18.md) | 两项P2、191项回归、真机数据保持与合并身份 | 本轮实际状态变化后 |
 | [0.3.6样式与阶段收束](theme-polish-2026-10-18.md) | 4项修复、源码/证据绑定、APK和19:29安装、验收边界 | 本阶段事实变化后 |
@@ -116,4 +116,4 @@ ZIP 根目录直接包含动作 ID 文件夹，例如 `glute-max-A/`，没有额
 
 当前包为 **46 条 1080×1080 dark 视频 + 46 张 540×540 JPG 封面**。封面 540 是 v0.2.0 发布规格，不能继续写成 1080 封面；视频与封面均按 manifest SHA 校验。
 
-此包只含 46 个动作的 dark 视频和封面，共 92 个文件。`supine-cross-demo` 为 HipLab 自有剪辑，实际文件为 `assets/drill_media/hip-supine-cross-demo.mp4` 与 `hip-supine-cross-demo.jpg`，自测 still 保留既有 `assets/hip/assessment/`，light 素材尚未发布；三者均不在此 ZIP 或当前 lock 中，不删除现有资源，浅色主题继续使用深色舞台素材。首次同步用于恢复已冻结的构建资源，不改变素材版本或 ID；`--check` 必须退出 0，内容重生成后如有意外差异，应先核对来源，Mac 不自行修改 lock 或升级依赖。
+此包只含 46 个动作的 dark 视频和封面，共 92 个文件。`supine-cross-demo` 为 HipLab 自有剪辑，实际文件为 `assets/drill_media/hip-supine-cross-demo.mp4` 与 `hip-supine-cross-demo.jpg`，自测 still 保留既有 `assets/hip/assessment/`，light不在此冻结ZIP；本审阅分支由PR #20另带47套浅色视频/封面与20张浅色自测图。三者均不在此ZIP或当前lock中，不删除现有资源；冻结ZIP不代表本审阅包只含深色素材。首次同步用于恢复已冻结的构建资源，不改变素材版本或 ID；`--check` 必须退出 0，内容重生成后如有意外差异，应先核对来源，Mac 不自行修改 lock 或升级依赖。
