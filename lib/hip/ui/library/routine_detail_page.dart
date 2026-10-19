@@ -194,14 +194,21 @@ class RoutineDetailPage extends StatelessWidget {
     int i,
     PlanStep s,
   ) => HipPressable(
+    key: ValueKey('routine-step-${s.drill.id}'),
     semanticLabel: drillName(content, s.drill, t.lang),
     scale: .98,
     onTap: inLibrary(content, s.drill.id)
-        ? () => Navigator.of(context).push(
-            HipRoute.push<Object?>(
-              (_) => DrillDetailPage(actions: actions, drillId: s.drill.id),
-            ),
-          )
+        ? () async {
+            // 看放松 inside the move: hand the jump back to 动作大全 (F4).
+            final jump = await Navigator.of(context).push<Object?>(
+              HipRoute.push<Object?>(
+                (_) => DrillDetailPage(actions: actions, drillId: s.drill.id),
+              ),
+            );
+            if (jump is LibraryJump && context.mounted) {
+              Navigator.of(context).pop(jump);
+            }
+          }
         : null,
     child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),

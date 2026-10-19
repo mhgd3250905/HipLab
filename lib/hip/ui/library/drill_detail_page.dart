@@ -135,16 +135,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
           action: alt != null && inLibrary(content, alt.id)
               ? t.seeDrill(drillName(content, alt, t.lang))
               : null,
-          onAction: alt == null
-              ? null
-              : () => Navigator.of(context).pushReplacement(
-                  HipRoute.push<Object?>(
-                    (_) => DrillDetailPage(
-                      actions: widget.actions,
-                      drillId: alt.id,
-                    ),
-                  ),
-                ),
+          onAction: alt == null ? null : () => _openEasier(alt.id),
         ),
     ];
     final point = drillPoint(content, d, t.lang);
@@ -306,6 +297,18 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
       radius: 28,
       originColor: HipColors.jade,
     );
+  }
+
+  /// 看入门版: the easier move's detail on top of this one. Its 看放松
+  /// result is handed on to whoever opened this page (PR #22 F4); a
+  /// replacement route would have ended that wait with null right away.
+  Future<void> _openEasier(String id) async {
+    final jump = await Navigator.of(context).push<Object?>(
+      HipRoute.push<Object?>(
+        (_) => DrillDetailPage(actions: widget.actions, drillId: id),
+      ),
+    );
+    if (jump is LibraryJump && mounted) Navigator.of(context).pop(jump);
   }
 
   Future<void> _addToGroup(BuildContext context) async {

@@ -288,6 +288,12 @@ class _PracticePageState extends State<PracticePage> {
         color: HipColors.surface,
       ),
     );
+    _applyJump(jump);
+  }
+
+  /// A detail page (or a routine's move) answered 看放松: 动作大全 filtered
+  /// to that direction's relax moves.
+  void _applyJump(Object? jump) {
     if (jump is LibraryJump && mounted) {
       setState(() {
         _search.clear();
@@ -327,9 +333,11 @@ class _PracticePageState extends State<PracticePage> {
     key: ValueKey('routine-card-${r.id}'),
     semanticLabel: routineShortName(r),
     scale: .98,
-    onTap: () => Navigator.of(context).push(
-      HipRoute.push<void>(
-        (_) => RoutineDetailPage(actions: actions, routineId: r.id),
+    onTap: () async => _applyJump(
+      await Navigator.of(context).push<Object?>(
+        HipRoute.push<Object?>(
+          (_) => RoutineDetailPage(actions: actions, routineId: r.id),
+        ),
       ),
     ),
     child: HipPanel(
