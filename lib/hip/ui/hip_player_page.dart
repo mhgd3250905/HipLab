@@ -826,7 +826,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                       minimumSize: const Size(76, 36),
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       shape: const StadiumBorder(),
-                      textStyle: const TextStyle(fontSize: 14),
+                      textStyle: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(fontSize: 14),
                     ),
                     onPressed: () => _feel(doneStep, key),
                     child: Row(

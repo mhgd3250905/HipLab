@@ -3,10 +3,12 @@
 // drill just done sits under it; answering it never skips or shortens the
 // rest countdown.
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -77,6 +79,53 @@ void main() {
     // name + dose live under the media
     expect(find.text(first.drill.name), findsOneWidget);
     expect(find.textContaining(first.dose), findsWidgets);
+  });
+
+  testWidgets('rest: all feedback labels render in the bundled font at 14', (
+    tester,
+  ) async {
+    await start(tester);
+    await tester.tap(find.byKey(const ValueKey('player-skip'))); // prep → work
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('player-skip'))); // work → rest
+    await tester.pump(const Duration(seconds: 2));
+
+    final renderedStyles = <String, TextStyle>{};
+    final inheritedStyles = <String, TextStyle>{};
+    for (final key in ['ok', 'tight', 'pain']) {
+      final button = find.byKey(ValueKey('feel-$key'));
+      expect(button, findsOneWidget);
+      final label = find.descendant(of: button, matching: find.byType(Text));
+      expect(label, findsOneWidget);
+      final richText = find.descendant(
+        of: button,
+        matching: find.byType(RichText),
+      );
+      expect(richText, findsOneWidget);
+      // Check the final paragraph, after Text/Button/Material inheritance,
+      // rather than the ButtonStyle that happened to produce it.
+      final paragraph = tester.renderObject<RenderParagraph>(richText);
+      renderedStyles[key] = paragraph.text.style!;
+      inheritedStyles[key] = DefaultTextStyle.of(tester.element(label)).style;
+    }
+    debugPrint(
+      'feedback rendered family/size: '
+      '${renderedStyles.map((key, style) => MapEntry(key, '${style.fontFamily}/${style.fontSize}'))}; '
+      'inherited family: '
+      '${inheritedStyles.map((key, style) => MapEntry(key, style.fontFamily))}',
+    );
+    expect(
+      renderedStyles.values.map((style) => style.fontSize),
+      everyElement(14),
+      reason: 'All three actual rest feedback labels retain their 14px size.',
+    );
+    expect(
+      renderedStyles.values.map((style) => style.fontFamily),
+      everyElement(hipFontFamily),
+      reason:
+          'The first feedback frame must use bundled NotoSansSC rather than '
+          'request a fallback font when the rest row first appears.',
+    );
   });
 
   testWidgets('rest: feedback under the media; a tap records, never skips', (
