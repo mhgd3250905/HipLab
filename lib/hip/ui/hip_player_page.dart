@@ -472,14 +472,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                 expand: true,
                 child: KeyedSubtree(
                   key: ValueKey('art-${shown.drill.id}'),
-                  child: HipArtHero(
-                    tag: hipDrillHeroTag(shown.drill),
-                    radius: 28,
-                    flight: HipDrillArt(drill: shown.drill),
-                    child: HipDrillArt(
-                      drill: shown.drill,
-                      play: work && !_paused,
-                    ),
+                  child: HipDrillArt(
+                    drill: shown.drill,
+                    play: work && !_paused,
                   ),
                 ),
               ),
@@ -634,21 +629,21 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
+  /// A pill floating on the playing clip: the glass tactile material
+  /// (edge light + hairline, no opaque fill or cast shadow).
   Widget _mediaButton({
     required Key key,
     required HipGlyph icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
-  }) => Material(
-    color: Colors.black.withValues(alpha: .45),
-    shape: StadiumBorder(
-      side: BorderSide(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: InkWell(
-      key: key,
-      customBorder: const StadiumBorder(),
-      onTap: onTap,
+  }) => HipPressable(
+    key: key,
+    semanticLabel: label,
+    onTap: onTap,
+    child: HipTactile(
+      style: HipTactileStyle.glass(),
+      radius: 18,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Row(
@@ -762,14 +757,15 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                     ('tight', '有点紧', Colors.white),
                     ('pain', '疼', HipPalette.dark.pain),
                   ])
-                    OutlinedButton(
+                    HipChipButton(
                       key: ValueKey('feel-$key'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: color,
-                        side: BorderSide(color: color.withValues(alpha: .55)),
-                        minimumSize: const Size(88, 48),
-                        shape: const StadiumBorder(),
-                      ),
+                      label: label,
+                      color: color,
+                      // On the dark stage in both themes.
+                      palette: HipPalette.dark,
+                      height: 48,
+                      minWidth: 88,
+                      fontSize: 16,
                       onPressed: () {
                         if (key == 'pain') {
                           _pain(afterStep: true);
@@ -777,7 +773,6 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                           _skip(); // ready: start the next drill now
                         }
                       },
-                      child: Text(label, style: const TextStyle(fontSize: 16)),
                     ),
                 ],
               ),

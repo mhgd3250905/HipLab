@@ -10,7 +10,7 @@
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-Android 16 真机当前已保留数据更新至 **0.3.6+11 debug / arm64**，业务源码 `66f5da034c0cdac3341f3e80a57e3ddae5f95dce`。本次补齐浅色首页浮起滑块、绿色小字、运动说明和隐私页共用顶栏；19:29冷启动首页及浅色滑块已查看，安装/启动后1356字节偏好保持。检查、APK身份和安装边界见[样式修复与安装记录](docs/theme-polish-2026-10-18.md)、[版本台账](docs/version-ledger.md)。0.3.5+10静音模式试听的用户确认保留为历史，本版未重新做完整听音。
+Android 16 真机当前为 **0.3.6+11 debug / arm64 engine**，源码 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`，已保留数据覆盖安装。PR #17/#18 已按顺序合入 main；中途反向 Tab 跳变与分段无按压反馈均修复，深浅/减少动画及原生视频退出已复查，用户偏好保持。见[修复与合并记录](docs/pr17-pr18-fixes-and-merge-2026-10-18.md)、[版本台账](docs/version-ledger.md)。此前源66f5da0的19:29安装及0.3.5+10完整试听保留历史，不扩大为本版完整听音验收。
 
 制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
 
@@ -18,7 +18,8 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮 Android analyze 0问题、158项测试通过/1条件跳过，debug arm64 APK已构建并安装；网页四尺寸复查仅证明布局，完整训练、原生视频/系统音频仍需单独验收。iOS 0.3.6+11 候选已完成签名 Release/Archive、保留数据安装及基础真机检查，完整系统矩阵仍待验，见[iOS 本轮记录](docs/ios-main-ui-036-2026-10-18.md)。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console、未上传任何商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮组合源6dd16ed：analyze0、191pass/1条件skip，debug APK已构建并保留数据安装；深浅gallery另2pass。真机结论限本轮修复路径，完整课程/音乐ducking、低端帧时、强光、新自测结果页仍保持待验；iOS旧候选基础检查已完成，最新main组合正在重新验证，见[iOS记录](docs/ios-main-ui-036-2026-10-18.md)。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+
 
 ```bash
 flutter pub get
@@ -112,4 +113,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，Android隐私页、自测、深色全流程原生复查仍待验收。iPhone基础检查已补，iOS平台适配在PR #16待主线审核；完整系统矩阵及后续共用UI集成复验列D-26。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，Android隐私页、自测、深色全流程原生复查仍待验收。iPhone基础检查已补，iOS平台适配在PR #16待主线审核；完整系统矩阵及后续共用UI集成复验列D-27。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
