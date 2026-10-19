@@ -55,10 +55,8 @@ class HipPlayerPage extends StatefulWidget {
 }
 
 class _HipPlayerPageState extends State<HipPlayerPage> {
-  late final SessionPainLadder _ladder = SessionPainLadder(
-    widget.store.content,
-  );
-  final _clock = _ActiveClock();
+  late SessionPainLadder _ladder = SessionPainLadder(widget.store.content);
+  var _clock = _ActiveClock();
   late HipVoice _voice;
   late VoiceQueue _queue;
   late SessionEngine _engine;
@@ -97,14 +95,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     _ready = true;
     _voice = HipVoice.of(context);
     _queue = _voice.queue();
-    _engine = SessionEngine(
-      script: _voice.script(
-        routineIds: [for (final r in widget.plan.routines) r.id],
-        restSeconds: widget.plan.transitionSeconds,
-        kits: widget.store.content.kits,
-      ),
-      steps: widget.plan.steps,
-    );
+    _engine = _newEngine();
     if (_voice.settings.voice || _voice.settings.chimes) {
       unawaited(_voice.output.begin());
     }
@@ -114,6 +105,47 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ScreenAwake.acquire();
     _hold = TrainingHold.begin(Duration(seconds: _plannedSeconds.ceil()));
     _ticker = Timer.periodic(const Duration(milliseconds: 33), (_) => _tick());
+    _tick();
+  }
+
+  SessionEngine _newEngine() => SessionEngine(
+    script: _voice.script(
+      routineIds: [for (final r in widget.plan.routines) r.id],
+      restSeconds: widget.plan.transitionSeconds,
+      kits: widget.store.content.kits,
+    ),
+    steps: widget.plan.steps,
+  );
+
+  /// 再来一组 (PR #22 F1): a fresh session inside this same player. The
+  /// audio session stays open – no second page whose late dispose would
+  /// `end()` the shared [HipVoice.output] under the new round.
+  void _restart() {
+    // Replaying reuses this State, but owns a new Android session. Cancel
+    // the previous round's closing timer before taking its replacement.
+    _hold?.release();
+    _queue.cancelAll(_clock.t);
+    _queue = _voice.queue();
+    setState(() {
+      _ladder = SessionPainLadder(widget.store.content);
+      _clock = _ActiveClock();
+      _engine = _newEngine();
+      _hold = TrainingHold.begin(Duration(seconds: _plannedSeconds.ceil()));
+      _finished = false;
+      _stopped = false;
+      _ladderCue = null;
+      _subtitle = null;
+      _shownSecond = -1;
+      _shownPhase = null;
+      _felt.clear();
+      _feltAt = null;
+      _ringProgress.value = 0;
+    });
+    if (_voice.settings.voice || _voice.settings.chimes) {
+      // Idempotent on an open session; re-opens one an OS interruption or
+      // a settings change may have closed.
+      unawaited(_voice.output.begin());
+    }
     _tick();
   }
 
@@ -187,7 +219,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     // Also when it finished on its own with the screen locked: the page
     // stays open until the user comes back, the keep-alive must not.
     _hold?.release(after: _closingLine);
-    widget.store.completeSession(_ladder);
+    widget.store.completeSession(_ladder, plan: widget.plan);
   }
 
   /// A call, Siri, an alarm or unplugged headphones (iOS / Android audio
@@ -322,6 +354,14 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
     _clock.resume();
     final t = _clock.t;
+    if (kind == PainKind.pinch) {
+      // Every 疼 is kept for the library's 「最近疼过」 hint (not a lock).
+      unawaited(
+        widget.store.recordPain(
+          SessionPainLadder.primaryDirection(target.drill),
+        ),
+      );
+    }
     setState(() {
       _ladderCue = action.cue;
       _apply(action, target, afterStep: afterStep, t: t);
@@ -353,22 +393,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             seconds: (target.seconds / 2).ceil(),
           );
           final kit = widget.store.content.kit(reduced.drill.id);
-          if (kit != null &&
-              kit.kind.counted &&
-              reduced.segments.any((segment) {
-                final sets =
-                    reduced.extraSide != null && reduced.extraSide == segment.$1
-                    ? 2
-                    : 1;
-                return kit
-                        .repPlan(
-                          reduced.kitDose,
-                          segment.$2.toDouble(),
-                          sets: sets,
-                        )
-                        .reps ==
-                    0;
-              })) {
+          // Same sets per side as the voice script (PR #22 F7): any side /
+          // set without one full rep skips the action.
+          if (kit != null && SessionScript.noFullRep(reduced, kit)) {
             _engine.skip(t);
             _queue.submit(const VoiceCue(0, ['p.skip'], CuePriority.call), t);
             break;
@@ -408,9 +435,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     _hold?.release();
     if (!_finished && !_stopped) {
       if (_engine.completed > 0) {
-        await widget.store.completeSession(_ladder);
+        await widget.store.completeSession(_ladder, plan: widget.plan);
       } else {
-        await widget.store.recordLadder(_ladder);
+        await widget.store.recordLadder(_ladder, plan: widget.plan);
       }
     }
     if (mounted) Navigator.of(context).pop();
@@ -932,42 +959,61 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
-  Widget _finishedView() => Padding(
-    padding: const EdgeInsets.all(24),
-    child: Column(
-      children: [
-        const Spacer(),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: .6, end: 1),
-          duration: HipMotion.slow,
-          curve: Curves.easeOutBack,
-          builder: (_, v, child) => Transform.scale(scale: v, child: child),
-          child: HipIcon(
-            HipGlyph.checkCircle,
-            filled: true,
-            size: 88,
-            color: HipColors.jade,
+  bool get _single => widget.plan.source == PlanSource.single;
+
+  Widget _finishedView() {
+    // 单练 (拍板 3): logged, not counted for the streak; 再来一组 replays the
+    // same dose from the lead-in. After 疼 skipped its direction: relax only.
+    final skipped = _ladder.skippedDirections.isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const Spacer(),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: .6, end: 1),
+            duration: HipMotion.slow,
+            curve: Curves.easeOutBack,
+            builder: (_, v, child) => Transform.scale(scale: v, child: child),
+            child: HipIcon(
+              HipGlyph.checkCircle,
+              filled: true,
+              size: 88,
+              color: HipColors.jade,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          '今天练完了',
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '连续 ${widget.store.streak} 天',
-          style: TextStyle(fontSize: 18, color: HipColors.muted),
-        ),
-        const Spacer(),
-        HipPrimaryButton(
-          key: const ValueKey('player-done'),
-          label: '回首页',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 16),
+          Text(
+            _single ? '练完了' : '今天练完了',
+            style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _single
+                ? (skipped ? '这里今天只做放松，别勉强' : '单练记入练习记录，不计连续天数')
+                : '连续 ${widget.store.streak} 天',
+            key: const ValueKey('player-done-note'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, color: HipColors.muted),
+          ),
+          const Spacer(),
+          if (_single && !skipped) ...[
+            HipSecondaryButton(
+              key: const ValueKey('player-again'),
+              label: '再来一组',
+              onPressed: _restart,
+            ),
+            const SizedBox(height: 12),
+          ],
+          HipPrimaryButton(
+            key: const ValueKey('player-done'),
+            label: _single ? '完成' : '回首页',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _stoppedView() => Padding(
     padding: const EdgeInsets.all(24),

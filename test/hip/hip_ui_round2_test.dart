@@ -15,6 +15,7 @@ import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 void main() {
   final content = loadContent();
@@ -230,8 +231,7 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
-    await tester.pumpAndSettle();
+    await openCheckupIntro(tester);
     final row = find.byKey(const ValueKey('intro-item-butterfly'));
     // No framed media box inside the row any more.
     expect(
@@ -375,8 +375,7 @@ void main() {
       tester,
     ) async {
       await pumpApp(tester);
-      await tester.tap(find.byKey(const ValueKey('tab-1')));
-      await tester.pumpAndSettle();
+      await openCheckupIntro(tester);
       await tester.tap(find.byKey(const ValueKey('assessment-start')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));

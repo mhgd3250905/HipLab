@@ -170,7 +170,26 @@ class SessionScript {
 
   double _len(List<String> clips) => lib.total(clips, lang: lang);
 
-  String _dose(PlanStep s) => lib.textKey('dose', s.dose) ?? 'sec.${s.seconds}';
+  /// The dose said in the preview: the authored line when there is one; a
+  /// library hold says 「每侧 + N 秒」 from the stock clips; else the step
+  /// length (legacy).
+  List<String> _dose(PlanStep s) {
+    final key = lib.textKey('dose', s.dose);
+    if (key != null) return [key];
+    final kit = _kit(s);
+    final per = s.kitDose.seconds;
+    if (kit != null && !kit.kind.counted && per != null) {
+      if (lib.has('sec.$per', lang: lang)) {
+        return [if (s.sided) 'p.each_side', 'sec.$per'];
+      }
+      return const [];
+    }
+    if (kit != null &&
+        (s.sets > 1 || !lib.has('sec.${s.seconds}', lang: lang))) {
+      return const [];
+    }
+    return ['sec.${s.seconds}'];
+  }
 
   List<String> _preview(List<PlanStep> steps, int i, {required bool first}) {
     final s = steps[i];
@@ -181,7 +200,7 @@ class SessionScript {
           ? 'p.last'
           : 'p.next',
       'drill.${s.drill.id}',
-      _dose(s),
+      ..._dose(s),
       if (s.sided) ?kits[s.drill.id]?.voice.firstSide,
     ];
   }
@@ -305,9 +324,43 @@ class SessionScript {
     return _legacyWorkCues(phase, s);
   }
 
-  /// Sets on this phase: the tight side does one extra set (D-01).
+  /// This phase is the tight side that does more (D-01). Checks the real
+  /// [PlanStep.extraSide] against the side played – an unsided step or the
+  /// other side never is (PR #22 F6).
+  static bool tightSide(SessionPhase phase, PlanStep s) =>
+      s.tightOn(phase.side);
+
+  /// Sets of a counted step on this phase: the step's sets (练习库 1–3),
+  /// plus one on the tight side (D-01). Same rule as the player's pain
+  /// guard ([PlanStep.countedSetsOn], PR #22 F7).
   static int setsOf(SessionPhase phase, PlanStep s) =>
-      s.extraSide != null && s.extraSide == phase.side ? 2 : 1;
+      s.countedSetsOn(phase.side);
+
+  /// Sets of a hold on this phase, as actually done on this side (PR #22
+  /// F5): a 练习库 group's tight side does one more set (1 set → 2 sets with
+  /// a 5 s gap); a built-in routine's tight side keeps one longer hold.
+  static int holdSetsOf(SessionPhase phase, PlanStep s) =>
+      s.holdSetsOn(phase.side);
+
+  /// A counted [s] leaves some side or set without one full rep (PR #22 F7):
+  /// the script would play that side with no cues. The player skips the
+  /// action instead (pain halving, 「任一侧/组放不下完整一次就跳过」).
+  static bool noFullRep(PlanStep s, ActionKit kit) =>
+      kit.kind.counted &&
+      s.segments.any(
+        (segment) =>
+            kit
+                .repPlan(
+                  s.kitDose,
+                  segment.$2.toDouble(),
+                  sets: s.countedSetsOn(segment.$1),
+                )
+                .reps ==
+            0,
+      );
+
+  /// Count clips exist for 1…10; a higher count says only its phase word.
+  static const maxCountClip = 10;
 
   /// Counted action (rep rhythm): "开始", then on every rep the count with
   /// the go word ("一，起"), the back word at the return ("落"), a hold word
@@ -337,10 +390,18 @@ class SessionScript {
           final word = ph.cueFor(k);
           if (i == 0) {
             out.add(
-              VoiceCue(t, [
-                last ? v.lastRep : v.countClip(k),
-                ?word,
-              ], CuePriority.count),
+              VoiceCue(
+                t,
+                [
+                  last
+                      ? v.lastRep
+                      : k <= maxCountClip
+                      ? v.countClip(k)
+                      : null,
+                  ?word,
+                ].whereType<String>().toList(),
+                CuePriority.count,
+              ),
             );
           } else if (word != null) {
             out.add(VoiceCue(t + ph.cueAt, [word], CuePriority.count));
@@ -362,8 +423,43 @@ class SessionScript {
 
   /// Hold (保持计时): start, coaching in the gaps, halfway, last 10 s, a
   /// 5-4-3-2-1; "慢慢还原" is said by the switch / rest that follows.
-  List<VoiceCue> _holdCues(SessionPhase phase, PlanStep s, ActionKit kit) =>
-      _timedHold(phase, s, kit.voice.coach, kit.voice);
+  List<VoiceCue> _holdCues(SessionPhase phase, PlanStep s, ActionKit kit) {
+    if (holdSetsOf(phase, s) <= 1) {
+      return _timedHold(phase, s, kit.voice.coach, kit.voice);
+    }
+    return _setHolds(phase, s, kit);
+  }
+
+  /// A hold done in sets (练习库): each set is a full hold with its own
+  /// countdown; 慢慢还原, a short gap, then 再来一组. When the time left is too
+  /// short for that (pain ladder halved it) it is one continuous hold.
+  List<VoiceCue> _setHolds(SessionPhase phase, PlanStep s, ActionKit kit) {
+    const gap = 5.0; // DoseRules.holdSetGap
+    final n = holdSetsOf(phase, s);
+    final per = (phase.seconds - (n - 1) * gap) / n;
+    if (per < 10) return _timedHold(phase, s, kit.voice.coach, kit.voice);
+    final v = kit.voice;
+    final out = <VoiceCue>[];
+    for (var j = 0; j < n; j++) {
+      final o = j * (per + gap);
+      final one = SessionPhase(
+        PhaseKind.work,
+        phase.step,
+        per,
+        side: phase.side,
+      );
+      // The tight side's 「右边多做一组」 is said once, on the first set.
+      for (final c in _timedHold(one, s, v.coach, v, extraCue: j == 0)) {
+        final clips = j > 0 && c.at == 0 ? ['chime.start', v.nextSet] : c.clips;
+        out.add(VoiceCue(o + c.at, clips, c.priority, subtitle: c.subtitle));
+      }
+      if (j < n - 1) {
+        out.add(VoiceCue(o + per, ['chime.end', v.end], CuePriority.call));
+      }
+    }
+    out.sort((a, b) => a.at.compareTo(b.at));
+    return out;
+  }
 
   List<VoiceCue> _legacyWorkCues(SessionPhase phase, PlanStep s) {
     final w = phase.seconds;
@@ -455,15 +551,15 @@ class SessionScript {
     SessionPhase phase,
     PlanStep s,
     List<String> coachClips,
-    KitVoice v,
-  ) {
+    KitVoice v, {
+    bool extraCue = true,
+  }) {
     final w = phase.seconds;
     final out = <VoiceCue>[
       VoiceCue(0, ['chime.start', v.go], CuePriority.call),
     ];
     var busyUntil = _len([v.go]) + .3;
-    final sets = setsOf(phase, s);
-    if (sets > 1) {
+    if (extraCue && tightSide(phase, s)) {
       final clip = s.extraSide == HipSide.right
           ? 'cue.extra_right'
           : 'cue.extra_left';

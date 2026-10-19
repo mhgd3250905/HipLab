@@ -148,6 +148,36 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 
 用户提供作者反馈后，停止后续存储整理，使用E:/AII-3D/3D-Hip-worktrees/pr22-fix-review/3D-Hip固定f7271f6复审。原F1–F6闭环，Windows310pass/1skip、analyze0、Python19、工具checks与独立49步骤核对通过；另查实F7多组疼痛减半漏skip。未改App实现、未合并、未构建安装。原有本地审核文档及新非C盘协作规则一并保留，历史结论不改写。[复审报告](pr22-reaudit-2026-10-19.md)。
 
+## 2026-10-19：练习库实现（feat/training-library，依赖 #19→#20→#21）
+
+按开哥 13:08 拍板实现练习库，并覆盖设计稿中的对应部分：
+- 底栏保持「今日 / 练习 / 进度」三个 tab。原「自测」tab 改为练习页顶部的「我的髋部 · 3 分半自测」卡，介绍页从卡片展开，首页 tile 保留。
+- 单练默认剂量为计时类每侧 60 秒、计次类每侧 10 次（呼吸类、带停留类按时长算），组数 1–3。训练组步骤沿用动作包默认剂量，可调范围为 1–2×（次数）和 ½–2×（秒数，5 秒一档，最少 10 秒）。
+- 单练只记入历史，不计连续天数。
+- 等级 1 选进阶动作只提示，不替换。
+
+基线：本地依次合入 #19、#20、#21，冲突按 #21 正文处理。补了两项：`build_action_kits.py` 现在会写入 #20 的浅色视频引用；预算测试的开始圆盘 accent 改为跟随舞台主题。集成后 246 pass。
+
+实现内容：
+- 领域层：`hip_library.dart`（45 个动作、DoseRules、custom_routines v1、校验、copyRoutine、PlanSource、SessionRecord），`PlanStep.sets`，planner 新增 single/custom/routine 三种入口，`PainEvent('pain')`，sessions 历史。
+- 语音：多组支持「再来一组」，保持类组间「慢慢还原」，计数超过 10 只报相位词。
+- 界面：`lib/hip/ui/library/`（练习页、动作大全、详情与单练、套路、我的、编辑器、挑选），单练结束页「再来一组 / 完成」，首页「我的训练组」横滑卡。
+- 文案：zh/en 两套（LibText），界面目前仍固定显示中文。
+
+验证：analyze 0；286 pass / 1 条件 skip（新增 40 个测试）；kits check 0；Python 测试 OK。小屏测试发现编辑器行在 ×1.5 字号下溢出 12 px，已修复。12 屏 × 深浅截图逐张检查过。
+
+未做：进度页「最近练习」列表、练习页「还麻吗」卡、英文界面实际切换、APK 构建与真机验证。远端 `codex/pr19-pr21-validation` 上的额外修复不在三个 PR 中，本分支未包含。详见[练习库实现记录](training-library-2026-10-19.md)。
+
+## 2026-10-19：PR #22 审核修复与对齐 main（feat/training-library）
+
+开哥 15:09 合并审核（固定 head a7992a6）提出 F1 P1 + F2–F6 P2，并要求先对齐 main 243a812。`git merge origin/main`（144e260），7 个冲突文件逐块手工解决：builder 浅色引用去重取 main；预算测试、播放器反馈按钮取 main 的断言与字体修复；`_startPlan` 同时保留 radius 和 main 的 originColor；docs 保留 main 原文后追加。疼痛短剂量 skip、媒体按钮语义、封面主题交接、开始展开颜色、反馈字体、媒体工具 guard 均保留；合并基线 294 pass / 1 skip。
+
+六项均首轮修复：F1 再来一组改为同一播放器内重建会话，共享音频输出不再被旧页 dispose 关掉（2f27355）；F2 训练组步骤保留套路的停留与节奏，复制 F 后 h-sumo-pry 仍 15 秒、步骤 60 秒，v1 可选键向后兼容（53f7082）；F3 加入训练组面板改为受高度约束的滚动列表，顺带修剂量面板标题在 ×1.5 下 5 px 溢出（2111d6f）；F4 套路详情和入门版都把「看放松」结果传回动作大全（ac449ac）；F5/F6 紧侧按本侧实际组数分组和计预算，内置套路保留连续加时，「多做一组」只看真实 extraSide（8783f7e）。新增 16 个回归测试（a38190f），修复前全部失败。最终 analyze 0、310 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。未构建 APK、未真机，Android 原生复查与保留数据升级留给本机。见[练习库实现记录](training-library-2026-10-19.md) §7。
+
+## 2026-10-19：PR #22 复审 F7 修复与同步 main（feat/training-library）
+
+复审（固定 f7271f6）关闭 F1–F6，新增 F7 / P2：疼痛减半的短次数保护组数写死为 1 / 2，没算 `PlanStep.sets`，与 SessionScript 不一致（单练深蹲 1 次 × 3 组减半后脚本无口令仍倒计时 8 秒）。首轮修复（ba0919d）：组数规则抽成 `PlanStep.countedSetsOn / holdSetsOn / tightOn`，SessionScript 与播放器共用，新增 `SessionScript.noFullRep`，任一侧/组放不下完整一次就跳过当前动作；内置套路旧行为不变。新增 12 个回归（播放器 widget 6：不分侧 2/3 组进结束页、训练组/分侧/紧侧额外组跳过后休息+反馈+下一步正常、对照不跳过；领域 6：组数与保护≡脚本），widget 用例修复前 5 fail / 1 pass。随后 merge 同步 main b12b0f5（b4db041），仅 docs/README.md、development-log.md 冲突，main 原文不改、本分支追加，非 C 盘规则与主线审核记录保留。最终 analyze 0、322 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §8。
+
 ## 2026-10-19：PR #22 Android验收准备
 
 按用户明确清单，复用E盘审核副本顺序构建b12b0f5基线和9fa0cc0候选，锁定依赖获取与包身份/资源校验通过，候选增量APK空洞已重新打包消除。用户随后安排先准备包、稍后接手机，尚未执行ADB或安装，原生各项继续未执行。最终PR评论待真实采证后汇总；全部通过仍须开哥同意再合并。[包与清单](pr22-android-acceptance-2026-10-19.md)。
@@ -165,3 +195,7 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 按用户指令在E盘复核作者F8/P3，335pass/1skip及analyze0通过；收到手机已连接后备份原包/偏好，准确候选保留数据安装并回读SHA。F8主案例保存[B2,C]通过，新增F9删除后立即保存复现回滚，真机与独立专项一致。中文两类各两轮及后台、英文保持首轮锁屏已做：记录增量正常但后台/锁屏完成延迟到恢复，未记全通过。用户中途取消极大字号验收，已恢复正常显示并将约束写AGENTS；安全锁屏后等待用户解锁，英文余项/系统中断/ducking/实际听音及原中文深色恢复仍待补。阶段结果按授权回帖PR22，不合并main。[详细报告](pr22-native-retest-2026-10-19.md)。
 
 [阶段复测评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6268054160)已发布并回读与本机草稿完全一致。当前仍等待安全解锁，未将阶段结果写成原生全验通过。
+
+## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
+
+Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
