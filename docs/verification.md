@@ -313,3 +313,7 @@ GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2
 ## PR #22 9fa0cc0 F7复核（2026-10-19）
 
 对象9fa0cc09c085df619297c59c886c7bd836a98ff6，目标b12b0f5；E盘副本Windows Flutter3.44.7 analyze0、默认全量322pass/1条件skip、Python19pass、含jsonschema的action-kit0问题、themed-media和diff check通过。原独立播放器脚本2pass（F7旧失败变通过，F1自然两轮/中断恢复保持通过），领域49步骤及6种紧侧预算通过。F1–F7全部关闭，仍无APK、Android原生听音/中断/锁屏/保留数据升级或iOS证据。[完整记录](pr22-reaudit-2026-10-19.md)。
+
+## PR #22 Android包准备（2026-10-19）
+
+b12b0f5和9fa0cc0均enforce-lockfile pub get/debug arm64构建通过；两包CRC、既有debug签名、包名/0.3.6+11、16KB对齐通过，575音频/94视频逐文件与源一致。候选增量打包空洞经单个生成APK重建消除，最终174,483,026bytes。无源码变更，不重复已通过的322项测试。手机尚未连接，用户安排先备包；未执行ADB、安装、自测、训练或中断试听，iOS本轮未验。[完整身份与原生待验清单](pr22-android-acceptance-2026-10-19.md)。
