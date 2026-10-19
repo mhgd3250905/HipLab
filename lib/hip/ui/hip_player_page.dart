@@ -169,7 +169,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   void _complete() {
     if (_finished) return;
     _finished = true;
-    widget.store.completeSession(_ladder);
+    widget.store.completeSession(_ladder, plan: widget.plan);
   }
 
   /// A call, Siri, an alarm or unplugged headphones (iOS / Android audio
@@ -295,6 +295,14 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
     _clock.resume();
     final t = _clock.t;
+    if (kind == PainKind.pinch) {
+      // Every 疼 is kept for the library's 「最近疼过」 hint (not a lock).
+      unawaited(
+        widget.store.recordPain(
+          SessionPainLadder.primaryDirection(target.drill),
+        ),
+      );
+    }
     setState(() {
       _ladderCue = action.cue;
       _apply(action, target, afterStep: afterStep, t: t);
@@ -358,9 +366,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     _queue.cancelAll(_clock.t);
     if (!_finished && !_stopped) {
       if (_engine.completed > 0) {
-        await widget.store.completeSession(_ladder);
+        await widget.store.completeSession(_ladder, plan: widget.plan);
       } else {
-        await widget.store.recordLadder(_ladder);
+        await widget.store.recordLadder(_ladder, plan: widget.plan);
       }
     }
     if (mounted) Navigator.of(context).pop();

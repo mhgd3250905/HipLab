@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 
 import '../../core/storage/local_state_storage.dart';
 import '../domain/hip_assessment.dart';
+import '../domain/hip_library.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_progress.dart';
@@ -51,6 +53,12 @@ class HipStore extends ChangeNotifier {
   /// 语音播报 (#13).
   VoiceSettings voice = const VoiceSettings();
 
+  /// 我的训练组 (custom_routines v1, stored under `customRoutines`).
+  final List<CustomRoutine> customRoutines = [];
+
+  /// Practice history, newest last, at most [SessionRecord.keep].
+  final List<SessionRecord> sessions = [];
+
   bool get onboarded => safety != null && identity != null;
   bool get blocked => safety?.values.any((v) => v) ?? false;
 
@@ -60,6 +68,10 @@ class HipStore extends ChangeNotifier {
 
   Map<HipDirection, DateTime> get lockedDirections =>
       PainHistory(painEvents).lockedUntil(now());
+
+  /// Directions with a pain report in the last 7 days (练习库 hint).
+  Set<HipDirection> get recentPainDirections =>
+      PainHistory(painEvents).recentPain(now());
 
   int get streak => streakDays(doneDays, now());
   List<bool> get week => lastSevenDays(doneDays, now());
@@ -141,6 +153,15 @@ class HipStore extends ChangeNotifier {
         Map<String, dynamic>.from(j['voice'] as Map),
       );
     }
+    customRoutines
+      ..clear()
+      ..addAll(CustomRoutinesCodec.decode(j['customRoutines'], content));
+    sessions
+      ..clear()
+      ..addAll([
+        for (final r in (j['sessions'] as List? ?? const []))
+          ?SessionRecord.fromJson(r),
+      ]);
   }
 
   Map<String, Object?> toJson() => {
@@ -164,6 +185,8 @@ class HipStore extends ChangeNotifier {
     'scene': scene.id,
     'theme': theme.id,
     'voice': voice.toJson(),
+    'customRoutines': CustomRoutinesCodec.encode(customRoutines),
+    'sessions': [for (final r in sessions) r.toJson()],
   };
 
   Future<void> _save() async {
@@ -195,13 +218,47 @@ class HipStore extends ChangeNotifier {
     return _save();
   }
 
-  /// A finished (or partly finished, ≥ 1 drill) session counts for the streak.
-  Future<void> completeSession(SessionPainLadder ladder) {
-    doneDays.add(dayKey(now()));
-    return recordLadder(ladder);
+  /// A finished (or partly finished, ≥ 1 drill) session counts for the
+  /// streak – except 单练, which is only written to the history (拍板 3).
+  Future<void> completeSession(SessionPainLadder ladder, {TrainingPlan? plan}) {
+    if (plan == null || plan.source.countsForStreak) {
+      doneDays.add(dayKey(now()));
+    }
+    _record(plan, completed: true);
+    return _recordLadder(ladder);
   }
 
-  Future<void> recordLadder(SessionPainLadder ladder) {
+  /// Left before finishing a drill: pain ladder kept, history marks it
+  /// unfinished, the streak is untouched.
+  Future<void> recordLadder(SessionPainLadder ladder, {TrainingPlan? plan}) {
+    _record(plan, completed: false);
+    return _recordLadder(ladder);
+  }
+
+  void _record(TrainingPlan? plan, {required bool completed}) {
+    if (plan == null) return;
+    sessions.add(
+      SessionRecord(
+        at: now(),
+        source: plan.source,
+        refId: plan.refId,
+        title: plan.title,
+        seconds: plan.seconds,
+        completed: completed,
+      ),
+    );
+    if (sessions.length > SessionRecord.keep) {
+      sessions.removeRange(0, sessions.length - SessionRecord.keep);
+    }
+  }
+
+  /// Every tap on 疼 (关节夹着疼) in the player: feeds 「最近疼过」.
+  Future<void> recordPain(HipDirection direction) {
+    painEvents.add(PainEvent(now(), direction, 'pain'));
+    return _save();
+  }
+
+  Future<void> _recordLadder(SessionPainLadder ladder) {
     final at = now();
     for (final d in ladder.skippedDirections) {
       painEvents.add(PainEvent(at, d, 'skip'));
@@ -228,6 +285,63 @@ class HipStore extends ChangeNotifier {
 
   Future<void> setVoice(VoiceSettings value) {
     voice = value;
+    return _save();
+  }
+
+  // ── 我的训练组 ──
+
+  CustomRoutine? customRoutine(String id) =>
+      customRoutines.where((r) => r.id == id).firstOrNull;
+
+  final _rand = math.Random();
+
+  /// A fresh id: `c_<yyyymmdd>_<4 hex>`.
+  String newCustomId() {
+    final d = dayKey(now()).replaceAll('-', '');
+    while (true) {
+      final id =
+          'c_${d}_${_rand.nextInt(0x10000).toRadixString(16).padLeft(4, '0')}';
+      if (customRoutine(id) == null) return id;
+    }
+  }
+
+  /// 我的训练组 N: the first number not taken.
+  String nextCustomName() {
+    for (var n = customRoutines.length + 1; ; n++) {
+      final name = '我的训练组 $n';
+      if (customRoutines.every((r) => r.name != name)) return name;
+    }
+  }
+
+  /// Inserts or replaces (by id); stamps updatedAt.
+  Future<CustomRoutine> saveCustomRoutine(CustomRoutine r) {
+    final at = now();
+    final saved = CustomRoutine(
+      id: r.id,
+      name: CustomRoutine.cleanName(r.name).isEmpty
+          ? nextCustomName()
+          : CustomRoutine.cleanName(r.name),
+      steps: r.steps.length > CustomRoutine.maxSteps
+          ? r.steps.sublist(0, CustomRoutine.maxSteps)
+          : r.steps,
+      restSeconds: CustomRoutine.rests.contains(r.restSeconds)
+          ? r.restSeconds
+          : CustomRoutine.defaultRest,
+      fromRoutine: r.fromRoutine,
+      createdAt: r.createdAt ?? at,
+      updatedAt: at,
+    );
+    final i = customRoutines.indexWhere((x) => x.id == r.id);
+    if (i < 0) {
+      customRoutines.add(saved);
+    } else {
+      customRoutines[i] = saved;
+    }
+    return _save().then((_) => saved);
+  }
+
+  Future<void> deleteCustomRoutine(String id) {
+    customRoutines.removeWhere((r) => r.id == id);
     return _save();
   }
 

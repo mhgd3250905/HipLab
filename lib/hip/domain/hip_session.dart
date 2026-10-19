@@ -1,5 +1,8 @@
 import 'hip_assessment.dart';
+import 'hip_library.dart';
 import 'hip_models.dart';
+
+export 'hip_library.dart' show PlanSource;
 
 /// Inputs that shape today's training. Built from the latest assessment,
 /// pain history and the safety answers.
@@ -58,8 +61,12 @@ class PlanStep {
     this.tip = '',
     this.alternative,
     this.kitDose = const KitDose(),
+    this.sets = 1,
   });
   final HipDrill drill;
+
+  /// Sets per side (1–3, 练习库). The tight side does one more (D-01).
+  final int sets;
 
   /// The routine's overrides of the action kit (reps / hold / seconds).
   final KitDose kitDose;
@@ -101,6 +108,7 @@ class PlanStep {
       tip: tip,
       alternative: alternative,
       kitDose: kitDose,
+      sets: sets,
     );
   }
 
@@ -115,18 +123,33 @@ class TrainingPlan {
     required this.routines,
     required this.steps,
     required this.transitionSeconds,
+    this.source = PlanSource.recommended,
+    this.refId,
+    this.name,
   });
   final List<HipRoutine> routines;
   final List<PlanStep> steps;
   final int transitionSeconds;
 
+  /// 首页推荐 / 套路 / 我的训练组 / 单练.
+  final PlanSource source;
+
+  /// Routine id, custom group id or drill id (单练).
+  final String? refId;
+
+  /// Title of a custom group or a single drill (routines are named by
+  /// [routines]).
+  final String? name;
+
   int get seconds =>
       steps.fold(0, (s, p) => s + p.seconds) +
       transitionSeconds * (steps.isEmpty ? 0 : steps.length - 1);
   int get minutes => (seconds / 60).round();
-  String get title => routines
-      .map((r) => r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), ''))
-      .join(' + ');
+  String get title =>
+      name ??
+      routines
+          .map((r) => r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), ''))
+          .join(' + ');
 }
 
 /// 成套训练.md 编排规则 4–7 + 自测设计.md §3.3 / §4.6.
@@ -188,6 +211,14 @@ class TrainingPlanner {
     return picked;
   }
 
+  /// Gated drills (舞者解锁 / 方向分数) – see [needsEasier].
+  bool gated(HipDrill d, TrainingProfile p) => _gated(d, p);
+
+  /// The routines swap this drill for its easier version at this level
+  /// (level 1 + advanced, or a gate). The library only advises (拍板 4).
+  bool needsEasier(HipDrill d, TrainingProfile p) =>
+      (p.level == 1 && d.advanced) || _gated(d, p);
+
   bool _gated(HipDrill d, TrainingProfile p) {
     final dir = d.directions.first;
     if (d.id.startsWith('t-')) return !p.dancerUnlocked;
@@ -208,7 +239,11 @@ class TrainingPlanner {
     return planFor(pickRoutines(minutes, scene, profile), profile);
   }
 
-  TrainingPlan planFor(List<HipRoutine> routines, TrainingProfile profile) {
+  TrainingPlan planFor(
+    List<HipRoutine> routines,
+    TrainingProfile profile, {
+    PlanSource source = PlanSource.recommended,
+  }) {
     final steps = <PlanStep>[];
     final seen = <String>{};
     for (final r in routines) {
@@ -230,7 +265,12 @@ class TrainingPlanner {
         seen.add(drill.id);
         final extra = s.sided ? profile.asymmetry[dir] : null;
         // A swapped-in drill takes its own kit's rhythm for the same dose.
-        final seconds = content.stepSeconds(drill.id, s.kit, s.sided, s.seconds);
+        final seconds = content.stepSeconds(
+          drill.id,
+          s.kit,
+          s.sided,
+          s.seconds,
+        );
         steps.add(
           PlanStep(
             drill: drill,
@@ -253,6 +293,104 @@ class TrainingPlanner {
       routines: routines,
       steps: steps,
       transitionSeconds: restSeconds,
+      source: source,
+      refId: routines.length == 1 ? routines.single.id : null,
+    );
+  }
+
+  /// A routine picked in 练习 · 套路 (same rules as the home plan). Null when
+  /// blocked by a safety card.
+  TrainingPlan? routinePlan(HipRoutine r, TrainingProfile profile) =>
+      profile.blocked
+      ? null
+      : planFor([r], profile, source: PlanSource.routine);
+
+  /// Relax-only this week (pain in the assessment or a 7-day lock): only
+  /// relax drills of that direction may run.
+  static bool lockedOut(HipDrill d, TrainingProfile p) =>
+      p.lockedDirections.contains(d.directions.first) && !d.isRelax;
+
+  /// 单练: one step at the user's dose. Null when a safety card blocks
+  /// training or the drill's direction is relax-only this week. Advanced /
+  /// gated drills are not swapped (拍板 4: advise, still allowed); no
+  /// tight-side extra set (the user picked the dose).
+  TrainingPlan? singlePlan(
+    HipDrill drill,
+    LibraryDose dose,
+    TrainingProfile profile,
+  ) {
+    final kit = content.kit(drill.id);
+    if (kit == null || profile.blocked || lockedOut(drill, profile)) {
+      return null;
+    }
+    final d = DoseRules.clamp(kit, dose, single: true);
+    return TrainingPlan(
+      routines: const [],
+      steps: [
+        PlanStep(
+          drill: drill,
+          dose: doseText(kit, d, single: true),
+          seconds: DoseRules.stepSeconds(kit, d, single: true),
+          sided: kit.sided,
+          sets: d.sets,
+          kitDose: DoseRules.kitDose(kit, d, single: true),
+          alternative: drill.alternative,
+        ),
+      ],
+      transitionSeconds: restSeconds,
+      source: PlanSource.single,
+      refId: drill.id,
+      name: drill.name,
+    );
+  }
+
+  /// Steps of [r] that will not run for [profile]: their direction is
+  /// relax-only this week (or the drill left the library).
+  List<CustomStep> customSkipped(CustomRoutine r, TrainingProfile profile) => [
+    for (final s in r.steps)
+      if (!inLibrary(content, s.kitId) ||
+          lockedOut(content.drill(s.kitId), profile))
+        s,
+  ];
+
+  /// 我的训练组: the steps as saved, minus relax-only directions. Advanced
+  /// drills are not swapped (拍板 4). The tight side gets one more set, as
+  /// in the routines. Null when blocked by a safety card.
+  TrainingPlan? customPlan(CustomRoutine r, TrainingProfile profile) {
+    if (profile.blocked) return null;
+    final steps = <PlanStep>[];
+    for (final s in r.steps) {
+      if (!inLibrary(content, s.kitId)) continue;
+      final drill = content.drill(s.kitId);
+      if (lockedOut(drill, profile)) continue;
+      final kit = content.kit(s.kitId)!;
+      final d = s.dose(kit);
+      final dir = drill.directions.first;
+      final extra = kit.sided ? profile.asymmetry[dir] : null;
+      final extraSeconds = extra == null
+          ? 0
+          : DoseRules.extraSetSeconds(kit, d, single: false);
+      steps.add(
+        PlanStep(
+          drill: drill,
+          dose: doseText(kit, d, single: false),
+          seconds: DoseRules.stepSeconds(kit, d, single: false) + extraSeconds,
+          sided: kit.sided,
+          sets: d.sets,
+          extraSide: extra,
+          extraSeconds: extraSeconds,
+          kitDose: DoseRules.kitDose(kit, d, single: false),
+          alternative: drill.alternative,
+        ),
+      );
+    }
+    return TrainingPlan(
+      routines: const [],
+      steps: steps,
+      transitionSeconds: r.restSeconds,
+      source: PlanSource.custom,
+      refId: r.id,
+      name: r.name,
     );
   }
 }

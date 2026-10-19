@@ -82,7 +82,8 @@ class PainEvent {
   final DateTime at;
   final HipDirection direction;
 
-  /// `skip` (ladder reached "skip direction") or `nerve`.
+  /// `skip` (ladder reached "skip direction"), `nerve`, or `pain` (every
+  /// tap on 疼 → 关节夹着疼, 练习库 2026-10-19; feeds 「最近疼过」 only).
   final String type;
 
   Map<String, Object?> toJson() => {
@@ -123,6 +124,13 @@ class PainHistory {
     }
     return out;
   }
+
+  /// Directions with any pain report (疼 / skip / nerve) in the last 7 days:
+  /// the library's 「这个方向最近疼过」 hint. Never a lock by itself.
+  Set<HipDirection> recentPain(DateTime now) => {
+    for (final e in events)
+      if (!e.at.isAfter(now) && now.difference(e.at) <= window) e.direction,
+  };
 
   bool get lastWasNerve => events.isNotEmpty && events.last.type == 'nerve';
 }
