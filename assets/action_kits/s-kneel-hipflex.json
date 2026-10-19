@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-s-kneel-hipflex.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-kneel-hipflex.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-kneel-hipflex.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "6d844b1571b397c41b82d230bd320935e40e41fc074a05d4133702a44d0c96e4",
+    "bytes": 265693
+   }
   }
  },
  "animation": {

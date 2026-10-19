@@ -26,7 +26,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-h-butterfly-active.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-butterfly-active.jpg"
   }
  },
  "media": {
@@ -41,7 +41,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.3
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-butterfly-active.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.3,
+    "sha256": "1accf72ff6537b5b4e330f0caf60f438895793b9092828b19bea387cfdb5f3fa",
+    "bytes": 757123
+   }
   }
  },
  "animation": {

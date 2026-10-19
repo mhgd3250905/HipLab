@@ -22,7 +22,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-w-feet-on-chair-bridge.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-w-feet-on-chair-bridge.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-w-feet-on-chair-bridge.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "7d5e0dbf498131369beba190c8d345d5705e189083d8c39c9d7142cc8f34d656",
+    "bytes": 379084
+   }
   }
  },
  "animation": {

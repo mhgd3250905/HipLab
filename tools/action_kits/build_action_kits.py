@@ -264,6 +264,9 @@ def build_kit(d, rule, anim, spec, old):
 
 def cmd_build(a):
     content = json.loads(CONTENT.read_text(encoding='utf-8'))
+    themed_path = ROOT / 'assets/hip/action-media.json'
+    themed = (json.loads(themed_path.read_text(encoding='utf-8'))['actions']
+              if themed_path.exists() else {})
     specs = frozen_specs()
     olds = {p.stem: json.loads(p.read_text(encoding='utf-8'))
             for p in KITS.glob('*.json') if p.stem != 'index'}
@@ -283,6 +286,15 @@ def cmd_build(a):
         if did not in K.RULES:
             raise SystemExit(f'{did}: missing from kit_rules.RULES')
         kit = build_kit(d, K.RULES[did], anims[did], specs[did], olds.get(did))
+        light = themed.get(did, {}).get('light')
+        if light:  # PR #20 light-stage media (assets/hip/action-media.json)
+            video, poster = light['video'], light['poster']
+            kit['display']['poster']['light'] = poster['asset']
+            kit['media']['video']['light'] = {
+                'asset': video['asset'], 'loopSeconds': video['durationSec'],
+                'posterTime': poster['timeSec'],
+                'sha256': video['sha256'], 'bytes': video['bytes'],
+            }
         (KITS / f'{did}.json').write_text(json.dumps(kit, ensure_ascii=False, indent=1) + '\n',
                                           encoding='utf-8')
         ids.append(did)

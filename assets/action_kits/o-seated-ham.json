@@ -22,7 +22,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-o-seated-ham.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-o-seated-ham.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-o-seated-ham.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "7be6c05463899df8e293e0bf6386eee8c0e62ccd2af36c43ed0042a60843a358",
+    "bytes": 295397
+   }
   }
  },
  "animation": {

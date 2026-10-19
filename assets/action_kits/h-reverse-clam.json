@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-reverse-clam.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-reverse-clam.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 1.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-reverse-clam.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.8,
+    "sha256": "05bb9a56bc3ceba3eb3512f4854e669e2b8a62abc2f7342d794e633803149f8e",
+    "bytes": 542476
+   }
   }
  },
  "animation": {

@@ -22,7 +22,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-hip-flexors-a.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-hip-flexors-a.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 1.9
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-hip-flexors-a.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.9,
+    "sha256": "efef89a77fc938ef25a3d0c8b4e499958592a24a6906eb97d384c677bedc8990",
+    "bytes": 381854
+   }
   }
  },
  "animation": {

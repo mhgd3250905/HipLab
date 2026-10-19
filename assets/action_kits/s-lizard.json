@@ -23,7 +23,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-s-lizard.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-lizard.jpg"
   }
  },
  "media": {
@@ -38,7 +38,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-lizard.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "6a3857fc9e1374d4f1edc088c7e575f51bf21a1ffa3316037b6a65e0db26333b",
+    "bytes": 306289
+   }
   }
  },
  "animation": {

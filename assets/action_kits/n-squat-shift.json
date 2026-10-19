@@ -25,7 +25,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-squat-shift.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-squat-shift.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.2
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-squat-shift.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.2,
+    "sha256": "5b403b2dbd7a7d7b6177410a042fb2f0f5443ca9820d0b20f32d40250bfd067f",
+    "bytes": 500149
+   }
   }
  },
  "animation": {

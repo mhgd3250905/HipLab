@@ -25,7 +25,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-h-wall-straddle.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-wall-straddle.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 4.5
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-wall-straddle.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 4.5,
+    "sha256": "3ae94698ee8e9c1945e37570d305dd493ba48020c88017bb36e963dc6a25049f",
+    "bytes": 770807
+   }
   }
  },
  "animation": {

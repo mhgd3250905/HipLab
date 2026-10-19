@@ -24,7 +24,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-h-knee-hug.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-knee-hug.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.5
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-knee-hug.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.5,
+    "sha256": "fbdb81482d10af00f0758829d111c97eaf4228132016786bb19f8365280d43de",
+    "bytes": 455889
+   }
   }
  },
  "animation": {

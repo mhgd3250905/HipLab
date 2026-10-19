@@ -22,7 +22,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-seated-knee-lift.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-seated-knee-lift.jpg"
   }
  },
  "media": {
@@ -37,7 +37,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-seated-knee-lift.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "4d9775ca296ec2adb14851c83d713b01a57bda0ff444a93c4486c76cbfed5545",
+    "bytes": 388114
+   }
   }
  },
  "animation": {

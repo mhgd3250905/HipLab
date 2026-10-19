@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-9090-liftoff.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-9090-liftoff.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-9090-liftoff.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "86630662dfc75689cdb5a4134e9060774e829e006cd84c8edba1eb199a176ebf",
+    "bytes": 470693
+   }
   }
  },
  "animation": {

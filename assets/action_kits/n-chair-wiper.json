@@ -24,7 +24,7 @@
   "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-chair-wiper.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-chair-wiper.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-chair-wiper.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "5209c982a1d3d8c42fd02183d5978a081cef550803f2be12d42dfe88300fbd0d",
+    "bytes": 332019
+   }
   }
  },
  "animation": {

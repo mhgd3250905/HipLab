@@ -25,7 +25,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-prone-hip-ext.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-prone-hip-ext.jpg"
   }
  },
  "media": {
@@ -40,7 +40,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-prone-hip-ext.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "f85f0ad8be1053d5b83ac5b11e4b6fcb40dea93e561271181a77ec0792509064",
+    "bytes": 406002
+   }
   }
  },
  "animation": {

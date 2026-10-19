@@ -23,7 +23,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-s-figure4.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-s-figure4.jpg"
   }
  },
  "media": {
@@ -38,7 +38,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-s-figure4.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "4671378aab401db2e4d1af1170d04c45668b4f8479b3b79ec3e441b1ba02c2b6",
+    "bytes": 497916
+   }
   }
  },
  "animation": {

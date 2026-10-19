@@ -23,7 +23,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-t-seated-straddle-lift-1leg.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-t-seated-straddle-lift-1leg.jpg"
   }
  },
  "media": {
@@ -38,7 +38,13 @@
     "loopSeconds": 10.0,
     "posterTime": 0.9
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-t-seated-straddle-lift-1leg.mp4",
+    "loopSeconds": 10.0,
+    "posterTime": 0.9,
+    "sha256": "f7df0ea4dced80fa9d1d3ea888673e7210132bd47e3e971523362291f23cd1bf",
+    "bytes": 581915
+   }
   }
  },
  "animation": {

@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-band-hip-ir.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-band-hip-ir.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-band-hip-ir.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0,
+    "sha256": "a7d7a550f6e2626a82abf25e0f744fc56bc1a92edba40dc3d2c0080b0774b6cf",
+    "bytes": 382204
+   }
   }
  },
  "animation": {

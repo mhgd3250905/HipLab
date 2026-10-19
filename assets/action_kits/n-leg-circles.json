@@ -26,7 +26,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-n-leg-circles.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-n-leg-circles.jpg"
   }
  },
  "media": {
@@ -41,7 +41,13 @@
     "loopSeconds": 12.0,
     "posterTime": 2.0
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-n-leg-circles.mp4",
+    "loopSeconds": 12.0,
+    "posterTime": 2.0,
+    "sha256": "d91e79c5a49371cd8488fdcbcd2c1436b572f81610834cb6e65c577e56dc7179",
+    "bytes": 838799
+   }
   }
  },
  "animation": {

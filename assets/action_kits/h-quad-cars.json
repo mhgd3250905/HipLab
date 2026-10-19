@@ -29,7 +29,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-h-quad-cars.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-h-quad-cars.jpg"
   }
  },
  "media": {
@@ -44,7 +44,13 @@
     "loopSeconds": 8.0,
     "posterTime": 2.2
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-h-quad-cars.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.2,
+    "sha256": "e4f196065c0cf3f33038e202be05cfbc6308926cb1fc55affbf37968b3c03806",
+    "bytes": 577795
+   }
   }
  },
  "animation": {

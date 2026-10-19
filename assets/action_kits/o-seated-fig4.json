@@ -24,7 +24,7 @@
   "firstSide": "right",
   "poster": {
    "dark": "assets/drill_media/hip-o-seated-fig4.jpg",
-   "light": null
+   "light": "assets/drill_media/light/hip-o-seated-fig4.jpg"
   }
  },
  "media": {
@@ -39,7 +39,13 @@
     "loopSeconds": 8.0,
     "posterTime": 3.8
    },
-   "light": null
+   "light": {
+    "asset": "assets/drill_media/light/hip-o-seated-fig4.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8,
+    "sha256": "87719bfcdfe642d5b28333308f310fe0d301e64a4bcf01e1ec396bc02cdd775f",
+    "bytes": 395496
+   }
   }
  },
  "animation": {
