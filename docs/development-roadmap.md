@@ -18,6 +18,7 @@
 | D-13 / 中 | iOS 自测页后台计时 | 待真机确认 | 自测倒计时由动画控制器（帧时间）驱动，不像训练播放器那样显式按挂钟计算；切后台/锁屏回来是追上、停住还是跳完未验证，真机确认后决定是否改为挂钟 |
 | D-21 / 中 | 第二轮 UI 打磨真机确认 | 待验收 | 本轮单屏、key/键盘/音频 route 与隐藏视频回归完成；行为检查 156 项通过、1 项按设计跳过。Hero、iOS 手势、阴影/触觉和 33ms tick 观感仍待真机；见[第二轮集成记录](round2-integration-2026-10-18.md) |
 | D-11 / 中 | 制作工具及修订源入主线 | 待审核 | 3D-Body #120 审核后合入 master；本机绿幕/alpha 输出另行备份，Git 中的源配方不能代替素材备份 |
+| D-25 / 高 | Android 后台卡顿、句尾被掐、吞倒数（2026-10-19 真机反馈） | 待审核 | 分支 `fix/android-voice-playback`：原生前台服务+唤醒锁、语音按序不丢、换边加长与 tailGrace；沙盒测试通过，待本机构建+真机清单、Play 前台服务声明；[记录](android-voice-playback-2026-10-19.md) |
 | D-24 / 中 | 浅色控件、文字与隐私顶栏 | 待验收 | 代码/四尺寸网页/0.3.6+11保留数据安装及浅色首页已确认；原生隐私/自测/深色全流程和iPhone待补；本次不扩大已有验收 |
 
 ## D-01：紧侧加练（已修复，2026-10-17 第一轮修改）
@@ -28,7 +29,7 @@
 
 - 主题：`HipPalette.dark/light`，设置页三档切换，全 App 实时生效（`hip_ui_round1_test` #14）。浅色版动作视频/封面缺失，媒体卡暂用深色舞台；素材放到 `assets/drill_media/light/` 即自动使用。
 - iOS：`Info.plist` 已加 `UIBackgroundModes: audio`；会话期间循环静音片段保持音频会话，锁屏后计时与播报应继续。`feat/ios` 起来电/Siri/拔耳机时训练静默暂停，点继续重新激活会话；锁屏回来动作示范继续播放。需真机确认（[iOS 真机清单](ios-setup-and-release.md#真机确认清单)）。
-- Android：会话页（训练播放器、自测）持有屏幕常亮（`lib/core/platform/screen_awake.dart`，引用计数，无新权限/无 Manifest 服务）。这避免自动锁屏中断，但用户主动锁屏后进程可能被系统冻结（缓存进程冻结 / Doze），计时与语音会停；回到前台后按绝对时钟追上进度。完整保证需前台服务：`audio_service`（`MainActivity` 改继承 `AudioServiceActivity`、Manifest 声明 `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 服务、通知栏控件、Play Console 前台服务声明），引入成本和审核风险较高，本轮列为待办。
+- Android：会话页（训练播放器、自测）持有屏幕常亮（`lib/core/platform/screen_awake.dart`，引用计数，无新权限/无 Manifest 服务）。这避免自动锁屏中断，但用户主动锁屏后进程可能被系统冻结（缓存进程冻结 / Doze），计时与语音会停；回到前台后按绝对时钟追上进度。完整保证需前台服务：`audio_service`（`MainActivity` 改继承 `AudioServiceActivity`、Manifest 声明 `FOREGROUND_SERVICE_MEDIA_PLAYBACK` 服务、通知栏控件、Play Console 前台服务声明），引入成本和审核风险较高，本轮列为待办。2026-10-19 起见 D-25：改用无插件的原生 `TrainingSessionService`（mediaPlayback + 部分唤醒锁），由 `ScreenAwake` 驱动，待本机验收和开哥确认 Play 声明。
 
 ## 已完成事项
 

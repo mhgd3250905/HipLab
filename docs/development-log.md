@@ -4,6 +4,7 @@
 
 | 日期 / 阶段 | 结果与决定 | 关联证据 |
 |---|---|---|
+| 2026-10-19 / Android语音三问题 | 开哥戴耳机反馈后台卡顿、句尾被掐、吞「3、2、1」。沙盒复现并修：后台无前台服务（加原生 mediaPlayback 前台服务+部分唤醒锁，无新依赖）；英文换边句被倒数切0.64 s（换边按句长取整秒加长、队列tailGrace 0.8 s）；控制器新句作废旧句致整段倒数消失（改为按序播放）。analyze0、277pass/1skip；未构建APK、未真机，分支`fix/android-voice-playback`待本机验收；Play需补前台服务声明 | [Android语音记录](android-voice-playback-2026-10-19.md) |
 | 2026-10-19 / PR22 F7复核 | 9fa0cc0的F1–F7代码问题均关闭；Windows322过/1跳、analyze0、Python19、独立原复现通过。原生验收待补，未合并、未构建安装 | [最新复核](pr22-reaudit-2026-10-19.md) |
 | 2026-10-17 / 接手 | 从 HipLab #1 源 `2865ed7` 建立独立接手分支；初始 48 项测试、4 项截图通过；确认紧侧计时缺陷，留 D-01 | [接手基线](project-takeover-2026-10-17.md) |
 | 2026-10-17 / Android 首跑 | 首次 debug 安装 0.1.0+1，安全引导显示正常 | [Android 记录](android-first-run-2026-10-17.md) |

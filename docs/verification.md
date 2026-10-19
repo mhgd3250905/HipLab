@@ -317,3 +317,7 @@ GitHub已确认#19/#20/#21均MERGED，第一父链顺序19→20→21，merge为2
 ## PR #22 Android包准备（2026-10-19）
 
 b12b0f5和9fa0cc0均enforce-lockfile pub get/debug arm64构建通过；两包CRC、既有debug签名、包名/0.3.6+11、16KB对齐通过，575音频/94视频逐文件与源一致。候选增量打包空洞经单个生成APK重建消除，最终174,483,026bytes。无源码变更，不重复已通过的322项测试。手机尚未连接，用户安排先备包；未执行ADB、安装、自测、训练或中断试听，iOS本轮未验。[完整身份与原生待验清单](pr22-android-acceptance-2026-10-19.md)。
+
+## Android 语音播报修复沙盒验证（2026-10-19）
+
+分支 `fix/android-voice-playback`，基于 main `d9338ea`，沙盒 Linux Flutter 3.44.7：`flutter analyze` 0 问题；`flutter test` 277 pass / 1 条件 skip（同机 main 基线 254 / 1，新增 23 项、改 1 项）；`python3 -m unittest discover -s tools/tests` 19 OK；`build_action_kits.py check` 0 problem（无 jsonschema）；`audit_voice.py` 570 条 1 条既有不合格（en `sec.66`，未改素材）。时间线复现前后对比见[Android语音记录](android-voice-playback-2026-10-19.md)。**未执行**：Kotlin/APK 构建、安装、真机听音、logcat——按该记录的真机清单由本机补。
