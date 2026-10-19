@@ -1,0 +1,98 @@
+{
+  "source": "c7def2869b789357b303d69d66eb8c18a0a748ae",
+  "matrixBaselineSource": "e3fb1d31d3d490dbe46afe5f0461f6d273dba404",
+  "browser": "155.0.8059.80",
+  "webOnly": true,
+  "assessmentQuestionFollowupViewportCases": 88,
+  "resultViewportCases": 8,
+  "allRecordedButtonsInsideViewport": true,
+  "viewports": [
+    [
+      320,
+      568
+    ],
+    [
+      360,
+      740
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      768,
+      1024
+    ]
+  ],
+  "largeText": "360x740 textScale1.5 prep/work-next/rest-next",
+  "settings": "Chinese/English selected; silent audition clicked; light/dark selected; reminder45/60; privacy and3safety cards returned",
+  "fontFix": {
+    "source": "c7def2869b789357b303d69d66eb8c18a0a748ae",
+    "status": "First-round fix and fresh-context light/dark delta checks passed",
+    "fix": "OutlinedButton textStyle now uses Theme.textTheme.labelLarge.copyWith(fontSize:14), preserving themed NotoSansSC",
+    "regressionEvidenceFromRoot": "RenderParagraph baseline RED null family/14 for all3; GREEN NotoSansSC/14, player8 passed, full254pass/1skip, analyze0",
+    "cases": [
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "textScale": 1.5,
+        "freshChromeContext": true,
+        "earlyRequestedMsAfterRestClick": 231,
+        "earlyCompletedMsAfterRestClick": 280,
+        "settledMsAfterRestClick": 1364,
+        "visuallyReviewedEarlyAndSettledGlyphsCorrect": true,
+        "threeFeedbackBoundsInsideViewport": true,
+        "freshMouseComfortableRecorded": true,
+        "fontRequestsAtOrAfterRest": 0,
+        "remoteNotoFallbackShardRequests": 0,
+        "startupRemoteRobotoRequests": 1,
+        "pageErrors": [],
+        "consoleBoundary": "favicon.ico404 only"
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "textScale": 1.5,
+        "freshChromeContext": true,
+        "earlyRequestedMsAfterRestClick": 225,
+        "earlyCompletedMsAfterRestClick": 279,
+        "settledMsAfterRestClick": 1362,
+        "visuallyReviewedEarlyAndSettledGlyphsCorrect": true,
+        "threeFeedbackBoundsInsideViewport": true,
+        "freshMouseComfortableRecorded": true,
+        "fontRequestsAtOrAfterRest": 0,
+        "remoteNotoFallbackShardRequests": 0,
+        "startupRemoteRobotoRequests": 1,
+        "pageErrors": [],
+        "consoleBoundary": "favicon.ico404 only"
+      }
+    ],
+    "networkBoundary": "Both contexts still request normal startup Roboto woff2 from fonts.gstatic.com (200). No new fonts at/after rest and no remoteNotoSansSC shards; not full offlineWeb acceptance.",
+    "scope": "Only font delta rerun at final source. Existing88assessment/followup+8result layout matrix remains sourcee3fb1d3; no other runtime delta. Video poster substitute, silent audio backend and native boundaries remain."
+  },
+  "limitations": [
+    "video is themed poster substitute",
+    "MutedVoiceOutput, no human/audio acceptance",
+    "settings semantics interception handled with fresh observed screenshot/bounds normal mouse, no force",
+    "result320content uses internal scroll",
+    "startupRoboto network request remains",
+    "no native/iOS/physical device/GPU acceptance"
+  ],
+  "sourceCopy": "All38lib files byte-identical to final product worktree; LF matches finalGit source; protected pubspec/lock/main hashes unchanged",
+  "images": {
+    "web-ui-contact.jpg": {
+      "bytes": 164723,
+      "sha256": "b2d13f2016724f72088791b83b030f41a085307abbef7e9738deebe9de4a3737"
+    },
+    "web-feedback-font-delta.jpg": {
+      "bytes": 63439,
+      "sha256": "2d205873f2e813b864b7dd1fd7f08182bcf01c267728324ea89b7802de43385a"
+    }
+  }
+}
