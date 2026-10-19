@@ -4,6 +4,11 @@
 
 **动作包**是一个动作在 HipLab 里的全部可复用信息：显示文案、媒体引用、训练节奏（相位与时长）、语音脚本、审核记录。一个动作一个 JSON 文件，以 **Pose-Hub 动作 ID** 为键，便于以后整体搬到 3D-Pose-Hub 作为上游数据。
 
+> **原则（开哥，2026-10-19）：“动画没必要一定和真实训练时长一致，动画只负责演示。”**
+> - **训练参数是唯一真源**：次数、时长、周期、相位、侧别都以动作包 `training`（+ 路线剂量覆盖）为准，语音按训练参数报数/报时。
+> - Pose-Hub spec 实测的相位时长（`animation`）**只作缺省参考**：没写显式相位时拿来当默认节奏，`kit_rules.py` 里写了显式 `phases` 就以它为准。
+> - 演示视频只循环播放作示范，**不要求与语音逐次对齐**，也**不因动画而改剂量**。“剂量与动画不一致”不再算待定问题，不写进 `review.flags`。
+
 | 位置 | 作用 |
 |---|---|
 | `assets/action_kits/<id>.json` | 46 个动作包（Pose-Hub v0.2.0 全部 dark 视频动作） |
@@ -38,13 +43,15 @@
 - `poseHub`：`version`（冻结版本，例 `0.2.0`）、`spec`（规格文件路径）、`specSha256`（规格 SHA-256，`check` 用它发现上游改了规格而动作包没重建）。
 - `video.dark`：`{asset, loopSeconds, posterTime}`，必填；`video.light`：同结构或 `null`（槽位必须存在）。
 
-### 1.4 `animation`（实测记录）
+### 1.4 `animation`（实测记录，只作参考）
+动画的测量结果，仅用作计数类节奏的缺省值；它不约束剂量，也不要求语音与它同步。
 - `loopSeconds`：动画循环长度（8 / 10 / 12 s）。
 - `track`：用来测量的主轨道名。
 - `reps`：每一次动作的 `[起动, 到顶, 回落起点, 回到底]` 四个时刻（s），按主轨道 3 % / 97 % 穿越点测得。
 - `source`：测量来源说明。离线 `build` 不带 `--pose-hub` 时原样保留本块。
 
-### 1.5 `training`（节奏）
+### 1.5 `training`（节奏，唯一真源）
+剂量与语音节奏只看这里（路线可覆盖 `reps` / `holdSeconds` / `seconds`）。可以与动画不同。
 | 字段 | 说明 |
 |---|---|
 | `kind` | 6 类之一，见 §2 |
@@ -52,7 +59,7 @@
 | `sided` | 与 `display.sided` 一致；路线步骤的 `sided` 必须与它一致 |
 | `leadSeconds` | 训练段开头“开始”到第一次报数的引导时长，v1 固定 1.0 s（与语言无关） |
 | `defaults` | `reps` `sets` `seconds` `holdSeconds` `restSeconds`；计数类必须有 `reps`，保持类必须有 `seconds` |
-| `cycle`（计数类必填） | `seconds` 一次的时长；`offset` 动画里第一次动作的起点（为以后对齐画面预留）；`phases` 相位列表；`source` 来源 |
+| `cycle`（计数类必填） | `seconds` 一次的时长；`offset` 动画里第一次动作的起点（仅记录，不要求画面对齐）；`phases` 相位列表；`source` 来源：`measured: …`（取动画实测作缺省）或 `training parameters (kit_rules phases)`（训练参数显式给出，覆盖实测） |
 | `cycle.phases[]` | `id`：`go` 起 / `hold` 停 / `back` 落 / `rest` 间歇，第一个必须是 `go`；`seconds`；`cue` 该相位开头说的词（一个 key，或随报数轮换的 key 列表，用于左右交替/方向交替）；`cueAt` 相位开始后多久说（停留词等一拍再说） |
 | `hold`（保持类必填） | `entrySeconds`：进入姿势所需时长（实测或规则值） |
 
@@ -75,7 +82,7 @@
 
 ### 1.7 `review`
 - `why`：节奏数字从哪来（规格注释、轨道、人工规则）。
-- `flags`：需要人工决定的问题（剂量与动画不符等）。非空的会在总览表里标出，不阻断 `check`。
+- `flags`：需要人工决定的其他问题。非空的会在总览表里标出，不阻断 `check`。**剂量/节奏与动画不一致不算问题，不写进这里**（训练参数为准）。
 
 ### 1.8 路线如何引用
 路线步骤只写引用 + 覆盖剂量，不复制节奏：
@@ -115,7 +122,7 @@
 
 准备/休息期（15 s）顺序：叮 + “很好（或慢慢还原），休息 15 秒” → “下一个 / 最后一个动作 + 名称 + 剂量 +（双侧）先做右边” → 要点 → 条件提示 → 留白 → 三、二、一 → 开始。按实测音频时长排队，放不下的要点自动省略。
 
-相位词表（`w.*`，34 个）在 `kit_rules.py` 的 `WORDS`；会话短语 `p.last_rep` `p.release` `p.again` `p.right_first` 在 `tools/voice/voice_lines.py`。每个词必须短：要放得进它所在相位到下一个词之间的窗口。
+相位词表（`w.*`，33 个）在 `kit_rules.py` 的 `WORDS`；会话短语 `p.last_rep` `p.release` `p.again` `p.right_first` 在 `tools/voice/voice_lines.py`。每个词必须短：要放得进它所在相位到下一个词之间的窗口。
 
 ## 4. 校验规则（`build_action_kits.py check` + `test/hip/action_kit_test.dart`）
 
@@ -156,8 +163,10 @@ v1 的设计就是为了能原样搬走：键是 Pose-Hub ID，`media.poseHub` �
 5. 跑 `flutter analyze` 和 `flutter test`（`action_kit_test`、`hip_rep_rhythm_test` 会覆盖新动作），把审核发现写进 `review.flags`。
 6. 新语音跑 `tools/voice/audit_voice.py`（响度 −16 LUFS、真峰值 ≤ −1.2 dBTP、无截断），并真机试听。
 
-## 7. 已知限制（v1）
+## 7. 画面与语音（按原则，不是限制）
 
-- 画面与语音只对齐了**周期**，没对齐**起点**：WebView 循环播放没有重播/倍速指令。`cycle.offset` 已预留，播放器支持 `restart` / `playbackRate` 后可直接用。
-- 放慢的步骤画面比语音快（动画按原速循环）。
-- 剂量与动画不一致的 3 个动作见各自 `review.flags`：`n-leg-circles`、`t-seated-straddle-lift-1leg`、`n-seated-ir-drop`。
+- 演示视频在 WebView 里按原速循环，语音按训练参数走；两者不要求起点、周期或次数对齐，放慢的步骤画面比语音快也属正常。`cycle.offset` 只作记录。
+- 2026-10-19 按原则回正的 3 个动作（原先 `review.flags` 里的“剂量与动画不一致”已清除）：
+  - `n-leg-circles` 仰卧直腿画圈：剂量“每侧 正反各 4 圈”，语音每侧报 4 次“k，向前画圈 …… 反着画回来”（每圈 3.6 s，一次 8 s），不再按动画的“画两圈 + 跨过去 + 回来”。
+  - `t-seated-straddle-lift-1leg` 坐姿分腿单腿抬起：保持 2.5 s 一次（抬 0.8 / 停 1.0 / 放 0.6 / 歇 0.1），按单侧计数，每侧 6 次。
+  - `n-seated-ir-drop` 坐姿后撑单膝内倒：一侧持续保持 30 秒（开始 → 过半 → 还剩 10 秒 → 5-4-3-2-1 → 慢慢还原 → 换边），动画的左右交替只作演示。

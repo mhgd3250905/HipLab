@@ -28,6 +28,15 @@ class ActionKitTest(unittest.TestCase):
         self.assertEqual(AK.override_of('每侧 40 秒（用毛巾）', hold), {'seconds': 40})
         self.assertEqual(AK.override_of('停 60 秒', hold), {'seconds': 60})
 
+    def test_training_parameters_win_over_animation(self):
+        # 开哥 2026-10-19: the dose follows the training parameters, the demo only loops
+        legs = AK.load_kits()['n-leg-circles']
+        self.assertEqual(AK.override_of('每侧 正反各 4 圈', legs), {'reps': 4})
+        for i, k in AK.load_kits().items():
+            for f in k['review']['flags']:
+                self.assertNotIn('animation', f.lower(), i)
+                self.assertNotIn('动画', f, i)
+
 
 if __name__ == '__main__':
     unittest.main()

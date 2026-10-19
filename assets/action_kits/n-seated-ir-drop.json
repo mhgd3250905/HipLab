@@ -113,9 +113,7 @@
   }
  },
  "review": {
-  "why": "dose is a timed hold per side (spec alternates sides every 4 s)",
-  "flags": [
-   "animation alternates sides while the dose holds one side"
-  ]
+  "why": "training dose: one side held for the dose seconds, then switch; the demo alternating sides every 4 s only loops as a demonstration",
+  "flags": []
  }
 }

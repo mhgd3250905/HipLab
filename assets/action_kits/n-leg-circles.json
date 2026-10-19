@@ -63,33 +63,36 @@
   "sided": true,
   "leadSeconds": 1.0,
   "defaults": {
-   "reps": 2,
+   "reps": 4,
    "sets": 1,
    "seconds": null,
    "holdSeconds": null,
    "restSeconds": 15
   },
   "cycle": {
-   "seconds": 12.0,
+   "seconds": 8.0,
    "offset": 0.0,
    "phases": [
     {
      "id": "go",
-     "seconds": 7.2,
-     "cue": "w.two_circles"
+     "seconds": 3.6,
+     "cue": "w.circle_fwd"
     },
     {
-     "id": "hold",
-     "seconds": 2.4,
-     "cue": "w.cross_over"
+     "id": "rest",
+     "seconds": 0.4
     },
     {
      "id": "back",
-     "seconds": 2.4,
-     "cue": "w.come_back"
+     "seconds": 3.6,
+     "cue": "w.circle_rev"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.4
     }
    ],
-   "source": "spec header comment"
+   "source": "training parameters (kit_rules phases)"
   }
  },
  "voice": {
@@ -102,17 +105,13 @@
     "zh": "腿伸直，慢慢画圈，骨盆不动",
     "en": "Leg straight, draw slow circles, pelvis still"
    },
-   "w.two_circles": {
-    "zh": "画两圈",
-    "en": "Two circles"
+   "w.circle_fwd": {
+    "zh": "向前画圈",
+    "en": "Circle forward"
    },
-   "w.cross_over": {
-    "zh": "跨过去",
-    "en": "Cross over"
-   },
-   "w.come_back": {
-    "zh": "回来",
-    "en": "Come back"
+   "w.circle_rev": {
+    "zh": "反着画回来",
+    "en": "Now reverse"
    }
   },
   "prepare": [
@@ -136,9 +135,7 @@
   "midHold": null
  },
  "review": {
-  "why": "spec: one cycle / 12 s: 0–7.2 s two circles, 7.2–12 s cross-over and back",
-  "flags": [
-   "dose 「每侧 正反各 4 圈」 vs animation (2 circles + cross-over per 12 s): voice follows the animation, 2 rounds = 4 circles; dose text needs a decision"
-  ]
+  "why": "training dose 「每侧 正反各 N 圈」: one count = one forward circle + one reverse circle, 3.6 s a circle (the demo draws two circles in 7.2 s); the demo's cross-over part only loops as a demonstration",
+  "flags": []
  }
 }

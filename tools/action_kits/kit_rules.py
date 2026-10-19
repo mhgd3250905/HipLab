@@ -1,11 +1,19 @@
 """Explicit rhythm mapping for every HipLab action kit (action-kit v1).
 
-Most numbers are *measured* from the Pose-Hub spec timeline by
+PRINCIPLE (开哥, 2026-10-19): 「动画没必要一定和真实训练时长一致，动画只负责演示」.
+The training parameters are the single source of truth for the dose – reps,
+seconds, cycle, phases and sides – and the voice counts by them. The demo
+video only loops as a demonstration: it does not have to line up with the
+voice rep by rep, and the dose is never changed to fit the animation.
+A dose that differs from the animation is therefore NOT a review flag.
+
+The phase durations *measured* from the Pose-Hub spec timeline by
 build_action_kits.py (rise start / top / fall start / bottom of the main
-track, 10 % / 90 % thresholds). This table only says what the spec cannot:
+track, 3 % / 97 % thresholds) are only the default pace; an explicit
+`phases` list here overrides them. This table says what the spec cannot:
 which kind of training the action is, which spoken words go on which phase,
-the default dose, and – where the main track does not describe one rep – an
-explicit phase list taken from the spec's own header comment.
+the default dose, and – where the measurement does not give the trained
+rep – an explicit phase list.
 
 Every entry lists `why` so a reviewer can see where a number came from.
 Phase ids: go (move into the position), hold (stay), back (return),
@@ -44,8 +52,6 @@ WORDS = {
     'w.circle_rev': ('反着画回来', 'Now reverse'),
     'w.pelvis_one_way': ('顺着画一圈', 'Circle one way'),
     'w.pelvis_other_way': ('反着画一圈', 'Now the other way'),
-    'w.two_circles': ('画两圈', 'Two circles'),
-    'w.cross_over': ('跨过去', 'Cross over'),
     'w.come_back': ('回来', 'Come back'),
     'w.exhale_hug': ('呼气，抱紧', 'Breathe out, hug in'),
     'w.inhale_release': ('吸气，放松', 'Breathe in, let go'),
@@ -98,9 +104,9 @@ RULES = {
     't-seated-straddle-lift-1leg': dict(
         kind='rep_updown', sided=True, reps=6,
         phases=[('go', .8, 'w.lift'), ('hold', 1.0, None), ('back', .6, 'w.lower'), ('rest', .1, None)],
-        why='spec liftL: two quick lifts per side (0–1.3 s, 1.7–3.0 s) then the hands switch sides; '
-            'one count = one lift, slowed to 2.5 s so the cue fits',
-        flag='voice lift (2.5 s) is slower than the demo lift (≈1.3 s); demo alternates sides every 5 s'),
+        why='training dose: 每侧 N 次, one count = one lift of the working leg, 2.5 s a lift '
+            '(0.8 s up, 1.0 s hold, 0.6 s down) so "十，抬起" fits; the demo (two quick lifts, '
+            'then the other side) only loops as a demonstration'),
     'h-band-hip-ir': dict(kind='rep_updown', sided=True, go='w.turn_out', back='w.come_back', reps=8,
                           why='spec: 2 reps / 8 s: 1.2 s out, 0.8 s hold, 1.4 s back'),
     'n-prone-hip-ext': dict(kind='rep_updown', sided=True, go='w.lift', back='w.lower', reps=8,
@@ -118,12 +124,12 @@ RULES = {
                             phases=[('go', 3.6, 'w.pelvis_one_way'), ('rest', .4, None),
                                     ('back', 3.6, 'w.pelvis_other_way'), ('rest', .4, None)],
                             why='spec: circle 0.2–3.8 s, other way 4.2–7.8 s; "正反各 N 圈" = N counts'),
-    'n-leg-circles': dict(kind='rep_cycle', sided=True, reps=2,
-                          phases=[('go', 7.2, 'w.two_circles'), ('hold', 2.4, 'w.cross_over'),
-                                  ('back', 2.4, 'w.come_back')],
-                          why='spec: one cycle / 12 s: 0–7.2 s two circles, 7.2–12 s cross-over and back',
-                          flag='dose 「每侧 正反各 4 圈」 vs animation (2 circles + cross-over per 12 s): '
-                               'voice follows the animation, 2 rounds = 4 circles; dose text needs a decision'),
+    'n-leg-circles': dict(kind='rep_cycle', sided=True, reps=4,
+                          phases=[('go', 3.6, 'w.circle_fwd'), ('rest', .4, None),
+                                  ('back', 3.6, 'w.circle_rev'), ('rest', .4, None)],
+                          why='training dose 「每侧 正反各 N 圈」: one count = one forward circle + '
+                              'one reverse circle, 3.6 s a circle (the demo draws two circles in '
+                              '7.2 s); the demo\'s cross-over part only loops as a demonstration'),
     # ── counted, alternating sides / directions ──
     'n-chair-wiper': dict(kind='rep_alternate', sided=False, go=['w.right_knee_in', 'w.left_knee_in'],
                           back='w.center', reps=6,
@@ -162,8 +168,8 @@ RULES = {
     's-lizard': dict(kind='hold', sided=True, seconds=35, why='static stretch'),
     's-9090': dict(kind='hold', sided=True, seconds=35, why='static stretch'),
     'n-seated-ir-drop': dict(kind='hold', sided=True, seconds=30,
-                             why='dose is a timed hold per side (spec alternates sides every 4 s)',
-                             flag='animation alternates sides while the dose holds one side'),
+                             why='training dose: one side held for the dose seconds, then switch; '
+                                 'the demo alternating sides every 4 s only loops as a demonstration'),
     's-pigeon': dict(kind='hold', sided=True, seconds=35, why='static stretch'),
     's-seated-fold': dict(kind='hold', sided=False, seconds=40, why='static stretch'),
     's-frog': dict(kind='hold', sided=False, seconds=60, why='static stretch'),

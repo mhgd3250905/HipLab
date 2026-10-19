@@ -6,6 +6,12 @@ training rhythm and voice script live (docs/action-kit-spec-v1.md). Kits
 are keyed by the Pose-Hub action id so the same files can later move
 upstream into 3D-Pose-Hub unchanged.
 
+Principle: the training parameters (kit_rules.RULES + the routine dose) are
+the single source of truth for reps / seconds / cycle / phases / sides, and
+the voice counts by them. The phases measured from the Pose-Hub spec are only
+the default pace and are overridden by explicit `phases`; the demo video only
+loops as a demonstration and is not synchronised with the voice.
+
     # (re)build assets/action_kits/<id>.json + index.json; measures the
     # rhythm from the Pose-Hub spec timelines of the frozen release
     python3 tools/action_kits/build_action_kits.py build \
@@ -147,12 +153,12 @@ def reps_of(track, dur):
 
 def cycle_of(rule, anim):
     """Training cycle (seconds, offset, phases) for a counted kit."""
-    if 'phases' in rule:
+    if 'phases' in rule:  # training parameters override the measured default
         phases = [{'id': p, 'seconds': s, **({'cue': c} if c else {})}
                   for p, s, c in rule['phases']]
         # the 3-2-1 inside a long hold is spoken by the app; nothing else to add
         return {'seconds': r2(sum(p['seconds'] for p in phases)), 'offset': 0.0,
-                'phases': phases, 'source': 'spec header comment'}
+                'phases': phases, 'source': 'training parameters (kit_rules phases)'}
     reps = anim['reps']
     per_loop = rule.get('loop_reps') or len(reps)
     cyc = anim['loopSeconds'] / per_loop
@@ -300,9 +306,6 @@ def override_of(dose, kit):
     m = re.search(r'开 (\d+)(?: 次)? \+ 关 (\d+)', s)
     if m:
         return {'reps': int(m.group(1)) + int(m.group(2))}
-    if kit['id'] == 'n-leg-circles':
-        # see kit review flag: 2 animation rounds (= 4 circles) per side
-        return {'reps': 2}
     m = re.search(r'正反各 (\d+) 圈$', s) or re.search(r'(\d+) (?:次|圈)', s)
     if m and kind != 'hold':
         out = {'reps': int(m.group(1))}
@@ -326,9 +329,10 @@ def cycle_seconds(kit, hold=None):
 def side_seconds(kit, ov, budget):
     """Seconds of one side (or the whole unsided set). Holds: the dose
     seconds (or the budget). Counted kits keep the routine's time when every
-    rep fits in it at the kit's (animation) pace – the reps are then slowed
+    rep fits in it at the kit's training pace – the reps are then slowed
     down to fill it (stretch, see stretch_phases) – and grow to the lead plus
-    every rep in full when they do not. Same formula as
+    every rep in full when they do not (the dose is never cut). The demo
+    video does not enter this: it only loops. Same formula as
     ActionKit.sideSeconds in lib/hip/domain/action_kit.dart."""
     t = kit['training']
     if t['kind'] == 'hold':
@@ -341,7 +345,7 @@ def side_seconds(kit, ov, budget):
 
 def stretch_phases(kit, phases, target):
     """Phases slowed to a cycle of `target` seconds (≥ their sum). The
-    movements (go / back) keep the demo's speed; the extra time goes to the
+    movements (go / back) keep the kit's training speed; the extra time goes to the
     pause at the top (60 %) and at the bottom (40 %). A loop (rep_cycle) is
     one continuous movement and slows down evenly. Mirrors
     ActionKit.stretch in Dart."""
@@ -592,7 +596,8 @@ table{{border-collapse:collapse}}td,th{{border:1px solid #ddd;padding:4px 6px;ve
 th{{background:#f2f5f4;position:sticky;top:0}}tr:nth-child(even){{background:#fafafa}}
 td:nth-child(8),td:nth-child(9){{min-width:260px}}</style>
 <h2>HipLab 动作包总览（action-kit v1，{len(rows)} 个，Pose-Hub {kits[rows[0]['id']]['media']['poseHub']['version']}）</h2>
-<p>每个动作一行：类型、每次周期与相位（取自 Pose-Hub 动画实测）、默认剂量、语音模板、路线覆盖参数、视频引用。</p>
+<p>每个动作一行：类型、每次周期与相位、默认剂量、语音模板、路线覆盖参数、视频引用。</p>
+<p><b>原则</b>：训练参数（次数/时长/周期/相位/侧别）是唯一真源，语音按训练参数报；Pose-Hub 动画实测的相位只作缺省参考，可被训练参数覆盖；演示视频只循环示范，不要求与语音逐次对齐，也不因动画改剂量。“待定”列只记其他需人工决定的问题。</p>
 <table><tr>{th}</tr>{trs}</table>""", encoding='utf-8')
     print(out / 'action-kits-overview.html')
 

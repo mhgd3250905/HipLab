@@ -2044,17 +2044,18 @@
    "kind": "routine",
    "name": "晨起唤醒 6 分钟",
    "scene": "home",
-   "seconds": 359,
+   "seconds": 365,
    "steps": [
     {
      "alternative": null,
+     "authored_seconds": 60,
      "dose": "每侧 正反各 4 圈",
      "drill": "n-leg-circles",
      "kit": {
       "id": "n-leg-circles",
-      "reps": 2
+      "reps": 4
      },
-     "seconds": 60,
+     "seconds": 66,
      "sided": true,
      "tip": ""
     },

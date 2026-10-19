@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mhgd3250905/HipLab/tools/action_kits/action-kit-v1.schema.json",
   "title": "action-kit@1",
-  "description": "One action as a reusable asset: display, media references, training rhythm and voice script. Keyed by the Pose-Hub action id. See docs/action-kit-spec-v1.md.",
+  "description": "One action as a reusable asset: display, media references, training rhythm and voice script. Keyed by the Pose-Hub action id. See docs/action-kit-spec-v1.md. Principle: `training` is the single source of truth for the dose (reps / seconds / cycle / phases / sides) and the voice counts by it; `animation` is a measurement of the demo and only a default reference; the demo video only loops as a demonstration and does not have to line up with the voice.",
   "type": "object",
   "required": ["schema", "id", "display", "media", "animation", "training", "voice", "review"],
   "properties": {
@@ -48,6 +48,7 @@
     },
     "animation": {
       "type": "object",
+      "description": "Measured from the Pose-Hub spec timeline. Only a default reference for the training pace; never a constraint on the dose.",
       "required": ["loopSeconds", "track", "reps"],
       "properties": {
         "loopSeconds": {"type": "number", "exclusiveMinimum": 0},
@@ -58,6 +59,7 @@
     },
     "training": {
       "type": "object",
+      "description": "Training parameters: the single source of truth for the dose and the voice rhythm. They may differ from the animation; that is not a review issue.",
       "required": ["kind", "unit", "sided", "leadSeconds", "defaults"],
       "properties": {
         "kind": {"enum": ["rep_updown", "rep_cycle", "rep_alternate", "rep_hold", "rep_breath", "hold"]},
@@ -77,6 +79,7 @@
         },
         "cycle": {
           "type": "object",
+          "description": "One rep as trained. Phases default to the measured animation and may be overridden by explicit training phases (source says which).",
           "required": ["seconds", "offset", "phases", "source"],
           "properties": {
             "seconds": {"type": "number", "exclusiveMinimum": 0},
@@ -133,7 +136,7 @@
     "review": {
       "type": "object",
       "required": ["why", "flags"],
-      "properties": {"why": {"type": "string"}, "flags": {"type": "array", "items": {"type": "string"}}}
+      "properties": {"why": {"type": "string"}, "flags": {"type": "array", "description": "Open questions for a human. A dose that differs from the animation is not one (training parameters win).", "items": {"type": "string"}}}
     }
   },
   "$defs": {

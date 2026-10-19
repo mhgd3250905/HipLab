@@ -267,7 +267,6 @@
    "w.close": 580,
    "w.come_back": 697,
    "w.come_forward": 813,
-   "w.cross_over": 743,
    "w.exhale_hug": 1300,
    "w.gate_close": 906,
    "w.gate_open": 859,
@@ -293,7 +292,6 @@
    "w.squeeze": 743,
    "w.stand_up": 743,
    "w.turn_out": 650,
-   "w.two_circles": 929,
    "w.up": 372
   },
   "zh": {
@@ -556,7 +554,6 @@
    "w.close": 650,
    "w.come_back": 580,
    "w.come_forward": 580,
-   "w.cross_over": 720,
    "w.exhale_hug": 1324,
    "w.gate_close": 580,
    "w.gate_open": 627,
@@ -582,7 +579,6 @@
    "w.squeeze": 673,
    "w.stand_up": 650,
    "w.turn_out": 743,
-   "w.two_circles": 813,
    "w.up": 464
   }
  },
@@ -1624,10 +1620,6 @@
    "en": "Come forward",
    "zh": "回来"
   },
-  "w.cross_over": {
-   "en": "Cross over",
-   "zh": "跨过去"
-  },
   "w.exhale_hug": {
    "en": "Breathe out, hug in",
    "zh": "呼气，抱紧"
@@ -1727,10 +1719,6 @@
   "w.turn_out": {
    "en": "Turn out",
    "zh": "转出去"
-  },
-  "w.two_circles": {
-   "en": "Two circles",
-   "zh": "画两圈"
   },
   "w.up": {
    "en": "Up",
