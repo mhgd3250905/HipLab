@@ -41,16 +41,41 @@ bool inLibrary(HipContent c, String id) {
 enum DoseUnit { reps, seconds }
 
 /// A dose the user tunes: reps (counted) or seconds (timed), and sets.
+///
+/// Counted kits may also carry what a built-in routine step authored on top
+/// of the kit default (PR #22 F2, kept by 「复制成我的训练组」):
+/// [holdSeconds], the hold of a 带停留 rep (h-sumo-pry 15 s in F), and
+/// [paceSeconds], the routine's seconds per side the reps are paced into.
 class LibraryDose {
-  const LibraryDose({this.reps, this.seconds, this.sets = 1});
+  const LibraryDose({
+    this.reps,
+    this.seconds,
+    this.sets = 1,
+    this.holdSeconds,
+    this.paceSeconds,
+  });
   final int? reps;
   final int? seconds;
   final int sets;
+
+  /// Hold of one rep (rep_hold kits); null = the kit's default hold.
+  final int? holdSeconds;
+
+  /// Seconds per side the reps are spread over (a copied routine step's
+  /// pace); null = the reps at the kit's own pace. Dropped when the reps
+  /// change.
+  final int? paceSeconds;
+
+  /// Hold / pace above this are not a dose (stored data is clamped to it).
+  static const maxHold = 60;
+  static const maxPace = 300;
 
   LibraryDose copyWith({int? reps, int? seconds, int? sets}) => LibraryDose(
     reps: reps ?? this.reps,
     seconds: seconds ?? this.seconds,
     sets: sets ?? this.sets,
+    holdSeconds: holdSeconds,
+    paceSeconds: paceSeconds,
   );
 
   @override
@@ -58,15 +83,18 @@ class LibraryDose {
       other is LibraryDose &&
       other.reps == reps &&
       other.seconds == seconds &&
-      other.sets == sets;
+      other.sets == sets &&
+      other.holdSeconds == holdSeconds &&
+      other.paceSeconds == paceSeconds;
 
   @override
-  int get hashCode => Object.hash(reps, seconds, sets);
+  int get hashCode =>
+      Object.hash(reps, seconds, sets, holdSeconds, paceSeconds);
 
   @override
   String toString() =>
       'LibraryDose(reps: $reps, seconds: $seconds, '
-      'sets: $sets)';
+      'sets: $sets, holdSeconds: $holdSeconds, paceSeconds: $paceSeconds)';
 }
 
 /// Allowed values of one stepper.
@@ -163,15 +191,26 @@ abstract final class DoseRules {
     final r = range(k, single: single);
     final v = r.clamp(value(k, d, single: single));
     final sets = setRange.clamp(d.sets);
+    int? within(int? x, int max) =>
+        x == null || x < 1 ? null : math.min(x, max);
     return unit(k, single: single) == DoseUnit.reps
-        ? LibraryDose(reps: v, sets: sets)
+        ? LibraryDose(
+            reps: v,
+            sets: sets,
+            holdSeconds: k.kind == ActionKind.repHold
+                ? within(d.holdSeconds, LibraryDose.maxHold)
+                : null,
+            paceSeconds: within(d.paceSeconds, LibraryDose.maxPace),
+          )
         : LibraryDose(seconds: v, sets: sets);
   }
 
   /// The kit dose the player and the voice run on.
   static KitDose kitDose(ActionKit k, LibraryDose d, {required bool single}) {
     final v = value(k, d, single: single);
-    if (unit(k, single: single) == DoseUnit.reps) return KitDose(reps: v);
+    if (unit(k, single: single) == DoseUnit.reps) {
+      return KitDose(reps: v, holdSeconds: d.holdSeconds);
+    }
     if (!k.kind.counted) return KitDose(seconds: v);
     // A timed counted rhythm (单练 呼吸 / 带停留): as many full reps as fit.
     final cycle = k.cycleFor(const KitDose());
@@ -184,7 +223,7 @@ abstract final class DoseRules {
     final kd = kitDose(k, d, single: single);
     final budget = unit(k, single: single) == DoseUnit.seconds
         ? value(k, d, single: single)
-        : 0;
+        : (d.paceSeconds ?? 0);
     return k.sideSeconds(kd, budget);
   }
 
@@ -227,7 +266,7 @@ String doseText(
         ? (k.sided ? '${v}s each side' : '${v}s')
         : (k.sided ? '每侧 $v 秒' : (k.kind.counted ? '$v 秒' : '停 $v 秒'));
   } else {
-    final hold = k.defaultHold;
+    final hold = d.holdSeconds ?? k.defaultHold;
     base = switch (k.kind) {
       ActionKind.repHold =>
         en
@@ -258,18 +297,40 @@ String doseText(
 /// kit default is stored; null means "the kit's default" so a later change
 /// of the kit's default carries over.
 class CustomStep {
-  const CustomStep(this.kitId, {this.reps, this.seconds, this.sets});
+  const CustomStep(
+    this.kitId, {
+    this.reps,
+    this.seconds,
+    this.sets,
+    this.holdSeconds,
+    this.paceSeconds,
+  });
   final String kitId;
   final int? reps;
   final int? seconds;
   final int? sets;
 
-  bool get adjusted => reps != null || seconds != null || (sets ?? 1) != 1;
+  /// Hold of a 带停留 rep when it differs from the kit (copied routine
+  /// step, e.g. F's h-sumo-pry 15 s). Optional in v1; null = kit default.
+  final int? holdSeconds;
+
+  /// A copied routine step's seconds per side (its rep pace). Optional in
+  /// v1; null = the kit's own pace.
+  final int? paceSeconds;
+
+  bool get adjusted =>
+      reps != null ||
+      seconds != null ||
+      (sets ?? 1) != 1 ||
+      holdSeconds != null ||
+      paceSeconds != null;
 
   LibraryDose dose(ActionKit k) => LibraryDose(
     reps: k.kind.counted ? (reps ?? k.defaultReps ?? 1) : null,
     seconds: k.kind.counted ? null : (seconds ?? k.defaultSeconds ?? 30),
     sets: sets ?? 1,
+    holdSeconds: k.kind.counted ? holdSeconds : null,
+    paceSeconds: k.kind.counted ? paceSeconds : null,
   );
 
   /// The step for [d], storing only what differs from the kit default.
@@ -282,6 +343,8 @@ class CustomStep {
           ? c.seconds
           : null,
       sets: c.sets != 1 ? c.sets : null,
+      holdSeconds: c.holdSeconds != k.defaultHold ? c.holdSeconds : null,
+      paceSeconds: c.paceSeconds,
     );
   }
 
@@ -290,6 +353,8 @@ class CustomStep {
     'reps': ?reps,
     'seconds': ?seconds,
     if (sets != null && sets != 1) 'sets': sets,
+    'holdSeconds': ?holdSeconds,
+    'paceSeconds': ?paceSeconds,
   };
 
   @override
@@ -298,10 +363,13 @@ class CustomStep {
       other.kitId == kitId &&
       other.reps == reps &&
       other.seconds == seconds &&
-      (other.sets ?? 1) == (sets ?? 1);
+      (other.sets ?? 1) == (sets ?? 1) &&
+      other.holdSeconds == holdSeconds &&
+      other.paceSeconds == paceSeconds;
 
   @override
-  int get hashCode => Object.hash(kitId, reps, seconds, sets ?? 1);
+  int get hashCode =>
+      Object.hash(kitId, reps, seconds, sets ?? 1, holdSeconds, paceSeconds);
 }
 
 class CustomRoutine {
@@ -410,6 +478,8 @@ class CustomRoutine {
         reps: asInt(s['reps']),
         seconds: asInt(s['seconds']),
         sets: asInt(s['sets']),
+        holdSeconds: asInt(s['holdSeconds']),
+        paceSeconds: asInt(s['paceSeconds']),
       );
       steps.add(CustomStep.fromDose(k, stored.dose(k)));
     }
@@ -471,9 +541,24 @@ CustomRoutine copyRoutine(
   for (final s in r.steps) {
     final k = c.kit(s.drillId);
     if (k == null || !inLibrary(c, s.drillId)) continue;
-    final d = k.kind.counted
-        ? LibraryDose(reps: s.kit.reps ?? k.defaultReps)
-        : LibraryDose(seconds: s.kit.seconds ?? k.defaultSeconds);
+    // Counted: the authored reps, hold override and pace (the routine's
+    // seconds per side) so the copy plays as long as the routine (F2).
+    final LibraryDose d;
+    if (k.kind.counted) {
+      final reps = s.kit.reps ?? k.defaultReps;
+      final pace = s.seconds ~/ (s.sided ? 2 : 1);
+      final own = k.sideSeconds(
+        KitDose(reps: reps, holdSeconds: s.kit.holdSeconds),
+        0,
+      );
+      d = LibraryDose(
+        reps: reps,
+        holdSeconds: s.kit.holdSeconds,
+        paceSeconds: pace > own ? pace : null,
+      );
+    } else {
+      d = LibraryDose(seconds: s.kit.seconds ?? k.defaultSeconds);
+    }
     steps.add(CustomStep.fromDose(k, d));
   }
   return CustomRoutine(

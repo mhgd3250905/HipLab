@@ -740,7 +740,12 @@ class LibDosePanel extends StatelessWidget {
       onChanged(
         timed
             ? LibraryDose(seconds: c, sets: dose.sets)
-            : LibraryDose(reps: c, sets: dose.sets),
+            // Keeps a copied step's hold; its pace was for the old reps.
+            : LibraryDose(
+                reps: c,
+                sets: dose.sets,
+                holdSeconds: dose.holdSeconds,
+              ),
       );
     }
 
