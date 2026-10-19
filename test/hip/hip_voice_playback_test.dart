@@ -358,7 +358,12 @@ void main() {
     expect(c.ducking, isFalse);
   });
 
-  test('a superseded volume operation cannot load over the new line', () async {
+  // Android voice fix 2026-10-19: this used to expect ['new'] only – a line
+  // still preparing was dropped by the next request, which is how a slow
+  // (background) player swallowed whole 3-2-1 countdowns. Lines now keep
+  // their order and never overlap; only stopSpeech / abandon drop them.
+  test('a line still preparing is not dropped by the next one: both play, '
+      'in order, never over each other', () async {
     final p = DelayedPlatform()..delayVolume = true;
     final c = controller(p);
     final old = c.speak(['old']);
@@ -366,7 +371,8 @@ void main() {
     final next = c.speak(['new']);
     p.volumeGate.complete();
     await Future.wait([old, next]);
-    expect(p.finished, ['new']);
+    expect(p.finished, ['old', 'new']);
+    expect(p.stopped, isEmpty);
     expect(p.violations, isEmpty);
     await wait(120);
     expect(c.ducking, isFalse);

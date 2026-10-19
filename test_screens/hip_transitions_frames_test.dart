@@ -150,13 +150,16 @@ void main() {
       Navigator.of(tester.element(find.byType(HipOnboarding))).pop();
     });
     await tester.pumpAndSettle();
-    // 5. Tab 进度 → 自测 (slides in from the left), then start the check.
+    // 5. Tab 进度 → 练习 (slides in from the left), then start the check.
     await _sequence(
       tester,
       '5-tab-left',
       HipMotion.tab,
       () => tester.tap(find.byKey(const ValueKey('tab-1'))),
     );
+    await tester.pumpAndSettle();
+    // 自测 is a card on 练习 now (拍板 2026-10-19): open its intro page.
+    await tester.tap(find.byKey(const ValueKey('hip-check-card')));
     await tester.pumpAndSettle();
     await _sequence(
       tester,

@@ -10,6 +10,10 @@
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
+2026-10-19 23:32，**PR #22/#24及集成修复已获同意合入并推送main，GitHub均MERGED**，主线集成点 `b33ed21088c4d334548fb45cfeb9b85959dd755d`。最新已核验安装为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，23:15:53保留数据覆盖安装；main运行代码与该包一致。387项通过/1条件跳过、analyze无问题，F9编辑/键盘原生复测及正常播放听感已确认。安装、合并和后续文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。
+
+以下为#19～#21阶段的历史交付反馈：
+
 用户于2026-10-19反馈：已安装本轮 **0.3.6+11 debug / arm64 engine** 包并完成简单真机测试，运行源码 `c7def2869b789357b303d69d66eb8c18a0a748ae`。这是用户报告，Agent未再次ADB回读设备、版本或数据状态，不代表完整14项试听/锁屏/性能清单通过。#19→#20→#21及五项修复已顺序合入并推送main（业务集成点b9646d4）；GitHub确认三PR均MERGED。此前#17/#18的6dd16ed安装、偏好保持和专项验证保留历史，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)及[本轮审核](docs/pr19-pr21-review-2026-10-19.md)。
 
 制作前的视频缺口、清晰度和模型/动画源核对保留在 [媒体初始审计](docs/media-audit-2026-10-17.md)，其中缺片状态已由本轮高清交付解决。
@@ -18,7 +22,11 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前main的运行/测试/资源内容与已验源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b` 一致：analyze0、387pass/1条件skip，debug arm64已保留数据安装，F9编辑/键盘及正常播放已验。此次仅对齐文档，不重新构建或安装。
+
+**#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
+
+当前未验边界以AGENTS.md及验证/事项台账为准；上述历史“简单测试”不是本轮已完成原生检查的替代描述。锁屏/耳机/蓝牙/ducking等扩展矩阵本阶段不再续测，iOS仍未验。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get
@@ -41,11 +49,11 @@ Android release 签名：有 `android/key.properties` 就用它，没有时退�
 
 ```
 lib/main.dart                  入口
-lib/hip/domain/                纯规则（自测计分、今日训练、疼痛阶梯、连续天数、提醒时间表），全部单测
+lib/hip/domain/                自测/今日训练/疼痛规则，以及练习剂量、自定义训练组和单练历史模型
 lib/hip/control/hip_store.dart 本地持久化（SharedPreferences，单 key hiplab.state.v1）
-lib/hip/ui/                    安全图卡/身份 → 首页 → 自测 → 结果 → 跟练播放器 → 进度/设置
+lib/hip/ui/                    安全引导、今日/练习/进度三Tab、自测/跟练、动作详情与训练组编辑
 lib/hip/voice/                 语音播报：会话阶段/台词时间线、播放队列、just_audio 输出（ducking、iOS 后台保活）
-lib/core/                      从 3D-Body 复制来的公共代码（见下表）；lib/core/platform/screen_awake.dart 会话期间屏幕常亮
+lib/core/                      公共代码来源见下表；screen_awake.dart管常亮，HipLab自有training_service.dart按训练会话管理Android保活
 assets/hip/hip-content.json    内容包（脚本生成，不要手改）
 assets/hip/posters/            历史原型静帧（当前 46 项动作均已接入视频）
 assets/hip/assessment/         自测对比图（20 张）
@@ -112,4 +120,4 @@ python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --pos
 
 ## 后续开发
 
-待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，Android隐私页、自测、深色全流程原生复查仍待验收。iPhone基础检查已补，iOS平台适配在PR #23待主线审核；完整系统矩阵及后续共用UI集成复验列D-30。完整训练、音乐ducking、原生首帧、Android前台音频、系统通知和CI仍按各自事项推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。
+待办统一维护在[开发事项台账](docs/development-roadmap.md)。第一、二轮贡献与当前样式修复已在main集成；D-24代码、网页与Android安装/首页检查完成，隐私页、自测、深色全流程原生复查及iPhone仍待验收。Android前台服务及练习库已随#24/#22合入，分别见D-30/D-29；旧“前台音频待开发”不再作为当前状态。完整训练、音乐ducking、原生首帧、系统通知和CI仍按各自事项与实际未验范围推进；Mac从最新main继续iOS分支验证，不升级素材或依赖，未经新授权不上传商店。

@@ -4,6 +4,9 @@
 
 | 日期 / 阶段 | 结果与决定 | 关联证据 |
 |---|---|---|
+| 2026-10-19 晚 / PR24 审核四项P2修复 | 同步main 6299a38后修F24-1～4：cancelAll无条件停输出并作废排队旧句（tailGrace只用于正常换句）；音量按最后请求下发；新增TrainingHold按训练会话持有前台服务+唤醒锁，自然完成/神经疼/自测结果/退出/dispose释放，上限随计划时长（≤2 h）；START/STOP带会话id，旧STOP不再关新会话。每项先写修复前失败的回归测试。analyze0、290pass/1skip；Kotlin未编译、未真机，未合并 | [Android语音记录第二轮](android-voice-playback-2026-10-19.md#第二轮pr-24-审核四项-p2-修复2026-10-19-晚) |
+| 2026-10-19 / Android语音三问题 | 开哥戴耳机反馈后台卡顿、句尾被掐、吞「3、2、1」。沙盒复现并修：后台无前台服务（加原生 mediaPlayback 前台服务+部分唤醒锁，无新依赖）；英文换边句被倒数切0.64 s（换边按句长取整秒加长、队列tailGrace 0.8 s）；控制器新句作废旧句致整段倒数消失（改为按序播放）。analyze0、277pass/1skip；未构建APK、未真机，分支`fix/android-voice-playback`待本机验收；Play需补前台服务声明 | [Android语音记录](android-voice-playback-2026-10-19.md) |
+| 2026-10-19 / PR22 F7复核 | 9fa0cc0的F1–F7代码问题均关闭；Windows322过/1跳、analyze0、Python19、独立原复现通过。原生验收待补，未合并、未构建安装 | [最新复核](pr22-reaudit-2026-10-19.md) |
 | 2026-10-17 / 接手 | 从 HipLab #1 源 `2865ed7` 建立独立接手分支；初始 48 项测试、4 项截图通过；确认紧侧计时缺陷，留 D-01 | [接手基线](project-takeover-2026-10-17.md) |
 | 2026-10-17 / Android 首跑 | 首次 debug 安装 0.1.0+1，安全引导显示正常 | [Android 记录](android-first-run-2026-10-17.md) |
 | 2026-10-17 10:29 / 动作源 | 按明确授权审核合并 3D-Body #119，merge `ae81d96`；原规格、模型与 QA 不改 | [制作记录](local-hd-render-2026-10-17.md) |
@@ -199,3 +202,95 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 ## 2026-10-19 / iOS 非真机验证完成，等待晚间设备
 
 按用户明确安排补完当前候选的非真机部分，不提前引入未合主线功能。20截图测试产出72屏并人工查看，独立工具venv补Schema后0问题/Python19，94视频完整解码/134图片通过；570条语音留主线已知en/sec.66后半偏轻1条待听。模拟器真实设置开关和WKWebView抽查补工作/暂停主题切换、后台返回和减弱动态效果，开关还原并关闭；隔离模拟器生成的1条合成练习日不涉及手机。1494958签名App另存并复核profile/entitlements与AOT，准备好晚间先备份当前数据再覆盖安装的步骤。没有生产变更、新Archive/IPA或商店动作。[详细记录](ios-main-243a812-2026-10-19.md)。
+## 2026-10-19：PR #22 练习库固定版本审核
+
+按用户要求使用cockpit-pr-audit，在独立副本审核a7992a6并与最新main243a812比较。analyze0、Flutter286pass/1skip、Python18、两工具check通过；专项复现1P1+5P2，GitHub和merge-tree均确认冲突（7文件），结论需要修改。未改实现、未合并、未提交GitHub review或评论、未操作手机/商店；主目录原Playwright文件保留。详情及复现证据见[审核报告](pr22-review-2026-10-19.md)。
+
+### PR #22 审核评论已发布（2026-10-19）
+
+用户明确要求评论PR，重新确认源/目标SHA未变后，已发布并回读[六项问题及合并要求](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6261726811)。作者后续确认修改；本机未改App实现、未提交GitHub review、未合并。
+
+## 2026-10-19：PR #22 修复复审
+
+用户提供作者反馈后，停止后续存储整理，使用E:/AII-3D/3D-Hip-worktrees/pr22-fix-review/3D-Hip固定f7271f6复审。原F1–F6闭环，Windows310pass/1skip、analyze0、Python19、工具checks与独立49步骤核对通过；另查实F7多组疼痛减半漏skip。未改App实现、未合并、未构建安装。原有本地审核文档及新非C盘协作规则一并保留，历史结论不改写。[复审报告](pr22-reaudit-2026-10-19.md)。
+
+## 2026-10-19：练习库实现（feat/training-library，依赖 #19→#20→#21）
+
+按开哥 13:08 拍板实现练习库，并覆盖设计稿中的对应部分：
+- 底栏保持「今日 / 练习 / 进度」三个 tab。原「自测」tab 改为练习页顶部的「我的髋部 · 3 分半自测」卡，介绍页从卡片展开，首页 tile 保留。
+- 单练默认剂量为计时类每侧 60 秒、计次类每侧 10 次（呼吸类、带停留类按时长算），组数 1–3。训练组步骤沿用动作包默认剂量，可调范围为 1–2×（次数）和 ½–2×（秒数，5 秒一档，最少 10 秒）。
+- 单练只记入历史，不计连续天数。
+- 等级 1 选进阶动作只提示，不替换。
+
+基线：本地依次合入 #19、#20、#21，冲突按 #21 正文处理。补了两项：`build_action_kits.py` 现在会写入 #20 的浅色视频引用；预算测试的开始圆盘 accent 改为跟随舞台主题。集成后 246 pass。
+
+实现内容：
+- 领域层：`hip_library.dart`（45 个动作、DoseRules、custom_routines v1、校验、copyRoutine、PlanSource、SessionRecord），`PlanStep.sets`，planner 新增 single/custom/routine 三种入口，`PainEvent('pain')`，sessions 历史。
+- 语音：多组支持「再来一组」，保持类组间「慢慢还原」，计数超过 10 只报相位词。
+- 界面：`lib/hip/ui/library/`（练习页、动作大全、详情与单练、套路、我的、编辑器、挑选），单练结束页「再来一组 / 完成」，首页「我的训练组」横滑卡。
+- 文案：zh/en 两套（LibText），界面目前仍固定显示中文。
+
+验证：analyze 0；286 pass / 1 条件 skip（新增 40 个测试）；kits check 0；Python 测试 OK。小屏测试发现编辑器行在 ×1.5 字号下溢出 12 px，已修复。12 屏 × 深浅截图逐张检查过。
+
+未做：进度页「最近练习」列表、练习页「还麻吗」卡、英文界面实际切换、APK 构建与真机验证。远端 `codex/pr19-pr21-validation` 上的额外修复不在三个 PR 中，本分支未包含。详见[练习库实现记录](training-library-2026-10-19.md)。
+
+## 2026-10-19：PR #22 审核修复与对齐 main（feat/training-library）
+
+开哥 15:09 合并审核（固定 head a7992a6）提出 F1 P1 + F2–F6 P2，并要求先对齐 main 243a812。`git merge origin/main`（144e260），7 个冲突文件逐块手工解决：builder 浅色引用去重取 main；预算测试、播放器反馈按钮取 main 的断言与字体修复；`_startPlan` 同时保留 radius 和 main 的 originColor；docs 保留 main 原文后追加。疼痛短剂量 skip、媒体按钮语义、封面主题交接、开始展开颜色、反馈字体、媒体工具 guard 均保留；合并基线 294 pass / 1 skip。
+
+六项均首轮修复：F1 再来一组改为同一播放器内重建会话，共享音频输出不再被旧页 dispose 关掉（2f27355）；F2 训练组步骤保留套路的停留与节奏，复制 F 后 h-sumo-pry 仍 15 秒、步骤 60 秒，v1 可选键向后兼容（53f7082）；F3 加入训练组面板改为受高度约束的滚动列表，顺带修剂量面板标题在 ×1.5 下 5 px 溢出（2111d6f）；F4 套路详情和入门版都把「看放松」结果传回动作大全（ac449ac）；F5/F6 紧侧按本侧实际组数分组和计预算，内置套路保留连续加时，「多做一组」只看真实 extraSide（8783f7e）。新增 16 个回归测试（a38190f），修复前全部失败。最终 analyze 0、310 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。未构建 APK、未真机，Android 原生复查与保留数据升级留给本机。见[练习库实现记录](training-library-2026-10-19.md) §7。
+
+## 2026-10-19：PR #22 复审 F7 修复与同步 main（feat/training-library）
+
+复审（固定 f7271f6）关闭 F1–F6，新增 F7 / P2：疼痛减半的短次数保护组数写死为 1 / 2，没算 `PlanStep.sets`，与 SessionScript 不一致（单练深蹲 1 次 × 3 组减半后脚本无口令仍倒计时 8 秒）。首轮修复（ba0919d）：组数规则抽成 `PlanStep.countedSetsOn / holdSetsOn / tightOn`，SessionScript 与播放器共用，新增 `SessionScript.noFullRep`，任一侧/组放不下完整一次就跳过当前动作；内置套路旧行为不变。新增 12 个回归（播放器 widget 6：不分侧 2/3 组进结束页、训练组/分侧/紧侧额外组跳过后休息+反馈+下一步正常、对照不跳过；领域 6：组数与保护≡脚本），widget 用例修复前 5 fail / 1 pass。随后 merge 同步 main b12b0f5（b4db041），仅 docs/README.md、development-log.md 冲突，main 原文不改、本分支追加，非 C 盘规则与主线审核记录保留。最终 analyze 0、322 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §8。
+
+## 2026-10-19：PR #22 Android验收准备
+
+按用户明确清单，复用E盘审核副本顺序构建b12b0f5基线和9fa0cc0候选，锁定依赖获取与包身份/资源校验通过，候选增量APK空洞已重新打包消除。用户随后安排先准备包、稍后接手机，尚未执行ADB或安装，原生各项继续未执行。最终PR评论待真实采证后汇总；全部通过仍须开哥同意再合并。[包与清单](pr22-android-acceptance-2026-10-19.md)。
+
+## 2026-10-19：PR #22 Web代验与新增F8
+
+按用户要求将能代做的界面和数据流程转为真实Web验收，并行独立迁移/语音/字号资料，全部产物在E盘。补齐大量界面流程，但发现快速左删后编辑导致C被B覆盖的P2（F8），独立三步案例确认后已[评论PR](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)并回读一致。Web声音循环初始片段的异常也在准确main基线复现，不能把实际playing计数当口令正确。D-29维持待修/待原生，未改App、未合并；辅助浏览器/HTTP服务已关闭。[全表与缩减后的手机清单](pr22-web-acceptance-2026-10-19.md)。
+
+
+
+## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
+
+Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
+
+## 2026-10-19：PR #24 Android后台语音审核
+
+用户安排作者处理PR22评论后，转审核PR24 e3655e5，复用E盘原干净审核副本。并行代码审阅及Windows锁定依赖/analyze0/277pass1skip通过，APK新增Kotlin编译和身份资源检查通过。独立暂停/疼痛及音量专项确认两项回归，main组件控制组通过；另查实终态保活泄漏与STOP/START时序两项P2。源/目标结束前回读一致，GitHub存在verification文档冲突；本轮只保存审核文档与证据，未修改App、未评论/review、未合并或ADB安装，不改变手机/商店事实。[审核报告](pr24-review-2026-10-19.md)。
+
+## 2026-10-19：PR #22 / 2cc40e3 Android阶段复测
+
+按用户指令在E盘复核作者F8/P3，335pass/1skip及analyze0通过；收到手机已连接后备份原包/偏好，准确候选保留数据安装并回读SHA。F8主案例保存[B2,C]通过，新增F9删除后立即保存复现回滚，真机与独立专项一致。中文两类各两轮及后台、英文保持首轮锁屏已做：记录增量正常但后台/锁屏完成延迟到恢复，未记全通过。用户中途取消极大字号验收，已恢复正常显示并将约束写AGENTS；安全锁屏后等待用户解锁，英文余项/系统中断/ducking/实际听音及原中文深色恢复仍待补。阶段结果按授权回帖PR22，不合并main。[详细报告](pr22-native-retest-2026-10-19.md)。
+
+[阶段复测评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6268054160)已发布并回读与本机草稿完全一致。当前仍等待安全解锁，未将阶段结果写成原生全验通过。
+
+## 2026-10-19：PR #24修复返回、#22组合正常播放验证
+
+固定24新head0ccef6b复审，原四P2源码闭环，原3失败专项本机均通过。E盘副本组合22的2cc40e3，保留_complete的plan记录与6秒释放，并修复同State「再来一组」未取得新hold；新增两例先失败后通过。组合5725c36已普通推送验证分支，373pass/1skip、analyze0及Kotlin编译/包身份通过。21:56:37保留数据安装，升级JSON相同；中文深蹲两轮自然完成，恰增2记录、其余字段保持，两轮服务/CPU锁结束后释放，用户现场确认正常听到/播放无异常。按用户要求停止扩展系统矩阵，规则写入AGENTS；PR22 F9仍待作者修复，不合main、不approve、不上传商店，仅保存当前证据与文档。[报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
+
+## 2026-10-19：PR #22 F9 修复、搜索框键盘排查与同步 main（feat/training-library）
+
+真机复测（固定 2cc40e3）的 F9 / P2：训练组编辑器左删后在动画内立即保存，重开被删项仍在。根因是 `_save` 与放弃判断读旧 `_steps`，删除要到 `onDismissed` 才生效。修法 `7018fcb`：`confirmDismiss` 时记入待删 key，保存、放弃判断、步骤数、0 项禁用、添加上限、剂量面板都排除；松手后仍在滑出的行由保存/关闭先等其确认或弹回（上限 800 ms）。新增 8 个真实手势回归（`6b4b101`，修复前 6 fail / 2 pass），F8 回归照常通过。
+
+用户新报练习页搜索框有光标不弹键盘：P3 只改了容器高度/内边距/提示文案，`TextField` 无 readOnly/maxLines/keyboardType 变化，无抢焦点或 unfocus；组件测试里点按即发 `TextInput.show`，1×/2.0 及 inset、切 tab、详情页返回后都正常，P3 之前代码结果相同。Flutter 侧找不到原因，未改产品代码，加 6 个键盘契约测试（`ff85de6`），真机取证步骤见 training-library §10.2（优先排查投屏/实体键盘，其次 WebView 焦点）。
+
+merge main `76ff846`（`0d2c625`），冲突仅本文件，两边保留、main 原文不改。analyze 0，349 pass / 1 条件 skip，工具检查通过；未构建 APK、未上真机。
+
+
+## 2026-10-19：PR22 F9返回修复复审通过
+
+按用户反馈固定a586de3复审F9，源码闭环、原独立失败专项现通过，F8/键盘等21专项通过。E盘组合9b22dcc保留已验PR24及重播hold，387pass/1skip、analyze0、Kotlin/APK校验通过；保留数据安装后真机立即保存/双删/空组/关闭放弃正确，键盘首次与视频详情返回实际弹出。手机前台中途被其他App打断的操作未计结论，经用户确认独占后重做并加包名守卫，最终已回今日页停止输入。仅既有测试组1按用例变化，另一组/10条记录及全部非组状态保持。F9关闭，当前范围无新阻断，待开哥最终同意再合main；不扩展极大字号或系统矩阵，不上传商店。[复审](pr22-f9-reaudit-2026-10-19.md)。
+
+
+## 2026-10-19 23:32：获准合并PR #22 / #24
+
+用户明确「同意合并」，来源与候选回读未变；main ab1425b快进已验b33ed21并普通推送，GitHub23:32:51确认两PR均MERGED，mergeCommit分别9b22dcc/5725c36。保留完整来源祖先与文档双方历史，运行代码/测试与已验9b22dcc一致；仅补合并台账，不重构建或重装、不增版本、不上传商店。D-29/D-30当前代码集成完成，后续从main推进，iOS及扩展矩阵边界保留。[身份与证据](pr22-f9-reaudit-2026-10-19.md)。
+
+
+## 2026-10-19：PR22/24合并后的文档阶段收束
+
+按用户显式cockpit-closeout要求先完成只读Preflight，baseline ab1425b / 收束前HEAD cdbb14c，43提交65路径；当前规范入口及完整4个旧未跟踪文件的归属明确。修正根README、工作流、版本/验证摘要和事项编号/待审状态，当前事实统一为PR22/24已合main、已验源9b22dcc、0.3.6+11及387pass/1skip，保留所有旧日期证据。仅处理确定的文档对齐问题，不改App、不重建/重装、不触碰旧网页产物。Preflight与验证绑定详见[验证台账](verification.md)；本次commit/push记录在Git中，不自动结束Cockpit会话。

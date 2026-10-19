@@ -25,6 +25,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import '../test/hip/hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'support/frame_capture.dart';
+import '../test/hip/checkup_entry.dart';
 
 const _root = ValueKey('capture-root');
 final _out =
@@ -245,8 +246,7 @@ void main() {
 
   testWidgets('10-check-expand + 11-check-close', (t) async {
     await boot(t);
-    await t.tap(find.byKey(const ValueKey('tab-1')));
-    await t.pumpAndSettle();
+    await openCheckupIntro(t);
     await _precache(t);
     Future<void> open() =>
         t.tap(find.byKey(const ValueKey('assessment-start')));

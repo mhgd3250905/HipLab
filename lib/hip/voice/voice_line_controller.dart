@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
+
 /// What [VoiceLineController] needs from the platform: the voice player,
 /// the chime player's state, and the audio session. The app implements it
 /// with just_audio + audio_session (just_audio_output.dart); tests use a
@@ -55,17 +57,35 @@ abstract class VoicePlatform {
 ///   clock runs from when a line was asked for, playback starts a little
 ///   later) unless the queue cut it on purpose with [stopSpeech] – then it
 ///   waits up to [maxTailWait] for the real end.
+/// * lines play in the order they were asked for (Android voice fix,
+///   2026-10-19). Before, a line still waiting for the previous tail or
+///   still loading was silently dropped as soon as the next one was asked
+///   for – with a slow player (Android in the background) a whole 「3、2、1」
+///   vanished, each number superseded by the next. Now only [stopSpeech] /
+///   [abandon] drop lines; a backlog line is skipped only when it is more
+///   than [staleAfter] late *and* a newer line is already waiting.
 class VoiceLineController {
   VoiceLineController(
     this.p, {
     this.releaseDelay = const Duration(milliseconds: 700),
     this.maxTailWait = const Duration(milliseconds: 1200),
+    this.staleAfter = const Duration(milliseconds: 3000),
     this.isActive = _always,
+    this.onSkip,
   });
+
+  /// Called with a backlog line that was skipped (logged by the app).
+  final void Function(List<String> assets)? onSkip;
 
   final VoicePlatform p;
   final Duration releaseDelay;
   final Duration maxTailWait;
+
+  /// A queued line this late is skipped if a newer line waits behind it.
+  final Duration staleAfter;
+
+  /// Last-resort bound on waiting for the line before.
+  static const backlogLimit = Duration(seconds: 20);
 
   /// False after the session ended: a release then must not resume the
   /// keep-alive.
@@ -73,7 +93,14 @@ class VoiceLineController {
   static bool _always() => true;
 
   double volume = 1;
+
+  /// Latest request: only the newest line may schedule the duck release.
   int _generation = 0;
+
+  /// Bumped by [stopSpeech] / [abandon]: every line asked for before is
+  /// dropped. A plain new line never bumps it.
+  int _epoch = 0;
+  double? _lastVolume;
   bool _ducking = false;
   bool _cut = false;
   Timer? _release;
@@ -83,6 +110,7 @@ class VoiceLineController {
   bool get ducking => _ducking;
 
   bool _current(int gen) => gen == _generation && isActive();
+  bool _alive(int epoch) => epoch == _epoch && isActive();
 
   /// Runs [op] after every audio-session operation queued before it.
   Future<void> serial(Future<void> Function() op) {
@@ -99,36 +127,63 @@ class VoiceLineController {
     }
   }
 
-  Future<void> speak(List<String> assets) async {
-    if (!isActive()) return;
+  Future<void> speak(List<String> assets) {
+    if (!isActive()) return Future<void>.value();
     _release?.cancel();
     final gen = ++_generation;
+    final epoch = _epoch;
     final cut = _cut;
     _cut = false;
     final prev = _line;
-    if (prev != null && !cut && p.voiceAudible) {
-      // Let the line on the air finish instead of clipping its tail.
-      await prev.timeout(maxTailWait, onTimeout: () {});
-      if (!_current(gen)) return;
-    }
-    final line = _play(gen, assets);
+    final asked = clock.now();
+    final line = _queued(gen, epoch, cut ? null : prev, asked, assets);
     _line = line;
-    await line;
+    return line;
   }
 
-  Future<void> _play(int gen, List<String> assets) async {
+  Future<void> _queued(
+    int gen,
+    int epoch,
+    Future<void>? prev,
+    DateTime asked,
+    List<String> assets,
+  ) async {
+    if (prev != null) {
+      // Wait for the line before (its load and its tail) instead of
+      // clipping or dropping either. It always completes – played, stopped,
+      // failed or dropped (playVoiceToEnd has its own timeout); the bound is
+      // only a last resort against a hung platform call.
+      await prev.timeout(backlogLimit, onTimeout: () {});
+    }
+    if (!_alive(epoch)) return;
+    if (gen != _generation && clock.now().difference(asked) > staleAfter) {
+      // Far behind and a newer line is waiting: skip the backlog.
+      onSkip?.call(assets);
+      return;
+    }
+    await _play(gen, epoch, assets);
+  }
+
+  Future<void> _play(int gen, int epoch, List<String> assets) async {
     Future<void>? playback;
     try {
       // Serialize preparation as well as focus: an old delayed load must
       // finish before a newer request reuses the same player.
       await serial(() async {
-        if (!_current(gen)) return;
-        await _duck(true, current: () => _current(gen));
-        if (!_current(gen)) return;
-        await p.setVoiceVolume(volume);
-        if (!_current(gen)) return;
+        if (!_alive(epoch)) return;
+        await _duck(true, current: () => _alive(epoch));
+        if (!_alive(epoch)) return;
+        // Capture the value once: the slider can move while the platform
+        // call is in flight, and the cache must record what was really
+        // applied, or the newer value is never sent (PR #24 review F24-2).
+        final target = volume;
+        if (_lastVolume != target) {
+          await p.setVoiceVolume(target);
+          _lastVolume = target;
+        }
+        if (!_alive(epoch)) return;
         await p.loadVoice(assets);
-        if (!_current(gen)) return;
+        if (!_alive(epoch)) return;
         // Do not hold the operation queue during playback: stopSpeech and
         // interruptions must be able to stop a line before it finishes.
         // Attach error handling immediately, before the serial callback
@@ -162,6 +217,7 @@ class VoiceLineController {
   /// The queue cut the line on purpose (a count or a call takes over).
   Future<void> stopSpeech() async {
     _cut = true;
+    _epoch++;
     final gen = ++_generation;
     _release?.cancel();
     await serial(() => _step(p.stopVoice));
@@ -172,7 +228,10 @@ class VoiceLineController {
   void abandon() {
     _release?.cancel();
     _generation++;
+    _epoch++;
     _cut = false;
+    // A new session (or a re-activated one) sets the volume again.
+    _lastVolume = null;
   }
 
   /// Mark the duck as gone without touching the session (an interruption

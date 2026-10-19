@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 void main() {
   final content = loadContent();
@@ -81,8 +82,7 @@ void main() {
         s.identity = HipIdentity.office;
       },
     );
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
-    await tester.pumpAndSettle();
+    await openCheckupIntro(tester);
     await tester.tap(find.byKey(const ValueKey('assessment-start')));
     await tester.pumpAndSettle();
 

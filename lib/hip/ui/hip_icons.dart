@@ -44,6 +44,14 @@ enum HipGlyph {
   dancer,
   person,
   bandage,
+  // Training library (design/training-library prototype, 2026-10-19).
+  library,
+  search,
+  plus,
+  minus,
+  filter,
+  grip,
+  trash,
 }
 
 /// Draws a [HipGlyph]. Size and colour default to the ambient [IconTheme],
@@ -705,6 +713,104 @@ class HipIconPainter extends CustomPainter {
           c.drawCircle(const Offset(0, 1.4), .7, _fill);
         }
         c.restore();
+      case HipGlyph.library:
+        // A stack of drill cards: the back card's top edge, the front card
+        // with two text lines (filled: solid card, lines knocked out).
+        c.drawPath(
+          Path()
+            ..moveTo(6.6, 4.4)
+            ..lineTo(17.4, 4.4),
+          _stroke,
+        );
+        final card = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(3.8, 8, 16.4, 12),
+          const Radius.circular(3),
+        );
+        if (filled) {
+          c.drawRRect(card.inflate(.5), _fill);
+          c.drawLine(
+            const Offset(7.6, 12.6),
+            const Offset(16.4, 12.6),
+            _cutStroke,
+          );
+          c.drawLine(
+            const Offset(7.6, 16.2),
+            const Offset(12.8, 16.2),
+            _cutStroke,
+          );
+        } else {
+          c.drawRRect(card, _stroke);
+          c.drawLine(
+            const Offset(7.6, 12.6),
+            const Offset(16.4, 12.6),
+            _stroke,
+          );
+          c.drawLine(
+            const Offset(7.6, 16.2),
+            const Offset(12.8, 16.2),
+            _stroke,
+          );
+        }
+      case HipGlyph.search:
+        c.drawCircle(const Offset(10.6, 10.6), 6, _stroke);
+        c.drawLine(const Offset(15.2, 15.2), const Offset(19.6, 19.6), _stroke);
+      case HipGlyph.plus:
+        c.drawLine(const Offset(12, 5.5), const Offset(12, 18.5), _stroke);
+        c.drawLine(const Offset(5.5, 12), const Offset(18.5, 12), _stroke);
+      case HipGlyph.minus:
+        c.drawLine(const Offset(5.5, 12), const Offset(18.5, 12), _stroke);
+      case HipGlyph.filter:
+        for (final (y, x) in [(7.0, 15.0), (12.0, 9.0), (17.0, 13.5)]) {
+          c.drawLine(Offset(4, y), Offset(20, y), _stroke);
+          c.drawCircle(Offset(x, y), 2.4, _cutFill);
+          c.drawCircle(Offset(x, y), 2.1, filled ? _fill : _stroke);
+        }
+      case HipGlyph.grip:
+        for (final x in [9.5, 14.5]) {
+          for (final y in [7.0, 12.0, 17.0]) {
+            c.drawCircle(Offset(x, y), 1.3, _fill);
+          }
+        }
+      case HipGlyph.trash:
+        c.drawLine(const Offset(4.5, 6.8), const Offset(19.5, 6.8), _stroke);
+        c.drawPath(
+          _poly(const [
+            Offset(9.4, 6.8),
+            Offset(9.4, 4.4),
+            Offset(14.6, 4.4),
+            Offset(14.6, 6.8),
+          ]),
+          _stroke,
+        );
+        final bin = Path()
+          ..moveTo(6.4, 6.8)
+          ..lineTo(7.4, 18.4)
+          ..arcToPoint(
+            const Offset(9.4, 20.2),
+            radius: const Radius.circular(2),
+            clockwise: false,
+          )
+          ..lineTo(14.6, 20.2)
+          ..arcToPoint(
+            const Offset(16.6, 18.4),
+            radius: const Radius.circular(2),
+            clockwise: false,
+          )
+          ..lineTo(17.6, 6.8);
+        if (filled) c.drawPath(Path.from(bin)..close(), _fill);
+        c.drawPath(bin, _stroke);
+        if (!filled) {
+          c.drawLine(
+            const Offset(10.4, 10.4),
+            const Offset(10.6, 16.6),
+            _stroke,
+          );
+          c.drawLine(
+            const Offset(13.6, 10.4),
+            const Offset(13.4, 16.6),
+            _stroke,
+          );
+        }
     }
   }
 

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show debugPrint, visibleForTesting;
 
 import 'voice_line_controller.dart';
 import 'voice_queue.dart';
@@ -63,7 +63,14 @@ class JustAudioVoiceOutput
     this._keepAlive,
     this._getSession,
   ) {
-    _lines = VoiceLineController(this, isActive: () => _began && !_disposed);
+    _lines = VoiceLineController(
+      this,
+      isActive: () => _began && !_disposed,
+      onSkip: (assets) => debugPrint(
+        'HipVoice skipped late line: '
+        '${assets.map((a) => a.split('/').last).join('+')}',
+      ),
+    );
   }
 
   late final VoiceLineController _lines;
@@ -145,8 +152,9 @@ class JustAudioVoiceOutput
     }
   }
 
-  /// iOS: activate the session and loop the silent clip. Android keeps Dart
-  /// timers running while the process lives, so nothing to keep alive there.
+  /// iOS: activate the session and loop the silent clip. Android: the
+  /// session page runs a foreground service instead (ScreenAwake →
+  /// TrainingService), so nothing to loop here.
   Future<void> _keepAliveOn() async {
     final generation = _sessionGeneration;
     if (!Platform.isIOS || !_current(generation)) return;
@@ -321,10 +329,22 @@ class JustAudioVoiceOutput
     ++_playGeneration;
     if (_voice.playing) await _voice.pause();
     await _voicePlayback;
+    final watch = Stopwatch()..start();
     await _voice.setAudioSources([
       for (final a in assets) AudioSource.asset(a),
     ]);
+    // Device evidence for the background-playback check (logcat tag
+    // "flutter"): a slow prepare is what delays and used to drop lines.
+    if (watch.elapsedMilliseconds > slowLoadMs) {
+      debugPrint(
+        'HipVoice slow load ${watch.elapsedMilliseconds} ms: '
+        '${assets.map((a) => a.split('/').last).join('+')}',
+      );
+    }
   }
+
+  /// Prepares slower than this are logged.
+  static const slowLoadMs = 250;
 
   @override
   Future<void> playVoiceToEnd() {

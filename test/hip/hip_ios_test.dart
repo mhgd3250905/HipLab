@@ -27,6 +27,7 @@ import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 /// Records what the player asks of the audio layer and lets the test fire
 /// OS interruptions.
@@ -303,8 +304,7 @@ void main() {
 
       testWidgets('${phone.name}: hip check item and result', (tester) async {
         await bootIos(tester, phone: phone);
-        await tester.tap(find.byKey(const ValueKey('tab-1')));
-        await tester.pumpAndSettle();
+        await openCheckupIntro(tester);
         await tester.tap(find.byKey(const ValueKey('assessment-start')));
         await tester.pumpAndSettle();
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'item 1');

@@ -7,6 +7,7 @@ import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 Future<void> openDemo(WidgetTester tester, Size size) async {
   tester.view.physicalSize = size;
@@ -18,8 +19,7 @@ Future<void> openDemo(WidgetTester tester, Size size) async {
   store.identity = HipIdentity.office;
   await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('tab-1')));
-  await tester.pumpAndSettle();
+  await openCheckupIntro(tester);
   await tester.tap(find.byKey(const ValueKey('assessment-start')));
   await tester.pumpAndSettle();
 }

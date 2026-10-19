@@ -18,6 +18,7 @@ import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'checkup_entry.dart';
 
 class _HandoffOutput implements VoiceOutput {
   final events = <String>[];
@@ -151,7 +152,7 @@ void main() {
       '办公椅',
       '居家',
       '今日',
-      '自测',
+      '练习',
       '进度',
       '开始',
     ]) {
@@ -272,7 +273,8 @@ void main() {
     await _keyboardActivate(tester, find.byKey(const ValueKey('minutes-15')));
     expect(store.minutes, 15);
     await _keyboardActivate(tester, find.byKey(const ValueKey('tab-1')));
-    expect(find.byKey(const ValueKey('assessment-start')), findsOneWidget);
+    // 练习 (拍板 2026-10-19): the check-up card replaces the 自测 tab.
+    expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
     await _keyboardActivate(tester, find.byKey(const ValueKey('tab-0')));
     expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
   });
@@ -282,8 +284,7 @@ void main() {
     (tester) async {
       final output = _HandoffOutput();
       await _app(tester, output: output);
-      await tester.tap(find.byKey(const ValueKey('tab-1')));
-      await tester.pumpAndSettle();
+      await openCheckupIntro(tester);
       await tester.tap(find.byKey(const ValueKey('assessment-start')));
       await tester.pumpAndSettle();
       for (var i = 0; i < 6; i++) {
