@@ -1,0 +1,114 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-kneel-hipflex",
+ "display": {
+  "name": {
+   "zh": "半跪髋屈肌拉伸",
+   "en": "Kneeling hip flexor stretch"
+  },
+  "point": {
+   "zh": "后侧臀部收紧，髋慢慢往前推",
+   "en": "Squeeze the back glute and ease the hips forward"
+  },
+  "cautions": [
+   "膝",
+   "腰"
+  ],
+  "targets": [
+   "extension"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-s-kneel-hipflex.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-kneel-hipflex.js",
+   "specSha256": "e5ce7dfa048f12a7ea8b7436e0af4972d179c6766652c98739f1438f85dafee2"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-kneel-hipflex.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 30,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-kneel-hipflex": {
+    "zh": "半跪髋屈肌拉伸",
+    "en": "Kneeling hip flexor stretch"
+   },
+   "point.s-kneel-hipflex": {
+    "zh": "后侧臀部收紧，髋慢慢往前推",
+    "en": "Squeeze the back glute and ease the hips forward"
+   }
+  },
+  "prepare": [
+   "drill.s-kneel-hipflex",
+   "point.s-kneel-hipflex"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

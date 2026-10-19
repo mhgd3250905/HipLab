@@ -2,6 +2,10 @@
 /// recommendation and pain rules can be unit-tested without widgets.
 library;
 
+import 'action_kit.dart';
+
+export 'action_kit.dart';
+
 enum HipDirection {
   flexion('flexion', '屈'),
   extension('extension', '伸'),
@@ -132,6 +136,7 @@ class HipRoutineStep {
     required this.sided,
     this.alternative,
     this.tip = '',
+    this.kit = const KitDose(),
   });
   final String drillId;
   final String dose;
@@ -140,6 +145,9 @@ class HipRoutineStep {
   final String? alternative;
   final String tip;
 
+  /// The step's overrides of its action kit (reps / hold / seconds).
+  final KitDose kit;
+
   factory HipRoutineStep.fromJson(Map<String, dynamic> j) => HipRoutineStep(
     drillId: j['drill'] as String,
     dose: j['dose'] as String,
@@ -147,6 +155,9 @@ class HipRoutineStep {
     sided: j['sided'] == true,
     alternative: j['alternative'] as String?,
     tip: (j['tip'] as String?) ?? '',
+    kit: KitDose.fromJson(
+      j['kit'] == null ? null : Map<String, dynamic>.from(j['kit'] as Map),
+    ),
   );
 }
 
@@ -430,9 +441,34 @@ class HipContent {
     required this.routines,
     required this.rules,
     required this.safetyCards,
-  }) : drills = {for (final d in drills) d.id: d};
+    Map<String, ActionKit> kits = const {},
+  }) : drills = {for (final d in drills) d.id: d},
+       kits = Map.unmodifiable(kits);
 
   final Map<String, HipDrill> drills;
+
+  /// Action kits by Pose-Hub action id (assets/action_kits); empty when the
+  /// kits are not loaded – the player then falls back to timed holds.
+  final Map<String, ActionKit> kits;
+  ActionKit? kit(String id) => kits[id];
+
+  /// Seconds of a step of [drillId] with [dose]: a counted kit lasts as long
+  /// as its reps take (per side × 2 when [sided]); holds keep [budget].
+  int stepSeconds(String drillId, KitDose dose, bool sided, int budget) {
+    final k = kits[drillId];
+    if (k == null) return budget;
+    final sides = sided ? 2 : 1;
+    return k.sideSeconds(dose, budget ~/ sides) * sides;
+  }
+
+  /// The same content with its action kits attached.
+  HipContent withKits(Map<String, ActionKit> kits) => HipContent(
+    drills: drills.values.toList(),
+    routines: routines,
+    rules: rules,
+    safetyCards: safetyCards,
+    kits: kits,
+  );
   final List<HipRoutine> routines;
   final AssessmentRules rules;
   final List<SafetyCard> safetyCards;

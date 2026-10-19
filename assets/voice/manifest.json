@@ -156,6 +156,7 @@
    "n.7": 627,
    "n.8": 488,
    "n.9": 557,
+   "p.again": 998,
    "p.each_side": 813,
    "p.finish": 4714,
    "p.first": 697,
@@ -164,12 +165,15 @@
    "p.half": 2276,
    "p.last": 766,
    "p.last10": 1161,
+   "p.last_rep": 766,
    "p.next": 743,
    "p.nice": 813,
    "p.paused": 580,
    "p.ready": 650,
+   "p.release": 1207,
    "p.rest": 859,
    "p.resume": 998,
+   "p.right_first": 1184,
    "p.skip": 557,
    "p.steps": 580,
    "p.stop": 4481,
@@ -231,27 +235,64 @@
    "routine.F": 1045,
    "routine.M": 766,
    "sec.10": 952,
-   "sec.14": 1161,
    "sec.15": 1138,
+   "sec.16": 1231,
    "sec.20": 1045,
+   "sec.22": 1231,
    "sec.25": 1254,
    "sec.27": 1324,
    "sec.30": 998,
+   "sec.33": 1207,
    "sec.35": 1231,
    "sec.40": 1068,
+   "sec.41": 1254,
+   "sec.44": 1277,
    "sec.45": 1254,
    "sec.5": 952,
    "sec.50": 1045,
    "sec.54": 1254,
-   "sec.55": 1254,
    "sec.60": 766,
-   "sec.7": 1091,
+   "sec.66": 1115,
    "sec.70": 1022,
    "sec.75": 1231,
+   "sec.8": 929,
    "sec.80": 1045,
+   "sec.82": 1300,
    "tip.01": 3738,
    "tip.02": 3019,
-   "tip.03": 3553
+   "tip.03": 3553,
+   "w.center": 929,
+   "w.circle_fwd": 998,
+   "w.circle_rev": 882,
+   "w.close": 580,
+   "w.come_back": 697,
+   "w.come_forward": 813,
+   "w.exhale_hug": 1300,
+   "w.gate_close": 906,
+   "w.gate_open": 859,
+   "w.hips_up": 627,
+   "w.hold": 464,
+   "w.inhale_release": 1324,
+   "w.knees_left": 813,
+   "w.knees_right": 789,
+   "w.left_knee_in": 929,
+   "w.lift": 511,
+   "w.lower": 534,
+   "w.open": 534,
+   "w.pelvis_one_way": 1045,
+   "w.pelvis_other_way": 975,
+   "w.pull_in": 743,
+   "w.relax": 720,
+   "w.right_knee_in": 859,
+   "w.shift_left": 859,
+   "w.shift_right": 813,
+   "w.sit_back": 766,
+   "w.slide_out": 766,
+   "w.squat_down": 882,
+   "w.squeeze": 743,
+   "w.stand_up": 743,
+   "w.turn_out": 650,
+   "w.up": 372
   },
   "zh": {
    "a.choose": 2577,
@@ -402,6 +443,7 @@
    "n.7": 464,
    "n.8": 395,
    "n.9": 418,
+   "p.again": 882,
    "p.each_side": 650,
    "p.finish": 4783,
    "p.first": 929,
@@ -410,12 +452,15 @@
    "p.half": 1533,
    "p.last": 1115,
    "p.last10": 998,
+   "p.last_rep": 882,
    "p.next": 743,
    "p.nice": 627,
    "p.paused": 859,
    "p.ready": 557,
+   "p.release": 998,
    "p.rest": 650,
    "p.resume": 627,
+   "p.right_first": 998,
    "p.skip": 627,
    "p.steps": 720,
    "p.stop": 5294,
@@ -477,27 +522,64 @@
    "routine.F": 1022,
    "routine.M": 1579,
    "sec.10": 697,
-   "sec.14": 836,
    "sec.15": 789,
+   "sec.16": 813,
    "sec.20": 743,
+   "sec.22": 882,
    "sec.25": 906,
    "sec.27": 906,
    "sec.30": 789,
+   "sec.33": 998,
    "sec.35": 929,
    "sec.40": 813,
+   "sec.41": 929,
+   "sec.44": 975,
    "sec.45": 975,
    "sec.5": 604,
    "sec.50": 743,
    "sec.54": 906,
-   "sec.55": 882,
    "sec.60": 743,
-   "sec.7": 627,
+   "sec.66": 929,
    "sec.70": 998,
    "sec.75": 1091,
+   "sec.8": 604,
    "sec.80": 1068,
+   "sec.82": 1184,
    "tip.01": 3669,
    "tip.02": 2926,
-   "tip.03": 3181
+   "tip.03": 3181,
+   "w.center": 604,
+   "w.circle_fwd": 1068,
+   "w.circle_rev": 1022,
+   "w.close": 650,
+   "w.come_back": 580,
+   "w.come_forward": 580,
+   "w.exhale_hug": 1324,
+   "w.gate_close": 580,
+   "w.gate_open": 627,
+   "w.hips_up": 1022,
+   "w.hold": 604,
+   "w.inhale_release": 1300,
+   "w.knees_left": 952,
+   "w.knees_right": 952,
+   "w.left_knee_in": 952,
+   "w.lift": 697,
+   "w.lower": 580,
+   "w.open": 604,
+   "w.pelvis_one_way": 1091,
+   "w.pelvis_other_way": 1022,
+   "w.pull_in": 743,
+   "w.relax": 604,
+   "w.right_knee_in": 906,
+   "w.shift_left": 906,
+   "w.shift_right": 906,
+   "w.sit_back": 766,
+   "w.slide_out": 743,
+   "w.squat_down": 604,
+   "w.squeeze": 673,
+   "w.stand_up": 650,
+   "w.turn_out": 743,
+   "w.up": 464
   }
  },
  "generated_by": "tools/voice/build_voice.py",
@@ -1094,6 +1176,10 @@
    "en": "nine",
    "zh": "九"
   },
+  "p.again": {
+   "en": "One more set",
+   "zh": "再来一组"
+  },
   "p.each_side": {
    "en": "each side",
    "zh": "每侧"
@@ -1126,6 +1212,10 @@
    "en": "10 seconds left",
    "zh": "还剩 10 秒"
   },
+  "p.last_rep": {
+   "en": "Last one",
+   "zh": "最后一次"
+  },
   "p.next": {
    "en": "Next up",
    "zh": "下一个"
@@ -1142,6 +1232,10 @@
    "en": "Get ready",
    "zh": "准备"
   },
+  "p.release": {
+   "en": "Slowly come out of it",
+   "zh": "慢慢还原"
+  },
   "p.rest": {
    "en": "Rest for",
    "zh": "休息"
@@ -1149,6 +1243,10 @@
   "p.resume": {
    "en": "Let's continue",
    "zh": "继续"
+  },
+  "p.right_first": {
+   "en": "Right side first",
+   "zh": "先做右边"
   },
   "p.skip": {
    "en": "Skipped",
@@ -1394,17 +1492,21 @@
    "en": "10 seconds",
    "zh": "10 秒"
   },
-  "sec.14": {
-   "en": "14 seconds",
-   "zh": "14 秒"
-  },
   "sec.15": {
    "en": "15 seconds",
    "zh": "15 秒"
   },
+  "sec.16": {
+   "en": "16 seconds",
+   "zh": "16 秒"
+  },
   "sec.20": {
    "en": "20 seconds",
    "zh": "20 秒"
+  },
+  "sec.22": {
+   "en": "22 seconds",
+   "zh": "22 秒"
   },
   "sec.25": {
    "en": "25 seconds",
@@ -1418,6 +1520,10 @@
    "en": "30 seconds",
    "zh": "30 秒"
   },
+  "sec.33": {
+   "en": "33 seconds",
+   "zh": "33 秒"
+  },
   "sec.35": {
    "en": "35 seconds",
    "zh": "35 秒"
@@ -1425,6 +1531,14 @@
   "sec.40": {
    "en": "40 seconds",
    "zh": "40 秒"
+  },
+  "sec.41": {
+   "en": "41 seconds",
+   "zh": "41 秒"
+  },
+  "sec.44": {
+   "en": "44 seconds",
+   "zh": "44 秒"
   },
   "sec.45": {
    "en": "45 seconds",
@@ -1442,17 +1556,13 @@
    "en": "54 seconds",
    "zh": "54 秒"
   },
-  "sec.55": {
-   "en": "55 seconds",
-   "zh": "55 秒"
-  },
   "sec.60": {
    "en": "1 minute",
    "zh": "1 分钟"
   },
-  "sec.7": {
-   "en": "7 seconds",
-   "zh": "7 秒"
+  "sec.66": {
+   "en": "1 minute 6",
+   "zh": "1 分 6 秒"
   },
   "sec.70": {
    "en": "1 minute 10",
@@ -1462,9 +1572,17 @@
    "en": "1 minute 15",
    "zh": "1 分 15 秒"
   },
+  "sec.8": {
+   "en": "8 seconds",
+   "zh": "8 秒"
+  },
   "sec.80": {
    "en": "1 minute 20",
    "zh": "1 分 20 秒"
+  },
+  "sec.82": {
+   "en": "1 minute 22",
+   "zh": "1 分 22 秒"
   },
   "tip.01": {
    "en": "If your knee complains, just rest the ankle on it and do not lean forward",
@@ -1477,6 +1595,134 @@
   "tip.03": {
    "en": "Rather not move? Hold a lying butterfly instead",
    "zh": "不想挪位置，也可以换成仰卧蝴蝶停留"
+  },
+  "w.center": {
+   "en": "Back to center",
+   "zh": "回正"
+  },
+  "w.circle_fwd": {
+   "en": "Circle forward",
+   "zh": "向前画圈"
+  },
+  "w.circle_rev": {
+   "en": "Now reverse",
+   "zh": "反着画回来"
+  },
+  "w.close": {
+   "en": "Close",
+   "zh": "合拢"
+  },
+  "w.come_back": {
+   "en": "Come back",
+   "zh": "回来"
+  },
+  "w.come_forward": {
+   "en": "Come forward",
+   "zh": "回来"
+  },
+  "w.exhale_hug": {
+   "en": "Breathe out, hug in",
+   "zh": "呼气，抱紧"
+  },
+  "w.gate_close": {
+   "en": "Close the gate",
+   "zh": "关门"
+  },
+  "w.gate_open": {
+   "en": "Open the gate",
+   "zh": "开门"
+  },
+  "w.hips_up": {
+   "en": "Hips up",
+   "zh": "臀部抬起"
+  },
+  "w.hold": {
+   "en": "Hold",
+   "zh": "停住"
+  },
+  "w.inhale_release": {
+   "en": "Breathe in, let go",
+   "zh": "吸气，放松"
+  },
+  "w.knees_left": {
+   "en": "Knees left",
+   "zh": "倒向左边"
+  },
+  "w.knees_right": {
+   "en": "Knees right",
+   "zh": "倒向右边"
+  },
+  "w.left_knee_in": {
+   "en": "Left knee in",
+   "zh": "左膝向内"
+  },
+  "w.lift": {
+   "en": "Lift",
+   "zh": "抬起"
+  },
+  "w.lower": {
+   "en": "Lower",
+   "zh": "放下"
+  },
+  "w.open": {
+   "en": "Open",
+   "zh": "打开"
+  },
+  "w.pelvis_one_way": {
+   "en": "Circle one way",
+   "zh": "顺着画一圈"
+  },
+  "w.pelvis_other_way": {
+   "en": "Now the other way",
+   "zh": "反着画一圈"
+  },
+  "w.pull_in": {
+   "en": "Pull it in",
+   "zh": "收回来"
+  },
+  "w.relax": {
+   "en": "Relax",
+   "zh": "放松"
+  },
+  "w.right_knee_in": {
+   "en": "Right knee in",
+   "zh": "右膝向内"
+  },
+  "w.shift_left": {
+   "en": "Shift left",
+   "zh": "移到左边"
+  },
+  "w.shift_right": {
+   "en": "Shift right",
+   "zh": "移到右边"
+  },
+  "w.sit_back": {
+   "en": "Sit back",
+   "zh": "往后坐"
+  },
+  "w.slide_out": {
+   "en": "Slide out",
+   "zh": "滑出去"
+  },
+  "w.squat_down": {
+   "en": "Squat down",
+   "zh": "蹲下"
+  },
+  "w.squeeze": {
+   "en": "Squeeze",
+   "zh": "夹紧"
+  },
+  "w.stand_up": {
+   "en": "Stand up",
+   "zh": "站起"
+  },
+  "w.turn_out": {
+   "en": "Turn out",
+   "zh": "转出去"
+  },
+  "w.up": {
+   "en": "Up",
+   "zh": "起"
   }
  },
  "rest_seconds": 15,

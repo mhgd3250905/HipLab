@@ -1,0 +1,145 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-prone-ir",
+ "display": {
+  "name": {
+   "zh": "俯卧小腿外摆（髋内旋）",
+   "en": "Prone hip internal rotation"
+  },
+  "point": {
+   "zh": "趴着，屈膝，小腿向外侧摆",
+   "en": "Lying face down, knees bent, let the shins fall outward"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "internal_rotation"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "beginner",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-n-prone-ir.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-prone-ir.js",
+   "specSha256": "5dc95dd335ea18a21b1b2a1f0b3faa876cf5f3f936c64649d079a19dcb3f32d5"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-prone-ir.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "turn",
+  "reps": [
+   [
+    0.36,
+    1.45,
+    2.65,
+    3.66
+   ],
+   [
+    4.36,
+    5.45,
+    6.65,
+    7.66
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.36,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 1.1,
+     "cue": "w.turn_out"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.2
+    },
+    {
+     "id": "back",
+     "seconds": 1.0,
+     "cue": "w.come_back"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.7
+    }
+   ],
+   "source": "measured: track 'turn' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-prone-ir": {
+    "zh": "俯卧小腿外摆（髋内旋）",
+    "en": "Prone hip internal rotation"
+   },
+   "point.n-prone-ir": {
+    "zh": "趴着，屈膝，小腿向外侧摆",
+    "en": "Lying face down, knees bent, let the shins fall outward"
+   },
+   "w.turn_out": {
+    "zh": "转出去",
+    "en": "Turn out"
+   },
+   "w.come_back": {
+    "zh": "回来",
+    "en": "Come back"
+   }
+  },
+  "prepare": [
+   "drill.n-prone-ir",
+   "point.n-prone-ir"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s",
+  "flags": []
+ }
+}

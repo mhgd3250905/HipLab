@@ -1,0 +1,111 @@
+{
+ "schema": "action-kit@1",
+ "id": "o-seated-ham",
+ "display": {
+  "name": {
+   "zh": "坐姿腘绳肌前伸",
+   "en": "Seated hamstring reach"
+  },
+  "point": {
+   "zh": "腿伸直，脚尖勾起，背挺直往前",
+   "en": "Leg straight, toes up, lean forward with a straight back"
+  },
+  "cautions": [],
+  "targets": [
+   "flexion"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-o-seated-ham.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/o-seated-ham.js",
+   "specSha256": "871ccbd2022c8a9d2ce561750d1d75b7a45b2853ff357ca76c133a49db5a6527"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-o-seated-ham.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 40,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.o-seated-ham": {
+    "zh": "坐姿腘绳肌前伸",
+    "en": "Seated hamstring reach"
+   },
+   "point.o-seated-ham": {
+    "zh": "腿伸直，脚尖勾起，背挺直往前",
+    "en": "Leg straight, toes up, lean forward with a straight back"
+   }
+  },
+  "prepare": [
+   "drill.o-seated-ham",
+   "point.o-seated-ham"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

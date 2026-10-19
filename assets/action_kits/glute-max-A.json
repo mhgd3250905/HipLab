@@ -1,0 +1,145 @@
+{
+ "schema": "action-kit@1",
+ "id": "glute-max-A",
+ "display": {
+  "name": {
+   "zh": "单腿臀桥",
+   "en": "Single-leg glute bridge"
+  },
+  "point": {
+   "zh": "一条腿抬起，用臀部把身体推高",
+   "en": "One leg up, drive your hips up with your glutes"
+  },
+  "cautions": [
+   "腰"
+  ],
+  "targets": [
+   "extension"
+  ],
+  "methods": [
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-glute-max-a.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/glute-max-A.js",
+   "specSha256": "2d5844dc5caa3cfdd6ff1368133a4f798c4571da8b2908a387eb30d65f6d0c8c"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-glute-max-a.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.1
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.33,
+    1.28,
+    2.93,
+    3.87
+   ],
+   [
+    4.33,
+    5.28,
+    6.94,
+    7.88
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 6,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.33,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.95,
+     "cue": "w.hips_up"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.65
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.45
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.glute-max-A": {
+    "zh": "单腿臀桥",
+    "en": "Single-leg glute bridge"
+   },
+   "point.glute-max-A": {
+    "zh": "一条腿抬起，用臀部把身体推高",
+    "en": "One leg up, drive your hips up with your glutes"
+   },
+   "w.hips_up": {
+    "zh": "臀部抬起",
+    "en": "Hips up"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.glute-max-A",
+   "point.glute-max-A"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.strength.1",
+   "cue.strength.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s with a 1.6 s squeeze at the top",
+  "flags": []
+ }
+}

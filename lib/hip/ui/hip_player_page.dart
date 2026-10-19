@@ -75,6 +75,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   /// repaints for it (the page rebuilds once a second).
   final _ringProgress = ValueNotifier<double>(0);
 
+  /// 舒服 / 有点紧 / 疼 per finished step (index), answered during the rest
+  /// after it. Only recorded and confirmed – it never moves the session on.
+  final Map<int, String> _felt = {};
+  double? _feltAt;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -86,6 +91,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       script: _voice.script(
         routineIds: [for (final r in widget.plan.routines) r.id],
         restSeconds: widget.plan.transitionSeconds,
+        kits: widget.store.content.kits,
       ),
       steps: widget.plan.steps,
     );
@@ -452,19 +458,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                     bottom: 16,
                     child: Center(child: _sideIndicator(side, phase)),
                   ),
-                Positioned.fill(
-                  child: AnimatedSwitcher(
-                    duration: HipMotion.medium,
-                    child: work
-                        ? const SizedBox.expand()
-                        : SizedBox.expand(
-                            key: ValueKey(
-                              'overlay-${phase.kind}-${phase.step}',
-                            ),
-                            child: _phaseOverlay(phase, left),
-                          ),
-                  ),
-                ),
+                // Prep / rest / side switch: the demo plays in full, undimmed;
+                // only a small corner tag says what it is. Name, dose and
+                // feedback live below the media.
+                if (!work)
+                  Positioned(right: 14, top: 14, child: _phaseTag(phase)),
               ],
               child: HipFadeSwitcher(
                 duration: HipMotion.slow,
@@ -474,7 +472,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                   key: ValueKey('art-${shown.drill.id}'),
                   child: HipDrillArt(
                     drill: shown.drill,
-                    play: work && !_paused,
+                    // The next drill's demo already loops during prep /
+                    // rest so the user can watch how it is done.
+                    play: !_paused,
                   ),
                 ),
               ),
@@ -562,13 +562,38 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ],
         ),
         const SizedBox(height: 14),
-        // Fixed height whether or not there is a next drill: no jump.
+        // Fixed height whether or not there is a next drill: no jump. During
+        // the rest it holds the light feedback on the drill just done.
         SizedBox(
-          height: 74,
-          child: AnimatedOpacity(
-            duration: HipMotion.medium,
-            opacity: work && _next != null ? 1 : 0,
-            child: _next == null ? const SizedBox() : _nextCard(_next!),
+          // 74 at normal text; a bit taller with large text so the next card
+          // (two lines) fits – it overflowed by 8 px at ×1.5 before.
+          height:
+              74 +
+              18 * (MediaQuery.textScalerOf(context).scale(1) - 1).clamp(0, 1),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              AnimatedOpacity(
+                duration: HipMotion.medium,
+                opacity: work && _next != null ? 1 : 0,
+                child: _next == null ? const SizedBox() : _nextCard(_next!),
+              ),
+              if (_asksFeedback(phase))
+                KeyedSubtree(
+                  key: ValueKey('feel-row-${phase.step}'),
+                  // Large text scales the row down instead of overflowing
+                  // the fixed slot.
+                  child: LayoutBuilder(
+                    builder: (context, box) => FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox(
+                        width: box.maxWidth,
+                        child: _feedbackRow(phase.step - 1, t),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         const SizedBox(height: 10),
@@ -577,8 +602,10 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   }
 
   String _subtitleText(SessionPhase phase) => switch (phase.kind) {
-    PhaseKind.prep => '准备开始',
-    PhaseKind.rest => _ladderCue ?? '休息一下，准备下一个',
+    PhaseKind.prep => '准备开始 · ${_step.dose}',
+    PhaseKind.rest =>
+      _ladderCue ??
+          '${phase.step == _steps.length - 1 ? '最后一个' : '下一个'} · ${_step.dose}',
     PhaseKind.switchSide => phase.side == HipSide.left ? '换左边' : '换右边',
     _ => _cue,
   };
@@ -629,21 +656,21 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     ),
   );
 
+  /// A pill floating on the playing clip: the glass tactile material
+  /// (edge light + hairline, no opaque fill or cast shadow).
   Widget _mediaButton({
     required Key key,
     required HipGlyph icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
-  }) => Material(
-    color: Colors.black.withValues(alpha: .45),
-    shape: StadiumBorder(
-      side: BorderSide(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: InkWell(
-      key: key,
-      customBorder: const StadiumBorder(),
-      onTap: onTap,
+  }) => HipPressable(
+    key: key,
+    semanticLabel: label,
+    onTap: onTap,
+    child: HipTactile(
+      style: HipTactileStyle.glass(),
+      radius: 18,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Row(
@@ -693,94 +720,117 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     HipDirection.externalRotation => '臀部 · 髋外旋',
   };
 
-  /// Prep / rest / side-switch layer over the (paused) drill picture.
-  Widget _phaseOverlay(SessionPhase phase, int left) {
-    final step = _step;
-    final title = switch (phase.kind) {
-      PhaseKind.prep => '准备开始',
-      PhaseKind.rest => phase.step == _steps.length - 1 ? '最后一个' : '休息 · 下一个',
-      PhaseKind.switchSide => phase.side == HipSide.left ? '换左边' : '换右边',
-      _ => '',
-    };
-    return ColoredBox(
-      color: Colors.black.withValues(alpha: .62),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: phase.kind == PhaseKind.switchSide ? 30 : 15,
-                fontWeight: phase.kind == PhaseKind.switchSide
-                    ? FontWeight.w800
-                    : FontWeight.w600,
-                color: phase.kind == PhaseKind.switchSide
-                    ? Colors.white
-                    : HipPalette.dark.jade,
-              ),
+  /// Small tag in the media corner during prep / rest / side switch; the
+  /// figure stays fully visible.
+  Widget _phaseTag(SessionPhase phase) => Container(
+    key: const ValueKey('phase-tag'),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.black.withValues(alpha: .45),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.white.withValues(alpha: .12)),
+    ),
+    child: Text(
+      switch (phase.kind) {
+        PhaseKind.prep => '准备',
+        PhaseKind.rest => phase.step == _steps.length - 1 ? '最后一个' : '下一个',
+        PhaseKind.switchSide => phase.side == HipSide.left ? '换左边' : '换右边',
+        _ => '',
+      },
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: HipPalette.dark.jade,
+      ),
+    ),
+  );
+
+  bool _asksFeedback(SessionPhase phase) =>
+      phase.kind == PhaseKind.rest && phase.step > 0;
+
+  /// 刚才感觉？ 舒服 / 有点紧 / 疼 – optional, under the media. A tap records
+  /// the answer and confirms it (selected chip + 已记录); the rest countdown
+  /// keeps running. 疼 opens the pain ladder as before. Starting early is
+  /// the 跳过 button's job.
+  Widget _feedbackRow(int doneStep, double t) {
+    final picked = _felt[doneStep];
+    final justSaved = _feltAt != null && t - _feltAt! < 2.5;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            picked != null && justSaved
+                ? '已记录'
+                : '刚才「${_steps[doneStep].drill.name}」感觉怎么样？',
+            key: const ValueKey('feel-prompt'),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              color: picked != null && justSaved
+                  ? HipColors.jade
+                  : HipColors.muted,
             ),
-            if (phase.kind != PhaseKind.switchSide) ...[
-              const SizedBox(height: 8),
-              Text(
-                step.drill.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                step.dose,
-                style: const TextStyle(fontSize: 15, color: Colors.white70),
-              ),
-            ],
-            if (phase.kind == PhaseKind.rest && phase.step > 0) ...[
-              const SizedBox(height: 22),
-              Text(
-                '刚才「${_steps[phase.step - 1].drill.name}」感觉怎么样？',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.white70),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 10,
-                runSpacing: 8,
-                children: [
-                  for (final (key, label, color) in [
-                    ('ok', '舒服', HipPalette.dark.jade),
-                    ('tight', '有点紧', Colors.white),
-                    ('pain', '疼', HipPalette.dark.pain),
-                  ])
-                    OutlinedButton(
-                      key: ValueKey('feel-$key'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: color,
-                        side: BorderSide(color: color.withValues(alpha: .55)),
-                        minimumSize: const Size(88, 48),
-                        shape: const StadiumBorder(),
+          ),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (key, label, color) in [
+                  ('ok', '舒服', HipColors.jade),
+                  ('tight', '有点紧', HipColors.text),
+                  ('pain', '疼', HipColors.pain),
+                ]) ...[
+                  if (key != 'ok') const SizedBox(width: 8),
+                  OutlinedButton(
+                    key: ValueKey('feel-$key'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: picked == null || picked == key
+                          ? color
+                          : HipColors.muted,
+                      side: BorderSide(
+                        color:
+                            (picked == null || picked == key
+                                    ? color
+                                    : HipColors.muted)
+                                .withValues(alpha: .55),
                       ),
-                      onPressed: () {
-                        if (key == 'pain') {
-                          _pain(afterStep: true);
-                        } else {
-                          _skip(); // ready: start the next drill now
-                        }
-                      },
-                      child: Text(label, style: const TextStyle(fontSize: 16)),
+                      minimumSize: const Size(76, 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: const StadiumBorder(),
+                      textStyle: const TextStyle(fontSize: 14),
                     ),
+                    onPressed: () => _feel(doneStep, key),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (picked == key) ...[
+                          const HipIcon(HipGlyph.check, size: 14),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(label),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-            ],
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _feel(int doneStep, String key) {
+    setState(() {
+      _felt[doneStep] = key;
+      _feltAt = _clock.t;
+    });
+    if (key == 'pain') _pain(afterStep: true);
   }
 
   Widget _nextCard(PlanStep next) => Padding(

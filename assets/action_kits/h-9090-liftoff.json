@@ -1,0 +1,145 @@
+{
+ "schema": "action-kit@1",
+ "id": "h-9090-liftoff",
+ "display": {
+  "name": {
+   "zh": "90/90 后腿主动抬起",
+   "en": "Ninety-ninety rear-leg lift-off"
+  },
+  "point": {
+   "zh": "坐直，后腿膝盖慢慢抬离地面，再慢慢放下",
+   "en": "Sit tall, lift the back knee slowly, then lower it slowly"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "internal_rotation"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "advanced",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-h-9090-liftoff.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/h-9090-liftoff-r2.js",
+   "specSha256": "970923cb389bef0c36da460477edf38b6c4e9b52926081dc6df357a9ff1cdacc"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-h-9090-liftoff.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.44,
+    1.37,
+    2.64,
+    3.57
+   ],
+   [
+    4.44,
+    5.37,
+    6.64,
+    7.57
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 6,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.44,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.95,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.25
+    },
+    {
+     "id": "back",
+     "seconds": 0.95,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.85
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.h-9090-liftoff": {
+    "zh": "90/90 后腿主动抬起",
+    "en": "Ninety-ninety rear-leg lift-off"
+   },
+   "point.h-9090-liftoff": {
+    "zh": "坐直，后腿膝盖慢慢抬离地面，再慢慢放下",
+    "en": "Sit tall, lift the back knee slowly, then lower it slowly"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.h-9090-liftoff",
+   "point.h-9090-liftoff"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s, lift, hold a beat, lower slowly",
+  "flags": []
+ }
+}

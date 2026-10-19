@@ -8,7 +8,34 @@ import '../domain/hip_models.dart';
 /// design package. Bundled in the shared asset set (≈ 125 KB with posters).
 const hipContentAsset = 'assets/hip/hip-content.json';
 
+/// Action kits (tools/action_kits/build_action_kits.py): one file per action
+/// plus this index.
+const actionKitIndexAsset = 'assets/action_kits/index.json';
+
 Future<HipContent> loadHipContent([AssetBundle? bundle]) async {
-  final text = await (bundle ?? rootBundle).loadString(hipContentAsset);
-  return HipContent.fromJson(jsonDecode(text) as Map<String, dynamic>);
+  final b = bundle ?? rootBundle;
+  final text = await b.loadString(hipContentAsset);
+  final content = HipContent.fromJson(jsonDecode(text) as Map<String, dynamic>);
+  return content.withKits(await loadActionKits(b));
+}
+
+/// Every action kit listed in the index. A missing or broken index leaves the
+/// kits empty (the player then times every action as a hold) rather than
+/// failing app start.
+Future<Map<String, ActionKit>> loadActionKits([AssetBundle? bundle]) async {
+  final b = bundle ?? rootBundle;
+  try {
+    final index =
+        jsonDecode(await b.loadString(actionKitIndexAsset)) as Map<String, dynamic>;
+    final out = <String, ActionKit>{};
+    for (final path in index['kits'] as List) {
+      final kit = ActionKit.fromJson(
+        jsonDecode(await b.loadString(path as String)) as Map<String, dynamic>,
+      );
+      out[kit.id] = kit;
+    }
+    return out;
+  } on Object {
+    return const {};
+  }
 }

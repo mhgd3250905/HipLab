@@ -1,0 +1,114 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-pigeon",
+ "display": {
+  "name": {
+   "zh": "鸽子式（直立扶砖版）",
+   "en": "Upright pigeon"
+  },
+  "point": {
+   "zh": "上身立直，手扶砖，髋往下沉",
+   "en": "Stay upright, hands on the blocks, sink the hips"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "external_rotation",
+   "extension"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "advanced",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-s-pigeon.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-pigeon.js",
+   "specSha256": "0aab3fdce6ae6995dec95f1a71e2a3f33c8783931136fd71e99fde33c7bd3b2c"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-pigeon.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 35,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-pigeon": {
+    "zh": "鸽子式（直立扶砖版）",
+    "en": "Upright pigeon"
+   },
+   "point.s-pigeon": {
+    "zh": "上身立直，手扶砖，髋往下沉",
+    "en": "Stay upright, hands on the blocks, sink the hips"
+   }
+  },
+  "prepare": [
+   "drill.s-pigeon",
+   "point.s-pigeon"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

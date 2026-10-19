@@ -1,0 +1,131 @@
+{
+ "schema": "action-kit@1",
+ "id": "t-seated-straddle-lift-1leg",
+ "display": {
+  "name": {
+   "zh": "坐姿分腿单腿抬起",
+   "en": "Seated straddle single-leg lift"
+  },
+  "point": {
+   "zh": "分腿坐直，一条腿抬离地面",
+   "en": "Sit tall in a straddle and lift one leg off the floor"
+  },
+  "cautions": [],
+  "targets": [
+   "abduction",
+   "flexion"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "advanced",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-t-seated-straddle-lift-1leg.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/t-seated-straddle-lift-1leg.js",
+   "specSha256": "ae5d188dcdda9bc3b9aa446fa14138f41e14b15f2e3d810d76060f4045bd3d30"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-t-seated-straddle-lift-1leg.mp4",
+    "loopSeconds": 10.0,
+    "posterTime": 0.9
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 10,
+  "track": "hips.rot.0.1",
+  "reps": [],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 6,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 2.5,
+   "offset": 0.0,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.8,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.0
+    },
+    {
+     "id": "back",
+     "seconds": 0.6,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.1
+    }
+   ],
+   "source": "training parameters (kit_rules phases)"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.t-seated-straddle-lift-1leg": {
+    "zh": "坐姿分腿单腿抬起",
+    "en": "Seated straddle single-leg lift"
+   },
+   "point.t-seated-straddle-lift-1leg": {
+    "zh": "分腿坐直，一条腿抬离地面",
+    "en": "Sit tall in a straddle and lift one leg off the floor"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.t-seated-straddle-lift-1leg",
+   "point.t-seated-straddle-lift-1leg"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "training dose: 每侧 N 次, one count = one lift of the working leg, 2.5 s a lift (0.8 s up, 1.0 s hold, 0.6 s down) so \"十，抬起\" fits; the demo (two quick lifts, then the other side) only loops as a demonstration",
+  "flags": []
+ }
+}

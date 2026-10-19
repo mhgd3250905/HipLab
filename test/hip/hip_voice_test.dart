@@ -34,7 +34,7 @@ class RecordingOutput implements VoiceOutput {
   set volume(double v) {}
 }
 
-VoiceLibrary loadLibrary() => VoiceLibrary.fromJson(
+VoiceLibrary loadVoiceLibrary() => VoiceLibrary.fromJson(
   jsonDecode(File('assets/voice/manifest.json').readAsStringSync())
       as Map<String, dynamic>,
 );
@@ -43,7 +43,7 @@ VoiceLibrary loadLibrary() => VoiceLibrary.fromJson(
 /// callback (pause, skip…). Returns the queue (with its log).
 class Sim {
   Sim(this.plan, {String lang = 'zh'})
-    : lib = loadLibrary(),
+    : lib = loadVoiceLibrary(),
       output = RecordingOutput() {
     script = SessionScript(
       lib: lib,
@@ -402,7 +402,7 @@ void main() {
 
   group('assessment', () {
     test('instructions first, then the hold is counted, then "选一个"', () {
-      final lib = loadLibrary();
+      final lib = loadVoiceLibrary();
       final script = SessionScript(
         lib: lib,
         lang: 'zh',
@@ -438,7 +438,7 @@ void main() {
     });
 
     test('every line the app can ask for exists in both languages', () {
-      final lib = loadLibrary();
+      final lib = loadVoiceLibrary();
       final keys = <String>{};
       for (final r in content.routines) {
         final plan = planner.planFor([r], const TrainingProfile(level: 3));

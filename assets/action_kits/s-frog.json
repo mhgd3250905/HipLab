@@ -1,0 +1,115 @@
+{
+ "schema": "action-kit@1",
+ "id": "s-frog",
+ "display": {
+  "name": {
+   "zh": "青蛙式",
+   "en": "Frog stretch"
+  },
+  "point": {
+   "zh": "膝盖向两侧打开，脚尖朝外，臀部慢慢往后坐",
+   "en": "Knees wide, toes out, sit your hips back slowly"
+  },
+  "cautions": [
+   "膝",
+   "内收肌根"
+  ],
+  "targets": [
+   "abduction",
+   "external_rotation"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "advanced",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-s-frog.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/s-frog-r2.js",
+   "specSha256": "3acf8825596f68d494ca1cb938fc76cdabe7f8cdf3c2827c71ba3ce408eabffa"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-s-frog.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.8
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.65,
+    3.45,
+    4.16,
+    6.96
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 60,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.8
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.s-frog": {
+    "zh": "青蛙式",
+    "en": "Frog stretch"
+   },
+   "point.s-frog": {
+    "zh": "膝盖向两侧打开，脚尖朝外，臀部慢慢往后坐",
+    "en": "Knees wide, toes out, sit your hips back slowly"
+   }
+  },
+  "prepare": [
+   "drill.s-frog",
+   "point.s-frog"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}

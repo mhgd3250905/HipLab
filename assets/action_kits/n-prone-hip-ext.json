@@ -1,0 +1,146 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-prone-hip-ext",
+ "display": {
+  "name": {
+   "zh": "俯卧屈膝抬腿",
+   "en": "Prone bent-knee hip lift"
+  },
+  "point": {
+   "zh": "趴着，屈膝，大腿慢慢抬离地面",
+   "en": "Lying face down, knee bent, lift the thigh slowly"
+  },
+  "cautions": [
+   "腰"
+  ],
+  "targets": [
+   "extension"
+  ],
+  "methods": [
+   "control",
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-n-prone-hip-ext.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-prone-hip-ext.js",
+   "specSha256": "3e0ff5d44ecd637d6a43ef96024f4c57717cc9d3ced540203ad8002bc2412573"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-prone-hip-ext.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.21,
+    1.0,
+    3.19,
+    3.82
+   ],
+   [
+    4.21,
+    5.0,
+    7.19,
+    7.82
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.21,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.8,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 2.2
+    },
+    {
+     "id": "back",
+     "seconds": 0.65,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.35
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-prone-hip-ext": {
+    "zh": "俯卧屈膝抬腿",
+    "en": "Prone bent-knee hip lift"
+   },
+   "point.n-prone-hip-ext": {
+    "zh": "趴着，屈膝，大腿慢慢抬离地面",
+    "en": "Lying face down, knee bent, lift the thigh slowly"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.n-prone-hip-ext",
+   "point.n-prone-hip-ext"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s: 1 s up, 2 s hold, 0.8 s down",
+  "flags": []
+ }
+}

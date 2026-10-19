@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mhgd3250905/HipLab/tools/action_kits/action-kit-v1.schema.json",
+  "title": "action-kit@1",
+  "description": "One action as a reusable asset: display, media references, training rhythm and voice script. Keyed by the Pose-Hub action id. See docs/action-kit-spec-v1.md. Principle: `training` is the single source of truth for the dose (reps / seconds / cycle / phases / sides) and the voice counts by it; `animation` is a measurement of the demo and only a default reference; the demo video only loops as a demonstration and does not have to line up with the voice.",
+  "type": "object",
+  "required": ["schema", "id", "display", "media", "animation", "training", "voice", "review"],
+  "properties": {
+    "schema": {"const": "action-kit@1"},
+    "id": {"type": "string", "description": "Pose-Hub action id (= spec id, = file name)"},
+    "display": {
+      "type": "object",
+      "required": ["name", "point", "cautions", "targets", "methods", "level", "sided", "firstSide", "poster"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text"},
+        "point": {"$ref": "#/$defs/text"},
+        "cautions": {"type": "array", "items": {"type": "string"}},
+        "targets": {"type": "array", "minItems": 1, "items": {"enum": ["flexion", "extension", "abduction", "adduction", "internal_rotation", "external_rotation"]}},
+        "methods": {"type": "array", "items": {"enum": ["relax", "flexibility", "control", "strength"]}},
+        "level": {"enum": ["beginner", "advanced"]},
+        "sided": {"type": "boolean"},
+        "firstSide": {"enum": ["right", "left", null]},
+        "poster": {"$ref": "#/$defs/themed"}
+      }
+    },
+    "media": {
+      "type": "object",
+      "required": ["poseHub", "video"],
+      "properties": {
+        "poseHub": {
+          "type": "object",
+          "required": ["version", "spec", "specSha256"],
+          "properties": {
+            "version": {"type": "string"},
+            "spec": {"type": "string"},
+            "specSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        },
+        "video": {
+          "type": "object",
+          "required": ["dark", "light"],
+          "properties": {
+            "dark": {"$ref": "#/$defs/clip"},
+            "light": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/clip"}]}
+          }
+        }
+      }
+    },
+    "animation": {
+      "type": "object",
+      "description": "Measured from the Pose-Hub spec timeline. Only a default reference for the training pace; never a constraint on the dose.",
+      "required": ["loopSeconds", "track", "reps"],
+      "properties": {
+        "loopSeconds": {"type": "number", "exclusiveMinimum": 0},
+        "track": {"type": "string"},
+        "reps": {"type": "array", "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}},
+        "source": {"type": "string"}
+      }
+    },
+    "training": {
+      "type": "object",
+      "description": "Training parameters: the single source of truth for the dose and the voice rhythm. They may differ from the animation; that is not a review issue.",
+      "required": ["kind", "unit", "sided", "leadSeconds", "defaults"],
+      "properties": {
+        "kind": {"enum": ["rep_updown", "rep_cycle", "rep_alternate", "rep_hold", "rep_breath", "hold"]},
+        "unit": {"enum": ["reps", "seconds"]},
+        "sided": {"type": "boolean"},
+        "leadSeconds": {"type": "number", "minimum": 0},
+        "defaults": {
+          "type": "object",
+          "required": ["reps", "sets", "seconds", "holdSeconds", "restSeconds"],
+          "properties": {
+            "reps": {"type": ["integer", "null"], "minimum": 1},
+            "sets": {"type": "integer", "minimum": 1},
+            "seconds": {"type": ["integer", "null"], "minimum": 1},
+            "holdSeconds": {"type": ["integer", "null"], "minimum": 1},
+            "restSeconds": {"type": "integer", "minimum": 0}
+          }
+        },
+        "cycle": {
+          "type": "object",
+          "description": "One rep as trained. Phases default to the measured animation and may be overridden by explicit training phases (source says which).",
+          "required": ["seconds", "offset", "phases", "source"],
+          "properties": {
+            "seconds": {"type": "number", "exclusiveMinimum": 0},
+            "offset": {"type": "number"},
+            "source": {"type": "string"},
+            "phases": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "required": ["id", "seconds"],
+                "properties": {
+                  "id": {"enum": ["go", "hold", "back", "rest"]},
+                  "seconds": {"type": "number", "minimum": 0},
+                  "cue": {"oneOf": [{"type": "string"}, {"type": "array", "minItems": 2, "items": {"type": "string"}}]},
+                  "cueAt": {"type": "number", "minimum": 0}
+                }
+              }
+            }
+          }
+        },
+        "hold": {
+          "type": "object",
+          "required": ["entrySeconds"],
+          "properties": {"entrySeconds": {"type": "number", "minimum": 0}}
+        }
+      },
+      "if": {"properties": {"kind": {"const": "hold"}}},
+      "then": {"required": ["hold"]},
+      "else": {"required": ["cycle"]}
+    },
+    "voice": {
+      "type": "object",
+      "required": ["lines", "prepare", "go", "count", "lastRep", "nextSet", "end", "switch", "firstSide", "coach", "midHold"],
+      "properties": {
+        "lines": {"type": "object", "additionalProperties": {"$ref": "#/$defs/text"}},
+        "prepare": {"type": "array", "items": {"type": "string"}},
+        "go": {"type": "string"},
+        "count": {"type": "string", "pattern": "\\{k\\}"},
+        "lastRep": {"type": "string"},
+        "nextSet": {"type": "string"},
+        "end": {"type": "string"},
+        "switch": {"type": "object", "required": ["left", "right"]},
+        "firstSide": {"type": ["string", "null"]},
+        "coach": {"type": "array", "items": {"type": "string"}},
+        "midHold": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "object", "required": ["half", "last10", "countdown"]}
+          ]
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["why", "flags"],
+      "properties": {"why": {"type": "string"}, "flags": {"type": "array", "description": "Open questions for a human. A dose that differs from the animation is not one (training parameters win).", "items": {"type": "string"}}}
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "object",
+      "required": ["zh", "en"],
+      "properties": {"zh": {"type": "string", "minLength": 1}, "en": {"type": "string", "minLength": 1}}
+    },
+    "themed": {
+      "type": "object",
+      "required": ["dark", "light"],
+      "properties": {"dark": {"type": ["string", "null"]}, "light": {"type": ["string", "null"]}}
+    },
+    "clip": {
+      "type": "object",
+      "required": ["asset", "loopSeconds"],
+      "properties": {
+        "asset": {"type": "string"},
+        "loopSeconds": {"type": "number"},
+        "posterTime": {"type": ["number", "null"]}
+      }
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+ "schema": "action-kit@1",
+ "id": "hip-flexors-A",
+ "display": {
+  "name": {
+   "zh": "坐姿直腿抬腿（压缩）",
+   "en": "Seated straight-leg lift"
+  },
+  "point": {
+   "zh": "坐直，腿伸直抬起，停一下再放下",
+   "en": "Sit tall, lift the straight leg, pause, then lower"
+  },
+  "cautions": [],
+  "targets": [
+   "flexion"
+  ],
+  "methods": [
+   "control"
+  ],
+  "level": "advanced",
+  "sided": false,
+  "firstSide": null,
+  "poster": {
+   "dark": "assets/drill_media/hip-hip-flexors-a.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/hip-flexors-A.js",
+   "specSha256": "1aa89cba0c2962a1f89370d7b347e14074d0684474b76962bb17ab27efe345b5"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-hip-flexors-a.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 1.9
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "lift",
+  "reps": [
+   [
+    0.43,
+    1.18,
+    2.63,
+    3.38
+   ],
+   [
+    4.43,
+    5.18,
+    6.63,
+    7.38
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": false,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.43,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.75,
+     "cue": "w.lift"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.45
+    },
+    {
+     "id": "back",
+     "seconds": 0.75,
+     "cue": "w.lower"
+    },
+    {
+     "id": "rest",
+     "seconds": 1.05
+    }
+   ],
+   "source": "measured: track 'lift' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.hip-flexors-A": {
+    "zh": "坐姿直腿抬腿（压缩）",
+    "en": "Seated straight-leg lift"
+   },
+   "point.hip-flexors-A": {
+    "zh": "坐直，腿伸直抬起，停一下再放下",
+    "en": "Sit tall, lift the straight leg, pause, then lower"
+   },
+   "w.lift": {
+    "zh": "抬起",
+    "en": "Lift"
+   },
+   "w.lower": {
+    "zh": "放下",
+    "en": "Lower"
+   }
+  },
+  "prepare": [
+   "drill.hip-flexors-A",
+   "point.hip-flexors-A"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": null,
+  "coach": [
+   "cue.control.1",
+   "cue.control.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: legs lift, hold, lower; 2 reps / 8 s",
+  "flags": []
+ }
+}

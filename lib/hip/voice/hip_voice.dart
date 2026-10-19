@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../domain/action_kit.dart';
 import 'session_script.dart';
 import 'voice_library.dart';
 import 'voice_queue.dart';
@@ -32,11 +33,13 @@ class HipVoice {
   SessionScript script({
     List<String> routineIds = const [],
     int restSeconds = 15,
+    Map<String, ActionKit> kits = const {},
   }) => SessionScript(
     lib: lib,
     lang: lang,
     routineIds: routineIds,
     restSeconds: restSeconds,
+    kits: kits,
   );
 
   static HipVoice of(BuildContext context) =>

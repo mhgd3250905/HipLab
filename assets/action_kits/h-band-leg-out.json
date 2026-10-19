@@ -1,0 +1,113 @@
+{
+ "schema": "action-kit@1",
+ "id": "h-band-leg-out",
+ "display": {
+  "name": {
+   "zh": "仰卧弹力带单腿侧落",
+   "en": "Supine band leg lower-out"
+  },
+  "point": {
+   "zh": "腿伸直，慢慢向外侧落下",
+   "en": "Keep the leg straight and lower it out to the side"
+  },
+  "cautions": [
+   "内收肌根"
+  ],
+  "targets": [
+   "abduction"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-h-band-leg-out.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/h-band-leg-out.js",
+   "specSha256": "619802cda867facd7f7dd0a6b4eed82ab97f8f5b2ea38377cfdea7208fa19057"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-h-band-leg-out.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 4.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "open",
+  "reps": [
+   [
+    0.59,
+    2.62,
+    5.55,
+    7.26
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 40,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 2.05
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.h-band-leg-out": {
+    "zh": "仰卧弹力带单腿侧落",
+    "en": "Supine band leg lower-out"
+   },
+   "point.h-band-leg-out": {
+    "zh": "腿伸直，慢慢向外侧落下",
+    "en": "Keep the leg straight and lower it out to the side"
+   }
+  },
+  "prepare": [
+   "drill.h-band-leg-out",
+   "point.h-band-leg-out"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "dose is a timed hold; spec shows lower-out, 4 s hold, back up",
+  "flags": []
+ }
+}

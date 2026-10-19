@@ -1,0 +1,145 @@
+{
+ "schema": "action-kit@1",
+ "id": "h-band-hip-ir",
+ "display": {
+  "name": {
+   "zh": "坐椅弹力带髋内旋",
+   "en": "Seated band hip internal rotation"
+  },
+  "point": {
+   "zh": "膝盖不动，小腿向外转",
+   "en": "Keep the knee still, turn the shin outward"
+  },
+  "cautions": [
+   "膝"
+  ],
+  "targets": [
+   "internal_rotation"
+  ],
+  "methods": [
+   "strength"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-h-band-hip-ir.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/h-band-hip-ir.js",
+   "specSha256": "161ef46ee190db2fa35ed56a8c85756d6cb9f5cca0634d5102d6024d539bf8a6"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-h-band-hip-ir.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 2.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "turn",
+  "reps": [
+   [
+    0.44,
+    1.37,
+    2.46,
+    3.55
+   ],
+   [
+    4.44,
+    5.37,
+    6.46,
+    7.55
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "rep_updown",
+  "unit": "reps",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": 8,
+   "sets": 1,
+   "seconds": null,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "cycle": {
+   "seconds": 4.0,
+   "offset": 0.44,
+   "phases": [
+    {
+     "id": "go",
+     "seconds": 0.95,
+     "cue": "w.turn_out"
+    },
+    {
+     "id": "hold",
+     "seconds": 1.1
+    },
+    {
+     "id": "back",
+     "seconds": 1.1,
+     "cue": "w.come_back"
+    },
+    {
+     "id": "rest",
+     "seconds": 0.85
+    }
+   ],
+   "source": "measured: track 'turn' 3 %/97 % crossings, rep 1 of 2"
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.h-band-hip-ir": {
+    "zh": "坐椅弹力带髋内旋",
+    "en": "Seated band hip internal rotation"
+   },
+   "point.h-band-hip-ir": {
+    "zh": "膝盖不动，小腿向外转",
+    "en": "Keep the knee still, turn the shin outward"
+   },
+   "w.turn_out": {
+    "zh": "转出去",
+    "en": "Turn out"
+   },
+   "w.come_back": {
+    "zh": "回来",
+    "en": "Come back"
+   }
+  },
+  "prepare": [
+   "drill.h-band-hip-ir",
+   "point.h-band-hip-ir"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.nice",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.strength.1",
+   "cue.strength.2"
+  ],
+  "midHold": null
+ },
+ "review": {
+  "why": "spec: 2 reps / 8 s: 1.2 s out, 0.8 s hold, 1.4 s back",
+  "flags": []
+ }
+}

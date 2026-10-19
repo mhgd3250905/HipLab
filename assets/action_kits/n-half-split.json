@@ -1,0 +1,114 @@
+{
+ "schema": "action-kit@1",
+ "id": "n-half-split",
+ "display": {
+  "name": {
+   "zh": "半跪半劈叉",
+   "en": "Half split"
+  },
+  "point": {
+   "zh": "前腿伸直，从髋部往前折，手扶砖",
+   "en": "Front leg straight, fold from the hips, hands on the blocks"
+  },
+  "cautions": [
+   "膝",
+   "腰"
+  ],
+  "targets": [
+   "flexion"
+  ],
+  "methods": [
+   "flexibility"
+  ],
+  "level": "beginner",
+  "sided": true,
+  "firstSide": "right",
+  "poster": {
+   "dark": "assets/drill_media/hip-n-half-split.jpg",
+   "light": null
+  }
+ },
+ "media": {
+  "poseHub": {
+   "version": "0.2.0",
+   "spec": "drill-anim/specs/n-half-split.js",
+   "specSha256": "9f7e2a885349c3ae02e088e0cc932ba18ace8753e603f40f21b3963581009047"
+  },
+  "video": {
+   "dark": {
+    "asset": "assets/drill_media/hip-n-half-split.mp4",
+    "loopSeconds": 8.0,
+    "posterTime": 3.0
+   },
+   "light": null
+  }
+ },
+ "animation": {
+  "loopSeconds": 8,
+  "track": "fold",
+  "reps": [
+   [
+    0.74,
+    2.37,
+    4.85,
+    6.56
+   ]
+  ],
+  "source": "Pose-Hub spec timeline (measured)"
+ },
+ "training": {
+  "kind": "hold",
+  "unit": "seconds",
+  "sided": true,
+  "leadSeconds": 1.0,
+  "defaults": {
+   "reps": null,
+   "sets": 1,
+   "seconds": 40,
+   "holdSeconds": null,
+   "restSeconds": 15
+  },
+  "hold": {
+   "entrySeconds": 1.65
+  }
+ },
+ "voice": {
+  "lines": {
+   "drill.n-half-split": {
+    "zh": "半跪半劈叉",
+    "en": "Half split"
+   },
+   "point.n-half-split": {
+    "zh": "前腿伸直，从髋部往前折，手扶砖",
+    "en": "Front leg straight, fold from the hips, hands on the blocks"
+   }
+  },
+  "prepare": [
+   "drill.n-half-split",
+   "point.n-half-split"
+  ],
+  "go": "p.go",
+  "count": "n.{k}",
+  "lastRep": "p.last_rep",
+  "nextSet": "p.again",
+  "end": "p.release",
+  "switch": {
+   "left": "p.switch_left",
+   "right": "p.switch_right"
+  },
+  "firstSide": "p.right_first",
+  "coach": [
+   "cue.flexibility.1",
+   "cue.flexibility.2"
+  ],
+  "midHold": {
+   "half": "p.half",
+   "last10": "p.last10",
+   "countdown": 5
+  }
+ },
+ "review": {
+  "why": "static stretch",
+  "flags": []
+ }
+}
