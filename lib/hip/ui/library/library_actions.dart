@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../../control/hip_store.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
+import '../coach/ai_coach_page.dart';
 import 'library_widgets.dart';
 
 typedef StartPlan =
@@ -16,9 +17,16 @@ typedef StartPlan =
     });
 
 class LibraryActions {
-  const LibraryActions({required this.store, required this.startPlan});
+  const LibraryActions({
+    required this.store,
+    required this.startPlan,
+    this.coach,
+  });
   final HipStore store;
   final StartPlan startPlan;
+
+  /// AI 定制 (docs/ai-coach.md); null = no entry.
+  final AiCoachSession? coach;
 }
 
 /// Returned by a detail page to send 动作大全 to a pre-set filter

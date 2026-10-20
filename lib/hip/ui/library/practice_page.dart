@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
+import '../coach/ai_coach_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
 import '../hip_routes.dart';
@@ -417,6 +418,11 @@ class _PracticePageState extends State<PracticePage> {
     final groups = actions.store.customRoutines;
     return [
       _newGroupCard(t),
+      // AI 定制 (docs/ai-coach.md): next to the custom groups, zh UI only.
+      if (actions.coach != null && aiCoachAvailable(context)) ...[
+        const SizedBox(height: 10),
+        AiCoachEntryCard(actions: actions),
+      ],
       const SizedBox(height: 16),
       if (groups.isEmpty)
         _emptyMine(t)

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../coach/coach_service.dart';
+import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
@@ -15,6 +17,7 @@ import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
+import 'coach/ai_coach_page.dart';
 import 'hip_assessment_page.dart';
 import 'hip_icons.dart';
 import 'hip_player_page.dart';
@@ -32,7 +35,13 @@ const hipAppName = '开胯训练助手';
 
 /// Root of the HipLab app (entry: lib/main.dart).
 class HipApp extends StatefulWidget {
-  const HipApp({super.key, this.store, this.videoEnabled = true, this.voice});
+  const HipApp({
+    super.key,
+    this.store,
+    this.videoEnabled = true,
+    this.voice,
+    this.coach,
+  });
 
   /// Injected in tests; otherwise loaded from assets + SharedPreferences.
   final HipStore? store;
@@ -41,6 +50,10 @@ class HipApp extends StatefulWidget {
   /// Injected in tests; otherwise real playback (silent when video is off,
   /// i.e. in widget tests).
   final HipVoice? voice;
+
+  /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
+  /// otherwise built from --dart-define (unconfigured → 预设方案 only).
+  final CoachService? coach;
 
   @override
   State<HipApp> createState() => _HipAppState();
@@ -102,7 +115,7 @@ class _HipAppState extends State<HipApp> {
           child: _shell(
             _mode(store.theme),
             store.onboarded
-                ? HipHome(store: store)
+                ? HipHome(store: store, coach: widget.coach)
                 : HipOnboarding(store: store),
           ),
         ),
@@ -513,8 +526,11 @@ class _HipOnboardingState extends State<HipOnboarding> {
 // ───────────────────────── home ─────────────────────────
 
 class HipHome extends StatefulWidget {
-  const HipHome({super.key, required this.store});
+  const HipHome({super.key, required this.store, this.coach});
   final HipStore store;
+
+  /// AI 定制 service; null = built from --dart-define.
+  final CoachService? coach;
   @override
   State<HipHome> createState() => _HipHomeState();
 }
@@ -528,7 +544,22 @@ class _HipHomeState extends State<HipHome> {
 
   /// 练习 tab: segment and filter survive tab switches.
   final _practice = PracticeMemory();
-  late final _library = LibraryActions(store: store, startPlan: _startPlan);
+
+  /// AI 定制 conversation: survives leaving the page, a session and tabs.
+  late final _coach = AiCoachSession(
+    widget.coach ?? CoachService(content: store.content),
+  );
+  late final _library = LibraryActions(
+    store: store,
+    startPlan: _startPlan,
+    coach: _coach,
+  );
+
+  @override
+  void dispose() {
+    _coach.dispose();
+    super.dispose();
+  }
 
   void _selectTab(int i) {
     if (i == _tab) return;
@@ -593,7 +624,7 @@ class _HipHomeState extends State<HipHome> {
               memory: _practice,
               onStartAssessment: _startAssessment,
             ),
-            2 => HipProgressPage(store: store),
+            2 => HipProgressPage(store: store, coach: _coach.service),
             _ => _today(),
           },
         ),
@@ -1300,8 +1331,11 @@ class _HipHomeState extends State<HipHome> {
 // ───────────────────────── progress & settings ─────────────────────────
 
 class HipProgressPage extends StatelessWidget {
-  const HipProgressPage({super.key, required this.store});
+  const HipProgressPage({super.key, required this.store, this.coach});
   final HipStore store;
+
+  /// Shows 「AI 定制用量」 in the settings when set (zh UI only).
+  final CoachService? coach;
 
   @override
   Widget build(BuildContext context) {
@@ -1453,6 +1487,10 @@ class HipProgressPage extends StatelessWidget {
         HipVoiceSettingsPanel(store: store),
         const SizedBox(height: 12),
         HipAppearancePanel(store: store),
+        if (coach != null && aiCoachAvailable(context)) ...[
+          const SizedBox(height: 12),
+          HipCoachUsagePanel(usage: coach!.usage),
+        ],
         const SizedBox(height: 12),
         HipPanel(
           padding: EdgeInsets.zero,
@@ -1490,6 +1528,38 @@ class HipProgressPage extends StatelessWidget {
       ],
     );
   }
+}
+
+/// 设置 ·「AI 定制用量」: calls and tokens on this device (usage.jsonl).
+class HipCoachUsagePanel extends StatefulWidget {
+  const HipCoachUsagePanel({super.key, required this.usage});
+  final CoachUsageStore usage;
+  @override
+  State<HipCoachUsagePanel> createState() => _HipCoachUsagePanelState();
+}
+
+class _HipCoachUsagePanelState extends State<HipCoachUsagePanel> {
+  late final Future<void> _loaded = widget.usage.load();
+  @override
+  Widget build(BuildContext context) => FutureBuilder<void>(
+    future: _loaded,
+    builder: (context, _) {
+      final t = widget.usage.totals;
+      return HipPanel(
+        key: const ValueKey('coach-usage'),
+        padding: EdgeInsets.zero,
+        child: ListTile(
+          leading: HipIcon(HipGlyph.bolt, color: HipColors.jade),
+          title: const Text('AI 定制用量'),
+          subtitle: Text(
+            t.calls == 0
+                ? '本机还没有调用过 AI'
+                : '本机累计调用 ${t.calls} 次 · 输入 ${t.promptTokens} / 输出 ${t.completionTokens} token',
+          ),
+        ),
+      );
+    },
+  );
 }
 
 String reminderLabel(ReminderSettings r) =>
