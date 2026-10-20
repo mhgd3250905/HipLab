@@ -39,7 +39,7 @@ flutter test --no-pub --concurrency=1
 
 新环境先按 [README](README.md#新机器拉素材mac--windows) 恢复冻结媒体，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
 
-提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。
+提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。共用版本、产物来源和各类状态的登记方式见[版本管理说明](version-management.md)。
 
 ## 工作副本与产物位置（2026-10-19 起）
 

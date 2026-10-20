@@ -1,16 +1,18 @@
 # HipLab · 开胯训练助手
 
-离线的开胯训练 App：围绕髋部的放松、柔韧和主动控制训练。面向久坐人群和舞者，打开就能练，小白也能上手。和「托马斯训练助手 FlareLab」同一家族（石墨底 + 青玉 `#3ccfa4`），但是独立 App、独立仓库。
+开胯训练 App：围绕髋部的放松、柔韧和主动控制训练，基础训练离线可用，AI 定制可配置联网生成并提供预设回落。面向久坐人群和舞者，打开就能练，小白也能上手。和「托马斯训练助手 FlareLab」同一家族（石墨底 + 青玉 `#3ccfa4`），但是独立 App、独立仓库。
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-19**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-20**；按页内日期保留历史交付与验证。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-2026-10-19 23:32，**PR #22/#24及集成修复已获同意合入并推送main，GitHub均MERGED**，主线集成点 `b33ed21088c4d334548fb45cfeb9b85959dd755d`。最新已核验安装为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，23:15:53保留数据覆盖安装；main运行代码与该包一致。387项通过/1条件跳过、analyze无问题，F9编辑/键盘原生复测及正常播放听感已确认。安装、合并和后续文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。
+2026-10-20，**PR #25 已获同意合入并推送 main，GitHub 确认 MERGED**，业务来源 `8c985c4c6dcff4207db616e759910ea03820ad79`。新版 **0.3.7+12 AI 测试包已构建，未安装、未发布**，构建源码 `55d99b3d097afc815fa16e165362cf4703c440d5`；业务验证沿用上述来源的414项通过/1条件跳过、analyze无问题及本机真实API结果。[测试包身份](docs/android-test-build-0.3.7-2026-10-20.md)和[PR25复审/合并](docs/pr25-reaudit-2026-10-20.md)分别保存证据。
+
+手机最后已核验安装仍为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据覆盖安装。此前PR #22/#24及集成修复于23:32合入并推送main（`b33ed21088c4d334548fb45cfeb9b85959dd755d`）；当时387项通过/1条件跳过、F9编辑/键盘原生复测及正常播放听感已确认。这些旧包真机结果不覆盖PR25新功能。安装、合并和文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。
 
 以下为#19～#21阶段的历史交付反馈：
 
@@ -22,11 +24,11 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前main的运行/测试/资源内容与已验源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b` 一致：analyze0、387pass/1条件skip，debug arm64已保留数据安装，F9编辑/键盘及正常播放已验。此次仅对齐文档，不重新构建或安装。
+本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前共用版本为 **0.3.7+12**；Android带AI配置debug arm64包已在源码 `55d99b3d097afc815fa16e165362cf4703c440d5` 构建，签名连续、包身份/CRC/876资产核验通过。业务内容与已验源 `8c985c4c6dcff4207db616e759910ea03820ad79` 相同，仅共用版本递增，因此沿用其414pass/1条件skip及analyze/API证据。构建、安装和后续文档HEAD分别记录；此次文档对齐不递增版本、不重新构建或安装。
 
 **#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
-当前未验边界以AGENTS.md及验证/事项台账为准；上述历史“简单测试”不是本轮已完成原生检查的替代描述。锁屏/耳机/蓝牙/ducking等扩展矩阵本阶段不再续测，iOS仍未验。下列为通用构建命令，不代表本次执行发布。
+当前未验边界以[验证台账](docs/verification.md)及[开发事项](docs/development-roadmap.md)的最新日期记录为准；AI生成/开练/保存、断网回落、保留数据升级及已列出的语音/字号/键盘专项须待实际安排，iOS仍未验。上述历史“简单测试”和打包通过均不代替新包真机验收。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get

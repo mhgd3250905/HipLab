@@ -6,7 +6,7 @@
 
 | 编号 | 范围 / 命令 | 已执行结果 | 证据与边界 |
 |---|---|---|---|
-| V-01 | `flutter analyze --no-pub` | 无问题 | 当前 App 代码基线 |
+| V-01 | `flutter analyze --no-pub` | 无问题 | 2026-10-17早期 App 代码基线，后续检查见按日期追加记录 |
 | V-02 | `flutter test --no-pub --reporter expanded` | 49 项通过 | 规则、界面、内容资源边界；不代表原生视频全量验收 |
 | V-03 | `python -m unittest discover -s tools/tests` | 11 项通过 | 媒体同步、copy-ready 来源/SHA、帧率与参数保护 |
 | V-04 | `flutter build apk --debug --no-pub` | 成功，Gradle 约 27.5 秒 | APK 大小/哈希见[版本台账](version-ledger.md)；未验证正式签名 |
@@ -382,3 +382,23 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 来源55d99b3，相对已验PR25业务内容仅共用版本递增；依赖锁校验成功，锁文件未改。Android/Kotlin debug arm64构建50.7秒通过；回读com.ugk.hiplab / 0.3.7 / code12、min24/target36正确，debug证书连续，CRC通过，876个打包源资源逐字节匹配，AI配置绑定通过。与旧审核包ZIP条目集合一致；Flutter引擎等库相同，libdartjni.so仅build-id节变化，其余节一致，差异清单留本机。
 
 本轮未重跑Flutter业务测试/analyze或真实模型，沿用同业务源8c985c4本机414过/1跳、原6复现、analyze0与13.695秒/7动作真实API结果。没有ADB/安装/听感或数据升级结论；打包通过不代表真机验收完成。[产物与证据](android-test-build-0.3.7-2026-10-20.md)。
+
+## 版本管理与台账阶段收束（2026-10-20）
+
+用户明确要求新增版本管理说明、对齐台账并提交推送，显式使用cockpit-closeout。scope为0.3.7+12打包阶段的文档收束；不修改运行代码、依赖、素材、共用版本或发布配置，不重建/重装、不清理旧审核文件。
+
+- baseline：`8c6189353f619cd434cf91259ecd034c088d8fc4`，取自本会话上一轮“打包新版App测试”的已记录main起点，使用同SHA引用核验对象；不是按远端最新点猜选。
+- 收束前HEAD：`2c5049eac270e526a682e7a326d56f8901ada829`。`rev-parse --verify <SHA>^{commit}`及`merge-base --is-ancestor <baseline> HEAD`通过；本地main与当次`ls-remote origin refs/heads/main`一致。
+- stage delta：`git log <baseline>..HEAD`为55d99b3、2c5049e两提交；`git diff --name-status <baseline>..HEAD`为9路径：8份docs（7修改/1新增）和pubspec版本递增。运行代码、原生、资源及锁未改。
+- canonical discovery：从根AGENTS.md及README.md一跳确认并实际核对docs/README.md（入口）、current-state.md（当前事实）、version-ledger.md（交付）、verification.md（检查）、development-roadmap.md（事项）、development-log.md（关键成果）、development-workflow.md（流程）和pubspec.yaml（共用版本），均为各主题current来源；其中旧日期段落为archive/history。阶段新增打包报告作为证据，不代替这些事实源。docs下无更近AGENTS.md。
+- 完整归属：Preflight执行`git status --porcelain=v1 --untracked-files=all`，tracked/staged/unstaged/deleted/renamed均0；untracked4，.playwright-cli和.playwright-mcp各2，均为阶段前明确记录的旧审核产物，仅核对路径、分类和数量，未读内容。阶段提交来自本Agent上轮获准打包/记录，本次9份文档的新增修改归本Agent；旧文件保持不纳入。
+- findings及修正：根README仍把main指向9b22dcc及387项旧基线；文档索引/事项页日期滞后、D-31未进当前索引；历史“最新/本次连接/本次收束”有歧义。现统一为0.3.7+12/55d99b3仅构建、旧0.3.6+11/9b22dcc最后已核验安装、PR25已合main及原生未验。新增[版本管理说明](version-management.md)按用户要求解释来源与状态，逐次交付仍只写既有版本台账，不新增平行流水。
+
+| 既有命令 / 观察 | 执行时间、来源与结果 | source state及本次适用性 |
+|---|---|---|
+| `flutter analyze --no-pub` | 本会话2026-10-20 Windows，无问题（6.5秒） | `8c985c4c6dcff4207db616e759910ea03820ad79`；到收束前HEAD只有docs及共用版本变化，业务/测试/锁保持 |
+| `flutter test --no-pub --concurrency=1 --reporter expanded` | 同日本机11:13–11:20，414pass/1条件skip（6分47秒） | 同一8c985c4；本轮继续只改文档，按原source引用，不称新HEAD重跑 |
+| 本会话SDK真实API主机调用 | 同日11:14:20，13.695秒、7动作、无预设回落；原6独立复现也已通过 | 同一8c985c4 / SDK0.1.2；主机观察仅按[既有复审](pr25-reaudit-2026-10-20.md)引用，不扩为真机结论 |
+| `flutter pub get --enforce-lockfile`及`flutter build apk --debug --target-platform android-arm64 --no-pub --dart-define-from-file=<本机私有参数文件>` | 同日13:17，锁校验成功且lock未改，构建50.7秒；身份/签名/CRC/876资产通过 | `55d99b3d097afc815fa16e165362cf4703c440d5`；核验此SHA是祖先，到收束前HEAD仅8份docs不同；这是原包证据，本轮未读取产物或重建 |
+
+证据SHA均通过commit对象和祖先核验；有限差异完整列出文件名并核对pubspec仅0.3.6+11→0.3.7+12。原生命令、用户数据和商店状态本轮不重新观察。本次9份文档事实复核通过，320处本地链接引用0缺失，`git diff --check`、版本/范围断言与完整状态及归属复核通过；仅本Agent的8份tracked文档修改、1份新说明和4个保留的旧未跟踪文件，staged/deleted/renamed均0。以明确9路径提交，提交及普通push身份由Git记录。本次不读取凭据、原生日志、构建或旧未跟踪文件内容，不结束Cockpit会话。
