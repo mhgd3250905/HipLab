@@ -1,6 +1,6 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
-2026-10-20 · 分支 `feat/ai-coach`（栈在 PR #22 `feat/training-library` a586de3 上）· 依赖 [ugk_coach](https://github.com/mhgd3250905/ugk-3d-pose-sdk) 0.1.1（`76829bd`，SDK main 最新）
+2026-10-20 · PR #25已合main（来源8c985c4，集成ce7ab74）· 依赖 [ugk_coach](https://github.com/mhgd3250905/ugk-3d-pose-sdk) 0.1.2，固定 `26e32557058e582d3f1b2b7f722dfa53c2b16aa6`。首次接入以练习库a586de3/SDK0.1.1起步，后经[五项修复复审与合并](pr25-reaudit-2026-10-20.md)。
 
 HipLab 是三 App 共用 AI 训练助理 SDK 的第二个接入方（第一个是托马斯训练助手，3D-Body PR #122）。结构与交互沿用托马斯的集成，只换成 HipLab 的数据（内容包、动作包、内置套路、自定义训练组）和 UI 风格（HipPanel / HipPrimaryButton / LibChip …）。
 

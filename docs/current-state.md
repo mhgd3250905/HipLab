@@ -1,8 +1,8 @@
 # 当前状态
 
-**2026-10-20 审核副本状态：** PR25目标已改main，新head8c985c4已包含main2d47520；SDK0.1.2、原5项P2代码与独立复现闭环，带令牌Android构建及真实API通过。全量414过/1条件skip，代码/构建复审通过；真机仍待后续安排。本机验证在E盘 `codex/pr25-reaudit`，主目录/main保持2d47520；未安装、未push验证分支、未合main/未发布，本轮手机未连接核验。下方安装事实仍为10月19日最后核验。见[复审](pr25-reaudit-2026-10-20.md)。
+**2026-10-20 最新主线：** 开哥明确授权后，PR25来源8c985c4及审核文档ce7ab74已合入并推送main，GitHub于11:24:56确认MERGED；SDK0.1.2，原5P2闭环，414过/1条件skip、analyze/Android构建/API通过。此次以已完成的代码和本机验证推进合并，真机未验不改记通过。没有安装/发布，手机仍为10月19日最后已验包；[合并记录](pr25-reaudit-2026-10-20.md#主线合并确认2026-10-20)。
 
-核对日期：2026-10-19，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
+核对日期：2026-10-20，北京时间。此页维护当前事实；过程见[开发日志](development-log.md)，检查范围见[验证台账](verification.md)。
 
 ## App 与设备
 
@@ -11,14 +11,14 @@
 | 产品 / 包名 | 开胯训练助手 HipLab / `com.ugk.hiplab` |
 | Android 已安装版本 | **Agent已核验**0.3.6+11 / debug arm64，PR22+24/F9组合9b22dcc，2026-10-19 23:15:53保留数据覆盖安装；安装SHA匹配、升级JSON保持；F9原生关闭、键盘通过；旧两轮正常播放/服务释放与用户听音通过保留，现已随#22/#24合main |
 | 合并前已验基线包（历史） | **0.3.6+11 debug**，源 `6dd16eda246657d1de8ddf9e92b8e91d992c3a80`；150,903,412bytes，已保留数据安装 |
-| 本轮交付运行源码 | 手机已验运行源`9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`现已合main；主线集成点b33ed21与其运行代码一致。此前c7def28/6dd16ed及9fa0cc0包与验收历史分别保留 |
+| 本轮交付运行源码 | 手机最后已验运行源仍9b22dcc / 0.3.6+11；main已另含PR25来源8c985c4（集成ce7ab74），其带令牌审核APK已构建但未安装；不把主线合入当成手机更新 |
 | 正式 Android 图标 | 已选 B 站姿开髋，青玉绿/石墨底；普通、圆形、自适应及单色资源，已查看手机桌面确认彩色图标 |
 | 历史用户验收（本轮见下） | 2026-10-17，0.1.2+3 更新测试通过；2026-10-18，用户已验收 0.3.1+6 单屏自测 UI。此验收不覆盖后来 CSS 修复的原生首帧 |
 | 验证设备 | 本次Agent连接核验2602BRT18C / Android16 / API36；原密度520/font_scale1.0已恢复，WebView版本本次未重新回读 |
-| 产品范围 | 中文、离线；main 已含今日/练习/进度三Tab、动作大全/单练/自定义训练组及历史、按训练会话的Android保活，以及浅色/深色/跟随系统主题、中英语音、单屏自测布局及 iOS 配置。Android 已安装运行；iOS 仅静态和 widget 检查，尚未在 Mac 构建或真机验证 |
+| 产品范围 | 中文；基础训练离线，AI定制可配置联网生成并提供预设回落。main已含今日/练习/进度三Tab、动作大全/单练/自定义训练组与AI定制、Android训练保活、三档主题、中英语音和单屏自测。AI本机代码/构建/API验证通过，真机与iOS尚未验收 |
 | 动作素材 | 当前冻结 Pose-Hub v0.2.0：46 条 1080 视频 / 46 张 540 封面，ID 和文件名保持；自有 supine-cross-demo 与20张 still 保留 |
 | 自测素材 | 既有 20 张自测 still 保留（含 #8 修订），不在 v0.2.0 ZIP / lock；不重新渲染 |
-| 当前运行验证 | 源9b22dcc：analyze0、387pass/1条件skip；F1–F9及PR24四P2闭环，F9/键盘原生和正常播放通过。当前main运行内容一致，复用证据不冒称在每个文档HEAD重新执行 |
+| 当前运行验证 | main新增PR25的已验源8c985c4：414pass/1条件skip、analyze0、原6独立复现及构建/API通过；手机已验仍9b22dcc的F1–F9、键盘及正常播放。两者分别记录，本轮无安装或扩展系统矩阵 |
 | main基线运行验证（历史） | 组合analyze0、191pass/1条件skip，gallery2pass；两项P2首轮修复与当前Android复查通过。完整课程/ducking/低端帧时/强光/新结果页/iPhone仍待验；[证据](pr17-pr18-fixes-and-merge-2026-10-18.md) |
 
 当前素材按仓库冻结 lock / manifest 取用 v0.2.0。同步：dry-run 92项计划；首次92 copied；check 92 matched /0 drift；重复同步0 copied；元数据：本机92文件大小/SHA全匹配；46视频H264/yuv420p/1080²/30fps/无音轨，11220帧；完整CPU解码通过；46封面均540²JPEG；保护文件：hip-supine-cross-demo.mp4/.jpg +20张自测still，共22文件SHA保持。该冻结ZIP仅深色；当前main/App包已含PR #20的47套light视频/封面及20张浅色自测图；旧批次QA和历史验收保留，不能作为本轮全量真机结论。
@@ -29,7 +29,7 @@
 
 | 对象 | 核对结果（逐项日期另列，旧轮保留历史） |
 |---|---|
-| HipLab `main` | #22/#24及重播保活适配已获开哥同意、普通推送合入，集成点`b33ed21`；23:32:51 GitHub均MERGED。#19/#20/#21既有集成保持，以下旧轮记录为历史 |
+| HipLab `main` | PR25来源8c985c4、SDK0.1.2及审核记录已获开哥同意并普通推送，集成ce7ab74，GitHub11:24:56确认MERGED；#22/#24及#19/#20/#21此前集成保持 |
 | [HipLab #7](https://github.com/mhgd3250905/HipLab/pull/7) | MERGED，merge `ba591bf`；并合入 Android 首轮验证修复 |
 | [HipLab #8](https://github.com/mhgd3250905/HipLab/pull/8) | MERGED，merge `5bb43f0`；保留修订媒体与配套评分说明 |
 | [HipLab #9](https://github.com/mhgd3250905/HipLab/pull/9) | MERGED，merge `61979d8`；保留 iOS 配置及共享音视频安全处理 |
