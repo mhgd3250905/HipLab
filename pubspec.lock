@@ -334,7 +334,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
@@ -554,6 +554,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.4.0"
+  ugk_coach:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "76829bd290ff86cbce4f9029657cc2a20e3f2ef4"
+      resolved-ref: "76829bd290ff86cbce4f9029657cc2a20e3f2ef4"
+      url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
+    source: git
+    version: "0.1.1"
   uuid:
     dependency: transitive
     description:

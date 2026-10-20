@@ -26,6 +26,15 @@ dependencies:
   # Keeps the screen on during a session so auto-lock never suspends the
   # training clock / voice (Android has no foreground service yet).
   wakelock_plus: 1.8.1
+  # AI 定制 usage log location (lib/hip/coach/usage_file_io.dart); already
+  # in the lock through shared_preferences, pinned to that version.
+  path_provider: 2.1.6
+  # AI 训练助理 SDK (docs/ai-coach.md): catalog, TrainingPlan v1 validation,
+  # prompts, OpenAI-compatible client, usage records, fallback.
+  ugk_coach:
+    git:
+      url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
+      ref: 76829bd290ff86cbce4f9029657cc2a20e3f2ef4
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +58,7 @@ flutter:
     - assets/drill_media/
     - assets/action_kits/
     - assets/licenses/
+    - assets/coach/
   fonts:
     - family: NotoSansSC
       fonts:
