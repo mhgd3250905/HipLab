@@ -4,6 +4,8 @@
 
 | 日期 / 阶段 | 结果与决定 | 关联证据 |
 |---|---|---|
+| 2026-10-19 晚 / PR24 审核四项P2修复 | 同步main 6299a38后修F24-1～4：cancelAll无条件停输出并作废排队旧句（tailGrace只用于正常换句）；音量按最后请求下发；新增TrainingHold按训练会话持有前台服务+唤醒锁，自然完成/神经疼/自测结果/退出/dispose释放，上限随计划时长（≤2 h）；START/STOP带会话id，旧STOP不再关新会话。每项先写修复前失败的回归测试。analyze0、290pass/1skip；Kotlin未编译、未真机，未合并 | [Android语音记录第二轮](android-voice-playback-2026-10-19.md#第二轮pr-24-审核四项-p2-修复2026-10-19-晚) |
+| 2026-10-19 / Android语音三问题 | 开哥戴耳机反馈后台卡顿、句尾被掐、吞「3、2、1」。沙盒复现并修：后台无前台服务（加原生 mediaPlayback 前台服务+部分唤醒锁，无新依赖）；英文换边句被倒数切0.64 s（换边按句长取整秒加长、队列tailGrace 0.8 s）；控制器新句作废旧句致整段倒数消失（改为按序播放）。analyze0、277pass/1skip；未构建APK、未真机，分支`fix/android-voice-playback`待本机验收；Play需补前台服务声明 | [Android语音记录](android-voice-playback-2026-10-19.md) |
 | 2026-10-19 / PR22 F7复核 | 9fa0cc0的F1–F7代码问题均关闭；Windows322过/1跳、analyze0、Python19、独立原复现通过。原生验收待补，未合并、未构建安装 | [最新复核](pr22-reaudit-2026-10-19.md) |
 | 2026-10-17 / 接手 | 从 HipLab #1 源 `2865ed7` 建立独立接手分支；初始 48 项测试、4 项截图通过；确认紧侧计时缺陷，留 D-01 | [接手基线](project-takeover-2026-10-17.md) |
 | 2026-10-17 / Android 首跑 | 首次 debug 安装 0.1.0+1，安全引导显示正常 | [Android 记录](android-first-run-2026-10-17.md) |
@@ -184,6 +186,8 @@ main运行/工具/资产/测试/配置与c7def28相同，复用254pass/1skip、a
 
 按用户要求将能代做的界面和数据流程转为真实Web验收，并行独立迁移/语音/字号资料，全部产物在E盘。补齐大量界面流程，但发现快速左删后编辑导致C被B覆盖的P2（F8），独立三步案例确认后已[评论PR](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6266421023)并回读一致。Web声音循环初始片段的异常也在准确main基线复现，不能把实际playing计数当口令正确。D-29维持待修/待原生，未改App、未合并；辅助浏览器/HTTP服务已关闭。[全表与缩减后的手机清单](pr22-web-acceptance-2026-10-19.md)。
 
+
+
 ## 2026-10-19：PR #22 Web 补充验收 F8 / P3 修复与同步 main（feat/training-library）
 
 Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨面板 await 持有行号，前项左删动画在面板打开期间结束后行号前移，写回覆盖下一个动作并复用 key（A、B、C → 删 A 编辑 B → `[B, B(2)]`）。首轮修复（d352552）：行 onTap 与删除回调都按稳定 key 定位，面板返回后重新查找，已删除则不写回。新增 5 个界面手势回归（6306214），修复前 4 fail / 1 pass（排序护栏通过）。P3：360 宽 ×2.0 深浅主题练习页截断，≥1.6× 时自测卡/训练组卡按钮下移、动作卡一行一张、套路卡标签换行、搜索短提示，标题说明一律换行（f366276）；8 个组件测试修复前 0/8。Web 语音内容异常 main 基线同样存在，不在本 PR 范围。先 merge 同步 main fcffded（c0af7f0），仅 docs/README.md、development-log.md 冲突，main 原文不改、双方历史保留。最终 analyze 0、335 pass / 1 条件 skip、kits check 0、媒体 check ok、Python 19、diff --check 干净；未改依赖/lock/版本，未合 main。仍未构建 APK/真机/iOS。见[练习库实现记录](training-library-2026-10-19.md) §9。
@@ -198,7 +202,6 @@ Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨�
 
 [阶段复测评论](https://github.com/mhgd3250905/HipLab/pull/22#issuecomment-6268054160)已发布并回读与本机草稿完全一致。当前仍等待安全解锁，未将阶段结果写成原生全验通过。
 
-
 ## 2026-10-19：PR #24修复返回、#22组合正常播放验证
 
 固定24新head0ccef6b复审，原四P2源码闭环，原3失败专项本机均通过。E盘副本组合22的2cc40e3，保留_complete的plan记录与6秒释放，并修复同State「再来一组」未取得新hold；新增两例先失败后通过。组合5725c36已普通推送验证分支，373pass/1skip、analyze0及Kotlin编译/包身份通过。21:56:37保留数据安装，升级JSON相同；中文深蹲两轮自然完成，恰增2记录、其余字段保持，两轮服务/CPU锁结束后释放，用户现场确认正常听到/播放无异常。按用户要求停止扩展系统矩阵，规则写入AGENTS；PR22 F9仍待作者修复，不合main、不approve、不上传商店，仅保存当前证据与文档。[报告](pr24-reaudit-and-pr22-integration-2026-10-19.md)。
@@ -210,3 +213,18 @@ Web 补充验收（固定 9fa0cc0）新增 F8 / P2：编辑器 `_editDose` 跨�
 用户新报练习页搜索框有光标不弹键盘：P3 只改了容器高度/内边距/提示文案，`TextField` 无 readOnly/maxLines/keyboardType 变化，无抢焦点或 unfocus；组件测试里点按即发 `TextInput.show`，1×/2.0 及 inset、切 tab、详情页返回后都正常，P3 之前代码结果相同。Flutter 侧找不到原因，未改产品代码，加 6 个键盘契约测试（`ff85de6`），真机取证步骤见 training-library §10.2（优先排查投屏/实体键盘，其次 WebView 焦点）。
 
 merge main `76ff846`（`0d2c625`），冲突仅本文件，两边保留、main 原文不改。analyze 0，349 pass / 1 条件 skip，工具检查通过；未构建 APK、未上真机。
+
+
+## 2026-10-19：PR22 F9返回修复复审通过
+
+按用户反馈固定a586de3复审F9，源码闭环、原独立失败专项现通过，F8/键盘等21专项通过。E盘组合9b22dcc保留已验PR24及重播hold，387pass/1skip、analyze0、Kotlin/APK校验通过；保留数据安装后真机立即保存/双删/空组/关闭放弃正确，键盘首次与视频详情返回实际弹出。手机前台中途被其他App打断的操作未计结论，经用户确认独占后重做并加包名守卫，最终已回今日页停止输入。仅既有测试组1按用例变化，另一组/10条记录及全部非组状态保持。F9关闭，当前范围无新阻断，待开哥最终同意再合main；不扩展极大字号或系统矩阵，不上传商店。[复审](pr22-f9-reaudit-2026-10-19.md)。
+
+
+## 2026-10-19 23:32：获准合并PR #22 / #24
+
+用户明确「同意合并」，来源与候选回读未变；main ab1425b快进已验b33ed21并普通推送，GitHub23:32:51确认两PR均MERGED，mergeCommit分别9b22dcc/5725c36。保留完整来源祖先与文档双方历史，运行代码/测试与已验9b22dcc一致；仅补合并台账，不重构建或重装、不增版本、不上传商店。D-29/D-30当前代码集成完成，后续从main推进，iOS及扩展矩阵边界保留。[身份与证据](pr22-f9-reaudit-2026-10-19.md)。
+
+
+## 2026-10-19：PR22/24合并后的文档阶段收束
+
+按用户显式cockpit-closeout要求先完成只读Preflight，baseline ab1425b / 收束前HEAD cdbb14c，43提交65路径；当前规范入口及完整4个旧未跟踪文件的归属明确。修正根README、工作流、版本/验证摘要和事项编号/待审状态，当前事实统一为PR22/24已合main、已验源9b22dcc、0.3.6+11及387pass/1skip，保留所有旧日期证据。仅处理确定的文档对齐问题，不改App、不重建/重装、不触碰旧网页产物。Preflight与验证绑定详见[验证台账](verification.md)；本次commit/push记录在Git中，不自动结束Cockpit会话。

@@ -105,7 +105,7 @@ class SessionScript {
           SessionPhase(
             PhaseKind.switchSide,
             i,
-            switchSeconds.toDouble(),
+            switchSecondsFor(s, side),
             side: side,
           ),
         SessionPhase(
@@ -118,6 +118,32 @@ class SessionScript {
         ),
       ],
     ];
+  }
+
+  /// Room kept between the end of the switch line and the 3-2-1, so the
+  /// line is not still sounding when 「三」 comes (playback starts a little
+  /// after the cue on a real device).
+  static const switchMargin = 0.4;
+
+  /// What is said when the side switches: 慢慢还原 after a hold, then
+  /// 换左边 / 换右边.
+  List<String> switchClips(PlanStep s, HipSide? side) {
+    final kit = _kit(s);
+    return [
+      'chime.end',
+      if (kit != null && !kit.kind.counted) kit.voice.end,
+      side == HipSide.left ? 'p.switch_left' : 'p.switch_right',
+    ];
+  }
+
+  /// The side-switch gap: [switchSeconds], longer when the switch line
+  /// would not end [switchMargin] before the 3-2-1 (Android voice fix
+  /// 2026-10-19: in English 「Slowly come out of it. Switch to the left
+  /// side」 is 2.6 s and the 「three」 at 2 s used to cut its last half
+  /// second). Whole seconds, so the ring still counts down evenly.
+  double switchSecondsFor(PlanStep s, HipSide? side) {
+    final need = (_len(switchClips(s, side)) + switchMargin).ceil() + 3;
+    return math.max(switchSeconds, need).toDouble();
   }
 
   /// Phases from step [from] on. [lead] is the phase in front of that step:
@@ -274,13 +300,8 @@ class SessionScript {
         ];
       case PhaseKind.switchSide:
         final s = steps[phase.step];
-        final kit = _kit(s);
         return [
-          VoiceCue(0, [
-            'chime.end',
-            if (kit != null && !kit.kind.counted) kit.voice.end,
-            phase.side == HipSide.left ? 'p.switch_left' : 'p.switch_right',
-          ], CuePriority.call),
+          VoiceCue(0, switchClips(s, phase.side), CuePriority.call),
           ..._countdown(phase.seconds),
         ];
       case PhaseKind.done:

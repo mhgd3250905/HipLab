@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import '../../core/platform/screen_awake.dart';
+import '../../core/platform/training_service.dart';
 import 'package:flutter/material.dart';
 
 import '../control/hip_store.dart';
@@ -219,6 +220,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   Future<void>? _guidanceRelease;
   bool _startingPlan = false;
 
+  /// Android keep-alive for the check; released when the result is in,
+  /// not when the page closes (PR #24 review F24-3).
+  TrainingHold? _hold;
+
   List<AssessmentItem> get _items => widget.store.content.rules.items;
   AssessmentItem get _item => _items[_index];
 
@@ -232,6 +237,13 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         unawaited(_voice!.output.begin());
       }
       ScreenAwake.acquire();
+      // The check moves at the user's pace: both sides of every item plus
+      // time to answer.
+      _hold = TrainingHold.begin(
+        Duration(
+          seconds: _items.fold<int>(0, (sum, i) => sum + i.seconds * 2 + 45),
+        ),
+      );
       _beginItem();
     }
   }
@@ -304,6 +316,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   @override
   void dispose() {
     if (_voice != null) ScreenAwake.release();
+    _hold?.release();
     _bannerTimer?.cancel();
     unawaited(_releaseGuidance());
     super.dispose();
@@ -365,6 +378,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       const VoiceCue(0, ['chime.finish', 'a.done'], CuePriority.call),
       _t,
     );
+    _hold?.release(after: const Duration(seconds: 6));
     final result = await widget.store.saveAssessment(_answers);
     if (mounted) setState(() => _result = result);
   }
