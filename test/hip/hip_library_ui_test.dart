@@ -198,7 +198,9 @@ void main() {
       expect(player.plan.source, PlanSource.single);
       expect(player.plan.steps.single.sets, 2);
       expect(player.plan.steps.single.kitDose.seconds, 65);
-      await tester.tap(find.bySemanticsLabel('结束').first);
+      await tester.tap(find.byKey(const ValueKey('close')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('close-confirm')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
       expect(store.sessions.single.source, PlanSource.single);

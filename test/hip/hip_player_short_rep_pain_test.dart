@@ -5,14 +5,17 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_session.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
-import 'package:hiplab/hip/ui/hip_widgets.dart';
+
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<HipCountdownRing>(find.byKey(const ValueKey('player-ring')))
-      .label,
+      .widget<trainer.TrainerCountdownRing>(
+        find.byType(trainer.TrainerCountdownRing),
+      )
+      .value,
 );
 
 void main() {
@@ -56,14 +59,33 @@ void main() {
             ),
           );
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const ValueKey('player-skip')),
-      ); // prep -> work
+      await tester.tap(find.byKey(const ValueKey('skip'))); // prep -> work
       await tester.pumpAndSettle();
       expect(find.text(target.drill.name), findsOneWidget);
-      expect(_secondsLeft(tester), inInclusiveRange(6, 8));
+      final player = tester.widget<trainer.TrainerPlayer>(
+        find.byType(trainer.TrainerPlayer),
+      );
+      final work = player.sessionBuilder!
+          .phases(player.plan)
+          .where((p) => p.isWork && p.itemIndex == 0)
+          .toList();
+      expect(work, hasLength(2), reason: 'the real M dose runs both sides');
+      for (final phase in work) {
+        expect(phase.seconds, inInclusiveRange(6, 8));
+        expect(phase.reps, 1, reason: 'one full cycle fits before halving');
+      }
+      expect(work.fold<double>(0, (sum, p) => sum + p.seconds), target.seconds);
+      expect(
+        tester
+            .widget<trainer.TrainerCountdownRing>(
+              find.byType(trainer.TrainerCountdownRing),
+            )
+            .value,
+        '1',
+        reason: 'counted work displays the rep, not its duration',
+      );
 
-      await tester.tap(find.byKey(const ValueKey('player-pain')));
+      await tester.tap(find.byKey(const ValueKey('discomfort')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('pain-pinch')));
       await tester.pumpAndSettle();
@@ -71,10 +93,13 @@ void main() {
       // Halving leaves 4s/side, shorter than one 7s lift-hold-lower cycle.
       // The current action must be skipped, rather than starting a partial rep.
       expect(find.text(next.drill.name), findsOneWidget);
-      expect(find.text('2/${plan.steps.length}'), findsOneWidget);
-      expect(find.byKey(const ValueKey('player-pain')), findsNothing);
+      expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+      expect(find.byKey(const ValueKey('discomfort')), findsNothing);
       expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
-      expect(find.byKey(const ValueKey('side-indicator')), findsNothing);
+      expect(
+        find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
+        findsNothing,
+      );
       final before = _secondsLeft(tester);
       expect(
         before,
@@ -83,19 +108,19 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       final after = _secondsLeft(tester);
       expect(after, inInclusiveRange(before - 3, before - 1));
-      expect(find.byKey(const ValueKey('player-pain')), findsNothing);
+      expect(find.byKey(const ValueKey('discomfort')), findsNothing);
 
       // Optional feedback still records without skipping the next rest.
       await tester.tap(find.byKey(const ValueKey('feel-ok')));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('已记录'), findsOneWidget);
-      expect(find.byKey(const ValueKey('player-pain')), findsNothing);
+      expect(find.byKey(const ValueKey('discomfort')), findsNothing);
       await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
-      expect(find.byKey(const ValueKey('player-pain')), findsOneWidget);
+      expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
-      expect(find.text('2/${plan.steps.length}'), findsOneWidget);
+      expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();

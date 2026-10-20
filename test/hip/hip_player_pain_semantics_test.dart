@@ -32,13 +32,13 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('player-skip')));
+      await tester.tap(find.byKey(const ValueKey('skip')));
       await tester.pumpAndSettle();
 
-      final pain = find.byKey(const ValueKey('player-pain'));
+      final pain = find.byKey(const ValueKey('discomfort'));
       expect(pain, findsOneWidget);
       final data = tester.getSemantics(pain).getSemanticsData();
-      expect(data.label, '疼');
+      expect(data.label, '不舒服');
       expect(data.hasAction(SemanticsAction.tap), isTrue);
       expect(
         data.flagsCollection.isButton,

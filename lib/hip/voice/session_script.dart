@@ -1,34 +1,15 @@
 import 'dart:math' as math;
 
+import 'package:ugk_trainer/engine.dart' as trainer;
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer/engine.dart' show VoiceCue, CuePriority;
+
 import '../domain/hip_assessment.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_session.dart';
 import 'voice_library.dart';
 
-/// Who wins when two lines want the air at once (#13): counts are never
-/// interrupted and interrupt everything else; calls (开始 / 换边 / 还剩 10 秒)
-/// beat information (预告) which beats coaching tips.
-enum CuePriority { coach, info, call, count }
-
-/// One thing to say (and/or a chime to play) at [at] seconds into a phase.
-/// Clip keys are manifest keys; `chime.*` keys play on the chime channel.
-class VoiceCue {
-  const VoiceCue(this.at, this.clips, this.priority, {this.subtitle});
-  final double at;
-  final List<String> clips;
-  final CuePriority priority;
-
-  /// Shown under the drill name while it plays (coach / tip lines).
-  final String? subtitle;
-
-  List<String> get voiceClips =>
-      clips.where((c) => !c.startsWith('chime.')).toList();
-  List<String> get chimes =>
-      clips.where((c) => c.startsWith('chime.')).toList();
-
-  @override
-  String toString() => '${at.toStringAsFixed(2)} ${clips.join('+')}';
-}
+export 'package:ugk_trainer/engine.dart' show CuePriority, VoiceCue;
 
 enum PhaseKind { prep, work, switchSide, rest, done }
 
@@ -43,6 +24,8 @@ class SessionPhase {
     this.side,
     this.segment = 0,
     this.segments = 1,
+    this.set = 0,
+    this.totalSets = 0,
   });
   final PhaseKind kind;
   final int step;
@@ -50,6 +33,8 @@ class SessionPhase {
   final HipSide? side;
   final int segment;
   final int segments;
+  final int set;
+  final int totalSets;
 
   bool get isWork => kind == PhaseKind.work;
   bool get lastSegment => segment == segments - 1;
@@ -210,11 +195,6 @@ class SessionScript {
   /// What is said when [s] ends: 慢慢还原 after a hold, 很好 after reps.
   String _endClip(PlanStep s) => _kit(s)?.voice.end ?? 'p.nice';
 
-  String _methodCue(PlanStep s, int variant) {
-    final m = s.drill.methods.isEmpty ? HipMethod.relax : s.drill.methods.first;
-    return 'cue.${m.id}.$variant';
-  }
-
   /// Lines said one after another from [start]; a line that would not finish
   /// before [until] is left out (never squeezed under the countdown).
   List<VoiceCue> _sequence(
@@ -319,9 +299,102 @@ class SessionScript {
 
   List<VoiceCue> _workCues(SessionPhase phase, PlanStep s) {
     final kit = _kit(s);
-    if (kit != null && kit.kind.counted) return _repCues(phase, s, kit);
-    if (kit != null) return _holdCues(phase, s, kit);
-    return _legacyWorkCues(phase, s);
+    final source = _HipSource(lib, kits, step: s, side: phase.side);
+    final script = trainer.SessionScript(source: source, lang: lang);
+    final counted = kit?.kind.counted ?? false;
+    final sets = phase.totalSets > 0
+        ? 1
+        : counted
+        ? setsOf(phase, s)
+        : holdSetsOf(phase, s);
+    final gap = counted ? 0.0 : 5.0;
+    var n = sets;
+    var per = (phase.seconds - (n - 1) * gap) / n;
+    if (!counted && per < 10) {
+      n = 1;
+      per = phase.seconds;
+    }
+    final reps = kit == null ? repsOf(s.dose) : null;
+    final rhythm = kit == null
+        ? (reps == null
+              ? trainer.Rhythm.timedHold
+              : trainer.Rhythm.fromRepSeconds(phase.seconds / reps))
+        : trainer.Rhythm.fromActionKitJson(kit.raw);
+    final out = <VoiceCue>[];
+    for (var set = 0; set < n; set++) {
+      final offset = set * (per + gap);
+      final p = trainer.SessionPhase(
+        kind: trainer.PhaseKind.work,
+        seconds: per,
+        exerciseId: s.drill.id,
+        itemIndex: phase.step,
+        side: phase.side == null
+            ? null
+            : phase.side == HipSide.right
+            ? trainer.Side.right
+            : trainer.Side.left,
+        set: set + 1,
+        sets: n,
+        rhythm: rhythm,
+        reps: kit == null ? reps : s.kitDose.reps ?? kit.defaultReps,
+        repSeconds: kit == null && reps != null ? phase.seconds / reps : null,
+        holdSeconds: s.kitDose.holdSeconds ?? kit?.defaultHold,
+      );
+      for (final cue in script.cues(p, planSeconds: phase.seconds)) {
+        final clips = (set > 0 || phase.set > 1) && cue.at == 0 && kit != null
+            ? ['chime.start', kit.voice.nextSet]
+            : cue.clips;
+        final finalSet =
+            set == n - 1 &&
+            (phase.totalSets == 0 || phase.set == phase.totalSets);
+        final actualReps = rhythm
+            .repPlan(
+              reps: s.kitDose.reps,
+              hold: s.kitDose.holdSeconds,
+              seconds: per,
+            )
+            .reps;
+        final spoken = kit != null && !finalSet
+            ? [
+                for (final clip in clips)
+                  clip == kit.voice.lastRep
+                      ? kit.voice.countClip(actualReps)
+                      : clip,
+              ]
+            : clips;
+        out.add(
+          VoiceCue(
+            offset + cue.at,
+            spoken,
+            cue.priority,
+            subtitle: cue.subtitle,
+          ),
+        );
+      }
+      if (set < n - 1 && !counted && kit != null) {
+        out.add(
+          VoiceCue(offset + per, [
+            'chime.end',
+            kit.voice.end,
+          ], CuePriority.call),
+        );
+      }
+    }
+    if (!counted && tightSide(phase, s) && phase.set <= 1) {
+      final go =
+          kit?.voice.go ??
+          (phase.side == HipSide.right ? 'p.go_right' : 'p.go');
+      final at = _len([go]) + .3;
+      final clip = s.extraSide == HipSide.right
+          ? 'cue.extra_right'
+          : 'cue.extra_left';
+      // The App's D-01 call reserves its own space before flexible coaching.
+      final end = at + _len([clip]) + .3;
+      out.removeWhere((c) => c.priority == CuePriority.coach && c.at < end);
+      out.add(VoiceCue(at, [clip], CuePriority.info, subtitle: lib.line(clip)));
+    }
+    out.sort((a, b) => a.at.compareTo(b.at));
+    return out;
   }
 
   /// This phase is the tight side that does more (D-01). Checks the real
@@ -361,252 +434,6 @@ class SessionScript {
 
   /// Count clips exist for 1…10; a higher count says only its phase word.
   static const maxCountClip = 10;
-
-  /// Counted action (rep rhythm): "开始", then on every rep the count with
-  /// the go word ("一，起"), the back word at the return ("落"), a hold word
-  /// and 3-2-1 inside long holds. Rep k starts at a fixed beat and the last
-  /// rep gets its full cycle: it ends exactly when the phase ends, so the
-  /// next "很好 / 换边" never cuts it short.
-  List<VoiceCue> _repCues(SessionPhase phase, PlanStep s, ActionKit kit) {
-    final plan = kit.repPlan(s.kitDose, phase.seconds, sets: setsOf(phase, s));
-    final v = kit.voice;
-    if (plan.reps == 0) return const [];
-    final out = <VoiceCue>[
-      VoiceCue(0, ['chime.start', v.go], CuePriority.call),
-    ];
-    for (var set = 0; set < plan.sets; set++) {
-      if (set > 0) {
-        out.add(
-          VoiceCue(set * plan.setSeconds, [
-            'chime.start',
-            v.nextSet,
-          ], CuePriority.call),
-        );
-      }
-      for (var k = 1; k <= plan.reps; k++) {
-        var t = plan.repStart(set, k);
-        final last = set == plan.sets - 1 && k == plan.reps && plan.reps >= 3;
-        for (final (i, ph) in plan.phases.indexed) {
-          final word = ph.cueFor(k);
-          if (i == 0) {
-            out.add(
-              VoiceCue(
-                t,
-                [
-                  last
-                      ? v.lastRep
-                      : k <= maxCountClip
-                      ? v.countClip(k)
-                      : null,
-                  ?word,
-                ].whereType<String>().toList(),
-                CuePriority.count,
-              ),
-            );
-          } else if (word != null) {
-            out.add(VoiceCue(t + ph.cueAt, [word], CuePriority.count));
-          }
-          if (ph.id == 'hold' && ph.seconds >= 6) {
-            for (var n = 3; n >= 1; n--) {
-              out.add(
-                VoiceCue(t + ph.seconds - n, ['n.$n'], CuePriority.count),
-              );
-            }
-          }
-          t += ph.seconds;
-        }
-      }
-    }
-    out.sort((a, b) => a.at.compareTo(b.at));
-    return out;
-  }
-
-  /// Hold (保持计时): start, coaching in the gaps, halfway, last 10 s, a
-  /// 5-4-3-2-1; "慢慢还原" is said by the switch / rest that follows.
-  List<VoiceCue> _holdCues(SessionPhase phase, PlanStep s, ActionKit kit) {
-    if (holdSetsOf(phase, s) <= 1) {
-      return _timedHold(phase, s, kit.voice.coach, kit.voice);
-    }
-    return _setHolds(phase, s, kit);
-  }
-
-  /// A hold done in sets (练习库): each set is a full hold with its own
-  /// countdown; 慢慢还原, a short gap, then 再来一组. When the time left is too
-  /// short for that (pain ladder halved it) it is one continuous hold.
-  List<VoiceCue> _setHolds(SessionPhase phase, PlanStep s, ActionKit kit) {
-    const gap = 5.0; // DoseRules.holdSetGap
-    final n = holdSetsOf(phase, s);
-    final per = (phase.seconds - (n - 1) * gap) / n;
-    if (per < 10) return _timedHold(phase, s, kit.voice.coach, kit.voice);
-    final v = kit.voice;
-    final out = <VoiceCue>[];
-    for (var j = 0; j < n; j++) {
-      final o = j * (per + gap);
-      final one = SessionPhase(
-        PhaseKind.work,
-        phase.step,
-        per,
-        side: phase.side,
-      );
-      // The tight side's 「右边多做一组」 is said once, on the first set.
-      for (final c in _timedHold(one, s, v.coach, v, extraCue: j == 0)) {
-        final clips = j > 0 && c.at == 0 ? ['chime.start', v.nextSet] : c.clips;
-        out.add(VoiceCue(o + c.at, clips, c.priority, subtitle: c.subtitle));
-      }
-      if (j < n - 1) {
-        out.add(VoiceCue(o + per, ['chime.end', v.end], CuePriority.call));
-      }
-    }
-    out.sort((a, b) => a.at.compareTo(b.at));
-    return out;
-  }
-
-  List<VoiceCue> _legacyWorkCues(SessionPhase phase, PlanStep s) {
-    final w = phase.seconds;
-    final out = <VoiceCue>[];
-    final firstSided = phase.side == HipSide.right && phase.segment == 0;
-    out.add(
-      VoiceCue(0, [
-        'chime.start',
-        firstSided ? 'p.go_right' : 'p.go',
-      ], CuePriority.call),
-    );
-    var busyUntil = _len([firstSided ? 'p.go_right' : 'p.go']) + .3;
-    if (s.extraSide != null && s.extraSide == phase.side) {
-      final clip = s.extraSide == HipSide.right
-          ? 'cue.extra_right'
-          : 'cue.extra_left';
-      out.add(
-        VoiceCue(busyUntil, [clip], CuePriority.info, subtitle: lib.line(clip)),
-      );
-      busyUntil += _len([clip]) + .3;
-    }
-
-    final reps = repsOf(s.dose);
-    final interval = reps == null ? 0.0 : w / reps;
-    if (reps != null && interval >= 2.2) {
-      // Count the reps on the beat instead of a countdown.
-      for (var k = 1; k <= reps; k++) {
-        out.add(
-          VoiceCue(math.max(busyUntil, k * interval - .5), [
-            'n.$k',
-          ], CuePriority.count),
-        );
-      }
-      if (interval >= 6) {
-        final t = interval + interval / 2 - _len([_methodCue(s, 1)]) / 2;
-        out.add(
-          VoiceCue(
-            t,
-            [_methodCue(s, 1)],
-            CuePriority.coach,
-            subtitle: lib.line(_methodCue(s, 1)),
-          ),
-        );
-      }
-      out.sort((a, b) => a.at.compareTo(b.at));
-      return out;
-    }
-
-    // Timed hold: countdown, last-10, halfway, then coaching in the gaps.
-    final fixed = <VoiceCue>[
-      if (w >= 8) ...[
-        for (var k = 5; k >= 1; k--)
-          VoiceCue(w - k, ['chime.tick', 'n.$k'], CuePriority.count),
-      ] else
-        ..._countdown(w),
-      if (w >= 20) VoiceCue(w - 10, const ['p.last10'], CuePriority.call),
-      if (w >= 30) VoiceCue(w / 2, const ['p.half'], CuePriority.info),
-    ];
-    out.addAll(fixed);
-    final windows = [
-      (0.0, busyUntil),
-      for (final c in fixed) (c.at - .4, c.at + _len(c.voiceClips) + .4),
-    ];
-    bool free(double a, double b) =>
-        windows.every((win) => b <= win.$1 || a >= win.$2);
-    final coach = <String>[_methodCue(s, 1), if (w >= 40) _methodCue(s, 2)];
-    final targets = [w * .28, w * .72];
-    for (final (k, clip) in coach.indexed) {
-      final len = _len([clip]);
-      double? placed;
-      for (final shift in [0.0, -1.5, 1.5, -3.0, 3.0, -4.5, 4.5]) {
-        final t = targets[k] + shift;
-        if (t >= busyUntil && t + len <= w - 5.6 && free(t, t + len)) {
-          placed = t;
-          break;
-        }
-      }
-      if (placed == null) continue;
-      windows.add((placed, placed + len + .4));
-      out.add(
-        VoiceCue(placed, [clip], CuePriority.coach, subtitle: lib.line(clip)),
-      );
-    }
-    out.sort((a, b) => a.at.compareTo(b.at));
-    return out;
-  }
-
-  List<VoiceCue> _timedHold(
-    SessionPhase phase,
-    PlanStep s,
-    List<String> coachClips,
-    KitVoice v, {
-    bool extraCue = true,
-  }) {
-    final w = phase.seconds;
-    final out = <VoiceCue>[
-      VoiceCue(0, ['chime.start', v.go], CuePriority.call),
-    ];
-    var busyUntil = _len([v.go]) + .3;
-    if (extraCue && tightSide(phase, s)) {
-      final clip = s.extraSide == HipSide.right
-          ? 'cue.extra_right'
-          : 'cue.extra_left';
-      out.add(
-        VoiceCue(busyUntil, [clip], CuePriority.info, subtitle: lib.line(clip)),
-      );
-      busyUntil += _len([clip]) + .3;
-    }
-    final fixed = <VoiceCue>[
-      if (w >= 8) ...[
-        for (var k = v.countdown; k >= 1; k--)
-          VoiceCue(w - k, ['chime.tick', 'n.$k'], CuePriority.count),
-      ] else
-        ..._countdown(w),
-      if (w >= 20 && v.last10 != null)
-        VoiceCue(w - 10, [v.last10!], CuePriority.call),
-      if (w >= 30 && v.half != null)
-        VoiceCue(w / 2, [v.half!], CuePriority.info),
-    ];
-    out.addAll(fixed);
-    final windows = [
-      (0.0, busyUntil),
-      for (final c in fixed) (c.at - .4, c.at + _len(c.voiceClips) + .4),
-    ];
-    bool free(double a, double b) =>
-        windows.every((win) => b <= win.$1 || a >= win.$2);
-    final coach = [
-      if (coachClips.isNotEmpty) coachClips.first,
-      if (w >= 40 && coachClips.length > 1) coachClips[1],
-    ];
-    final targets = [w * .28, w * .72];
-    for (final (k, clip) in coach.indexed) {
-      final len = _len([clip]);
-      for (final shift in [0.0, -1.5, 1.5, -3.0, 3.0, -4.5, 4.5]) {
-        final t = targets[k] + shift;
-        if (t >= busyUntil && t + len <= w - 5.6 && free(t, t + len)) {
-          windows.add((t, t + len + .4));
-          out.add(
-            VoiceCue(t, [clip], CuePriority.coach, subtitle: lib.line(clip)),
-          );
-          break;
-        }
-      }
-    }
-    out.sort((a, b) => a.at.compareTo(b.at));
-    return out;
-  }
 
   // ── assessment ────────────────────────────────────────────────────────
 
@@ -651,4 +478,255 @@ class SessionScript {
       VoiceCue(end, const ['chime.end', 'a.choose'], CuePriority.call),
     ];
   }
+}
+
+/// App-specific semantic source; lookup and durations remain in the package.
+class _HipSource extends trainer.VoiceSource {
+  _HipSource(this.lib, this.kits, {this.step, this.side});
+  final VoiceLibrary lib;
+  final Map<String, ActionKit> kits;
+  final PlanStep? step;
+  final HipSide? side;
+  @override
+  Set<String> get languages => lib.languages;
+  @override
+  bool has(String key, {required String lang}) => lib.has(key, lang: lang);
+  @override
+  double seconds(String key, {required String lang}) =>
+      lib.seconds(key, lang: lang);
+  @override
+  String asset(String key, {required String lang}) =>
+      lib.asset(key, lang: lang);
+  @override
+  String? line(String key, {required String lang}) => lib.line(key, lang: lang);
+  @override
+  String? call(trainer.VoiceCall c) => lib.call(c);
+  @override
+  String? drill(String id, trainer.DrillLine line) {
+    if (line == trainer.DrillLine.cue1 &&
+        step != null &&
+        !kits.containsKey(id)) {
+      final method = step!.drill.methods.isEmpty
+          ? HipMethod.relax
+          : step!.drill.methods.first;
+      return 'cue.${method.id}.1';
+    }
+    return lib.drill(id, line);
+  }
+
+  @override
+  List<String> secondsPhrase(int n) => lib.secondsPhrase(n);
+  @override
+  List<String> minutesPhrase(int n) => lib.minutesPhrase(n);
+  @override
+  trainer.KitVoice? kitVoice(String id) {
+    final kit = kits[id];
+    if (kit != null) return trainer.KitVoice.fromActionKitJson(kit.raw);
+    // Pre-action-kit plans retain their documented timed-hold calls.
+    if (step != null && repsOf(step!.dose) == null) {
+      return trainer.KitVoice(
+        prepare: const [],
+        go: side == HipSide.right ? 'p.go_right' : 'p.go',
+        count: 'n.{k}',
+        lastRep: 'p.last_rep',
+        nextSet: 'p.again',
+        end: 'p.nice',
+        coach: [
+          for (final k in [1, 2])
+            'cue.${step!.drill.methods.isEmpty ? HipMethod.relax.id : step!.drill.methods.first.id}.$k',
+        ],
+        half: 'p.half',
+        last10: 'p.last10',
+        countdown: 5,
+      );
+    }
+    return null;
+  }
+}
+
+/// Shared-player script with only HipLab's authored lines and D-01 mapping.
+class HipSessionScript extends trainer.SessionScript {
+  HipSessionScript({
+    required this.lib,
+    required super.lang,
+    required this.steps,
+    required this.kits,
+    this.routineIds = const [],
+    this.restSeconds = 15,
+  }) : super(source: _HipSource(lib, kits));
+  final VoiceLibrary lib;
+  final List<PlanStep> steps;
+  final Map<String, ActionKit> kits;
+  final List<String> routineIds;
+  final int restSeconds;
+  SessionScript get legacy => SessionScript(
+    lib: lib,
+    lang: lang,
+    routineIds: routineIds,
+    restSeconds: restSeconds,
+    kits: kits,
+  );
+  @override
+  List<VoiceCue> cues(
+    trainer.SessionPhase p, {
+    required double planSeconds,
+    bool bySkip = false,
+  }) {
+    if (p.kind == trainer.PhaseKind.rest &&
+        p.nextExerciseId == null &&
+        p.set > 1) {
+      final kit = kits[p.exerciseId];
+      return [
+        VoiceCue(0, [
+          'chime.end',
+          if (kit != null) kit.voice.end,
+        ], CuePriority.call),
+      ];
+    }
+    return legacy.cues(_fromTrainer(p, steps), steps, bySkip: bySkip);
+  }
+}
+
+/// App dose/asymmetry adapter. The shared engine consumes these phases.
+class HipSessionBuilder extends trainer.SessionBuilder {
+  HipSessionBuilder({
+    required this.script,
+    super.prepSeconds = 15,
+    super.transitionSeconds = 15,
+    super.switchSideSeconds = 5,
+  });
+  final HipSessionScript script;
+  @override
+  List<trainer.SessionPhase> phases(coach.TrainingPlan plan) {
+    final items = plan.blocks.expand((b) => b.items).toList();
+    final s = SessionScript(
+      lib: script.lib,
+      lang: script.lang,
+      routineIds: script.routineIds,
+      restSeconds: transitionSeconds,
+      prepSeconds: prepSeconds,
+      switchSeconds: switchSideSeconds,
+      kits: script.kits,
+    );
+    final out = <trainer.SessionPhase>[];
+    for (final p in s.phases(script.steps)) {
+      final item = p.step < items.length ? items[p.step] : null;
+      if (!p.isWork) {
+        out.add(_toTrainer(p, script.steps, item: item, kits: script.kits));
+        continue;
+      }
+      final step = script.steps[p.step];
+      final kit = script.kits[step.drill.id];
+      final counted = kit?.kind.counted ?? false;
+      var n = counted ? step.countedSetsOn(p.side) : step.holdSetsOn(p.side);
+      final gap = counted ? 0.0 : 5.0;
+      var per = (p.seconds - (n - 1) * gap) / n;
+      if (!counted && per < 10) {
+        n = 1;
+        per = p.seconds;
+      }
+      for (var set = 1; set <= n; set++) {
+        if (set > 1 && gap > 0) {
+          out.add(
+            _toTrainer(
+              SessionPhase(
+                PhaseKind.rest,
+                p.step,
+                gap,
+                side: p.side,
+                set: set,
+                totalSets: n,
+              ),
+              script.steps,
+              item: item,
+            ),
+          );
+        }
+        out.add(
+          _toTrainer(
+            SessionPhase(
+              PhaseKind.work,
+              p.step,
+              per,
+              side: p.side,
+              segment: p.segment,
+              segments: p.segments,
+              set: set,
+              totalSets: n,
+            ),
+            script.steps,
+            item: item,
+            kits: script.kits,
+          ),
+        );
+      }
+    }
+    return out;
+  }
+
+  @override
+  int occurrenceCount(coach.TrainingPlan plan) => script.steps.length;
+}
+
+trainer.SessionPhase _toTrainer(
+  SessionPhase p,
+  List<PlanStep> steps, {
+  coach.PlanItem? item,
+  Map<String, ActionKit> kits = const {},
+}) {
+  final s = p.step < steps.length ? steps[p.step] : null;
+  final kit = s == null ? null : kits[s.drill.id];
+  final rhythm = kit == null ? null : trainer.Rhythm.fromActionKitJson(kit.raw);
+  final repPlan = p.isWork && rhythm != null && rhythm.counted
+      ? rhythm.repPlan(
+          reps: s?.kitDose.reps,
+          hold: s?.kitDose.holdSeconds,
+          seconds: p.seconds,
+        )
+      : null;
+  return trainer.SessionPhase(
+    rhythm: rhythm,
+    reps: repPlan?.reps,
+    repSeconds: repPlan?.cycle,
+    holdSeconds: s?.kitDose.holdSeconds ?? kit?.defaultHold,
+    kind: trainer.PhaseKind.values.byName(p.kind.name),
+    seconds: p.seconds,
+    exerciseId: s?.drill.id,
+    item: item,
+    itemIndex: p.step,
+    set: p.set > 0 ? p.set : 1,
+    sets: p.totalSets > 0 ? p.totalSets : s?.sets ?? 0,
+    blockIndex: 0,
+    itemInBlock: p.step,
+    side: p.side == null
+        ? null
+        : p.side == HipSide.right
+        ? trainer.Side.right
+        : trainer.Side.left,
+    nextExerciseId: p.kind == PhaseKind.rest && p.totalSets == 0
+        ? s?.drill.id
+        : null,
+    doneExerciseId: p.kind == PhaseKind.rest && p.totalSets == 0 && p.step > 0
+        ? steps[p.step - 1].drill.id
+        : null,
+  );
+}
+
+SessionPhase _fromTrainer(trainer.SessionPhase p, List<PlanStep> steps) {
+  final side = p.side == null
+      ? null
+      : p.side == trainer.Side.right
+      ? HipSide.right
+      : HipSide.left;
+  final step = p.itemIndex;
+  return SessionPhase(
+    PhaseKind.values.byName(p.kind.name),
+    step,
+    p.seconds,
+    side: side,
+    set: p.set,
+    totalSets: p.sets,
+    segment: side == HipSide.left ? 1 : 0,
+    segments: step < steps.length && steps[step].sided ? 2 : 1,
+  );
 }

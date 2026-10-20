@@ -150,7 +150,7 @@ void main() {
       expect(TrainingService.currentSession, isNull);
       expect(store.sessions.where((s) => s.completed).length, 2);
       expect(store.doneDays, isEmpty);
-      await tester.tap(find.byKey(const ValueKey('player-done')));
+      await tester.tap(find.byKey(const ValueKey('finish')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
       expect(methods(), [

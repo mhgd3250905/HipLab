@@ -600,6 +600,9 @@ class SessionRecord {
     required this.seconds,
     required this.completed,
     this.refId,
+    this.sessionId,
+    this.trainerResult,
+    this.feedback = const {},
   });
   final DateTime at;
   final PlanSource source;
@@ -607,6 +610,13 @@ class SessionRecord {
   final String title;
   final int seconds;
   final bool completed;
+
+  /// SDK session identity and full result; absent on pre-trainer history.
+  final String? sessionId;
+  final Map<String, Object?>? trainerResult;
+
+  /// App feeling responses, keyed by the original plan step index.
+  final Map<int, String> feedback;
 
   static const keep = 365;
 
@@ -617,6 +627,10 @@ class SessionRecord {
     'title': title,
     'seconds': seconds,
     'completed': completed,
+    'sessionId': ?sessionId,
+    'trainerResult': ?trainerResult,
+    if (feedback.isNotEmpty)
+      'feedback': {for (final e in feedback.entries) '${e.key}': e.value},
   };
 
   static SessionRecord? fromJson(Object? j) {
@@ -630,6 +644,16 @@ class SessionRecord {
       title: (j['title'] as String?) ?? '',
       seconds: (j['seconds'] as num?)?.round() ?? 0,
       completed: j['completed'] == true,
+      sessionId: j['sessionId'] is String ? j['sessionId'] as String : null,
+      trainerResult: j['trainerResult'] is Map
+          ? Map<String, Object?>.from(j['trainerResult'] as Map)
+          : null,
+      feedback: {
+        for (final e
+            in (j['feedback'] is Map ? j['feedback'] as Map : {}).entries)
+          if (int.tryParse('${e.key}') case final int index)
+            if (e.value is String) index: e.value as String,
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:ugk_trainer/engine.dart' as trainer;
 
 /// 跟随 App / 中文 / English.
 enum VoiceLanguage {
@@ -22,8 +23,8 @@ enum VoiceLanguage {
 /// Read-only view of `assets/voice/manifest.json` (written by
 /// tools/voice/build_voice.py): which clips exist, how long each one is,
 /// and which clip speaks a given content string (doses, tips).
-class VoiceLibrary {
-  VoiceLibrary(this._clips, this._chimes, this._texts, this._lines);
+class VoiceLibrary extends trainer.ManifestVoiceSource {
+  VoiceLibrary(super.clips, super.chimes, super.texts, super.lines);
 
   factory VoiceLibrary.fromJson(Map<String, dynamic> j) {
     Map<String, int> ints(Object? m) => {
@@ -66,37 +67,17 @@ class VoiceLibrary {
     }
   }
 
-  final Map<String, Map<String, int>> _clips;
-  final Map<String, int> _chimes;
-  final Map<String, Map<String, String>> _texts;
-  final Map<String, Map<String, String>> _lines;
-
-  bool has(String key, {String lang = 'zh'}) => key.startsWith('chime.')
-      ? _chimes.containsKey(key.substring(6))
-      : _clips[lang]?.containsKey(key) ?? false;
-
-  /// Clip length in seconds (an estimate when the clip is unknown).
-  double seconds(String key, {String lang = 'zh'}) {
-    if (key.startsWith('chime.')) return 0; // chimes play on their own channel
-    final ms = _clips[lang]?[key];
-    if (ms != null) return ms / 1000;
-    if (key.startsWith('n.')) return .4;
-    return 1.2;
-  }
-
+  @override
+  bool has(String key, {String lang = 'zh'}) => super.has(key, lang: lang);
+  @override
+  double seconds(String key, {String lang = 'zh'}) =>
+      super.seconds(key, lang: lang);
+  @override
   double total(Iterable<String> keys, {String lang = 'zh'}) =>
-      keys.fold(0.0, (s, k) => s + seconds(k, lang: lang)) +
-      // tiny gap between concatenated clips
-      .06 *
-          (keys.where((k) => !k.startsWith('chime.')).length - 1).clamp(0, 99);
-
-  /// Clip key for a content string, e.g. a dose ("每侧 30 秒") or a tip.
-  String? textKey(String kind, String text) => _texts[kind]?[text];
-
-  /// The written line for a clip (for the on-screen subtitle).
-  String? line(String key, {String lang = 'zh'}) => _lines[key]?[lang];
-
-  String asset(String key, {String lang = 'zh'}) => key.startsWith('chime.')
-      ? 'assets/voice/chime/${key.substring(6)}.m4a'
-      : 'assets/voice/$lang/$key.m4a';
+      super.total(keys, lang: lang);
+  @override
+  String? line(String key, {String lang = 'zh'}) => super.line(key, lang: lang);
+  @override
+  String asset(String key, {String lang = 'zh'}) =>
+      super.asset(key, lang: lang);
 }

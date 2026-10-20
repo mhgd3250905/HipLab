@@ -243,19 +243,22 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // lead-in
+    await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pump(const Duration(seconds: 1));
     final first = store.todayPlan!.steps.first;
     expect(first.sided, isFalse);
-    expect(find.byKey(const ValueKey('side-indicator')), findsNothing);
+    expect(find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')), findsNothing);
     // to the second (sided) drill: skip the drill, then the rest
-    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pump(const Duration(milliseconds: 200));
-    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pump(const Duration(seconds: 1));
     expect(store.todayPlan!.steps[1].sided, isTrue);
-    expect(find.byKey(const ValueKey('side-indicator')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('player-pause')));
+    expect(
+      find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const ValueKey('pause')));
     await tester.pumpAndSettle();
   });
 

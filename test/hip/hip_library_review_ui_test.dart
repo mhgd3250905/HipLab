@@ -153,12 +153,13 @@ void main() {
       expect(out.began, isTrue);
       await tester.pump(const Duration(seconds: 2));
       expect(out.spoken, isNotEmpty, reason: 'round 1 speaks');
-      for (var i = 0; i < 12; i++) {
+      // Let both sides finish naturally so this is completed practice,
+      // rather than a skipped session that must not count as completed.
+      for (var i = 0; i < 180; i++) {
         if (find.byKey(const ValueKey('player-again')).evaluate().isNotEmpty) {
           break;
         }
-        await tester.tap(find.byKey(const ValueKey('player-skip')));
-        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(seconds: 1));
       }
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('player-again')), findsOneWidget);
@@ -178,20 +179,19 @@ void main() {
       // Same page: no second route whose old page would end() the output.
       expect(tester.state(find.byType(HipPlayerPage)), same(player));
       expect(find.byKey(const ValueKey('player-again')), findsNothing);
-      expect(find.byKey(const ValueKey('player-skip')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skip')), findsOneWidget);
 
       // Round 2 finishes and logs a 2nd single session; 完成 ends audio once.
-      for (var i = 0; i < 12; i++) {
+      for (var i = 0; i < 180; i++) {
         if (find.byKey(const ValueKey('player-again')).evaluate().isNotEmpty) {
           break;
         }
-        await tester.tap(find.byKey(const ValueKey('player-skip')));
-        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(seconds: 1));
       }
       await tester.pumpAndSettle();
       expect(store.sessions.where((s) => s.completed).length, 2);
       expect(store.doneDays, isEmpty);
-      await tester.tap(find.byKey(const ValueKey('player-done')));
+      await tester.tap(find.byKey(const ValueKey('finish')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
       expect(find.byType(DrillDetailPage), findsOneWidget);

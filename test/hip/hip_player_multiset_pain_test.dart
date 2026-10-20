@@ -11,14 +11,17 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_session.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
-import 'package:hiplab/hip/ui/hip_widgets.dart';
+
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<HipCountdownRing>(find.byKey(const ValueKey('player-ring')))
-      .label,
+      .widget<trainer.TrainerCountdownRing>(
+        find.byType(trainer.TrainerCountdownRing),
+      )
+      .value,
 );
 
 Future<HipStore> _store() async {
@@ -54,13 +57,13 @@ Future<void> _open(
         ),
       );
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('player-skip'))); // prep -> work
+  await tester.tap(find.byKey(const ValueKey('skip'))); // prep -> work
   await tester.pumpAndSettle();
   expect(find.text(plan.steps.first.drill.name), findsOneWidget);
 }
 
 Future<void> _pinch(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('player-pain')));
+  await tester.tap(find.byKey(const ValueKey('discomfort')));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('pain-pinch')));
   await tester.pumpAndSettle();
@@ -80,8 +83,8 @@ Future<void> _restThenNext(
   String next,
 ) async {
   expect(find.text(next), findsOneWidget);
-  expect(find.text('2/${plan.steps.length}'), findsOneWidget);
-  expect(find.byKey(const ValueKey('player-pain')), findsNothing);
+  expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+  expect(find.byKey(const ValueKey('discomfort')), findsNothing);
   expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
   final before = _secondsLeft(tester);
   expect(
@@ -96,9 +99,9 @@ Future<void> _restThenNext(
   await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
   await tester.pump(const Duration(milliseconds: 400));
   expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
-  expect(find.byKey(const ValueKey('player-pain')), findsOneWidget);
+  expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
-  expect(find.text('2/${plan.steps.length}'), findsOneWidget);
+  expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
 }
 
 TrainingPlan _group(
@@ -134,9 +137,9 @@ void main() {
         await _open(tester, store, plan);
         await _pinch(tester);
         // Halved, no set fits one full squat: no 8 s countdown without cues.
-        expect(find.byKey(const ValueKey('player-ring')), findsNothing);
+        expect(find.byType(trainer.TrainerCountdownRing), findsNothing);
         expect(find.byKey(const ValueKey('player-done-note')), findsOneWidget);
-        expect(find.text('练完了'), findsOneWidget);
+        expect(find.text('今天先到这里'), findsOneWidget);
         expect(find.byKey(const ValueKey('player-again')), findsOneWidget);
         await _dispose(tester);
       });
@@ -165,7 +168,10 @@ void main() {
       expect(plan.steps.first.extraSide, isNull);
       expect(plan.steps.first.sided, isTrue);
       await _open(tester, store, plan);
-      expect(find.byKey(const ValueKey('side-indicator')), findsOneWidget);
+      expect(
+        find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
+        findsOneWidget,
+      );
       await _pinch(tester);
       await _restThenNext(tester, plan, plan.steps[1].drill.name);
       await _dispose(tester);
@@ -197,12 +203,57 @@ void main() {
         const TrainingProfile(),
       )!;
       await _open(tester, store, plan);
-      final full = _secondsLeft(tester);
+      List<trainer.SessionPhase> workPhases() {
+        final player = tester.widget<trainer.TrainerPlayer>(
+          find.byType(trainer.TrainerPlayer),
+        );
+        return player.sessionBuilder!
+            .phases(player.plan)
+            .where((p) => p.isWork && p.itemIndex == 0)
+            .toList();
+      }
+
+      final full = workPhases();
+      expect(full, hasLength(2), reason: 'the two authored sets both run');
+      final fullSeconds = full.fold<double>(0, (sum, p) => sum + p.seconds);
+      expect(fullSeconds, plan.steps.single.seconds);
       await _pinch(tester);
       expect(find.byKey(const ValueKey('player-done-note')), findsNothing);
       expect(find.text(plan.steps.single.drill.name), findsOneWidget);
-      expect(_secondsLeft(tester), lessThan(full));
-      expect(_secondsLeft(tester), greaterThan(0));
+      final reduced = workPhases();
+      expect(reduced, hasLength(full.length));
+      for (var i = 0; i < reduced.length; i++) {
+        expect(reduced[i].seconds, closeTo(full[i].seconds / 2, .001));
+        expect(reduced[i].seconds, greaterThan(0));
+        expect(
+          reduced[i].reps,
+          greaterThanOrEqualTo(1),
+          reason: 'each shortened set must still fit a complete rep',
+        );
+      }
+      // Counted work displays a rep number; it is not a seconds countdown.
+      expect(
+        tester
+            .widget<trainer.TrainerCountdownRing>(
+              find.byType(trainer.TrainerCountdownRing),
+            )
+            .value,
+        '1',
+      );
+      // Check the running engine consumes those reduced phases too, rather
+      // than merely exposing changed builder data while playing the old dose.
+      final reducedSeconds = reduced.fold<double>(
+        0,
+        (sum, p) => sum + p.seconds,
+      );
+      expect(reducedSeconds, closeTo(fullSeconds / 2, .001));
+      for (var i = 0; i < reducedSeconds.ceil() + 10; i++) {
+        if (find.byKey(const ValueKey('finish')).evaluate().isNotEmpty) break;
+        await tester.pump(const Duration(seconds: 1));
+      }
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('finish')), findsOneWidget);
+      expect(store.sessions.single.completed, isTrue);
       await _dispose(tester);
     });
   });

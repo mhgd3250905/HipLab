@@ -2,7 +2,8 @@
 // training keep-alive is owned per session. START / STOP carry a session id,
 // a stale STOP is never sent for a session that was replaced, and the CPU
 // wake-lock cap follows the planned length. The native side applies the same
-// rule (TrainingSessionService.kt); these tests cover the Dart half.
+// rule (ugk_trainer's TrainingSessionService.kt); these tests cover the Dart
+// half, including ownership handoff between HipLab self-check and trainer.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +14,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_session.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
@@ -21,9 +23,11 @@ void main() {
   final calls = <MethodCall>[];
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  late bool Function() originalIsAndroid;
 
   setUp(() {
     calls.clear();
+    originalIsAndroid = TrainingService.isAndroid;
     TrainingService.isAndroid = () => true;
     messenger.setMockMethodCallHandler(TrainingService.channel, (call) async {
       calls.add(call);
@@ -32,11 +36,45 @@ void main() {
   });
   tearDown(() {
     messenger.setMockMethodCallHandler(TrainingService.channel, null);
-    TrainingService.isAndroid = () => true;
+    TrainingService.isAndroid = originalIsAndroid;
   });
 
   List<String> methods() => [for (final c in calls) c.method];
   Object? sessionOf(MethodCall c) => (c.arguments as Map?)?['session'];
+
+  test('the self-check and package player share one service owner', () async {
+    expect(TrainingService.channel.name, 'ugk_trainer/training_session');
+    final check = TrainingHold.begin(const Duration(minutes: 5));
+    final player = trainer.TrainingHold.begin(const Duration(minutes: 10));
+    expect(check.active, isFalse);
+    check.release();
+    await pumpEventQueue();
+    expect(methods(), ['start', 'start']);
+    expect(sessionOf(calls[0]), isNot(sessionOf(calls[1])));
+    player.release();
+    await pumpEventQueue();
+    expect(methods(), ['start', 'start', 'stop']);
+    expect(sessionOf(calls[2]), sessionOf(calls[1]));
+
+    final next = TrainingHold.begin(const Duration(minutes: 5));
+    player.release();
+    await pumpEventQueue();
+    expect(next.active, isTrue);
+    expect(methods(), ['start', 'start', 'stop', 'start']);
+    next.release();
+    await pumpEventQueue();
+    expect(sessionOf(calls.last), next.session);
+  });
+
+  test('the self-check keeps HipLab notification text and icon', () async {
+    final hold = TrainingHold.begin(const Duration(minutes: 5));
+    await pumpEventQueue();
+    final args = calls.single.arguments as Map;
+    expect(args['title'], '开胯训练进行中');
+    expect(args['icon'], 'mipmap/ic_launcher_monochrome');
+    hold.release();
+    await pumpEventQueue();
+  });
 
   test('stop carries the session it ends; a stale stop after a quick '
       're-entry is not sent', () async {
@@ -139,7 +177,7 @@ void main() {
     for (var i = 0; i < plan.seconds + 40; i++) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byKey(const ValueKey('done')), findsOneWidget);
+    expect(find.byKey(const ValueKey('finish')), findsOneWidget);
     expect(methods(), [
       'start',
       'stop',

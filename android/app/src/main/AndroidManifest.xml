@@ -2,14 +2,7 @@
     <!-- WebView plays bundled assets through a loopback HTTP server. Android
          requires INTERNET for these local sockets; no remote service is used. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Training session keep-alive (TrainingSessionService): a mediaPlayback
-         foreground service + partial wake lock while the player / hip check
-         is open, so the clock and voice keep time in the background and with
-         the screen locked. Play Console needs the matching foreground-service
-         declaration (media playback) before the next upload. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- ugk_trainer merges the training foreground service and its permissions. -->
     <application
         android:label="开胯训练助手"
         android:name="${applicationName}"
@@ -39,11 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service
-            android:name=".TrainingSessionService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback"
-            android:stopWithTask="true" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

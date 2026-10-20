@@ -12,10 +12,13 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
+
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
@@ -93,9 +96,27 @@ void main() {
       final start = find.byKey(const ValueKey('start-today'));
       expect(start.hitTestable(), findsOneWidget);
       await tester.tap(start);
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      // Wait for the finite App route transition. The training itself
+      // keeps animating as its seconds/reps change, so it is not an idle UI.
+      await tester.pump();
+      await tester.pump(HipMotion.expand + const Duration(milliseconds: 100));
+      expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
+      expect(find.byKey(const ValueKey('finish')), findsNothing);
+      // In the default 800x600 test viewport the square demonstration is
+      // taller than the visible body; reach the lazily built counter through
+      // the package's real player list rather than treating it as absent.
+      await tester.scrollUntilVisible(
+        find.byType(trainer.TrainerCountdownRing),
+        200,
+        scrollable: find
+            .descendant(
+              of: find.byType(trainer.TrainerPlayer),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
       handle.dispose();
     },
@@ -300,7 +321,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(output.events, ['begin', 'end', 'released', 'begin']);
       expect(find.byType(HipAssessmentPage), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
       expect(
         output.ends,

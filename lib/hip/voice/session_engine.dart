@@ -1,123 +1,67 @@
+import 'package:ugk_trainer/engine.dart' as trainer;
+import '../domain/hip_assessment.dart';
 import '../domain/hip_session.dart';
 import 'session_script.dart';
 
-/// Something the session wants said now.
+/// Compatibility view used by the retained timeline and dose regressions.
+/// The production player and this bridge use the package clock and runner.
 class FiredCue {
   const FiredCue(this.time, this.cue, this.phase);
-
-  /// Active session time (seconds, pauses excluded) when it fired.
   final double time;
   final VoiceCue cue;
   final SessionPhase phase;
-  @override
-  String toString() => '${time.toStringAsFixed(2)} ${cue.clips.join('+')}';
 }
 
-/// The training clock (#12/#13): a list of fixed-length phases driven by an
-/// absolute active time, so dropped frames, a throttled timer or a few
-/// seconds in the background never drift the count — the next update simply
-/// lands in the right phase. Cues that are already stale when the clock gets
-/// there (e.g. after a long background stretch) are dropped instead of being
-/// read out late.
 class SessionEngine {
   SessionEngine({required this.script, required List<PlanStep> steps})
     : steps = [...steps] {
-    _phases = script.phases(this.steps);
-    _enter(0, 0);
+    _load();
+    _engine = trainer.SessionEngine(_mapped);
+    _runner = trainer.SessionRunner(_engine, _ScriptBridge(this));
   }
-
   final SessionScript script;
   final List<PlanStep> steps;
+  late trainer.SessionEngine _engine;
+  late trainer.SessionRunner _runner;
   late List<SessionPhase> _phases;
-  int _index = 0;
-  double _phaseStart = 0;
-  List<VoiceCue> _cues = const [];
-  final Set<int> _fired = {};
-  bool _enteredBySkip = false;
+  late List<trainer.SessionPhase> _mapped;
+  final Map<trainer.SessionPhase, SessionPhase> _views = {};
+  void _load() {
+    _phases = script.phases(steps);
+    _mapped = [
+      for (final p in _phases)
+        trainer.SessionPhase(
+          kind: trainer.PhaseKind.values.byName(p.kind.name),
+          seconds: p.seconds,
+          itemIndex: p.step,
+          exerciseId: p.step < steps.length ? steps[p.step].drill.id : null,
+          side: p.side == null
+              ? null
+              : p.side == HipSide.right
+              ? trainer.Side.right
+              : trainer.Side.left,
+        ),
+    ];
+    for (var i = 0; i < _mapped.length; i++) {
+      _views[_mapped[i]] = _phases[i];
+    }
+  }
 
-  /// Drills finished (fully or by moving past them).
-  int completed = 0;
-
-  SessionPhase get phase => _phases[_index];
-  List<SessionPhase> get phases => List.unmodifiable(_phases);
-  bool get done => phase.kind == PhaseKind.done;
-  PlanStep get step => steps[phase.step.clamp(0, steps.length - 1)];
-
-  /// The step on screen: the upcoming drill during prep/rest.
+  SessionPhase get phase => _views[_engine.phase]!;
+  List<SessionPhase> get phases => [for (final p in _engine.phases) _views[p]!];
+  bool get done => _engine.done;
+  PlanStep get step => steps[stepIndex];
   int get stepIndex => phase.step.clamp(0, steps.length - 1);
-  double get phaseStart => _phaseStart;
-
-  double elapsedIn(double t) => (t - _phaseStart).clamp(0, phase.seconds);
-  double remainingIn(double t) => phase.seconds - elapsedIn(t);
-
-  /// Whole seconds left as shown on the ring (ceil, so "1" shows until 0).
-  int secondsLeft(double t) => remainingIn(t).ceil();
-
-  static double _tolerance(VoiceCue c) => switch (c.priority) {
-    CuePriority.count => .6,
-    CuePriority.call => 1.5,
-    CuePriority.info => 2.5,
-    CuePriority.coach => 2.0,
-  };
-
-  void _enter(int index, double at, {bool bySkip = false}) {
-    final leaving = _phases[_index];
-    if (index != _index &&
-        leaving.isWork &&
-        leaving.lastSegment &&
-        _phases[index].step != leaving.step) {
-      completed++;
-    }
-    _index = index;
-    _phaseStart = at;
-    _enteredBySkip = bySkip;
-    _cues = script.cues(phase, steps, bySkip: bySkip);
-    _fired.clear();
-  }
-
-  /// Advance to active time [t]; returns the cues due now.
-  List<FiredCue> update(double t) {
-    final out = <FiredCue>[];
-    while (!done && t - _phaseStart >= phase.seconds) {
-      _enter(_index + 1, _phaseStart + phase.seconds);
-    }
-    final local = t - _phaseStart;
-    for (var i = 0; i < _cues.length; i++) {
-      final c = _cues[i];
-      if (_fired.contains(i) || c.at > local + 1e-9) continue;
-      _fired.add(i);
-      if (local - c.at <= _tolerance(c)) {
-        out.add(FiredCue(_phaseStart + c.at, c, phase));
-      }
-    }
-    return out;
-  }
-
-  /// 跳过: from a drill (either side) or the side switch → the rest before
-  /// the next drill (or the end); from prep/rest → straight into the drill.
-  void skip(double t) {
-    if (done) return;
-    final p = phase;
-    int target;
-    if (p.kind == PhaseKind.prep || p.kind == PhaseKind.rest) {
-      target = _index + 1;
-    } else {
-      target = _index + 1;
-      while (target < _phases.length - 1 && _phases[target].step == p.step) {
-        target++;
-      }
-      completed++;
-    }
-    _index = target;
-    _phaseStart = t;
-    _enteredBySkip = true;
-    _cues = script.cues(phase, steps, bySkip: true);
-    _fired.clear();
-  }
-
-  /// Replace the steps from [from] on (pain ladder: substitute / half range /
-  /// skip a direction) and restart at that step's first side, or at the rest
-  /// before it when [withRest].
+  double get phaseStart => _engine.phaseStart;
+  int get completed => _engine.completedExercises;
+  double elapsedIn(double t) => _engine.elapsedIn(t);
+  double remainingIn(double t) => _engine.remainingIn(t);
+  int secondsLeft(double t) => _engine.secondsLeft(t);
+  List<FiredCue> update(double t) => [
+    for (final f in _runner.update(t)) FiredCue(f.time, f.cue, phase),
+  ];
+  void skip(double t) => _runner.skip(t);
+  void finish(double t) => _runner.finish(t);
   void replaceFrom(
     int from,
     List<PlanStep> newSteps,
@@ -127,28 +71,37 @@ class SessionEngine {
     steps
       ..removeRange(from, steps.length)
       ..addAll(newSteps);
-    final head = _phases.sublist(0, _index).where((p) => p.step < from);
-    _phases = [
-      ...head,
-      ...script.phases(
-        steps,
-        from: from,
-        lead: withRest ? PhaseKind.rest : null,
-      ),
-    ];
-    _index = head.length;
-    _phaseStart = t;
-    _cues = script.cues(phase, steps, bySkip: true);
-    _fired.clear();
+    _load();
+    if (withRest) {
+      final first = _mapped.indexWhere((p) => p.itemIndex == from && p.isWork);
+      if (first >= 0) {
+        final p = trainer.SessionPhase(
+          kind: trainer.PhaseKind.work,
+          seconds: script.restSeconds.toDouble(),
+          itemIndex: from,
+        );
+        _views[p] = SessionPhase(
+          PhaseKind.rest,
+          from,
+          script.restSeconds.toDouble(),
+        );
+        _mapped.insert(first, p);
+      }
+    }
+    _runner.restartWith(_mapped, t);
   }
 
-  /// End now (麻/刺 stop or closing the player).
-  void finish(double t) {
-    _index = _phases.length - 1;
-    _phaseStart = t;
-    _cues = const [];
-    _fired.clear();
-  }
+  bool get enteredBySkip => _engine.enteredBySkip;
+}
 
-  bool get enteredBySkip => _enteredBySkip;
+class _ScriptBridge extends trainer.SessionScript {
+  _ScriptBridge(this.host)
+    : super(source: host.script.lib, lang: host.script.lang);
+  final SessionEngine host;
+  @override
+  List<VoiceCue> cues(
+    trainer.SessionPhase p, {
+    required double planSeconds,
+    bool bySkip = false,
+  }) => host.script.cues(host._views[p]!, host.steps, bySkip: bySkip);
 }

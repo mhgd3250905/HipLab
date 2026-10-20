@@ -423,7 +423,9 @@ void main() {
       expect(player.plan.refId, g.id);
       expect(player.plan.steps.first.drill.id, 'n-windshield');
       expect(player.plan.steps[2].sets, 2);
-      await tester.tap(find.bySemanticsLabel('结束').first);
+      await tester.tap(find.byKey(const ValueKey('close')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('close-confirm')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
       expect(inList('coach-plan-card'), findsOneWidget);
@@ -627,7 +629,8 @@ void main() {
       final plan = env['plan'] as Map<String, Object?>;
       plan['id'] = id;
       ((((plan['blocks'] as List)[1] as Map)['items'] as List)[0]
-          as Map)['workSeconds'] = figure4Seconds;
+              as Map)['workSeconds'] =
+          figure4Seconds;
       return env;
     }
 
@@ -636,7 +639,10 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    Future<void> backAndReopen(WidgetTester tester, void Function() edit) async {
+    Future<void> backAndReopen(
+      WidgetTester tester,
+      void Function() edit,
+    ) async {
       await tester.tap(find.bySemanticsLabel('返回').first);
       await tester.pumpAndSettle();
       edit();
@@ -648,7 +654,10 @@ void main() {
       final store = await pumpApp(
         tester,
         service(
-          fake: uc.FakeLlmClient([planWithId('plan-1', 40), planWithId('plan-1', 25)]),
+          fake: uc.FakeLlmClient([
+            planWithId('plan-1', 40),
+            planWithId('plan-1', 25),
+          ]),
         ),
       );
       await openCoach(tester);
@@ -661,7 +670,9 @@ void main() {
       await tapIn(tester, inMsg(3, 'coach-start'), 'coach-list');
       final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
       expect(player.plan.steps[2].kitDose.seconds, 25);
-      await tester.tap(find.bySemanticsLabel('结束').first);
+      await tester.tap(find.byKey(const ValueKey('close')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('close-confirm')));
       await tester.pumpAndSettle();
       await tapIn(tester, inMsg(3, 'coach-save'), 'coach-list');
       expect(store.customRoutines, hasLength(2));
@@ -728,7 +739,10 @@ void main() {
       expect(store.customRoutines, hasLength(1));
       final again = store.customRoutines.single;
       expect(again.name, '睡前开胯 12 分钟');
-      expect(again.steps.map((s) => s.toJson()), g.steps.map((s) => s.toJson()));
+      expect(
+        again.steps.map((s) => s.toJson()),
+        g.steps.map((s) => s.toJson()),
+      );
       expect(find.text('已保存到「我的」'), findsOneWidget);
     });
 

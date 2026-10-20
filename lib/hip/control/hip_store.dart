@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:ugk_trainer/ugk_trainer.dart' show SessionResult;
 
 import '../../core/storage/local_state_storage.dart';
 import '../domain/hip_assessment.dart';
@@ -226,6 +227,80 @@ class HipStore extends ChangeNotifier {
     }
     _record(plan, completed: true);
     return _recordLadder(ladder);
+  }
+
+  Future<void> _trainerSaveTail = Future<void>.value();
+
+  /// SDK completion saves are keyed by the id fixed at session start.
+  /// Stage the update until storage accepts it: ResultSaver may then retry
+  /// a failed save without duplicate history, streak or pain-ladder events.
+  Future<void> saveTrainerSession(
+    SessionResult result, {
+    required TrainingPlan plan,
+    required SessionPainLadder ladder,
+    Map<int, String> feedback = const {},
+  }) {
+    final operation = _trainerSaveTail.then((_) async {
+      final existing = sessions.indexWhere(
+        (s) => s.sessionId == result.sessionId,
+      );
+      final record = SessionRecord(
+        // Practice history/streak use the App's completion-day clock;
+        // the SDK's original start/end timestamps remain in trainerResult.
+        at: existing < 0 ? now() : sessions[existing].at,
+        source: plan.source,
+        refId: plan.refId,
+        title: plan.title,
+        seconds: result.activeSeconds.round(),
+        completed:
+            result.completedExercises > 0 &&
+            result.items.any((item) => item.completedSets > 0),
+        sessionId: result.sessionId,
+        trainerResult: Map.unmodifiable({
+          ...result.toJson(),
+          'full': result.full,
+        }),
+        feedback: Map.unmodifiable(feedback),
+      );
+      final nextSessions = [...sessions];
+      if (existing < 0) {
+        nextSessions.add(record);
+      } else {
+        nextSessions[existing] = record;
+      }
+      if (nextSessions.length > SessionRecord.keep) {
+        nextSessions.removeRange(0, nextSessions.length - SessionRecord.keep);
+      }
+      final nextDays = {...doneDays};
+      if (record.completed && plan.source.countsForStreak) {
+        nextDays.add(dayKey(record.at));
+      }
+      final addedPain = existing >= 0
+          ? const <PainEvent>[]
+          : [
+              for (final d in ladder.skippedDirections)
+                PainEvent(result.endedAt.toLocal(), d, 'skip'),
+            ];
+      final nextPain = [...painEvents, ...addedPain];
+      final nextNumbness = askNumbness || ladder.ended;
+      final state = toJson()
+        ..['sessions'] = [for (final s in nextSessions) s.toJson()]
+        ..['doneDays'] = (nextDays.toList()..sort())
+        ..['painEvents'] = [for (final e in nextPain) e.toJson()]
+        ..['askNumbness'] = nextNumbness;
+      await _storage.write(storageKey, jsonEncode(state));
+      sessions
+        ..clear()
+        ..addAll(nextSessions);
+      doneDays.addAll(nextDays);
+      painEvents.addAll(addedPain);
+      askNumbness = nextNumbness;
+      notifyListeners();
+    });
+    // A rejected write must not poison the queue or hide the error from
+    // the caller: this tail absorbs only the error of the sequencing link.
+    _trainerSaveTail = operation.then<void>((_) {}, onError: (Object _) {});
+    return operation;
   }
 
   /// Left before finishing a drill: pain ladder kept, history marks it

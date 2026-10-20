@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 0.3.7+12
+version: 0.3.8+13
 
 environment:
   sdk: ^3.12.2
@@ -18,13 +18,12 @@ dependencies:
   webview_flutter: 4.14.1
   webview_flutter_android: 4.14.1
   webview_flutter_wkwebview: 3.26.2
-  # Voice coaching (lib/hip/voice/): pre-recorded clips, ducking, background.
+  # Native audio API also used by the retained output regression fixtures.
   just_audio: 0.10.6
   audio_session: 0.2.4
   # Session clock that widget tests can fake (package:clock).
   clock: ^1.1.2
-  # Keeps the screen on during a session so auto-lock never suspends the
-  # training clock / voice (Android has no foreground service yet).
+  # Screen keep-alive is owned by ugk_trainer; retained here for plugin tests.
   wakelock_plus: 1.8.1
   # AI 定制 usage log location (lib/hip/coach/usage_file_io.dart); already
   # in the lock through shared_preferences, pinned to that version.
@@ -34,7 +33,12 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 26e32557058e582d3f1b2b7f722dfa53c2b16aa6
+      ref: 7a84dc0830fa039f89f5e74f919d59f18d6602cd
+  ugk_trainer:
+    git:
+      url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
+      ref: 7a84dc0830fa039f89f5e74f919d59f18d6602cd
+      path: packages/ugk_trainer
 
 dev_dependencies:
   flutter_test:

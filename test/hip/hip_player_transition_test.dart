@@ -11,6 +11,8 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
+
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 void main() {
@@ -44,22 +46,38 @@ void main() {
     return store;
   }
 
-  Finder onMedia(Finder f) =>
-      find.descendant(of: find.byType(HipMediaFrame), matching: f);
+  // The SDK owns overlay placement outside App's media builder. Check the
+  // actual media bounds so an external overlay is covered by this guard too.
+  Finder onMedia(Finder f) => find.byElementPredicate((element) {
+    if (!f.evaluate().contains(element)) return false;
+    final art = find.byType(HipDrillArt).first.evaluate().single.renderObject;
+    final target = element.renderObject;
+    if (art is! RenderBox ||
+        target is! RenderBox ||
+        !art.hasSize ||
+        !target.hasSize) {
+      return false;
+    }
+    final bounds = art.localToGlobal(Offset.zero) & art.size;
+    final rect = target.localToGlobal(Offset.zero) & target.size;
+    return rect.overlaps(bounds.deflate(.5));
+  });
 
   int ringSeconds(WidgetTester tester) {
-    final ring = tester.widget<HipCountdownRing>(
-      find.byKey(const ValueKey('player-ring')),
+    final ring = tester.widget<trainer.TrainerCountdownRing>(
+      find.byType(trainer.TrainerCountdownRing),
     );
-    return int.parse(ring.label);
+    return int.parse(ring.value);
   }
 
-  testWidgets('prep: the demo is not covered – only a small tag on it', (
+  testWidgets('prep: the demo stays uncovered; the phase label is below it', (
     tester,
   ) async {
     final store = await start(tester);
     final first = store.todayPlan!.steps.first;
-    expect(onMedia(find.byKey(const ValueKey('phase-tag'))), findsOneWidget);
+    final prep = find.byKey(const ValueKey('label-准备 · 第一个动作'));
+    expect(prep, findsOneWidget);
+    expect(onMedia(prep), findsNothing);
     expect(onMedia(find.text(first.drill.name)), findsNothing);
     expect(onMedia(find.text(first.dose)), findsNothing);
     expect(onMedia(find.textContaining('准备开始')), findsNothing);
@@ -85,9 +103,9 @@ void main() {
     tester,
   ) async {
     await start(tester);
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // prep → work
+    await tester.tap(find.byKey(const ValueKey('skip'))); // prep → work
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // work → rest
+    await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
     await tester.pump(const Duration(seconds: 2));
 
     final renderedStyles = <String, TextStyle>{};
@@ -133,15 +151,15 @@ void main() {
   ) async {
     final store = await start(tester);
     final plan = store.todayPlan!;
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // prep → work
+    await tester.tap(find.byKey(const ValueKey('skip'))); // prep → work
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // work → rest
+    await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
     await tester.pump(const Duration(seconds: 2));
-    expect(find.text('2/${plan.steps.length}'), findsOneWidget);
+    expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
     final ok = find.byKey(const ValueKey('feel-ok'));
     expect(ok, findsOneWidget);
     expect(onMedia(ok), findsNothing);
-    expect(onMedia(find.byKey(const ValueKey('phase-tag'))), findsOneWidget);
+    expect(onMedia(find.byKey(const ValueKey('tag-next'))), findsOneWidget);
     final before = ringSeconds(tester);
     await tester.tap(ok);
     await tester.pump(const Duration(milliseconds: 300));
@@ -149,7 +167,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     // still the rest before drill 2: same step, countdown kept going
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
-    expect(find.text('2/${plan.steps.length}'), findsOneWidget);
+    expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
     final after = ringSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
@@ -160,16 +178,16 @@ void main() {
     await tester.pump(Duration(seconds: after + 1));
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
-    expect(find.byKey(const ValueKey('player-pain')), findsOneWidget);
+    expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   });
 
   testWidgets('rest: 疼 opens the pain ladder; closing it keeps the rest', (
     tester,
   ) async {
     await start(tester);
-    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pump(const Duration(seconds: 2));
     final before = ringSeconds(tester);
     await tester.tap(find.byKey(const ValueKey('feel-pain')));
@@ -188,14 +206,30 @@ void main() {
     (const Size(390, 844), 1.0),
     (const Size(430, 932), 1.0),
   ]) {
-    testWidgets('prep + rest fit one screen at $size ×$scale', (tester) async {
+    testWidgets('prep + rest controls stay reachable at $size ×$scale', (
+      tester,
+    ) async {
       await start(tester, size: size, textScale: scale);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.byKey(const ValueKey('player-skip')));
+      await tester.tap(find.byKey(const ValueKey('skip')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('player-skip')));
+      await tester.tap(find.byKey(const ValueKey('skip')));
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);
+      // The shared player keeps transport pinned and scrolls its content on
+      // short screens. Exercise the real scroll rather than bypassing hit tests.
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('feel-ok')),
+        120,
+        scrollable: find
+            .descendant(
+              of: find.byType(trainer.TrainerPlayer),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
+      await tester.ensureVisible(find.byKey(const ValueKey('feel-ok')));
+      await tester.pump(trainer.TrainerMotion.fast);
       for (final k in ['ok', 'tight', 'pain']) {
         final r = tester.getRect(find.byKey(ValueKey('feel-$k')));
         expect(r.bottom, lessThanOrEqualTo(size.height), reason: k);
@@ -203,6 +237,7 @@ void main() {
       }
       await tester.tap(find.byKey(const ValueKey('feel-ok')));
       await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('已记录'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

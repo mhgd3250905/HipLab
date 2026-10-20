@@ -14,6 +14,8 @@ import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
+
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 
@@ -167,24 +169,30 @@ void main() {
     expect(painter.color, const Color(0xff3ccfa4));
   });
 
-  testWidgets('no Material icons remain on the main screens', (tester) async {
-    await pumpApp(tester);
-    expect(find.byType(Icon), findsNothing);
-    expect(find.byType(HipIcon), findsWidgets);
-    for (final tab in [1, 2]) {
-      await tester.tap(find.byKey(ValueKey('tab-$tab')));
+  testWidgets(
+    'App tabs keep HipLab icons; training uses shared player controls',
+    (tester) async {
+      await pumpApp(tester);
+      expect(find.byType(Icon), findsNothing);
+      expect(find.byType(HipIcon), findsWidgets);
+      for (final tab in [1, 2]) {
+        await tester.tap(find.byKey(ValueKey('tab-$tab')));
+        await tester.pumpAndSettle();
+        expect(find.byType(Icon), findsNothing, reason: 'tab $tab');
+      }
+      await tester.tap(find.byKey(const ValueKey('tab-0')));
       await tester.pumpAndSettle();
-      expect(find.byType(Icon), findsNothing, reason: 'tab $tab');
-    }
-    await tester.tap(find.byKey(const ValueKey('tab-0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
-    expect(find.byType(Icon), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('player-pause')));
-    await tester.pumpAndSettle();
-  });
+      await tester.tap(find.byKey(const ValueKey('start-today')));
+      await tester.pumpAndSettle();
+      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      // The training package owns the playback controls and its icon set.
+      expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
+      expect(find.byKey(const ValueKey('pause')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skip')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pause')));
+      await tester.pumpAndSettle();
+    },
+  );
 
   testWidgets('countdown ring draws no dot at 0 % and an arc later', (
     tester,
@@ -270,8 +278,8 @@ void main() {
       // The covered home answers (a dim), not a plain fade.
       expect(find.byType(HipCoveredTransition), findsOneWidget);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
     });
 
@@ -365,9 +373,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('player-ring')), findsOneWidget);
+      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
     });
 

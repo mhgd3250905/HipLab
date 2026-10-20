@@ -5,6 +5,7 @@ import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
@@ -143,39 +144,42 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pumpAndSettle();
     final plan = store.todayPlan!;
-    // Lead-in first ("准备开始" + the first drill), then skip into the drill.
-    expect(find.textContaining('准备开始'), findsWidgets);
+    // The package preparation label precedes the first drill.
+    expect(find.text('准备 · 第一个动作'), findsOneWidget);
     expect(find.text(plan.steps.first.drill.name), findsWidgets);
-    expect(find.text('1/${plan.steps.length}'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('player-skip')));
+    expect(find.text('1 / ${plan.steps.length}'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pumpAndSettle();
     expect(find.text(plan.steps.first.drill.name), findsOneWidget);
     // Pain once → smaller range, half time, "别勉强".
-    await tester.tap(find.byKey(const ValueKey('player-pain')));
+    await tester.tap(find.byKey(const ValueKey('discomfort')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('pain-pinch')));
     await tester.pumpAndSettle();
     expect(find.text('幅度小一点，别勉强'), findsOneWidget);
     final half = (plan.steps.first.seconds / 2).ceil();
-    expect(
-      find.byWidgetPredicate((w) {
-        final v = w is Text ? int.tryParse(w.data ?? '') : null;
-        return v != null && v <= half && v >= half - 2;
-      }),
-      findsOneWidget,
+    final player = tester.widget<trainer.TrainerPlayer>(
+      find.byType(trainer.TrainerPlayer),
     );
-    // Skip through every drill and transition.
-    for (var i = 0; i < plan.steps.length * 2 + 2; i++) {
-      if (find.byKey(const ValueKey('player-done')).evaluate().isNotEmpty) {
+    final work = player.sessionBuilder!
+        .phases(player.plan)
+        .where((p) => p.isWork && p.itemIndex == 0);
+    expect(work, isNotEmpty);
+    expect(
+      work.fold<double>(0, (sum, p) => sum + p.seconds),
+      closeTo(half, .001),
+    );
+    // Complete real work: skipping every drill must not earn a streak.
+    for (var i = 0; i < plan.seconds + 120; i++) {
+      if (find.byKey(const ValueKey('finish')).evaluate().isNotEmpty) {
         break;
       }
-      await tester.tap(find.byKey(const ValueKey('player-skip')));
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(seconds: 1));
     }
     await tester.pumpAndSettle();
-    expect(find.text('今天练完了'), findsOneWidget);
+    expect(find.text('训练完成！'), findsOneWidget);
     expect(store.streak, 1);
-    await tester.tap(find.byKey(const ValueKey('player-done')));
+    await tester.tap(find.byKey(const ValueKey('finish')));
     await tester.pumpAndSettle();
     expect(find.text('今日训练'), findsOneWidget);
   });
@@ -192,15 +196,15 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-skip'))); // lead-in
+    await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-pain')));
+    await tester.tap(find.byKey(const ValueKey('discomfort')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('pain-nerve')));
     await tester.pumpAndSettle();
     expect(find.text('先停下来'), findsOneWidget);
     expect(store.askNumbness, isTrue);
-    await tester.tap(find.byKey(const ValueKey('player-stop-home')));
+    await tester.tap(find.byKey(const ValueKey('finish')));
     await tester.pumpAndSettle();
     expect(find.text('现在还麻吗？'), findsOneWidget);
   });

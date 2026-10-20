@@ -25,6 +25,7 @@ import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
@@ -234,7 +235,7 @@ void main() {
         expect(output.spoken.length, spokenBefore);
 
         // Time passes on the call: the ring does not move.
-        final ring = find.byKey(const ValueKey('player-pause'));
+        final ring = find.byKey(const ValueKey('pause'));
         expect(ring, findsOneWidget);
         await tester.pump(const Duration(seconds: 20));
         expect(find.text('已暂停'), findsOneWidget);
@@ -246,7 +247,19 @@ void main() {
         expect(output.reactivations, 0);
 
         await tester.tap(ring);
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump();
+        expect(
+          tester
+              .widget<trainer.TrainerCountdownRing>(
+                find.byType(trainer.TrainerCountdownRing),
+              )
+              .dim,
+          isFalse,
+          reason: 'the session clock resumed before the old tag fades away',
+        );
+        await tester.pump(
+          trainer.TrainerMotion.fast + const Duration(milliseconds: 20),
+        );
         expect(find.text('已暂停'), findsNothing);
         expect(output.reactivations, 1);
 
@@ -264,14 +277,26 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pump(const Duration(seconds: 2));
       await tester.pump(const Duration(seconds: 1));
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
+      await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump(const Duration(milliseconds: 200));
       expect(find.text('已暂停'), findsOneWidget);
       output.events.add(AudioInterruption.began);
       await tester.pump(const Duration(milliseconds: 200));
-      await tester.tap(find.byKey(const ValueKey('player-pause')));
-      await tester.pump(const Duration(milliseconds: 200));
+      await tester.tap(find.byKey(const ValueKey('pause')));
+      await tester.pump();
+      await tester.pump(
+        trainer.TrainerMotion.fast + const Duration(milliseconds: 20),
+      );
       expect(find.text('已暂停'), findsNothing);
+      expect(
+        tester
+            .widget<trainer.TrainerCountdownRing>(
+              find.byType(trainer.TrainerCountdownRing),
+            )
+            .dim,
+        isFalse,
+      );
+      expect(output.reactivations, 1);
       await tester.pumpWidget(const SizedBox());
     }, variant: ios);
   });
@@ -332,11 +357,11 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
         await tester.pump(const Duration(milliseconds: 600));
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'prep');
-        await tester.tap(find.byKey(const ValueKey('player-skip')));
+        await tester.tap(find.byKey(const ValueKey('skip')));
         await tester.pump(const Duration(seconds: 2));
         await tester.pump(const Duration(milliseconds: 600));
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'work');
-        await tester.tap(find.byKey(const ValueKey('player-pause')));
+        await tester.tap(find.byKey(const ValueKey('pause')));
         await tester.pump(const Duration(milliseconds: 600));
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'paused');
         await tester.pumpWidget(const SizedBox());
@@ -375,7 +400,7 @@ void main() {
     await g.moveBy(const Offset(300, 0));
     await g.up();
     await tester.pump(const Duration(seconds: 1));
-    expect(find.byKey(const ValueKey('player-pause')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pause')), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   }, variant: ios);
 }
