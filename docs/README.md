@@ -1,6 +1,12 @@
 # HipLab 文档与开发台账
 
-**2026-10-20 分支工作：** [ugk_trainer 接入](ugk-trainer-adoption-2026-10-20.md)在 `codex/adopt-ugk-trainer`。首轮0.3.8+13锁屏失败，SDK7348f0c/trainer0.1.2已补Android间隙保活与终态释放，118测试通过；新包0.3.8+14已保留数据覆盖安装，analyze0，App全量429过/1条件跳。用户已改为扬声器锁屏复测，现因需使用其他App暂缓，待用户恢复；main未合，待验收与最终同意。
+**00:08最新：0.3.9+16锁屏仍失败。** 00:07:47.193 Greeze冻结（关屏5分25.7秒），服务和started/mutedState:none音轨仍在、训练锁DISABLED；系统媒体会话栈为0。不能把正常音量修正记为锁屏通过。当前安全锁屏，待用户回来解锁后正常结束本轮；SDK正在补真实媒体会话与释放，main未合。[完整现场](android-lockscreen-fix-2026-10-21.md)。
+
+**00:02安装快照：0.3.9+16已保留数据安装。** SDK8fb0aac/trainer0.1.3将Android全零采样音轨设正常播放器音量；119训练包测试和App439过/1跳、analyze均通过。20记录/4组/UUID保持；当前8动作整节锁屏观察中，main未合。[本轮修复与结果](android-lockscreen-fix-2026-10-21.md)。
+
+**最新0.3.9+15已安装，但整节锁屏再次失败：** [AI新中转](ai-relay-migration-2026-10-20.md)的App Key、UUID及手机AI生成/保存通过，439项过/1条件跳、analyze0；23:50:21.914小米Greeze再次冻结并禁用训练锁。亮屏恢复后用户正常结束，528秒、6/8、提前结束，现20记录/4组，训练服务已释放。main未合，待SDK修复、整节复验和最终同意。[训练包接入与失败历史](ugk-trainer-adoption-2026-10-20.md)。
+
+**上一轮修复候选快照：** [ugk_trainer 接入](ugk-trainer-adoption-2026-10-20.md)在 `codex/adopt-ugk-trainer`。首轮0.3.8+13锁屏失败，SDK7348f0c/trainer0.1.2已补Android间隙保活与终态释放，118测试通过；新包0.3.8+14已保留数据覆盖安装，analyze0，App全量429过/1条件跳。用户已改为扬声器锁屏复测，现因需使用其他App暂缓，待用户恢复；main未合，待验收与最终同意。
 
 **2026-10-20 早间主线构建快照：0.3.7+12，带AI配置、debug arm64，同包名/签名；该阶段只构建未安装、未发布。** 来源55d99b3，业务沿用PR25已验8c985c4；当前安装已变化，见页首分支工作。[早间APK身份与交付边界](android-test-build-0.3.7-2026-10-20.md)。
 

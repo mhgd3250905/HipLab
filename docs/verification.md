@@ -1,12 +1,18 @@
 # 验证台账
 
-**2026-10-20 锁屏修复候选：** App f702164 / SDK7348f0c / trainer0.1.2 / 0.3.8+14，固定Git锁校验成功；SDK118/118（20秒）、analyze0；App新依赖全量429过/1条件skip（4分33秒）和analyze0（5.6秒）。Android35.4秒构建，签名/CRC/876资产/唯一包内服务通过；已保留数据安装并启动，9882字节偏好逐字节保持。+13原生失败保留，+14尚未开练；用户改为扬声器复测后要求暂用其他App，当前停止手机操作，待其通知。未合main，不把单测/安装当作原生修复通过。[第二轮候选](ugk-trainer-adoption-2026-10-20.md#第二轮修复候选已安装原生待复测)。
+**00:08最新：0.3.9+16锁屏仍失败。** 00:07:47.193 Greeze冻结（关屏5分25.7秒），服务和started/mutedState:none音轨仍在、训练锁DISABLED；系统媒体会话栈为0。不能把正常音量修正记为锁屏通过。当前安全锁屏，待用户回来解锁后正常结束本轮；SDK正在补真实媒体会话与释放，main未合。[完整现场](android-lockscreen-fix-2026-10-21.md)。
+
+**2026-10-21 00:02安装快照：** App38bce47/0.3.9+16固定SDK8fb0aac/trainer0.1.3；App439pass/1条件skip（3分39秒）、analyze0（6秒），训练包119/119及analyze0。APK签名/CRC/876资产/单服务、新AI编译配置和保留数据安装通过；当前8动作整节锁屏中，仅阶段音轨分类及用户听音正常，不先写通过。[本轮证据](android-lockscreen-fix-2026-10-21.md)。
+
+**2026-10-20 新中转与最终运行源：** App f8f0ec8、夹具ab963d7 / SDK8ef37a9 / 0.3.9+15。App最终439pass/1条件skip（5分19秒）和analyze0；SDK根168/训练118全过、两包analyze0。新入口真实主机完整计划31.279秒/5动作通过，前两次HTTP回落保留。手机保留数据安装、只新增UUID偏好、原数据保持且冷启动UUID复用；新AI36.595秒首轮生成8动作并保存为第4组，开练前19记录保持。该组扬声器整节锁屏失败：23:50:21.914 Greeze冻结并禁用训练锁，静音音轨仍started/clientVolume；亮屏恢复后23:53用户正常结束，结果528秒、6/8、full=false、endedEarly=true，记录增至20、4组保持，训练服务已退出。未合main。[本轮证据与失败边界](ai-relay-migration-2026-10-20.md)。
+
+**2026-10-20 上一轮+14候选快照（当时状态）：** App f702164 / SDK7348f0c / trainer0.1.2 / 0.3.8+14，固定Git锁校验成功；SDK118/118（20秒）、analyze0；App新依赖全量429过/1条件skip（4分33秒）和analyze0（5.6秒）。Android35.4秒构建，签名/CRC/876资产/唯一包内服务通过；已保留数据安装并启动，9882字节偏好逐字节保持。+13原生失败保留，+14尚未开练；用户改为扬声器复测后要求暂用其他App，当前停止手机操作，待其通知。未合main，不把单测/安装当作原生修复通过。[第二轮候选](ugk-trainer-adoption-2026-10-20.md#第二轮修复候选已安装原生待复测)。
 
 **2026-10-20 ugk_trainer分支首轮：** App7dd40b0 / SDK7a84dc0（trainer0.1.1），固定Git锁校验、analyze0、全量429pass/1条件skip（4分57秒），SDK111pass/analyze0。原语音129项专项及生产适配6例中英文时序、疼痛插槽2例通过。Android0.3.8+13构建/单服务/签名/CRC/876资产通过，已备份并保留数据安装；安装启动后7154字节prefs一致。实际锁屏中途失声、解锁恢复：系统Greeze冻结并禁用唤醒锁，**原生验收失败**，SDK修复后重测。首轮系统实际扬声器路由，不能记耳机通过。[完整现场证据](ugk-trainer-adoption-2026-10-20.md)。
 
 **2026-10-20 PR25修复复审并合main：** 源8c985c4 / SDK26e3255，analyze0、全量414pass/1条件skip（6分47秒）；原6独立复现逐字节未改且6/6通过，作者8项新增回归通过；带令牌Android/Kotlin、APK身份和真实API13.695秒/7动作通过。用户随后明确授权推进，GitHub已MERGED；真机仍未验，无ADB/安装/听音。[复审与合并](pr25-reaudit-2026-10-20.md)。
 
-PR25之前的已验安装基线为 **0.3.6+11 debug / arm64**，构建源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据安装；F9编辑/键盘原生通过，正常播放与用户听音确认见上一轮记录。当前已安装0.3.8+13但锁屏未通过，以页首本轮观察为准；旧包真机证据不推广为新功能通过。原66f5da0/0.3.6首轮及0.3.5+10试听、V-01～V-13等均按日期保留历史。
+PR25之前的已验安装基线为 **0.3.6+11 debug / arm64**，构建源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据安装；F9编辑/键盘原生通过，正常播放与用户听音确认见上一轮记录。当前已安装0.3.9+15且锁屏再次未通过，以页首本轮观察为准；旧包真机证据不推广为新功能通过。原66f5da0/0.3.6首轮及0.3.5+10试听、V-01～V-13等均按日期保留历史。
 
 | 编号 | 范围 / 命令 | 已执行结果 | 证据与边界 |
 |---|---|---|---|
@@ -406,3 +412,12 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 | `flutter pub get --enforce-lockfile`及`flutter build apk --debug --target-platform android-arm64 --no-pub --dart-define-from-file=<本机私有参数文件>` | 同日13:17，锁校验成功且lock未改，构建50.7秒；身份/签名/CRC/876资产通过 | `55d99b3d097afc815fa16e165362cf4703c440d5`；核验此SHA是祖先，到收束前HEAD仅8份docs不同；这是原包证据，本轮未读取产物或重建 |
 
 证据SHA均通过commit对象和祖先核验；有限差异完整列出文件名并核对pubspec仅0.3.6+11→0.3.7+12。原生命令、用户数据和商店状态本轮不重新观察。本次9份文档事实复核通过，320处本地链接引用0缺失，`git diff --check`、版本/范围断言与完整状态及归属复核通过；仅本Agent的8份tracked文档修改、1份新说明和4个保留的旧未跟踪文件，staged/deleted/renamed均0。以明确9路径提交，提交及普通push身份由Git记录。本次不读取凭据、原生日志、构建或旧未跟踪文件内容，不结束Cockpit会话。
+
+
+## 2026-10-20 0.3.9+15整节锁屏复测：失败
+
+绑定App运行源f8f0ec8 / 夹具ab963d7 / SDK8ef37a9；此前439pass/1条件skip及analyze0是代码检查，不替代本轮原生结论。23:44:39从AI保存组c_20261020_9eb3开练，23:45:06关屏；23:50:15系统判音频非活动，23:50:21.914 Greeze冻结、下一毫秒禁用训练锁。FGS仍在，静音AudioTrack仍started但mutedState=clientVolume，不能当成OEM有效音频活动。用户亮屏声音恢复，本轮FAILED。
+
+锁屏中每约45秒系统只读快照及持续logcat采证，未用run-as读私有数据；失败后停止循环。23:53用户正常结束，再读结果：SessionResult.activeSeconds=528、completedExercises=6/8、full=false、endedEarly=true；记录19→20，训练组4个保持，结束后TrainingSessionService不在（仅WebView服务）。证据位于 `E:/AII-3D/hiplab-releases/hiplab-0.3.9+15-relay-20261020/native/` 的lockscreen-logcat.txt、monitor/、failed-course-result.json及退出后服务快照。只核验扬声器；不记耳机或自然完成通过。
+
+SDK候选方向为Android保活音轨volume=1且使用全零采样素材，尚未验证。素材检查89088个PCM16采样全0，证据 `E:/AII-3D/ugk-trainer-verification-20261020/silence-pcm-check.json`；该检查只证明素材静音，不证明锁屏已修复。不新增版本、不重复构建来验证本次文档，main仍待实际通过与最终同意。

@@ -1,6 +1,8 @@
 # 版本交付台账
 
-**最新构建交付：0.3.7+12 AI测试包（未安装）**，来源55d99b3，debug arm64，175043055bytes，SHA256 `4846f335c4a8f100b17c6b9548a46d950011baa57e93c035e9735e3d24c8e052`；包名/签名连续、876个资源匹配、CRC通过。手机已验安装仍0.3.6+11；无商店发布。[完整产物身份](android-test-build-0.3.7-2026-10-20.md)。
+**最新构建与安装：0.3.9+15 新中转包，AI通过、整节锁屏失败。** 来源f8f0ec8、夹具ab963d7、SDK8ef37a9；175257947字节，SHA256 `34e337b8760cb1bd709824282ab6d8b88efe2f19d2959b5f9d98714c14d52829`。保留数据安装、UUID及手机AI生成保存通过；失败课程主动结束后现20记录/4组，训练服务已释放。main未合，无商店发布。[本轮完整证据](ai-relay-migration-2026-10-20.md)。
+
+**早间0.3.7+12构建快照（历史）：** 来源55d99b3，debug arm64，175043055bytes，SHA256 `4846f335c4a8f100b17c6b9548a46d950011baa57e93c035e9735e3d24c8e052`；当时只构建未安装，包名/签名连续、876个资源匹配、CRC通过。[早间产物身份](android-test-build-0.3.7-2026-10-20.md)。
 
 **2026-10-20 PR25修复审核构建（未安装）：** 运行源8c985c4，0.3.6+11带令牌debug arm64，200749347bytes，SHA256 `33f54f20f47b3b25357b4ee83bb6a57620b1d3167b1a878e15a8a3f8a09b3636`，原debug证书连续。PR25现已获准合main并推送；产物只构建未安装，版本未递增、未发布，手机仍按10月19日最后已验记录。[复审及合并](pr25-reaudit-2026-10-20.md)。
 
@@ -265,7 +267,7 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 
 分支`codex/adopt-ugk-trainer`，构建源`7dd40b061a6316195bea656d1f9d4bd1b7f09108`，SDK固定`7a84dc0830fa039f89f5e74f919d59f18d6602cd`/ugk_trainer0.1.1。Flutter3.44.7，Android debug arm64、带既有AI配置，Gradle58.3秒。`hiplab-0.3.8+13-trainer-arm64-debug.apk`，175247923bytes，SHA256 `64ac542cd754bd1e33445fe9451f4a4b5b4b5ae84eb758d42b5e026ea186dc98`。包名com.ugk.hiplab/code13，原debug证书连续；CRC及876个App资产逐字节匹配，APK只有com.ugk.trainer.TrainingSessionService一个服务。
 
-手机实际安装前已为0.3.7+12；本轮先备份shared_prefs/files与原APK，再adb install -r，回读0.3.8/code13，冷启动1228ms。安装和启动后7154字节偏好与备份逐字节保持，18条旧记录、2个训练组保留；未清数据或回写备份。用户确认耳机锁屏初时正常，随后停声、解锁恢复。系统日志22:42:09.005明确Greeze冻结并禁用训练唤醒锁，22:42:31.326解锁后解冻。该原生验收失败，不能以429pass/1skip、analyze或构建通过替代。失败课程按提前结束保存（endedEarly=true/full=false/70s），自然测试记录保留，现19条。
+手机实际安装前已为0.3.7+12；本轮先备份shared_prefs/files与原APK，再adb install -r，回读0.3.8/code13，冷启动1228ms。安装和启动后7154字节偏好与备份逐字节保持，18条旧记录、3个训练组保留；未清数据或回写备份。用户先报告锁屏口令初时正常，随后停声、解锁恢复；系统实际为扬声器路由，不能记作耳机通过。系统日志22:42:09.005明确Greeze冻结并禁用训练唤醒锁，22:42:31.326解锁后解冻。该原生验收失败，不能以429pass/1skip、analyze或构建通过替代。失败课程按提前结束保存（endedEarly=true/full=false/70s），自然测试记录保留，现19条。
 
 产物、原APK备份、偏好、截图与系统日志在本机`E:/AII-3D/hiplab-releases/hiplab-0.3.8+13-trainer-20261020/`，不随Git推送。SDK修复与复测继续见[接入记录](ugk-trainer-adoption-2026-10-20.md)；main未合、App分支未推、未上传商店。
 
@@ -273,4 +275,35 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 
 App源`f702164559526c0073ad2f26734a91badb7e2b94`，固定SDK`7348f0cdcccf564fbddb73fef41c08e3bf30f0fa`/trainer0.1.2；SDK118/118及analyze0。Git锁校验成功，Android debug arm64带既有AI配置，Gradle35.4秒。包`hiplab-0.3.8+14-trainer-lockscreen-arm64-debug.apk`位于`E:/AII-3D/hiplab-releases/hiplab-0.3.8+14-trainer-lockscreen-20261020/`，175254439bytes，SHA256 `c5f1b5e75dbf1b1da126fa35687b4138504e9c96c266b926a467d497b71f6bc6`。回读com.ugk.hiplab/code14/0.3.8；既有debug证书SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`连续，CRC、876源资产及仅包内一份服务通过。
 
-23:02前后对同一2602BRT18C/Android16覆盖安装成功，安装前再次备份shared_prefs/files，安装和启动后9882字节偏好逐字节一致（SHA256 `27b4f738f20db3ac9edc107716fc741a228adf8a06e4d27a9e6fe8bf85f0eabd`），保留19记录/2组/3个完成日，无清数据或回写备份。冷启动1192ms。用户随后明确改为扬声器复测；测试闹钟已不在屏幕，但开练前用户要求暂用其他App，因此课程未启动、停止手机操作待通知。App该固定依赖全量429过/1条件跳（4分33秒）、analyze0；原生锁屏仍待复测，不以本包修复或单测改写+13失败。main未合、未上传商店。
+23:02前后对同一2602BRT18C/Android16覆盖安装成功，安装前再次备份shared_prefs/files，安装和启动后9882字节偏好逐字节一致（SHA256 `27b4f738f20db3ac9edc107716fc741a228adf8a06e4d27a9e6fe8bf85f0eabd`），保留19记录/3组/3个完成日，无清数据或回写备份。冷启动1192ms。用户随后明确改为扬声器复测；测试闹钟已不在屏幕，但开练前用户要求暂用其他App，因此课程未启动、停止手机操作待通知。App该固定依赖全量429过/1条件跳（4分33秒）、analyze0；原生锁屏仍待复测，不以本包修复或单测改写+13失败。main未合、未上传商店。
+
+
+## 0.3.9+15 AI新中转包（2026-10-20，已安装，整节锁屏失败）
+
+| 身份 | 已核对事实 |
+|---|---|
+| App运行源 / 回归夹具 | `f8f0ec8af94d67149612574070c11094eeb80900` / `ab963d7`；夹具提交仅测试，不改变包运行代码 |
+| SDK冻结来源 | `8ef37a92bcc9e701fbe454ba98aa2100406287fb`，ugk_coach0.1.3 / ugk_trainer0.1.2 |
+| APK | `E:/AII-3D/hiplab-releases/hiplab-0.3.9+15-relay-20261020/hiplab-0.3.9+15-relay-arm64-debug.apk` |
+| 字节数 / SHA256 | **175257947** / `34e337b8760cb1bd709824282ab6d8b88efe2f19d2959b5f9d98714c14d52829` |
+| 包身份 / 构建 | `com.ugk.hiplab` / versionName0.3.9 / versionCode15 / debug arm64；Gradle27.6秒 |
+| 签名与内容 | 既有debug签名连续；CRC、876源资产逐字节及仅一份包内训练服务通过；新入口/模型/App Key编译绑定核对，未输出凭据 |
+| 本机代码验证 | App439pass/1条件skip、analyze0；SDK根168/训练118全过、两包analyze0；不替代真机锁屏结论 |
+
+23:37对2602BRT18C/Android16保留数据覆盖安装，安装前备份9882字节旧偏好与files；启动只新增独立随机UUID偏好键，旧键值逐项保持。首次冷启动1242ms，再次冷启动1019ms后UUID与偏好保持。原3个自定义组保留；手机AI36.595秒首轮生成8动作并保存第4组，开练前19条记录保持。
+
+23:44:39从已保存AI组 `c_20261020_9eb3` 开练，23:45:06关屏；扬声器口令初时继续。23:50:15系统判音频非活动，23:50:21.914小米Greeze冻结、随后训练锁disabled=true；FGS仍在，零音量音轨仍started/clientVolume。用户亮屏后声音恢复，本轮整节锁屏FAILED，不记耳机验证或完整课程通过。
+
+23:53用户通过正常结束流程退出失败课程，保存SessionResult.activeSeconds528秒、完成6/8、full=false、endedEarly=true；训练记录19→20，训练组4个保持。随后确认TrainingSessionService已消失，仅WebView服务保留。这是主动提前结束及终态释放证据，不是锁屏自然结束。证据：上述交付目录 `native/lockscreen-logcat.txt`、`native/monitor/`、`native/failed-course-result.json`及退出后的服务快照；原始用户数据与标识留本机，不写入台账。
+
+下一修复候选尚未验证；不预登记未发生的版本。运行源/夹具及SDK开发分支已推送，两个main均未合本轮，仍待实际验收与开哥最终同意；未上传商店或修改商店配置，不清数据。
+
+
+## 0.3.9+16 Android音轨分类修复包（2026-10-21，已安装、锁屏失败）
+
+App源38bce474723d45d4b025e7def52dfe935ed40fda，固定SDK8fb0aacff2072b31c4abaea10e101075fb9a2e9a/trainer0.1.3。debug arm64构建Gradle27.9秒，产物175258187bytes，SHA256 `a5a5bc30cd69cf74fed1fe0a4166bf2844dc5d439fa06d3ef80f8022b13941c2`，包名/签名连续、CRC/876资产/唯一服务通过。14250字节偏好和23552字节files/prefs备份后install-r，启动1338ms、偏好逐字节一致（20记录/4组/3完成日/同一UUID）。App439过/1条件skip、analyze0，SDK训练119/119及analyze0。00:02从保存AI组启动、关屏，用户确认口令继续；整节与释放尚待观察。main未合、不上传商店。完整身份与本机证据目录见[本轮记录](android-lockscreen-fix-2026-10-21.md)。
+
+
+### +16锁屏失败追加（00:08）
+
+00:07:47.193关屏约5分25.7秒后仍被Greeze冻结；FGS和started/mutedState:none音轨存活、训练锁DISABLED，媒体会话栈0。上一节“整节待验收”是安装阶段快照，本轮现判FAILED。安全锁屏待用户回来解锁正常结束，尚无本轮结果保存结论。[现场与后续](android-lockscreen-fix-2026-10-21.md#本轮结果失败继续sdk修复)。

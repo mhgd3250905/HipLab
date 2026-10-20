@@ -1,5 +1,7 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
+**当前接入分支改用新中转：** 默认 `api.uuugk.win/v1` / `deepseek-v4-flash-0731`，通过App Key和持久设备UUID请求，无Authorization；构建、验证与原生边界见[2026-10-20新中转迁移](ai-relay-migration-2026-10-20.md)。下方PR25段落保留旧接入来源。
+
 2026-10-20 · PR #25已合main（来源8c985c4，集成ce7ab74）· 依赖 [ugk_coach](https://github.com/mhgd3250905/ugk-3d-pose-sdk) 0.1.2，固定 `26e32557058e582d3f1b2b7f722dfa53c2b16aa6`。首次接入以练习库a586de3/SDK0.1.1起步，后经[五项修复复审与合并](pr25-reaudit-2026-10-20.md)。
 
 HipLab 是三 App 共用 AI 训练助理 SDK 的第二个接入方（第一个是托马斯训练助手，3D-Body PR #122）。结构与交互沿用托马斯的集成，只换成 HipLab 的数据（内容包、动作包、内置套路、自定义训练组）和 UI 风格（HipPanel / HipPrimaryButton / LibChip …）。
@@ -51,19 +53,21 @@ HipLab 是三 App 共用 AI 训练助理 SDK 的第二个接入方（第一个�
 - 目录与动作包的剂量单位有 8 处不一致（目录 `defaultDose.mode` vs 动作包 `training.unit`）：`h-adductor-rock`、`h-knee-hug`、`h-sumo-pry`、`n-pelvis-circle`、`n-seated-knee-lift`、`n-seated-squeeze`、`n-squat-shift`（目录计时 / 动作包计数），`n-seated-ir-drop`（目录计次 / 动作包保持）。SDK 校验要求 AI 按目录单位出，App 落地时按上表换算回动作包口径，所以训练结果不受影响；单侧（perSide / sided）46 个全部一致。是否在 Pose-Hub 统一单位待定。
 - 目录远端更新：配了 `UGK_COACH_CATALOG_URL`（manifest.json）时启动后后台检查一次，SDK 校验大小 / sha256 / 版本后才切换，失败保持随包目录；只存内存。远端发布位置待定。
 
-## 配置与运行
+## 配置与运行（2026-10-20 新中转）
 
-令牌绝不进代码或仓库，只从 `--dart-define` 读。默认连自建 **UGK AI 中转站**（New API，`https://ai.uuugk.win/v1`）：上游 key 只在中转站，App 用中转站后台单独给 HipLab 发的令牌（可设额度、随时吊销；换上游只在后台改渠道，App 不用发版）。
+新入口默认 `https://api.uuugk.win/v1`，模型默认 `deepseek-v4-flash-0731`，未填或空白都使用该默认值。每次请求只带 `X-App-Key`（开哥提供）与 `X-Device-Id`，不再带 Authorization。App Key 只通过 `--dart-define` 或本机私有 `--dart-define-from-file` 注入；实际值、私有参数文件不进仓库，不存用户偏好。旧 `UGK_COACH_API_KEY` 已移除，不作为兼容别名；仅提供旧令牌不会启用 AI。
 
 ```bash
 flutter run \
-  --dart-define=UGK_COACH_API_KEY=<中转站给 HipLab 的令牌>      # 必填；不填 = 未配置，只给预设方案
-  --dart-define=UGK_COACH_BASE_URL=https://ai.uuugk.win/v1     # 可选，默认即此
-  --dart-define=UGK_COACH_MODEL=deepseek-v4.1-flash-1017         # 可选，默认即此
+  --dart-define=UGK_COACH_APP_KEY=<HipLab 的 App Key>          # 必填；不填 = 未配置，只给预设方案
+  --dart-define=UGK_COACH_BASE_URL=https://api.uuugk.win/v1     # 可选，默认即此
+  --dart-define=UGK_COACH_MODEL=deepseek-v4-flash-0731          # 可选，空白也使用默认
   --dart-define=UGK_COACH_CATALOG_URL=https://…/manifest.json    # 可选，目录远端更新
 ```
 
-模型参数用 SDK 预设 `LlmConfig.deepSeekOpenCsg`（max_tokens 6000、单次超时 90 秒、JSON 模式）。新增依赖：`ugk_coach`（git，固定 `76829bd`）；`path_provider` 原本就在 lock 里（经 shared_preferences），改为直接依赖、版本不变（2.1.6）。
+`CoachDeviceId` 在 App 首次启动生成UUID v4，持久化在独立偏好键 `hip.coach.device-id.v1`，后续启动和请求一直复用。同次启动的并发请求共用加载任务，写入成功前不返回新ID；存储失败不发请求，下一次可重试。标识不放在构建参数中，App Key 也不会随设备ID写入偏好。
+
+模型参数仍为 max_tokens 6000、单次超时90秒、JSON模式；模型/入口由App覆盖，不改其他SDK调用方的默认值。`uuid:4.6.0` 从原有间接依赖改为直接依赖，版本保持。SDK异步鉴权头准备纳入取消/超时与计时器清理，准备失败不发或重试HTTP。当前本轮新包的源码/固定依赖/测试、构建与安装事实见[新中转迁移记录](ai-relay-migration-2026-10-20.md)。本页后方旧中转冒烟是历史，不能作为新入口验收。
 
 ## 回落与安全
 
