@@ -32,6 +32,8 @@
 
 ## Git 与主线集成
 
+本轮App运行提交 `f702164` 已推送 `origin/codex/adopt-ugk-trainer`，SDK修复 `7348f0c` 已推送 `codex/hiplab-trainer-slots`（草稿PR #2）。两仓库main分别仍为 `99fcc83` / `9407bf3`，均未合本轮；手机安装0.3.8+14也不代表已合main或原生已通过。
+
 **`mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是后续开发基线。** 接手成果通过 #2、#1 合入 main，本机 main 跟踪 origin/main。图标版本 0.1.2+3 的代码提交为 `4cf5ca7`，通过 [PR #5](https://github.com/mhgd3250905/HipLab/pull/5) 集成；业务逻辑和视频资源保持，安装状态独立记录。
 
 | 对象 | 核对结果（逐项日期另列，旧轮保留历史） |

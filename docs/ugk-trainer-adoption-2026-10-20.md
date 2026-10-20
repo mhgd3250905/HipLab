@@ -39,3 +39,5 @@ SDK修复源 `7348f0cdcccf564fbddb73fef41c08e3bf30f0fa`，trainer0.1.2，已推�
 App `f702164559526c0073ad2f26734a91badb7e2b94` 固定该Git依赖，共用版本0.3.8+14。锁校验成功，Android构建35.4秒；175254439字节，SHA256 `c5f1b5e75dbf1b1da126fa35687b4138504e9c96c266b926a467d497b71f6bc6`，签名连续、CRC/876资产/单服务通过。新交付目录 `E:/AII-3D/hiplab-releases/hiplab-0.3.8+14-trainer-lockscreen-20261020/`。安装前再次备份shared_prefs/files，安装后9882字节prefs逐字节一致，保留19记录/2组/3完成日。覆盖安装回读code14，冷启动1192ms。
 
 App新依赖analyze0（5.6秒），全量回归429过/1条件skip（4分33秒），唯一skip为未设VOICE_TIMELINE_OUT的时间线导出；日志build/ugk-app-android-fix-final-analyze.log和build/ugk-app-android-fix-final-test.log。启动首页看到测试闹钟浮层；之后用户明确「用扬声器即可」，本轮锁屏复测不再以耳机为门槛。再次观察闹钟已不在屏幕，当前为用户生成的「开髋灵活」7分钟/9动作课程；在点击开始前用户要求稍等、需使用其他App，因此未启动训练并停止手机操作，待其通知。SDK单测和本次安装不代表锁屏修复通过；未改系统电池/权限策略，不合main。
+
+App运行提交f702164及本轮记录已推送 `origin/codex/adopt-ugk-trainer`；SDK7348f0c已在草稿PR #2。2026-10-20本次只读核对远端main：HipLab99fcc83、SDK9407bf3，均未合本轮。原有Playwright未跟踪目录保持，不纳入提交。
