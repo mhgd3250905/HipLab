@@ -127,6 +127,20 @@ class CoachPlanMapper {
     );
   }
 
+  /// 已保存（可能被用户编辑过）的训练组 → 卡片行：卡片展示与开练用同一份训练组。
+  /// 分块名沿用原 AI 计划里同一动作的分块，新加的动作归到训练组名下。
+  CoachPlanMapping fromRoutine(CustomRoutine routine, CoachPlanMapping original) {
+    final blocks = {for (final e in original.entries) e.drill.id: e.blockName};
+    return CoachPlanMapping(
+      routine: routine,
+      entries: [
+        for (final s in routine.steps)
+          if (content.kit(s.kitId) != null)
+            _entry(s, blocks[s.kitId] ?? routine.name, false),
+      ],
+    );
+  }
+
   CoachPlanEntry _entry(CustomStep s, String block, bool adjusted) {
     final kit = content.kit(s.kitId)!;
     return CoachPlanEntry(

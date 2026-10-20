@@ -9,6 +9,8 @@ import 'package:ugk_coach/ugk_coach.dart' as uc;
 
 import '../../coach/coach_service.dart';
 import '../../coach/plan_mapping.dart';
+import '../../control/hip_store.dart';
+import '../../domain/hip_library.dart';
 import '../hip_icons.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -25,10 +27,14 @@ bool aiCoachAvailable(BuildContext context) =>
 
 /// 对话里的一条。
 class CoachMessage {
-  const CoachMessage.user(String this.text) : answer = null;
-  const CoachMessage.answer(CoachAnswer this.answer) : text = null;
+  const CoachMessage.user(String this.text) : answer = null, resultId = -1;
+  const CoachMessage.answer(CoachAnswer this.answer, this.resultId)
+    : text = null;
   final String? text;
   final CoachAnswer? answer;
+
+  /// 应用给每份回答分配的身份（会话内唯一），保存状态按它绑定，不依赖模型给的 plan id。
+  final int resultId;
   bool get isUser => text != null;
 }
 
@@ -42,8 +48,10 @@ class AiCoachSession extends ChangeNotifier {
   final uc.CoachConversation conversation = uc.CoachConversation();
   final List<CoachMessage> messages = [];
 
-  /// 已保存的计划：计划 id → 训练组 id。
-  final Map<String, String> saved = {};
+  /// 已保存的回答：回答身份（[CoachMessage.resultId]）→ 训练组 id。
+  /// 训练组可能已被删除，是否「已保存」以 store 里实际存在为准（[savedRoutine]）。
+  final Map<int, String> saved = {};
+  int _nextResult = 0;
   uc.CancelToken? _cancel;
   DateTime? _startedAt;
   bool _loaded = false;
@@ -92,7 +100,7 @@ class AiCoachSession extends ChangeNotifier {
       if (messages.isNotEmpty && messages.last.isUser) messages.removeLast();
       cancelledText = text;
     } else {
-      messages.add(CoachMessage.answer(answer));
+      messages.add(CoachMessage.answer(answer, _nextResult++));
     }
     _notify();
   }
@@ -100,9 +108,15 @@ class AiCoachSession extends ChangeNotifier {
   /// 停止正在进行的请求（HTTP 真正中止，不回落、不记进对话）。
   void stop() => _cancel?.cancel();
 
-  void markSaved(String planId, String routineId) {
-    saved[planId] = routineId;
+  void markSaved(int resultId, String routineId) {
+    saved[resultId] = routineId;
     _notify();
+  }
+
+  /// 这份回答保存成的训练组（用户可能编辑过）；没保存或已删除 = null。
+  CustomRoutine? savedRoutine(int resultId, HipStore store) {
+    final id = saved[resultId];
+    return id == null ? null : store.customRoutine(id);
   }
 
   void _notify() {
@@ -275,25 +289,28 @@ class _AiCoachPageState extends State<AiCoachPage> {
     unawaited(session.send(value));
   }
 
-  Future<void> _save(uc.TrainingPlan plan) async {
+  Future<void> _save(uc.TrainingPlan plan, int resultId) async {
     final store = widget.actions.store;
     final mapping = CoachPlanMapper(
       store.content,
     ).map(plan, id: store.newCustomId(), at: store.now());
     final routine = await store.saveCustomRoutine(mapping.routine);
     if (!mounted) return;
-    session.markSaved(plan.id, routine.id);
+    session.markSaved(resultId, routine.id);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text('已保存到「我的」训练组：${routine.name}')));
   }
 
-  Future<void> _start(uc.TrainingPlan plan, BuildContext? from) async {
+  Future<void> _start(
+    uc.TrainingPlan plan,
+    int resultId,
+    BuildContext? from,
+  ) async {
     final store = widget.actions.store;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    final saved = session.saved[plan.id];
     final routine =
-        (saved == null ? null : store.customRoutine(saved)) ??
+        session.savedRoutine(resultId, store) ??
         CoachPlanMapper(
           store.content,
         ).map(plan, id: 'ai_${plan.id}', at: store.now()).routine;
@@ -334,7 +351,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
                         key: ValueKey('coach-msg-$i'),
                         child: m.isUser
                             ? _UserBubble(m.text!)
-                            : _answer(m.answer!, i),
+                            : _answer(m, i),
                       ),
                     if (session.busy)
                       _Thinking(
@@ -353,7 +370,8 @@ class _AiCoachPageState extends State<AiCoachPage> {
     );
   }
 
-  Widget _answer(CoachAnswer answer, int index) {
+  Widget _answer(CoachMessage message, int index) {
+    final answer = message.answer!;
     final reply = answer.reply;
     if (reply == null) return const SizedBox.shrink();
     final latest = index == session.messages.length - 1;
@@ -381,20 +399,25 @@ class _AiCoachPageState extends State<AiCoachPage> {
               ],
             ),
           ),
-        if (reply.plan case final plan?) _planCard(plan, answer),
+        if (reply.plan case final plan?)
+          _planCard(plan, answer, message.resultId),
       ],
     );
   }
 
-  Widget _planCard(uc.TrainingPlan plan, CoachAnswer answer) {
+  Widget _planCard(uc.TrainingPlan plan, CoachAnswer answer, int resultId) {
     final store = widget.actions.store;
-    final mapping = CoachPlanMapper(
-      store.content,
-    ).map(plan, id: 'preview', at: store.now());
-    final saved = session.saved.containsKey(plan.id);
+    final mapper = CoachPlanMapper(store.content);
+    final original = mapper.map(plan, id: 'preview', at: store.now());
+    // 保存后以「我的」里的训练组为准（含用户编辑）：卡片展示与开练是同一份。
+    final routine = session.savedRoutine(resultId, store);
+    final mapping = routine == null
+        ? original
+        : mapper.fromRoutine(routine, original);
+    final saved = routine != null;
     final empty = mapping.entries.isEmpty;
     return _PlanCard(
-      key: ValueKey('coach-plan-${plan.id}'),
+      key: ValueKey('coach-plan-$resultId'),
       plan: plan,
       mapping: mapping,
       seconds: mapping.seconds(store.content),
@@ -406,8 +429,10 @@ class _AiCoachPageState extends State<AiCoachPage> {
           (_) => DrillDetailPage(actions: widget.actions, drillId: id),
         ),
       ),
-      onSave: saved || empty ? null : () => _save(plan),
-      onStart: empty || store.blocked ? null : (from) => _start(plan, from),
+      onSave: saved || empty ? null : () => _save(plan, resultId),
+      onStart: empty || store.blocked
+          ? null
+          : (from) => _start(plan, resultId, from),
     );
   }
 }

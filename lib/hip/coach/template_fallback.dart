@@ -57,12 +57,20 @@ class TemplateFallback {
 
   static bool isRedFlag(String text) => _redFlags.hasMatch(text);
 
+  /// 场景约束：提过就一直有效（不能躺地 / 在办公室 → 只给椅上 / 站姿套路）。
+  static final _chairOnly = RegExp(r'办公室|工位|上班|公司|不想躺|不能躺|不方便躺|不能趴');
+
   /// 关键词命中最多的套路；都没命中用 [defaultRoutine]。
-  static String pickRoutine(String text) {
+  /// [history] = 同一对话里之前用户说过的话：本轮命中算 2 分、之前的算 1 分，
+  /// 这样「办公室不能躺地」→「5分钟」不会忘了场景。
+  static String pickRoutine(String text, {List<String> history = const []}) {
     var best = defaultRoutine;
     var bestScore = 0;
     for (final entry in _keywords.entries) {
-      final score = entry.value.allMatches(text).length;
+      var score = entry.value.allMatches(text).length * 2;
+      for (final h in history) {
+        score += entry.value.allMatches(h).length;
+      }
       if (score > bestScore) {
         best = entry.key;
         bestScore = score;
@@ -71,14 +79,32 @@ class TemplateFallback {
     return best;
   }
 
-  uc.CoachReply reply(String text, {required PresetReason reason}) {
-    if (isRedFlag(text)) return const uc.CoachReply.text(redFlagReply);
-    final routine = content.routine(pickRoutine(text));
+  /// 本轮或之前提过的红旗情况（手术、受伤……）整段对话都有效。
+  static bool anyRedFlag(String text, List<String> history) =>
+      isRedFlag(text) || history.any(isRedFlag);
+
+  uc.CoachReply reply(
+    String text, {
+    required PresetReason reason,
+    List<String> history = const [],
+  }) {
+    if (anyRedFlag(text, history)) return const uc.CoachReply.text(redFlagReply);
+    var routine = content.routine(pickRoutine(text, history: history));
+    final chairOnly = [text, ...history].any(_chairOnly.hasMatch);
+    if (chairOnly && routine.scene != HipScene.chair) {
+      routine = content.routine('A');
+    }
     return uc.CoachReply.plan(
       '${reason.zh}，先给你 App 内置的预设方案「${routine.name}」，不是 AI 生成的。',
       build(routine),
     );
   }
+
+  /// 对话里用户说过的话（回落时带上，保留先前的禁忌和场景约束）。
+  static List<String> userTexts(uc.CoachConversation c) => [
+    for (final t in c.turns)
+      if (t.isUser) t.text,
+  ];
 
   /// 内置套路转成 TrainingPlan v1（source=template，templateId=套路 id），剂量照套路原样。
   uc.TrainingPlan build(HipRoutine r) {

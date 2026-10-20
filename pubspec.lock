@@ -158,7 +158,7 @@ packages:
     source: hosted
     version: "2.0.2"
   http:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -558,11 +558,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "76829bd290ff86cbce4f9029657cc2a20e3f2ef4"
-      resolved-ref: "76829bd290ff86cbce4f9029657cc2a20e3f2ef4"
+      ref: "26e32557058e582d3f1b2b7f722dfa53c2b16aa6"
+      resolved-ref: "26e32557058e582d3f1b2b7f722dfa53c2b16aa6"
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
-    version: "0.1.1"
+    version: "0.1.2"
   uuid:
     dependency: transitive
     description:

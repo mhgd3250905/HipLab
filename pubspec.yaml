@@ -34,12 +34,13 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 76829bd290ff86cbce4f9029657cc2a20e3f2ef4
+      ref: 26e32557058e582d3f1b2b7f722dfa53c2b16aa6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  http: ^1.6.0
 
 flutter:
   uses-material-design: true

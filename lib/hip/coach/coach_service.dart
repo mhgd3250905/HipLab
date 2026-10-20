@@ -136,7 +136,11 @@ class CoachService {
         usage: usage,
         appId: 'hiplab-app',
         fallback: uc.FallbackFn(
-          (r) => templates.reply(r.userText, reason: PresetReason.of(r.reason)),
+          (r) => templates.reply(
+            r.userText,
+            reason: PresetReason.of(r.reason),
+            history: TemplateFallback.userTexts(r.conversation),
+          ),
         ),
       );
     }
@@ -221,7 +225,11 @@ class CoachService {
     PresetReason reason,
     int tokens,
   ) {
-    final reply = templates.reply(text, reason: reason);
+    final reply = templates.reply(
+      text,
+      reason: reason,
+      history: TemplateFallback.userTexts(conversation),
+    );
     final now = DateTime.now();
     conversation
       ..addUser(text.trim(), now)
