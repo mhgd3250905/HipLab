@@ -155,6 +155,19 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('practice-2')));
     await tester.pumpAndSettle();
+    // 「我的」 now also has the AI 定制 card under 新建训练组 (docs/ai-coach.md):
+    // at ×2.0 the group card starts below the fold.
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('group-card-c_kb')),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('practice-list')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('group-card-c_kb')));
     await tester.pumpAndSettle();
     expect(find.byType(GroupEditorPage), findsOneWidget);
