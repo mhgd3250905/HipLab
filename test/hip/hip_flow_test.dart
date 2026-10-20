@@ -251,7 +251,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HipPrivacyPage), findsOneWidget);
     expect(find.text('开胯训练助手 HipLab'), findsOneWidget);
-    expect(find.textContaining('不收集、上传、出售'), findsOneWidget);
+    expect(find.textContaining('不会自动上传'), findsOneWidget);
+    expect(find.text('AI 定制与设备标识'), findsOneWidget);
+    expect(find.textContaining('随机生成'), findsOneWidget);
 
     final copy = find.byKey(const ValueKey('copy-privacy-url'));
     await tester.scrollUntilVisible(

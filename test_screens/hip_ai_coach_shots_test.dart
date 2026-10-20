@@ -64,7 +64,7 @@ void main() {
   CoachService coach(List<Object> script) => CoachService(
     config: script.isEmpty
         ? const CoachConfig()
-        : const CoachConfig(apiKey: 'test'),
+        : const CoachConfig(appKey: 'test'),
     content: content,
     client: script.isEmpty ? null : uc.FakeLlmClient(script),
     usage: CoachUsageStore(),
