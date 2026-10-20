@@ -6,13 +6,15 @@
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-20**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-21**；按页内日期保留历史交付与验证。
+
+2026-10-21，**训练包接入及AI新中转已获同意合入并推送两仓库main**：HipLab集成点691ace2，SDK d193a70（PR #2已MERGED，coach0.1.3/trainer0.1.4）。手机已保留数据安装0.3.9+17，运行源79c172d；锁屏冻结仍是已知失败，用户后测，本轮不再排查/复测，不上传商店。[合并与验收边界](docs/android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
-2026-10-20，**PR #25 已获同意合入并推送 main，GitHub 确认 MERGED**，业务来源 `8c985c4c6dcff4207db616e759910ea03820ad79`。新版 **0.3.7+12 AI 测试包已构建，未安装、未发布**，构建源码 `55d99b3d097afc815fa16e165362cf4703c440d5`；业务验证沿用上述来源的414项通过/1条件跳过、analyze无问题及本机真实API结果。[测试包身份](docs/android-test-build-0.3.7-2026-10-20.md)和[PR25复审/合并](docs/pr25-reaudit-2026-10-20.md)分别保存证据。
+此前2026-10-20阶段快照（历史）：**PR #25 已获同意合入并推送 main，GitHub 确认 MERGED**，业务来源 `8c985c4c6dcff4207db616e759910ea03820ad79`。新版 **0.3.7+12 AI 测试包已构建，未安装、未发布**，构建源码 `55d99b3d097afc815fa16e165362cf4703c440d5`；业务验证沿用上述来源的414项通过/1条件跳过、analyze无问题及本机真实API结果。[测试包身份](docs/android-test-build-0.3.7-2026-10-20.md)和[PR25复审/合并](docs/pr25-reaudit-2026-10-20.md)分别保存证据。
 
-手机最后已核验安装仍为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据覆盖安装。此前PR #22/#24及集成修复于23:32合入并推送main（`b33ed21088c4d334548fb45cfeb9b85959dd755d`）；当时387项通过/1条件跳过、F9编辑/键盘原生复测及正常播放听感已确认。这些旧包真机结果不覆盖PR25新功能。安装、合并和文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。
+当时最后已核验安装为 **0.3.6+11 debug / arm64**，构建源码 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据覆盖安装。此前PR #22/#24及集成修复于23:32合入并推送main（`b33ed21088c4d334548fb45cfeb9b85959dd755d`）；当时387项通过/1条件跳过、F9编辑/键盘原生复测及正常播放听感已确认。这些旧包真机结果不覆盖PR25新功能。安装、合并和文档提交分别登记，详见[当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)和[验证台账](docs/verification.md)。
 
 以下为#19～#21阶段的历史交付反馈：
 
