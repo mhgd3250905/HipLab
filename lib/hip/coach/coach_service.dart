@@ -11,7 +11,9 @@ import 'package:ugk_coach/ugk_coach.dart' as uc;
 import '../../core/storage/local_state_storage.dart';
 import '../domain/hip_library.dart';
 import '../domain/hip_models.dart';
+import 'coach_auth.dart';
 import 'coach_config.dart';
+import 'coach_device_id.dart';
 import 'template_fallback.dart';
 import 'usage_store.dart';
 
@@ -55,7 +57,9 @@ class CoachService {
     CoachUsageStore? usage,
     LocalStateStorage? storage,
     AssetReader? readAsset,
-  }) : _client = client ?? _clientFor(config),
+    Future<String> Function()? deviceId,
+  }) : _client =
+           client ?? _clientFor(config, deviceId ?? CoachDeviceId.device.load),
        usage = usage ?? CoachUsageStore.device(),
        _storage = storage ?? SharedPreferencesLocalStateStorage(),
        _read = readAsset ?? rootBundle.loadString;
@@ -80,14 +84,17 @@ class CoachService {
   bool _disclaimerAccepted = false;
   Set<String> _excluded = const {};
 
-  static uc.LlmClient? _clientFor(CoachConfig c) {
+  static uc.LlmClient? _clientFor(
+    CoachConfig c,
+    Future<String> Function() deviceId,
+  ) {
     if (!c.configured) return null;
     return uc.OpenAiCompatibleClient(
       config: uc.LlmConfig.deepSeekOpenCsg.copyWith(
         baseUrl: c.baseUrl,
         model: c.model,
       ),
-      auth: uc.ApiKeyAuth(c.apiKey),
+      auth: CoachRelayAuth(appKey: c.appKey, deviceId: deviceId),
     );
   }
 

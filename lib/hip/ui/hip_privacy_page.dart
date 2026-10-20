@@ -27,7 +27,7 @@ class HipPrivacyPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 17 日',
+                  '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 20 日',
                   style: TextStyle(color: HipColors.muted, height: 1.6),
                 ),
                 const SizedBox(height: 20),
@@ -35,7 +35,8 @@ class HipPrivacyPage extends StatelessWidget {
                   title: '我们如何处理你的信息',
                   body:
                       '本应用无需账号，不含广告、行为分析或支付功能。'
-                      '我们不收集、上传、出售或与第三方共享你的个人信息和健康相关记录。',
+                      '日常训练和自测记录保存在本机，不会自动上传。'
+                      '只有你主动使用 AI 定制时，才会向 AI 服务发送请求。',
                 ),
                 const _PolicySection(
                   title: '只在设备上保存的记录',
@@ -55,11 +56,18 @@ class HipPrivacyPage extends StatelessWidget {
                       '我们无法访问或代你删除设备及系统备份中的记录。',
                 ),
                 const _PolicySection(
+                  title: 'AI 定制与设备标识',
+                  body:
+                      '使用 AI 定制时，你输入的需求和当前对话会发送给 AI 服务生成计划。'
+                      '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。'
+                      '该标识不是手机硬件序列号。App 不会自动发送本机自测结果或训练历史。',
+                ),
+                const _PolicySection(
                   title: '视频、网络与权限',
                   body:
                       '动作视频随应用内置，可以离线播放。Android 的网络权限用于 '
-                      '127.0.0.1 本机媒体服务，让播放器读取内置素材。'
-                      '应用本身不向外部服务器上传你的记录，不访问相机、麦克风、联系人或位置。',
+                      '127.0.0.1 本机媒体服务，让播放器读取内置素材，也用于你主动使用的 AI 定制请求。'
+                      '应用不访问相机、麦克风、联系人或位置。',
                 ),
                 const _PolicySection(
                   title: '运动与健康提示',

@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 0.3.8+14
+version: 0.3.9+15
 
 environment:
   sdk: ^3.12.2
@@ -14,6 +14,8 @@ dependencies:
     sdk: flutter
   # On-device state (lib/core/storage/local_state_storage.dart).
   shared_preferences: 2.5.6
+  # Persistent installation ID for the AI relay's X-Device-Id header.
+  uuid: 4.6.0
   # Drill clip player (lib/core/media/media_view_native.dart).
   webview_flutter: 4.14.1
   webview_flutter_android: 4.14.1
@@ -33,11 +35,11 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 7348f0cdcccf564fbddb73fef41c08e3bf30f0fa
+      ref: 8ef37a92bcc9e701fbe454ba98aa2100406287fb
   ugk_trainer:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 7348f0cdcccf564fbddb73fef41c08e3bf30f0fa
+      ref: 8ef37a92bcc9e701fbe454ba98aa2100406287fb
       path: packages/ugk_trainer
 
 dev_dependencies:

@@ -113,7 +113,7 @@ void main() {
   }) => CoachService(
     config: fake == null
         ? const CoachConfig()
-        : const CoachConfig(apiKey: 'test'),
+        : const CoachConfig(appKey: 'test'),
     content: content,
     client: fake,
     usage: usage ?? CoachUsageStore(),
@@ -767,7 +767,7 @@ void main() {
       );
       final usage = CoachUsageStore();
       final coach = CoachService(
-        config: const CoachConfig(apiKey: 'test'),
+        config: const CoachConfig(appKey: 'test'),
         content: content,
         client: client,
         usage: usage,
