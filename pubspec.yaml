@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 0.3.8+13
+version: 0.3.8+14
 
 environment:
   sdk: ^3.12.2
@@ -33,11 +33,11 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 7a84dc0830fa039f89f5e74f919d59f18d6602cd
+      ref: 7348f0cdcccf564fbddb73fef41c08e3bf30f0fa
   ugk_trainer:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 7a84dc0830fa039f89f5e74f919d59f18d6602cd
+      ref: 7348f0cdcccf564fbddb73fef41c08e3bf30f0fa
       path: packages/ugk_trainer
 
 dev_dependencies:
