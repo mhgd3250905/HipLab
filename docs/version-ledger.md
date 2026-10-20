@@ -307,3 +307,8 @@ App源38bce474723d45d4b025e7def52dfe935ed40fda，固定SDK8fb0aacff2072b31c4abae
 ### +16锁屏失败追加（00:08）
 
 00:07:47.193关屏约5分25.7秒后仍被Greeze冻结；FGS和started/mutedState:none音轨存活、训练锁DISABLED，媒体会话栈0。上一节“整节待验收”是安装阶段快照，本轮现判FAILED。安全锁屏待用户回来解锁正常结束，尚无本轮结果保存结论。[现场与后续](android-lockscreen-fix-2026-10-21.md#本轮结果失败继续sdk修复)。
+
+
+## 0.3.9+17 媒体会话候选（2026-10-21，已构建，未安装）
+
+来源App79c172d9a83d248f23e136cffe825f3bd016e16b，SDKd193a703e3a8bef6d41e7705a55ae250e23e6a69/trainer0.1.4。debug arm64原生构建26.8秒，175258975bytes，SHA256 `09e11efd96f284aeb642e0b46b05843916b061d0e06e40160089cbeeca08ce51`。原包名/签名、code17/0.3.9、CRC/876资产/唯一包内服务及新AI编译配置核对通过。App analyze0、保活专项8/8；SDK增量接口验证通过，旧全量不重复跑。手机仍+16失败现场且安全锁屏，待用户解锁后结束/备份/install-r和整节验收；本条不代表安装、原生通过或合main。[完整路径与证据](android-lockscreen-fix-2026-10-21.md)。

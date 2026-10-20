@@ -45,3 +45,14 @@ APK中继续携带新入口、模型及只通过dart-define注入的App Key，�
 失败证据为native/failure-summary.json、media-session-failure.txt、monitor/20261021-000817-{audio,power,services}.txt及lockscreen-logcat.txt。已停止系统采集；手机安全锁屏，尚未正常结束课程/读取新结果，不能宣称记录21或完整8/8。用户回来解锁后继续正常结束及保留记录。
 
 下一候选在包内现有唯一前台服务建立framework MediaSession、真实PLAYING/PAUSED状态与MediaStyle token，并受session owner和安全上限管理。官方API证明系统可发现性，不证明小米必然免冻；仍需一次完整锁屏复测。已通过的439/119及原语音时序不重复跑，只验证新增接口、原生编译与必要现场。
+
+
+## 第三轮修复候选0.3.9+17：已构建，未安装
+
+SDK提交d6268aa加入媒体会话与真实状态；d193a703e3a8bef6d41e7705a55ae250e23e6a69再限定仅语音或提示音启用时创建媒体身份，trainer0.1.4。默认自测及纯静默视觉训练保持普通hold。owner保护覆盖状态/STOP，暂停不续cap，finish、taskRemoved、destroy、启动/锁失败、原生cap到期均STOPPED→inactive→release，并释放锁与通知。仅既有唯一服务，无新依赖/权限/系统电池白名单或持续音频焦点。未宣告外部播放控制。
+
+必要增量验证：SDK hold9/9、受影响UI24/24在d6268aa通过；追加静默边界后新UI文件4/4在d193a70通过，scoped analyze/format/diff检查通过。这些是已有工具输出，未为产生日志重新运行，汇总media-session-targeted-validation.json留本机。App79c172d9a83d248f23e136cffe825f3bd016e16b固定精确Git来源，锁校验通过；App analyze0（6.5秒）、自测/package共享owner与释放专项8/8（1秒）。原439/119及AI/语音时序沿用前一已验源码，相关执行器未改，不伪称在新提交重新跑过全量。
+
+原生APK已成功编译（Gradle26.8秒），debug arm64，175258975bytes，SHA256 `09e11efd96f284aeb642e0b46b05843916b061d0e06e40160089cbeeca08ce51`。产物：`E:/AII-3D/hiplab-releases/hiplab-0.3.9+17-media-session-20261021/hiplab-0.3.9+17-media-session-arm64-debug.apk`。com.ugk.hiplab/code17/0.3.9，原签名连续、CRC/876资产/单服务通过；继续携带新AI编译配置，无旧令牌define，未输出实际key。
+
+手机仍安全锁屏，未安装+17，也未正常结束+16失败课程。已请求用户回来后本人解锁，随后正常结束并核对结果、重新备份、install-r保留数据，再只做必要的PLAYING/PAUSED/恢复身份与整节锁屏/自然释放验证。不能把API、单测或编译当作小米免冻保证。SDK草稿PR #2及App开发分支已保存候选，两个main未合；没有上传商店。
