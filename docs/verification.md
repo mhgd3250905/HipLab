@@ -375,3 +375,10 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 | `gh pr view 22 --repo mhgd3250905/HipLab --json number,state,mergedAt,mergeCommit,headRefOid`，同参数查24 | 本次只读再核对，两PR均MERGED，来源a586de3/0ccef6b，UTC15:32:51合并 | 与当前Git祖先及主线集成点b33ed21一致；没有商店状态观察 |
 
 本次必要验证为文档事实、8份修改文档中261处本地链接引用（0缺失）、`git diff --check`、证据源到HEAD的有限差异及完整状态/归属复核；修改后只有本Agent的8份文档和原有4个未跟踪产物，没有新未知路径；不读取构建产物、原生日志、凭据或未跟踪产物内容。SDK/原生证据仅由本会话既有执行及已提交台账绑定，不能当成closeout重新执行。
+
+
+## 0.3.7+12 测试包核验（2026-10-20）
+
+来源55d99b3，相对已验PR25业务内容仅共用版本递增；依赖锁校验成功，锁文件未改。Android/Kotlin debug arm64构建50.7秒通过；回读com.ugk.hiplab / 0.3.7 / code12、min24/target36正确，debug证书连续，CRC通过，876个打包源资源逐字节匹配，AI配置绑定通过。与旧审核包ZIP条目集合一致；Flutter引擎等库相同，libdartjni.so仅build-id节变化，其余节一致，差异清单留本机。
+
+本轮未重跑Flutter业务测试/analyze或真实模型，沿用同业务源8c985c4本机414过/1跳、原6复现、analyze0与13.695秒/7动作真实API结果。没有ADB/安装/听感或数据升级结论；打包通过不代表真机验收完成。[产物与证据](android-test-build-0.3.7-2026-10-20.md)。
