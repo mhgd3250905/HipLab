@@ -259,3 +259,18 @@ PR #13 阶段源码 `a41e7e0`、C 盘两次缓存失败及 E 盘同 SHA 构建�
 按用户要求从main构建，源55d99b3（在8c61893上只递增pubspec版本）；Flutter3.44.7 / Dart3.12.2。`hiplab-0.3.7+12-ai-arm64-debug.apk`，175043055bytes，SHA256 `4846f335c4a8f100b17c6b9548a46d950011baa57e93c035e9735e3d24c8e052`，保留com.ugk.hiplab及既有debug证书，versionCode12。AI令牌来自本机私有参数，凭据不入Git。包位于 `E:/AII-3D/hiplab-releases/hiplab-0.3.7+12-test-20261020/`。
 
 构建50.7秒，APK元数据/签名/CRC/876资产通过；本轮无ADB/安装/清数据或商店操作。沿用业务源8c985c4的414pass/1skip和analyze/API结果，不冒称本次重复运行业务测试。手机最后已验安装继续0.3.6+11；保留数据升级与AI原生流程须实际安装后核验。[交付记录](android-test-build-0.3.7-2026-10-20.md)。
+
+
+## 0.3.8+13 ugk_trainer 首轮包（2026-10-20，锁屏未通过）
+
+分支`codex/adopt-ugk-trainer`，构建源`7dd40b061a6316195bea656d1f9d4bd1b7f09108`，SDK固定`7a84dc0830fa039f89f5e74f919d59f18d6602cd`/ugk_trainer0.1.1。Flutter3.44.7，Android debug arm64、带既有AI配置，Gradle58.3秒。`hiplab-0.3.8+13-trainer-arm64-debug.apk`，175247923bytes，SHA256 `64ac542cd754bd1e33445fe9451f4a4b5b4b5ae84eb758d42b5e026ea186dc98`。包名com.ugk.hiplab/code13，原debug证书连续；CRC及876个App资产逐字节匹配，APK只有com.ugk.trainer.TrainingSessionService一个服务。
+
+手机实际安装前已为0.3.7+12；本轮先备份shared_prefs/files与原APK，再adb install -r，回读0.3.8/code13，冷启动1228ms。安装和启动后7154字节偏好与备份逐字节保持，18条旧记录、2个训练组保留；未清数据或回写备份。用户确认耳机锁屏初时正常，随后停声、解锁恢复。系统日志22:42:09.005明确Greeze冻结并禁用训练唤醒锁，22:42:31.326解锁后解冻。该原生验收失败，不能以429pass/1skip、analyze或构建通过替代。失败课程按提前结束保存（endedEarly=true/full=false/70s），自然测试记录保留，现19条。
+
+产物、原APK备份、偏好、截图与系统日志在本机`E:/AII-3D/hiplab-releases/hiplab-0.3.8+13-trainer-20261020/`，不随Git推送。SDK修复与复测继续见[接入记录](ugk-trainer-adoption-2026-10-20.md)；main未合、App分支未推、未上传商店。
+
+## 0.3.8+14 锁屏修复复测包（2026-10-20，已安装、未验收）
+
+App源`f702164559526c0073ad2f26734a91badb7e2b94`，固定SDK`7348f0cdcccf564fbddb73fef41c08e3bf30f0fa`/trainer0.1.2；SDK118/118及analyze0。Git锁校验成功，Android debug arm64带既有AI配置，Gradle35.4秒。包`hiplab-0.3.8+14-trainer-lockscreen-arm64-debug.apk`位于`E:/AII-3D/hiplab-releases/hiplab-0.3.8+14-trainer-lockscreen-20261020/`，175254439bytes，SHA256 `c5f1b5e75dbf1b1da126fa35687b4138504e9c96c266b926a467d497b71f6bc6`。回读com.ugk.hiplab/code14/0.3.8；既有debug证书SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`连续，CRC、876源资产及仅包内一份服务通过。
+
+23:02前后对同一2602BRT18C/Android16覆盖安装成功，安装前再次备份shared_prefs/files，安装和启动后9882字节偏好逐字节一致（SHA256 `27b4f738f20db3ac9edc107716fc741a228adf8a06e4d27a9e6fe8bf85f0eabd`），保留19记录/2组/3个完成日，无清数据或回写备份。冷启动1192ms。用户随后明确改为扬声器复测；测试闹钟已不在屏幕，但开练前用户要求暂用其他App，因此课程未启动、停止手机操作待通知。App该固定依赖全量429过/1条件跳（4分33秒）、analyze0；原生锁屏仍待复测，不以本包修复或单测改写+13失败。main未合、未上传商店。
