@@ -26,11 +26,11 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前共用版本为 **0.3.7+12**；Android带AI配置debug arm64包已在源码 `55d99b3d097afc815fa16e165362cf4703c440d5` 构建，签名连续、包身份/CRC/876资产核验通过。业务内容与已验源 `8c985c4c6dcff4207db616e759910ea03820ad79` 相同，仅共用版本递增，因此沿用其414pass/1条件skip及analyze/API证据。构建、安装和后续文档HEAD分别记录；此次文档对齐不递增版本、不重新构建或安装。
+本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前共用版本为 **0.3.9+17**；Android带AI新入口配置的debug arm64包已在源码 `79c172d9a83d248f23e136cffe825f3bd016e16b` 构建并保留数据安装，固定SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach0.1.3/trainer0.1.4），签名连续、包身份/CRC/876资产及唯一训练服务核验通过。该源analyze无问题、保活专项8/8；439过/1条件跳属于此前38bce47全量基线，未在最终依赖上重复全量测试。构建、安装和后续文档HEAD分别记录，详见[证据绑定](docs/verification.md#训练包与新中转阶段收束2026-10-21)；此次文档对齐不递增版本、不重新构建或安装。
 
 **#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
-当前未验边界以[验证台账](docs/verification.md)及[开发事项](docs/development-roadmap.md)的最新日期记录为准；AI生成/开练/保存、断网回落、保留数据升级及已列出的语音/字号/键盘专项须待实际安排，iOS仍未验。上述历史“简单测试”和打包通过均不代替新包真机验收。下列为通用构建命令，不代表本次执行发布。
+当前未验边界以[验证台账](docs/verification.md)及[开发事项](docs/development-roadmap.md)的最新日期记录为准：+15已实际完成手机AI生成、保存和开练，+17保留数据升级已核验；这些结果不代表完整锁屏课程通过。D-34保留小米后台冻结失败，由用户后测；断网回落、其他未执行专项及iOS仍按原记录待验。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get
@@ -56,8 +56,8 @@ lib/main.dart                  入口
 lib/hip/domain/                自测/今日训练/疼痛规则，以及练习剂量、自定义训练组和单练历史模型
 lib/hip/control/hip_store.dart 本地持久化（SharedPreferences，单 key hiplab.state.v1）
 lib/hip/ui/                    安全引导、今日/练习/进度三Tab、自测/跟练、动作详情与训练组编辑
-lib/hip/voice/                 语音播报：会话阶段/台词时间线、播放队列、just_audio 输出（ducking、iOS 后台保活）
-lib/core/                      公共代码来源见下表；screen_awake.dart管常亮，HipLab自有training_service.dart按训练会话管理Android保活
+lib/hip/voice/                 HipLab台词/剂量映射与设置适配；语音队列、时间线执行和音频输出复用ugk_trainer
+lib/core/                      公共代码来源见下表；常亮导出及training_service.dart薄适配复用ugk_trainer保活/唯一原生服务
 assets/hip/hip-content.json    内容包（脚本生成，不要手改）
 assets/hip/posters/            历史原型静帧（当前 46 项动作均已接入视频）
 assets/hip/assessment/         自测对比图（20 张）

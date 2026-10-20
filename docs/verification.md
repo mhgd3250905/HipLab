@@ -2,11 +2,13 @@
 
 **已获同意，两个main均已合入并推送。** 2026-10-21用户明确“合并并推送，保留锁屏已知问题”；SDK main为d193a70（PR #2已MERGED，00:39:10），HipLab主线集成点691ace2（00:39:31）。已安装包保持0.3.9+17/79c172d、21原记录/4组/UUID保持；锁屏冻结仍是已知失败，由用户后测，不重建/重测、不改手机省电设置、不上传商店。[合并与边界](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
+以下按日期保留的候选、安装与失败段落均为历史快照，其中“当前”“未合main”“待解锁”描述当时现场；当前交付与授权以页首最新结论及对应台账为准。
+
 **00:08失败阶段快照：0.3.9+16锁屏仍失败。** 00:07:47.193 Greeze冻结（关屏5分25.7秒），服务和started/mutedState:none音轨仍在、训练锁DISABLED；系统媒体会话栈为0。不能把正常音量修正记为锁屏通过。当前安全锁屏，待用户回来解锁后正常结束本轮；SDK正在补真实媒体会话与释放，main未合。[完整现场](android-lockscreen-fix-2026-10-21.md)。
 
 **2026-10-21 00:02安装快照：** App38bce47/0.3.9+16固定SDK8fb0aac/trainer0.1.3；App439pass/1条件skip（3分39秒）、analyze0（6秒），训练包119/119及analyze0。APK签名/CRC/876资产/单服务、新AI编译配置和保留数据安装通过；当前8动作整节锁屏中，仅阶段音轨分类及用户听音正常，不先写通过。[本轮证据](android-lockscreen-fix-2026-10-21.md)。
 
-**2026-10-20 新中转与最终运行源：** App f8f0ec8、夹具ab963d7 / SDK8ef37a9 / 0.3.9+15。App最终439pass/1条件skip（5分19秒）和analyze0；SDK根168/训练118全过、两包analyze0。新入口真实主机完整计划31.279秒/5动作通过，前两次HTTP回落保留。手机保留数据安装、只新增UUID偏好、原数据保持且冷启动UUID复用；新AI36.595秒首轮生成8动作并保存为第4组，开练前19记录保持。该组扬声器整节锁屏失败：23:50:21.914 Greeze冻结并禁用训练锁，静音音轨仍started/clientVolume；亮屏恢复后23:53用户正常结束，结果528秒、6/8、full=false、endedEarly=true，记录增至20、4组保持，训练服务已退出。未合main。[本轮证据与失败边界](ai-relay-migration-2026-10-20.md)。
+**2026-10-20 新中转候选快照（+15当时运行源）：** App f8f0ec8、夹具ab963d7 / SDK8ef37a9 / 0.3.9+15。App最终439pass/1条件skip（5分19秒）和analyze0；SDK根168/训练118全过、两包analyze0。新入口真实主机完整计划31.279秒/5动作通过，前两次HTTP回落保留。手机保留数据安装、只新增UUID偏好、原数据保持且冷启动UUID复用；新AI36.595秒首轮生成8动作并保存为第4组，开练前19记录保持。该组扬声器整节锁屏失败：23:50:21.914 Greeze冻结并禁用训练锁，静音音轨仍started/clientVolume；亮屏恢复后23:53用户正常结束，结果528秒、6/8、full=false、endedEarly=true，记录增至20、4组保持，训练服务已退出。未合main。[本轮证据与失败边界](ai-relay-migration-2026-10-20.md)。
 
 **2026-10-20 上一轮+14候选快照（当时状态）：** App f702164 / SDK7348f0c / trainer0.1.2 / 0.3.8+14，固定Git锁校验成功；SDK118/118（20秒）、analyze0；App新依赖全量429过/1条件skip（4分33秒）和analyze0（5.6秒）。Android35.4秒构建，签名/CRC/876资产/唯一包内服务通过；已保留数据安装并启动，9882字节偏好逐字节保持。+13原生失败保留，+14尚未开练；用户改为扬声器复测后要求暂用其他App，当前停止手机操作，待其通知。未合main，不把单测/安装当作原生修复通过。[第二轮候选](ugk-trainer-adoption-2026-10-20.md#第二轮修复候选已安装原生待复测)。
 
@@ -14,7 +16,7 @@
 
 **2026-10-20 PR25修复复审并合main：** 源8c985c4 / SDK26e3255，analyze0、全量414pass/1条件skip（6分47秒）；原6独立复现逐字节未改且6/6通过，作者8项新增回归通过；带令牌Android/Kotlin、APK身份和真实API13.695秒/7动作通过。用户随后明确授权推进，GitHub已MERGED；真机仍未验，无ADB/安装/听音。[复审与合并](pr25-reaudit-2026-10-20.md)。
 
-PR25之前的已验安装基线为 **0.3.6+11 debug / arm64**，构建源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据安装；F9编辑/键盘原生通过，正常播放与用户听音确认见上一轮记录。当前已安装0.3.9+15且锁屏再次未通过，以页首本轮观察为准；旧包真机证据不推广为新功能通过。原66f5da0/0.3.6首轮及0.3.5+10试听、V-01～V-13等均按日期保留历史。
+PR25之前的已验安装基线为 **0.3.6+11 debug / arm64**，构建源 `9b22dccc2bf2ca269a67b408198b9e3e9dbb742b`，2026-10-19 23:15:53保留数据安装；F9编辑/键盘原生通过，正常播放与用户听音确认见上一轮记录。当前已安装0.3.9+17，锁屏仍未通过且已获准保留问题合main，以页首结论及文末证据绑定为准；旧包真机证据不推广为新功能通过。原66f5da0/0.3.6首轮及0.3.5+10试听、V-01～V-13等均按日期保留历史。
 
 | 编号 | 范围 / 命令 | 已执行结果 | 证据与边界 |
 |---|---|---|---|
@@ -423,3 +425,56 @@ Windows锁定依赖/analyze0/335pass1skip；APK签名、CRC、16KB对齐、575�
 锁屏中每约45秒系统只读快照及持续logcat采证，未用run-as读私有数据；失败后停止循环。23:53用户正常结束，再读结果：SessionResult.activeSeconds=528、completedExercises=6/8、full=false、endedEarly=true；记录19→20，训练组4个保持，结束后TrainingSessionService不在（仅WebView服务）。证据位于 `E:/AII-3D/hiplab-releases/hiplab-0.3.9+15-relay-20261020/native/` 的lockscreen-logcat.txt、monitor/、failed-course-result.json及退出后服务快照。只核验扬声器；不记耳机或自然完成通过。
 
 SDK候选方向为Android保活音轨volume=1且使用全零采样素材，尚未验证。素材检查89088个PCM16采样全0，证据 `E:/AII-3D/ugk-trainer-verification-20261020/silence-pcm-check.json`；该检查只证明素材静音，不证明锁屏已修复。不新增版本、不重复构建来验证本次文档，main仍待实际通过与最终同意。
+
+
+## 训练包与新中转阶段收束（2026-10-21）
+
+本节为用户显式调用cockpit-closeout后的文档收束，未重新执行App/SDK测试、API调用、构建、安装或手机操作。版本仍为0.3.9+17；既有锁屏失败与用户后测决定保持，未上传商店。
+
+### Preflight与归属
+
+- 仓库边界：`E:/AII-3D/3D-Hip`，分支main。baseline为本阶段已记录的起始main `99fcc8356baf1a30d2a703e763ac01b5de4bef52`，无命名ref；`git rev-parse --verify <SHA>^{commit}`及`git merge-base --is-ancestor <SHA> HEAD`均通过。发现时HEAD为 `83130a23c73f8a29e42cce00f569a03547c0bf0f`。
+- 有限delta：`git log baseline..HEAD`共12提交；`git diff --name-status baseline..HEAD`共54路径（M42/A11/D1）：根配置3、android3、docs10、lib18、test19、test_screens1，均为本会话已授权训练包/AI迁移及交付记录。收束范围仅为这些主题的文档一致性，不改代码、配置、版本、媒体或发布设置。
+- 先读取适用根AGENTS及根README；按受影响路径核对22个可能的下级AGENTS位置，无嵌套文件。入口直接声明的来源如下；未递归跟随二级文档，未读取其他仓库、凭据、日志、产物或未跟踪文件内容。
+
+| 实际canonical路径 | 类别及当前/历史判定 | 核对结果 |
+|---|---|---|
+| `README.md`、`docs/README.md` | current：项目/文档入口；旧日期段落为history | 当前包、职责及本阶段索引已对齐 |
+| `docs/current-state.md` | current：设备/主线事实；旧日期快照为history | +17安装、两main合推、D-34失败分开登记 |
+| `docs/version-management.md` | current：版本规则与快照 | 共用版本17、coach0.1.3/trainer0.1.4及状态边界已对齐 |
+| `docs/version-ledger.md` | current：最新摘要；逐次构建/安装流水为history | 摘要改为+17；+15/+16/+17原始流水保留 |
+| `docs/verification.md` | current：检查台账；各来源检查为history | 纠正安装摘要，补本节证据绑定，不冒充全量复测 |
+| `docs/development-roadmap.md` | current：事项索引；过程段落为history | D-32/D-33已集成，D-34仍失败/用户后测 |
+| `docs/development-log.md` | current：成果记录；旧阶段日志为history | 追加本次整理，候选现场明确为历史 |
+| `docs/development-workflow.md` | current：操作规则和最新基线；旧基线为history | 最新基线由+12仅构建改为+17已安装/已合推 |
+| `docs/android-lockscreen-fix-2026-10-21.md` | current：页首及最终合并确认；中间过程为history | 保留失败与合并事实，补过程时态说明 |
+
+代码/配置事实另与已授权delta内的`pubspec.yaml`、`pubspec.lock`及训练/语音/AI适配核对：两包固定SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`；App不再持有旧服务/通道，疼痛与反馈走包插槽、结果走SessionResult；课程名、剂量台词、D-01和自测仍归App。AI使用新Base URL、默认模型、仅dart-define App Key及持久UUID，无Authorization；未读取密钥值。
+
+完整`git status --porcelain=v1 --untracked-files=all`发现tracked/staged/unstaged/deleted/renamed各0、untracked4。下列均为阶段前已由会话及本页旧收束记录明确保存的Web审核快照，路径归属已核对，仅保留、不读内容、不纳入提交：
+
+- `.playwright-cli/page-2026-10-19T02-40-08-297Z.yml`
+- `.playwright-cli/page-2026-10-19T03-12-59-813Z.yml`
+- `.playwright-mcp/page-2026-10-17T07-26-38-832Z.yml`
+- `.playwright-mcp/page-2026-10-17T07-29-48-965Z.yml`
+
+### 既有证据与source state
+
+以下均来自本会话2026-10-21执行结果，按实际来源复用，未重跑；构建参数中的私有文件路径不写入文档。
+
+| 命令 / 观察 | 结果 | 绑定source state与适用范围 |
+|---|---|---|
+| `flutter pub get --enforce-lockfile` | 固定Git依赖锁校验成功 | App `79c172d9a83d248f23e136cffe825f3bd016e16b`，SDK d193a70 |
+| `flutter analyze --no-pub` | No issues，6.5秒 | 同一App完整SHA；覆盖当时最终App接口适配 |
+| `flutter test --no-pub --reporter expanded test/hip/hip_training_keepalive_test.dart` | 8/8，约1秒 | 同一App完整SHA；仅保活适配专项 |
+| `flutter build apk --debug --target-platform android-arm64 --no-pub --dart-define-from-file=<私有参数文件>` | 成功，26.8秒；包身份/签名连续、CRC/876资产/唯一训练服务通过 | 同一App完整SHA；产物身份仍归实际构建源，不写为文档HEAD新构建 |
+| 保留数据覆盖安装、冷启动及媒体会话状态观察 | +17安装成功，21记录/4组/UUID保持；PLAYING/PAUSED/恢复及token可见 | 同一App完整SHA；仅为已发生的原生观察，不推断整节锁屏通过 |
+| +17整节锁屏观察 | 00:29:50.582被Greeze冻结，训练锁被禁用；FAILED | 同一App完整SHA；用户随后要求停止排查、后测，并同意保留问题合main |
+
+`git rev-parse --verify`与祖先检查确认上述App源有效；`git diff --name-status 79c172d9a83d248f23e136cffe825f3bd016e16b 83130a23c73f8a29e42cce00f569a03547c0bf0f`仅11份Markdown变化，无运行代码、依赖或测试变化。本次亦仅修正文档，故上述范围内检查仍适用，未宣称重新执行。
+
+历史439pass/1条件skip及analyze0绑定App `38bce474723d45d4b025e7def52dfe935ed40fda`；原语音时序保留。其至79c172d除文档还有`pubspec.yaml`/`pubspec.lock`变化，SDK升级至d193a70。因此439只作先前全量基线，不作为最终依赖的全量重跑证明；SDK119/168及后续增量结果也只按原来源报告保留，本次未跨仓核验。+16解锁补算8/8、1210秒不等于锁屏自然完成。
+
+### 本次确定性修正与验证
+
+已修正旧包“当前/最新”摘要、SDK版本、目录职责、漏列的本阶段文档入口、验证来源及历史/当前时态。安装、合并、推送和验收独立登记；锁屏问题没有关闭。2026-10-21提交前，以发现时HEAD加本次10份Markdown改动的工作树执行`python -`有限文档核查：368处本地链接存在、22处已读取canonical锚点有效，版本/依赖/失败边界与配置及来源一致；`git diff --check`通过。完整状态复核为tracked未暂存修改10（全部本Agent文档）、staged/deleted/renamed各0、原有untracked4（保留），无其他路径；HEAD仍为发现时来源。随后仅以明确文档路径提交，不把文档提交写为新构建或真机通过。
