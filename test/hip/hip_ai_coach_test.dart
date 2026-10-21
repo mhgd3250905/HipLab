@@ -251,7 +251,7 @@ void main() {
       expect(m.routine.restSeconds, 15);
     });
 
-    test('回落按关键词挑内置套路；预设 = 原样复制套路；红旗只给就医建议', () async {
+    test('回落按关键词挑内置套路；原剂量保留且遵守器械限制；红旗只给就医建议', () async {
       expect(TemplateFallback.pickRoutine('睡前想放松一下'), 'B');
       expect(TemplateFallback.pickRoutine('在办公室工位上做'), 'A');
       expect(TemplateFallback.pickRoutine('早上起床唤醒'), 'C');
@@ -280,7 +280,25 @@ void main() {
         name: '睡前 8 分钟',
         at: _now,
       );
-      expect(m.routine.toJson(), copy.toJson());
+      // Home assumes no band. The gate excludes h-band-leg-out, while all
+      // admitted steps retain the App's original kit doses and pace.
+      expect(
+        r.plan!.items.map((i) => i.exerciseId),
+        copy.steps
+            .where((s) => s.kitId != 'h-band-leg-out')
+            .map((s) => s.kitId),
+      );
+      expect(
+        m.routine.toJson(),
+        copy
+            .copyWith(
+              steps: [
+                for (final step in copy.steps)
+                  if (step.kitId != 'h-band-leg-out') step,
+              ],
+            )
+            .toJson(),
+      );
       final red = t.reply(
         '大腿刚拉伤，肿了',
         reason: PresetReason.offline,

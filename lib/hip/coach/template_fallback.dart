@@ -101,7 +101,7 @@ class TemplateFallback {
     if (chairOnly && routine.scene != HipScene.chair) {
       routine = content.routine('A');
     }
-    final original = build(routine);
+    final original = build(routine, catalog: catalog);
     final plan = original.copyWith(
       scene: context.scene ?? original.scene,
       level: context.level ?? original.level,
@@ -148,20 +148,33 @@ class TemplateFallback {
         items: items,
       );
 
-  /// 内置套路转成 TrainingPlan v1（source=template，templateId=套路 id），剂量照套路原样。
-  uc.TrainingPlan build(HipRoutine r) {
+  /// Represent the authored routine using the catalog's SDK dose unit.
+  /// HipLab's eight documented catalog/kit unit differences must not turn
+  /// into gate rejections. The template mapper restores the original kit
+  /// reps, holds and pace for every admitted step (docs/ai-coach.md).
+  uc.TrainingPlan build(HipRoutine r, {required uc.Catalog catalog}) {
     final items = <uc.PlanItem>[];
     for (final s in r.steps) {
       final kit = content.kit(s.drillId);
       if (kit == null || !inLibrary(content, s.drillId)) continue;
+      final dose = catalog[s.drillId]?.defaultDose;
+      final mode =
+          dose?.mode ??
+          (kit.kind.counted ? uc.DoseMode.reps : uc.DoseMode.time);
       items.add(
         uc.PlanItem(
           exerciseId: s.drillId,
-          mode: kit.kind.counted ? uc.DoseMode.reps : uc.DoseMode.time,
+          mode: mode,
           sets: 1,
-          reps: kit.kind.counted ? (s.kit.reps ?? kit.defaultReps ?? 1) : null,
-          workSeconds: kit.kind.counted
+          reps: mode != uc.DoseMode.reps
               ? null
+              : kit.kind.counted
+              ? (s.kit.reps ?? kit.defaultReps ?? 1)
+              : dose?.reps,
+          workSeconds: mode != uc.DoseMode.time
+              ? null
+              : kit.kind.counted
+              ? s.seconds ~/ (s.sided ? 2 : 1)
               : (s.kit.seconds ?? kit.defaultSeconds ?? 30),
           perSide: kit.sided,
           restSeconds: CustomRoutine.defaultRest,

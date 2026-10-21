@@ -52,7 +52,7 @@ class CoachPlanMapper {
   /// - `mode` 与动作包单位一致时直接用；计数类给了秒数 → 按动作包节奏换成能做完的次数
   ///   （同单练「计时的计数动作」的算法）；保持类给了次数 → 用动作包默认秒数。
   /// - 动作间休息：取计划里各动作 restSeconds 的中位数，就近落到训练组可选的 10/15/20/30 秒。
-  /// - 预设方案（source=template）：原样「复制成我的训练组」（剂量、节奏照套路）。
+  /// - 预设方案（source=template）：只复制门禁准入动作，剂量、节奏照原套路。
   /// - 不在动作大全里的动作跳过（校验阶段已按「profile ∩ 动作大全」排除，正常不会出现）。
   CoachPlanMapping map(
     uc.TrainingPlan plan, {
@@ -65,7 +65,16 @@ class CoachPlanMapper {
           .where((r) => r.id == plan.templateId)
           .firstOrNull;
       if (r != null) {
-        final routine = copyRoutine(r, content, id: id, name: name, at: at);
+        final admittedIds = {for (final item in plan.items) item.exerciseId};
+        // Presets retain their authored hold/pace overrides, but a gated
+        // subset must never regain an excluded exercise from its template.
+        final original = copyRoutine(r, content, id: id, name: name, at: at);
+        final routine = original.copyWith(
+          steps: [
+            for (final step in original.steps)
+              if (admittedIds.contains(step.kitId)) step,
+          ],
+        );
         return CoachPlanMapping(
           routine: routine,
           entries: [for (final s in routine.steps) _entry(s, r.name, false)],
