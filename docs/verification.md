@@ -1,5 +1,9 @@
 # 验证台账
 
+## 2026-10-21 10:47：本轮复核记录合并确认
+
+用户明确“推进合并”。fetch 后本地与远端 main 均为 cb7ae4f；来源 `354d0f12be52109ebeca5a02969cc478ba94b492` 仅修改六份复核文档，diff 检查通过。`git merge --ff-only` 后与来源树逐字一致，普通 push 成功，`git ls-remote origin refs/heads/main` 回读同一完整 SHA。以下本轮检查继续绑定原 App cb7ae4f / SDK d193a70；合并及回执不改运行代码，未重复测试或构建。下文“留审阅分支、未合 main”保留为授权前快照，当前合并事实以此处为准。
+
 ## 2026-10-21 训练包接力复核
 
 本轮在 `codex/verify-ugk-trainer-20261021` 重新执行本机检查，来源为 App `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637` 与固定 SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach 0.1.3 / trainer 0.1.4）。测试期间仅补本文等复核文档，运行代码、依赖和测试没有变化。工具为 Flutter 3.44.7 stable / Dart 3.12.2。
