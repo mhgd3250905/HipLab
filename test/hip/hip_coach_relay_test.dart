@@ -11,7 +11,7 @@ import 'package:hiplab/hip/coach/coach_service.dart';
 import 'package:hiplab/hip/coach/usage_store.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 
-import 'hip_ai_coach_test.dart' show readAsset, validPlanEnvelope;
+import 'hip_ai_coach_test.dart' show readAsset, toolCall, validPlanArguments;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 class _RelayRequest {
@@ -43,9 +43,12 @@ _startRelay() async {
           {
             'message': {
               'role': 'assistant',
-              'content': jsonEncode(validPlanEnvelope()),
+              'content': '给你排了一节开胯训练。',
+              'tool_calls': [
+                toolCall('show_plan', validPlanArguments()).toJson(),
+              ],
             },
-            'finish_reason': 'stop',
+            'finish_reason': 'tool_calls',
           },
         ],
         'usage': {'prompt_tokens': 12, 'completion_tokens': 8},
@@ -139,13 +142,19 @@ void main() {
         readAsset: readAsset,
         deviceId: identity.load,
       );
-      final answer = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
+      final answer = await service.send('睡前在家开胯 12 分钟');
       expect(
         answer.preset,
         isFalse,
         reason: 'the real SDK must parse and validate the local response',
       );
-      expect(answer.reply!.kind, uc.ReplyKind.plan);
+      expect(answer.status, uc.TurnStatus.ok);
+      expect(answer.plan, isA<uc.ValidatedPlan>());
+      expect(answer.plan!.plan.title, '睡前开胯 12 分钟');
+      expect(
+        (service.session!.client as uc.OpenAiCompatibleClient).config.timeout,
+        const Duration(seconds: 120),
+      );
     }
     expect(captured, hasLength(2));
     for (final request in captured) {
@@ -154,7 +163,16 @@ void main() {
       expect(request.uri.hasQuery, isFalse);
       expect(request.body['model'], 'deepseek-v4-flash-0731');
       expect(request.body['stream'], isFalse);
-      expect(request.body['response_format'], {'type': 'json_object'});
+      expect(request.body, isNot(contains('response_format')));
+      expect(request.body['tool_choice'], 'auto');
+      final tools = (request.body['tools'] as List).cast<Map>();
+      expect(tools.map((tool) => (tool['function'] as Map)['name']), [
+        'show_actions',
+        'show_plan',
+      ]);
+      final actionsSchema = jsonEncode(tools.first);
+      expect(actionsSchema, contains('s-figure4'));
+      expect(actionsSchema, isNot(contains('n-thomas-test')));
       expect(request.body['messages'], isNotEmpty);
       expect(request.headers['x-app-key'], 'local-relay-test-app');
       expect(request.headers, isNot(contains('authorization')));
@@ -196,7 +214,7 @@ void main() {
           return 'e3992abc-aa29-4a48-a2f5-d806171828cf';
         },
       );
-      final failed = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
+      final failed = await service.send('睡前在家开胯 12 分钟');
       expect(failed.preset, isTrue);
       expect(
         relay.requests,
@@ -204,7 +222,7 @@ void main() {
         reason: 'no request without a persistent device identity',
       );
       expect(loads, 1);
-      final retried = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
+      final retried = await service.send('睡前在家开胯 12 分钟');
       expect(retried.preset, isFalse);
       expect(loads, 2);
       expect(relay.requests, hasLength(1));

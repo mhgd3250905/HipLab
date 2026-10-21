@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../coach/coach_service.dart';
+import '../coach/coach_context.dart';
 import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
@@ -546,8 +547,12 @@ class _HipHomeState extends State<HipHome> {
   final _practice = PracticeMemory();
 
   /// AI 定制 conversation: survives leaving the page, a session and tabs.
+  late final _coachService =
+      widget.coach ?? CoachService(content: store.content);
   late final _coach = AiCoachSession(
-    widget.coach ?? CoachService(content: store.content),
+    _coachService,
+    contextBuilder: () =>
+        buildCoachContext(store, catalog: _coachService.catalog),
   );
   late final _library = LibraryActions(
     store: store,

@@ -30,16 +30,15 @@ dependencies:
   # AI 定制 usage log location (lib/hip/coach/usage_file_io.dart); already
   # in the lock through shared_preferences, pinned to that version.
   path_provider: 2.1.6
-  # AI 训练助理 SDK (docs/ai-coach.md): catalog, TrainingPlan v1 validation,
-  # prompts, OpenAI-compatible client, usage records, fallback.
+  # AI 工具会话与训练执行共用同一个固定 SDK main 来源。
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d193a703e3a8bef6d41e7705a55ae250e23e6a69
+      ref: 09a392bc0b736e6a23eef71d55d86108660e0e59
   ugk_trainer:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d193a703e3a8bef6d41e7705a55ae250e23e6a69
+      ref: 09a392bc0b736e6a23eef71d55d86108660e0e59
       path: packages/ugk_trainer
 
 dev_dependencies:

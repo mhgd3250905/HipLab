@@ -4,7 +4,6 @@
 //   flutter test --no-pub test_screens/hip_ai_coach_shots_test.dart
 //
 // Output: docs/ai-coach/*.png (committed with the docs).
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -21,7 +20,7 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 
-import '../test/hip/hip_ai_coach_test.dart' show validPlanEnvelope, readAsset;
+import '../test/hip/hip_ai_coach_test.dart' show toolResponse, readAsset;
 import '../test/hip/hip_domain_test.dart' show MemoryStorage, loadContent;
 
 const _dir = 'docs/ai-coach';
@@ -90,6 +89,7 @@ void main() {
     store
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
+      ..minutes = 12
       ..theme = dark ? HipThemeChoice.dark : HipThemeChoice.light;
     await tester.pumpWidget(
       RepaintBoundary(
@@ -125,7 +125,7 @@ void main() {
   }
 
   testWidgets('1 练习页「我的」入口（浅色）', (tester) async {
-    await boot(tester, coach([validPlanEnvelope()]), dark: false);
+    await boot(tester, coach([toolResponse()]), dark: false);
     await _shot(tester, '1-practice-entry-light');
   });
 
@@ -135,7 +135,7 @@ void main() {
       coach([
         (uc.LlmRequest r) async {
           await Future<void>.delayed(const Duration(seconds: 60));
-          return jsonEncode(validPlanEnvelope());
+          return toolResponse();
         },
       ]),
       dark: true,
@@ -143,6 +143,7 @@ void main() {
     await open(tester, accept: false);
     await say(tester, '睡前 12 分钟，开开胯', settle: false);
     await tester.pump(const Duration(seconds: 12));
+    expect(find.textContaining('75–120 秒'), findsOneWidget);
     await _shot(tester, '2-thinking-disclaimer-dark');
     await tester.tap(find.byKey(const ValueKey('coach-stop')));
     await tester.pump(const Duration(seconds: 60));
@@ -152,7 +153,7 @@ void main() {
   testWidgets('3 计划卡（浅色）', (tester) async {
     await boot(
       tester,
-      coach([validPlanEnvelope()]),
+      coach([toolResponse()]),
       dark: false,
       size: const Size(390, 1400),
     );

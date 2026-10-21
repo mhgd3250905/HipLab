@@ -10,7 +10,7 @@ enum PresetReason {
   notConfigured('AI 还没配置'),
   offline('网络不可用'),
   timeout('AI 响应超时'),
-  invalid('AI 两次都没排出合格的计划'),
+  invalid('AI 没有排出合格的计划'),
   unavailable('AI 暂时不可用');
 
   const PresetReason(this.zh);
@@ -24,8 +24,8 @@ enum PresetReason {
   };
 }
 
-/// 回落：从 App 现有内置套路（A–F、M）里按关键词挑最接近的一套，原样作为预设方案。
-/// 不生成新内容，也不改剂量（沿用套路里写好的剂量，保存时同「复制成我的训练组」）。
+/// 回落：按关键词选择 App 内置套路，再由 SDK 门禁筛掉不符合本轮条件的动作。
+/// 保留入选动作原有剂量，不把模型未通过的内容修成另一份计划。
 class TemplateFallback {
   TemplateFallback(this.content);
   final HipContent content;
@@ -83,28 +83,70 @@ class TemplateFallback {
   static bool anyRedFlag(String text, List<String> history) =>
       isRedFlag(text) || history.any(isRedFlag);
 
-  uc.CoachReply reply(
+  uc.SessionFallbackReply reply(
     String text, {
     required PresetReason reason,
+    required uc.Catalog catalog,
+    required uc.CoachProfile profile,
+    uc.CoachContext context = const uc.CoachContext(),
     List<String> history = const [],
   }) {
-    if (anyRedFlag(text, history)) return const uc.CoachReply.text(redFlagReply);
+    if (anyRedFlag(text, history)) {
+      return const uc.SessionFallbackReply(redFlagReply);
+    }
     var routine = content.routine(pickRoutine(text, history: history));
-    final chairOnly = [text, ...history].any(_chairOnly.hasMatch);
+    final chairOnly =
+        context.scene == 'office' ||
+        [text, ...history].any(_chairOnly.hasMatch);
     if (chairOnly && routine.scene != HipScene.chair) {
       routine = content.routine('A');
     }
-    return uc.CoachReply.plan(
-      '${reason.zh}，先给你 App 内置的预设方案「${routine.name}」，不是 AI 生成的。',
-      build(routine),
+    final original = build(routine);
+    final plan = original.copyWith(
+      scene: context.scene ?? original.scene,
+      level: context.level ?? original.level,
+      targetMinutes: context.minutes ?? original.targetMinutes,
+      avoid: {...original.avoid, ...context.avoid},
+    );
+    final gate = uc.ToolGate(catalog: catalog, profile: profile);
+    final blocks = <uc.PlanBlock>[];
+    // Use SDK admission for the filtering decision too: App does not duplicate
+    // its caution, scene, equipment, scope or dose validation rules.
+    for (final block in plan.blocks) {
+      final items = <uc.PlanItem>[];
+      for (final item in block.items) {
+        final candidate = plan.copyWith(
+          blocks: [
+            _withItems(block, [item]),
+          ],
+        );
+        if (gate.admitTemplate(candidate, context) != null) items.add(item);
+      }
+      if (items.isNotEmpty) blocks.add(_withItems(block, items));
+    }
+    final admitted = gate.admitTemplate(plan.copyWith(blocks: blocks), context);
+    if (admitted == null) {
+      return uc.SessionFallbackReply(
+        '${reason.zh}。现有预设方案没有符合本次条件的可用训练，暂不安排开练。',
+      );
+    }
+    final filtered = admitted.plan.items.length != original.items.length;
+    return uc.SessionFallbackReply(
+      '${reason.zh}，先给你 App 内置的预设方案「${routine.name}」'
+      '${filtered ? '（已按本轮条件筛选）' : ''}，不是 AI 生成的。',
+      plan: admitted.plan,
     );
   }
 
-  /// 对话里用户说过的话（回落时带上，保留先前的禁忌和场景约束）。
-  static List<String> userTexts(uc.CoachConversation c) => [
-    for (final t in c.turns)
-      if (t.isUser) t.text,
-  ];
+  static uc.PlanBlock _withItems(uc.PlanBlock block, List<uc.PlanItem> items) =>
+      uc.PlanBlock(
+        id: block.id,
+        name: block.name,
+        type: block.type,
+        rounds: block.rounds,
+        restBetweenRoundsSeconds: block.restBetweenRoundsSeconds,
+        items: items,
+      );
 
   /// 内置套路转成 TrainingPlan v1（source=template，templateId=套路 id），剂量照套路原样。
   uc.TrainingPlan build(HipRoutine r) {

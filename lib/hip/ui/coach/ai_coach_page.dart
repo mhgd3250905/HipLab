@@ -1,6 +1,5 @@
-// AI 定制（docs/ai-coach.md）：描述需求 → 最多追问一次 → 计划卡 →「开始训练」/
-// 「保存为自定义训练组」。交互沿用 3D-Body feat/ai-coach `app/lib/ui/ai_coach_page.dart`
-// （PR #122），换成 HipLab 的组件与配色（HipPanel / HipPrimaryButton / LibChip …）。
+// AI 定制：SDK 0.2 工具会话。仅渲染门禁后的文字、ValidatedActions 和
+// ValidatedPlan；计划保存/开练沿用 HipLab 的剂量映射与共享训练播放器。
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -11,6 +10,7 @@ import '../../coach/coach_service.dart';
 import '../../coach/plan_mapping.dart';
 import '../../control/hip_store.dart';
 import '../../domain/hip_library.dart';
+import '../../domain/hip_models.dart';
 import '../hip_icons.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -40,12 +40,12 @@ class CoachMessage {
 
 /// 一次 AI 定制对话的状态。由首页外壳持有：进训练、看动作再回来，对话还在。
 class AiCoachSession extends ChangeNotifier {
-  AiCoachSession(this.service, {DateTime Function()? now})
+  AiCoachSession(this.service, {this.contextBuilder, DateTime Function()? now})
     : _now = now ?? DateTime.now;
 
   final CoachService service;
+  final uc.CoachContext Function()? contextBuilder;
   final DateTime Function() _now;
-  final uc.CoachConversation conversation = uc.CoachConversation();
   final List<CoachMessage> messages = [];
 
   /// 已保存的回答：回答身份（[CoachMessage.resultId]）→ 训练组 id。
@@ -56,6 +56,7 @@ class AiCoachSession extends ChangeNotifier {
   DateTime? _startedAt;
   bool _loaded = false;
   bool _disposed = false;
+  int _generation = 0;
 
   /// 刚被停止的那句话（页面取走后清空）。
   String? cancelledText;
@@ -76,9 +77,10 @@ class AiCoachSession extends ChangeNotifier {
     _notify();
   }
 
-  Future<void> send(String raw) async {
+  Future<void> send(String raw, {uc.CoachContext? context}) async {
     final text = raw.trim();
-    if (text.isEmpty || busy) return;
+    if (text.isEmpty || busy || _disposed) return;
+    final generation = _generation;
     final cancel = uc.CancelToken();
     _cancel = cancel;
     _startedAt = _now();
@@ -86,19 +88,30 @@ class AiCoachSession extends ChangeNotifier {
     _notify();
     CoachAnswer answer;
     try {
-      answer = await service.ask(text, conversation, cancel: cancel);
+      await service.load();
+      if (_disposed || generation != _generation) return;
+      answer = await service.send(
+        text,
+        context: context ?? contextBuilder?.call() ?? const uc.CoachContext(),
+        cancel: cancel,
+      );
     } on Object {
       answer = const CoachAnswer(
-        reply: uc.CoachReply.text('出了点问题，没能排出计划。请稍后再试。'),
+        status: uc.TurnStatus.error,
+        text: '出了点问题，请稍后再试。',
       );
     }
-    if (_disposed) return;
+    if (_disposed || generation != _generation || !identical(_cancel, cancel)) {
+      return;
+    }
     _cancel = null;
     _startedAt = null;
-    if (answer.cancelled) {
+    if (answer.cancelled || cancel.isCancelled) {
       // 停止：撤回这句话，页面把它放回输入框。
       if (messages.isNotEmpty && messages.last.isUser) messages.removeLast();
       cancelledText = text;
+    } else if (answer.status == uc.TurnStatus.busy) {
+      if (messages.isNotEmpty && messages.last.isUser) messages.removeLast();
     } else {
       messages.add(CoachMessage.answer(answer, _nextResult++));
     }
@@ -107,6 +120,19 @@ class AiCoachSession extends ChangeNotifier {
 
   /// 停止正在进行的请求（HTTP 真正中止，不回落、不记进对话）。
   void stop() => _cancel?.cancel();
+
+  /// 显式开始新对话；旧请求晚到也不能影响新消息、保存身份或等待态。
+  void newConversation() {
+    _generation++;
+    _cancel?.cancel();
+    _cancel = null;
+    _startedAt = null;
+    service.reset();
+    messages.clear();
+    saved.clear();
+    cancelledText = null;
+    _notify();
+  }
 
   void markSaved(int resultId, String routineId) {
     saved[resultId] = routineId;
@@ -126,6 +152,7 @@ class AiCoachSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _generation++;
     _cancel?.cancel();
     super.dispose();
   }
@@ -289,7 +316,8 @@ class _AiCoachPageState extends State<AiCoachPage> {
     unawaited(session.send(value));
   }
 
-  Future<void> _save(uc.TrainingPlan plan, int resultId) async {
+  Future<void> _save(uc.ValidatedPlan validated, int resultId) async {
+    final plan = validated.plan;
     final store = widget.actions.store;
     final mapping = CoachPlanMapper(
       store.content,
@@ -303,10 +331,11 @@ class _AiCoachPageState extends State<AiCoachPage> {
   }
 
   Future<void> _start(
-    uc.TrainingPlan plan,
+    uc.ValidatedPlan validated,
     int resultId,
     BuildContext? from,
   ) async {
+    final plan = validated.plan;
     final store = widget.actions.store;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final routine =
@@ -330,6 +359,18 @@ class _AiCoachPageState extends State<AiCoachPage> {
               subtitle: configured ? null : '未配置 AI · 使用预设方案',
               icon: HipGlyph.back,
               tooltip: '返回',
+              trailing: TextButton(
+                key: const ValueKey('coach-new-conversation'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(44, 44),
+                ),
+                onPressed: () {
+                  _input.clear();
+                  session.newConversation();
+                },
+                child: const Text('新对话', style: TextStyle(fontSize: 12)),
+              ),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -349,9 +390,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
                     for (final (i, m) in session.messages.indexed)
                       KeyedSubtree(
                         key: ValueKey('coach-msg-$i'),
-                        child: m.isUser
-                            ? _UserBubble(m.text!)
-                            : _answer(m, i),
+                        child: m.isUser ? _UserBubble(m.text!) : _answer(m),
                       ),
                     if (session.busy)
                       _Thinking(
@@ -370,42 +409,39 @@ class _AiCoachPageState extends State<AiCoachPage> {
     );
   }
 
-  Widget _answer(CoachMessage message, int index) {
+  Widget _answer(CoachMessage message) {
     final answer = message.answer!;
-    final reply = answer.reply;
-    if (reply == null) return const SizedBox.shrink();
-    final latest = index == session.messages.length - 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (reply.text.isNotEmpty)
+        if (answer.text.isNotEmpty)
           _CoachBubble(
-            text: reply.text,
-            preset: answer.preset && reply.plan == null,
+            text: answer.text,
+            preset: answer.preset && answer.plan == null,
           ),
-        if (reply.kind == uc.ReplyKind.ask && reply.options.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final (i, option) in reply.options.indexed)
-                  LibChip(
-                    option,
-                    key: ValueKey('coach-option-$i'),
-                    onTap: latest && !session.busy ? () => _send(option) : null,
-                  ),
-              ],
+        if (answer.actions case final actions?)
+          _ActionsCard(
+            key: ValueKey('coach-actions-${message.resultId}'),
+            actions: actions,
+            content: widget.actions.store.content,
+            onDrill: (id) => Navigator.of(context).push(
+              HipRoute.push<Object?>(
+                (_) => DrillDetailPage(actions: widget.actions, drillId: id),
+              ),
             ),
           ),
-        if (reply.plan case final plan?)
+        if (answer.plan case final plan?)
           _planCard(plan, answer, message.resultId),
       ],
     );
   }
 
-  Widget _planCard(uc.TrainingPlan plan, CoachAnswer answer, int resultId) {
+  Widget _planCard(
+    uc.ValidatedPlan validated,
+    CoachAnswer answer,
+    int resultId,
+  ) {
+    final plan = validated.plan;
     final store = widget.actions.store;
     final mapper = CoachPlanMapper(store.content);
     final original = mapper.map(plan, id: 'preview', at: store.now());
@@ -418,7 +454,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
     final empty = mapping.entries.isEmpty;
     return _PlanCard(
       key: ValueKey('coach-plan-$resultId'),
-      plan: plan,
+      plan: validated,
       mapping: mapping,
       seconds: mapping.seconds(store.content),
       preset: answer.preset,
@@ -429,10 +465,10 @@ class _AiCoachPageState extends State<AiCoachPage> {
           (_) => DrillDetailPage(actions: widget.actions, drillId: id),
         ),
       ),
-      onSave: saved || empty ? null : () => _save(plan, resultId),
+      onSave: saved || empty ? null : () => _save(validated, resultId),
       onStart: empty || store.blocked
           ? null
-          : (from) => _start(plan, resultId, from),
+          : (from) => _start(validated, resultId, from),
     );
   }
 }
@@ -597,23 +633,106 @@ class _CoachBubble extends StatelessWidget {
   );
 }
 
-/// 推理模型出一份计划约 30–40 秒：分步提示 + 已用时 + 进度条 + 可停止。
+/// 看动作卡只接受 SDK 门禁产出的动作列表，不从模型 JSON 构造 UI。
+class _ActionsCard extends StatelessWidget {
+  const _ActionsCard({
+    super.key,
+    required this.actions,
+    required this.content,
+    required this.onDrill,
+  });
+  final uc.ValidatedActions actions;
+  final HipContent content;
+  final ValueChanged<String> onDrill;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: HipPanel(
+      key: const ValueKey('coach-actions-card'),
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            '动作建议',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          for (final (i, action) in actions.items.indexed)
+            HipPressable(
+              key: ValueKey('coach-action-$i'),
+              semanticLabel: content.drill(action.id).name,
+              scale: .98,
+              onTap: () => onDrill(action.id),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    HipThumb(
+                      size: 52,
+                      radius: 12,
+                      child: HipDrillArt(
+                        drill: content.drill(action.id),
+                        showPendingLabel: false,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            content.drill(action.id).name,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (action.note case final note?
+                              when note.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              note,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: HipColors.muted,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    HipIcon(
+                      HipGlyph.chevronRight,
+                      size: 18,
+                      color: HipColors.faint,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// 首轮计划可能等待 75–120 秒；显示真实已用时，不伪造后台处理步骤。
 class _Thinking extends StatelessWidget {
   const _Thinking({super.key, required this.seconds, required this.onStop});
   final int seconds;
   final VoidCallback onStop;
 
   static (String, String) stage(int seconds) => switch (seconds) {
-    < 6 => ('正在理解你的需求…', '第 1 步 / 共 3 步'),
-    < 22 => ('正在从动作大全里挑动作、配剂量…', '第 2 步 / 共 3 步'),
-    < 45 => ('正在核对动作范围、剂量和安全…', '第 3 步 / 共 3 步'),
-    _ => ('比平时久一点，可以继续等，或停止后改改需求再发', '仍在等待'),
+    < 75 => ('正在等待 AI 回复…', '生成中'),
+    < 120 => ('首轮计划需要较长时间，可以继续等，也可以取消', '仍在生成'),
+    _ => ('仍在等待服务响应，可以取消后重试', '等待中'),
   };
 
   @override
   Widget build(BuildContext context) {
     final (title, step) = stage(seconds);
-    final progress = (seconds / 40).clamp(.04, .94);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: HipPanel(
@@ -640,7 +759,6 @@ class _Thinking extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
                 child: LinearProgressIndicator(
                   key: const ValueKey('coach-progress'),
-                  value: progress,
                   minHeight: 5,
                   backgroundColor: HipColors.track,
                   color: HipColors.jade,
@@ -652,7 +770,7 @@ class _Thinking extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '$step · 已用 $seconds 秒，通常 30–40 秒',
+                    '$step · 已用 $seconds 秒，首轮计划可能需要 75–120 秒',
                     key: const ValueKey('coach-elapsed'),
                     style: TextStyle(fontSize: 12, color: HipColors.faint),
                   ),
@@ -665,7 +783,7 @@ class _Thinking extends StatelessWidget {
                     size: 16,
                     color: HipColors.tight,
                   ),
-                  label: Text('停止', style: TextStyle(color: HipColors.tight)),
+                  label: Text('取消', style: TextStyle(color: HipColors.tight)),
                 ),
               ],
             ),
@@ -689,7 +807,7 @@ class _PlanCard extends StatelessWidget {
     required this.onSave,
     required this.onStart,
   });
-  final uc.TrainingPlan plan;
+  final uc.ValidatedPlan plan;
   final CoachPlanMapping mapping;
   final int seconds;
   final bool preset;
@@ -703,6 +821,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final plan = this.plan.plan;
     final t = LibText.of(context);
     final entries = mapping.entries;
     final startKey = GlobalKey();
@@ -942,7 +1061,7 @@ class _Composer extends StatelessWidget {
                 enabled: !busy,
                 minLines: 1,
                 maxLines: 4,
-                maxLength: 300,
+                maxLength: 500,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
                 decoration: const InputDecoration(
