@@ -1,5 +1,37 @@
 # 验证台账
 
+## 2026-10-21 AI 工具会话升级
+
+本轮基线为已合入并推送的 main `e456d2a1988d0b5a3d238202d52337ef99e6e585`；开发分支 `codex/coach-tools-0.2`，最终运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`（主接入 `257761d`，随后修复预设过滤/单位表示）。SDK main 固定 `09a392bc0b736e6a23eef71d55d86108660e0e59`，coach 0.2.0 / trainer 0.1.4。工具为 Flutter 3.44.7 stable / Dart 3.12.2。后续文档不改变运行来源。
+
+| 检查 | 实际结果 |
+|---|---|
+| 依赖 | 普通 `flutter pub get` 与 `--enforce-lockfile` 成功；两个 SDK 包同一固定 commit，其余锁定包未升级，无 SDK 源码/缓存修改 |
+| 静态分析 | `flutter analyze --no-pub`：No issues，2.7 秒；`build/coach-tools-20261021/analyze-final.log` |
+| AI 定向回归 | 五文件共 62/62 通过，9 秒；`coach_filtered_preset_test.dart`、`coach_tools_session_test.dart`、`hip_ai_coach_test.dart`、`hip_coach_relay_test.dart`、`coach_context_test.dart`；日志 `targeted-final.log` |
+| 全量回归 | 最终 5816c1b：`flutter test --no-pub --concurrency=1 --reporter expanded`，469/469 全部通过，0 失败、0 跳过，4 分 34 秒；日志 `all-tests-final.log`。设置 VOICE_TIMELINE_OUT、VOICE_LANG=zh、VOICE_ROUTINE=A，原语音时序与导出项通过，输出 `voice-timeline-final.json`；原六份语音测试无源码差异 |
+| Web 构建 | 最终 5816c1b release 构建成功，31.0 秒；59 个生产 lib 文件及 pubspec/lock 逐字节一致，Git blob 仅行尾归一；来源/命令/JS SHA256 见[版本台账](version-ledger.md#2026-10-21ai-工具会话临时-web-验证构建)及 `web-source-identity.json` |
+
+回归包含纯文字/准入动作/准入计划边界、无效参数不进渲染、最终门禁失败模板回落、busy、加载/取消/重置竞态、取消不显示、等待提示、真实用户上下文与疼痛、120 秒 HTTP 配置、App Key/UUID/无 Authorization，以及保存/编辑/删除和原剂量换算。新增预设回归实际调用 `startGroup`，证明预览、保存重载、训练交接不会重新带回被疼痛保护或器材限制排除的动作，并保留原停留和节奏。
+
+初轮 `257761d` 的全量 466 项通过不能代表后续修复验收；只保留为过程日志 `all-tests.log`。随后回归发现模板映射会补回排除动作，以及目录/动作包单位不同导致误过滤，均在 `5816c1b` 修复，最终检查单列。
+
+### 最终 Web 核心操作
+
+Playwright 在 390×844、正常字号、`http://127.0.0.1:8771/?build=5816c1b` 操作真实按钮。响应仅在浏览器网络层替换，不修改 App 状态或调用内部业务方法；实际使用生产 CoachSession、HTTP 客户端、门禁、存储和 TrainerPlayer。此前初版操作只作过程记录，以下均在重载最终构建后完成。
+
+| 路径 | 结果与忽略目录证据 |
+|---|---|
+| show_actions | 两张动作建议可见，没有计划保存/开练入口；`actions-final.yml/png` |
+| show_plan → 保存 → 开练 | 六动作计划按原剂量换算展示，保存为自定义组，进入共享播放器显示 1/6 和原动作剂量，暂停/结束正常；`plan-final.yml`、`trainer-final.yml`。实际提前结束，SessionResult 保存为 source=custom、0/6、endedEarly=true，不记为自然完成 |
+| 断网 → 预设 → 保存 | 两次 HTTP 断网后显示「网络不可用」「预设方案」「不是 AI 生成的」。睡前 B 保留 6 动作及原剂量，默认无弹力带，h-band-leg-out 没有在保存时恢复；`fallback-final.yml/png`、`storage-final.json` |
+| 关闭/重开、新对话、纯文字 | 重开仍保留当前对话与已保存状态；新对话清空并重置 SDK，下一请求只有 system/user，纯文字显示单气泡；`session-retained-final.yml`、`reset-text-final.yml` |
+| HTTP 约定与持久 UUID | 最终五次请求（含两次断网重试）均为指定模型、两个工具、tool_choice=auto；无 response_format、无 Authorization，带假 App Key 和同一 UUID，重载前后 UUID 一致，提示目录无 n-thomas-test；`web-contract-requests.json` |
+
+证据位于本机 Git 忽略的 `build/coach-tools-20261021/`，没有上传。三个保存组含初版过程保存的一组；最终版新增 AI 组和筛选后的 B 各一组。控制台仅两条刻意断网产生的 `ERR_INTERNET_DISCONNECTED`，无其他本轮错误；`console-final.log`。没有人工听音、完整原生训练或后台体验验证。
+
+用户明确“验证核心功能即可，目前处于功能开发阶段，真实体验细节由我后续真机使用测试”。本轮没有 ADB、原生构建/安装或真实 Worker 请求；Web 使用显然为测试值的 App Key 和网络层受控响应，不能记为 Worker 冷烟或原生验收。D-34 锁屏历史失败继续保留。[接入与交付边界](ai-coach-tools-2026-10-21.md)。
+
 ## 2026-10-21 10:47：本轮复核记录合并确认
 
 用户明确“推进合并”。fetch 后本地与远端 main 均为 cb7ae4f；来源 `354d0f12be52109ebeca5a02969cc478ba94b492` 仅修改六份复核文档，diff 检查通过。`git merge --ff-only` 后与来源树逐字一致，普通 push 成功，`git ls-remote origin refs/heads/main` 回读同一完整 SHA。以下本轮检查继续绑定原 App cb7ae4f / SDK d193a70；合并及回执不改运行代码，未重复测试或构建。下文“留审阅分支、未合 main”保留为授权前快照，当前合并事实以此处为准。

@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-10-21：AI 工具会话临时 Web 验证构建
+
+没有新的 APK、安装或商店交付，共用版本仍 `0.3.9+17`，手机保持此前 79c172d 来源。仅在 `build/coach-tools-20261021/web-preview` 编译临时 Web 预览：最终运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`、SDK main `09a392bc0b736e6a23eef71d55d86108660e0e59`（coach 0.2.0 / trainer 0.1.4）；59 个 lib 文件和 pubspec/lock 与生产工作区逐字节一致。Flutter 3.44.7 release Web 构建 31.0 秒成功，`main.dart.js` 为 3,756,176 bytes，SHA256 `603254b786164c4b605d33c9a7b4a04aac24081b660a2470824f6340237dd8b5`。构建命令、来源身份和日志在同目录上一级 `web-build-command.txt`、`web-source-identity.json`、`web-build.log`、`web-build-result.json`（Git 忽略，本机证据）。
+
+编译只使用显然为测试值的 App Key，浏览器网络响应受控，未调用真实 Worker；构建保留既有 CupertinoIcons 字体声明警告。初版 257761d 的过程产物另存 `*.initial.*`，不作为最终修复来源。核心结果见[验证台账](verification.md#2026-10-21-ai-工具会话升级)，真实体验由用户后续真机测试；AI 本轮尚未合 main。
+
 ## 2026-10-21：训练包复核 Web 临时构建
 
 App 源 `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637`，固定 SDK d193a70，版本保持 0.3.9+17。在 `build/trainer-recheck-20261021/web-preview/` 以 Flutter 3.44.7 release 编译真实 main.dart，45.1 秒成功；main.dart.js 3,729,931 字节，CanvasKit wasm 7,229,467 字节。58 个 lib 文件及 pubspec/lock 与工作区逐字节相同，原资产通过 E 盘 junction 使用。临时预览 `http://127.0.0.1:8769/` 仅供本机测试，没有部署网站或上传商店。

@@ -1,5 +1,7 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
+**2026-10-21 升级候选：** `codex/coach-tools-0.2` 已迁移至 ugk_coach 0.2.0 工具会话，SDK 固定 09a392b；动作/计划只渲染门禁类型，旧 ask/plan/reply 流程由其替换。[本轮接入与核心验证](ai-coach-tools-2026-10-21.md)。尚未合 main，以下为旧流程与历史验证记录。
+
 **当前main已改用新中转：** 默认 `api.uuugk.win/v1` / `deepseek-v4-flash-0731`，通过App Key和持久设备UUID请求，无Authorization；固定SDKd193a70/coach0.1.3，已获同意合main；构建、验证与原生边界见[2026-10-20新中转迁移](ai-relay-migration-2026-10-20.md)。下方PR25段落保留旧接入来源。
 
 2026-10-20 · PR #25已合main（来源8c985c4，集成ce7ab74）· 依赖 [ugk_coach](https://github.com/mhgd3250905/ugk-3d-pose-sdk) 0.1.2，固定 `26e32557058e582d3f1b2b7f722dfa53c2b16aa6`。首次接入以练习库a586de3/SDK0.1.1起步，后经[五项修复复审与合并](pr25-reaudit-2026-10-20.md)。
