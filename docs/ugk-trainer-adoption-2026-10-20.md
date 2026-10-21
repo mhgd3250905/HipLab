@@ -1,5 +1,26 @@
 # ugk_trainer 接入（2026-10-20）
 
+## 2026-10-21 接力复核（本机检查，真机暂缓）
+
+用户再次交接同一接入任务后，从已推送的 HipLab `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637` 新开 `codex/verify-ugk-trainer-20261021` 核对现有实现。用户随后明确“先不做耳机测试，现在没有真机”，并要求先补 Web 操作验证；本轮不执行 ADB、原生构建、安装或手机操作，不把历史锁屏失败改为通过。
+
+已 fetch 核对 SDK `origin/main = 09a392bc0b736e6a23eef71d55d86108660e0e59`。当前固定的 `d193a703e3a8bef6d41e7705a55ae250e23e6a69` 是其祖先，两者 `packages/ugk_trainer` 的 Git tree 同为 `f34eb764eb26fe54ffefbde64c6da8346d36dcf9`，训练包均为 0.1.4，源码、插件及测试逐字一致。因此保留现有固定 Git 引用；升级到 09a392b 只会额外引入 coach 0.2，不属于这次训练包复核。App 两项依赖的 ref/resolved-ref 一致，实际解析同一 E 盘 Git checkout；包内 `ugk_coach: path: ../..` 是该 checkout 内部关系，App 没有 path override。
+
+| 交接要求 | 本轮核对结果 |
+|---|---|
+| 引擎、播放器、语音归包 | `HipPlayerPage` 返回 `TrainerPlayer`；App 的 `SessionEngine` 兼容视图调用包内 `SessionEngine` / `SessionRunner`，`VoiceQueue` 只转换 App 设置；逐句控制器和音频输出直接导出 SDK 实现 |
+| 唯一原生服务 | App 原生服务类和旧 `hiplab/training_session` 通道已删除；MainActivity 与 App manifest 不注册第二份服务。历史 +17 构建的单服务证据保持，本轮没有重新构建 APK |
+| 疼痛、感受、记录 | `onDiscomfort`、`restFeedbackBuilder`、`feedbackBuilder` 已接 App 业务；`onFinished` 接 `SessionResult`，按 sessionId 幂等保存、失败重试 |
+| App 保留职责 | 课程名开场、剂量文字找台词、D-01 紧侧加组及自测仍留 App；工作节奏执行调用 SDK |
+| 原语音时序 | 六份原有语音测试相对迁移前 `99fcc83` 无文件差异；生产适配另有中英文时序、D-01、疼痛与结果回归 |
+| SDK 修改边界 | 本轮未发现须修改 SDK 的接入缺陷；未在 App 内复制或 patch SDK，也未手工修改 pub 缓存。SmartFit `0a40a45` 使用更早的 trainer 0.1.0，仅作接法参考 |
+
+本轮 App 运行代码、依赖和测试保持不变，共用版本仍为 0.3.9+17。检查结果见[验证台账](verification.md#2026-10-21-训练包接力复核)。本轮复核记录留在上述审阅分支；此前已批准合入 main 的事实不变，不据此自动合并或推送新的 main。D-34 仍为已知失败，耳机锁屏整节待后续真机安排。
+
+本轮新执行的 analyze 0、全量 440/440 及 Web 核心路径均通过。Web 真实操作覆盖自测、单练自然完成、暂停恢复、再练新 sessionId、疼痛减量/停止、休息感受与刷新保存；按用户“核心功能验证通过就行”结束本轮检查。Web 临时构建保留真实存储/音频与既有媒体封面替身，不能替代人工听音或原生锁屏；没有新 App 或 SDK 代码改动。
+
+以下保留上一轮实施、候选及合并历史；当时的“当前”“未合 main”等不代表本轮复核状态。
+
 **已获同意，两个main均已合入并推送。** 2026-10-21用户明确“合并并推送，保留锁屏已知问题”；SDK main为d193a70（PR #2已MERGED，00:39:10），HipLab主线集成点691ace2（00:39:31）。已安装包保持0.3.9+17/79c172d、21原记录/4组/UUID保持；锁屏冻结仍是已知失败，由用户后测，不重建/重测、不改手机省电设置、不上传商店。[合并与边界](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
 **00:08失败阶段快照：0.3.9+16锁屏仍失败。** 00:07:47.193 Greeze冻结（关屏5分25.7秒），服务和started/mutedState:none音轨仍在、训练锁DISABLED；系统媒体会话栈为0。不能把正常音量修正记为锁屏通过。当前安全锁屏，待用户回来解锁后正常结束本轮；SDK正在补真实媒体会话与释放，main未合。[完整现场](android-lockscreen-fix-2026-10-21.md)。

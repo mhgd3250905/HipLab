@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-10-21：训练包复核 Web 临时构建
+
+App 源 `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637`，固定 SDK d193a70，版本保持 0.3.9+17。在 `build/trainer-recheck-20261021/web-preview/` 以 Flutter 3.44.7 release 编译真实 main.dart，45.1 秒成功；main.dart.js 3,729,931 字节，CanvasKit wasm 7,229,467 字节。58 个 lib 文件及 pubspec/lock 与工作区逐字节相同，原资产通过 E 盘 junction 使用。临时预览 `http://127.0.0.1:8769/` 仅供本机测试，没有部署网站或上传商店。
+
+Web 核心路径与全量 440 项通过，证据见[验证台账](verification.md#2026-10-21-训练包接力复核)。本条只登记 Web 构建，不是新 APK、安装或原生验收；没有 ADB/手机操作。以下最近一次 Android 构建与安装历史保持，锁屏失败仍保留。
+
 **最新构建与安装：0.3.9+17 / debug arm64。** 运行源 `79c172d9a83d248f23e136cffe825f3bd016e16b`，SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach0.1.3/trainer0.1.4）；175258975字节，SHA256 `09e11efd96f284aeb642e0b46b05843916b061d0e06e40160089cbeeca08ce51`。已保留数据安装，21记录/4组/UUID保持；锁屏冻结仍失败，由用户后测。SDK main d193a70及HipLab集成点691ace2已获准合入并推送，无商店发布。[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
 以下逐次构建、安装与失败记录保留当时状态，后续追加不改写原始观察。

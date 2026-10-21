@@ -1,5 +1,39 @@
 # 验证台账
 
+## 2026-10-21 训练包接力复核
+
+本轮在 `codex/verify-ugk-trainer-20261021` 重新执行本机检查，来源为 App `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637` 与固定 SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach 0.1.3 / trainer 0.1.4）。测试期间仅补本文等复核文档，运行代码、依赖和测试没有变化。工具为 Flutter 3.44.7 stable / Dart 3.12.2。
+
+| 检查 | 本轮实际结果 |
+|---|---|
+| `flutter pub get --enforce-lockfile` | 成功，pubspec 与 lock 无变化；两个 Git 依赖解析同一固定来源 |
+| `flutter analyze --no-pub` | No issues，7.5 秒；日志 `build/trainer-recheck-20261021/analyze.log` |
+| `flutter test --no-pub --concurrency=1 --reporter expanded` | 440 项全部通过，0 失败、0 跳过，5 分 10 秒；设置 `VOICE_TIMELINE_OUT`、`VOICE_LANG=zh`、`VOICE_ROUTINE=A` 后包含原条件导出项；日志 `build/trainer-recheck-20261021/test.log`，时间线 `timeline-zh-A.json` 位于同目录 |
+| 依赖来源 | fetch 后 SDK main 为 09a392b，d193a70 是其祖先；两者训练包 tree 同为 `f34eb764eb26fe54ffefbde64c6da8346d36dcf9`，保留现有合法固定引用 |
+| 原有语音测试保留 | `99fcc83..cb7ae4f` 的 `hip_voice_test.dart`、`hip_voice_playback_test.dart`、`hip_voice_android_fix_test.dart`、`hip_voice_android_timeline_test.dart`、`hip_voice_pr24_review_test.dart`、`voice_timeline_export_test.dart` 六文件差异为空 |
+| 接口及唯一服务 | 生产 `TrainerPlayer`、疼痛/感受插槽、SessionResult 保存及业务保留边界符合交接；App 无旧服务类/通道；[逐项证据](ugk-trainer-adoption-2026-10-20.md#2026-10-21-接力复核本机检查真机暂缓) |
+
+### Web 核心功能（本轮实际操作）
+
+按用户“可以先用 Web 测试”“核心功能验证通过就行，现在还在功能开发阶段”执行后收束。E 盘忽略目录中的临时 Web 壳编译真实 `lib/main.dart`；58 个 lib 文件及 pubspec/lock 与工作区逐字节相同，与 cb7ae4f Git blob 仅行尾归一差异。资产通过 E 盘 junction 使用原文件，保持真实 HipStore / SharedPreferences / JustAudio，不注入业务状态或 AI 凭据；HTML 仅启用 Flutter 语义。`flutter build web --release --no-pub --no-web-resources-cdn --no-wasm-dry-run --target lib/main.dart` 成功，45.1 秒，本地 CanvasKit；保留既有 CupertinoIcons 字体声明警告。
+
+Playwright 在新 origin `http://127.0.0.1:8769/`、390×844、正常字号操作真实按钮，结果如下。
+
+| 核心路径 | 已观察结果 |
+|---|---|
+| 首启与自测 | 三项安全确认、身份选择、完整六项评分、左右分侧及 90/90 追问均可操作；结果与推荐显示，刷新后同一条自测仍在 |
+| 单练与暂停恢复 | 仰卧蝴蝶主动开合调整为 3 次×1 组；暂停后倒计时 10 秒在 3.5 秒观察内不变，继续后 1/3→2/3→3/3，自然完成 1/1，保存 full=true、activeSeconds=28 |
+| 再练与关节痛减量 | 同页“再来一组”产生新 sessionId；关节夹痛返回 continueEasier，显示 1/1 次和“幅度小一点”，自然结束并保存疼痛事件 |
+| 休息感受与麻刺结束 | 推荐训练跳过首动作后进入休息；点“舒服”显示已记录，倒计时 10→8 继续。点“疼”并选麻刺后立即结束，显示 App 停止提示、本次感受；保存 full=false、endedEarly=true、0/6、nerve 事件及反馈，不伪装完整课程 |
+| 保存与刷新 | 共 3 个唯一 sessionId、1 条自测；两次单练及提前结束均未增加打卡日。刷新前后两个 localStorage 键的原始值逐值相同，没有重复记录 |
+| 浏览器错误 | 未观察到应用异常；只有临时预览站 favicon.ico 的两次 404。自动化中一次漏答 90/90 追问造成按钮禁用等待、一次短动作自然完成造成旧 ref 失效，按新快照继续；不作为 App 故障或成功步骤 |
+
+来源、构建、截图和原始存储留本机 `build/trainer-recheck-20261021/`：`web-source-identity.json`、`web-build.log`、`web-core-summary.json`、`web-{home,assessment-result,natural-complete,pain-end-feedback}.png`、`web-final-storage-{before,after}-refresh.json`、`web-console-final.log`。Web 媒体保留产品既有封面替身；这次未做人工听音、AI 调用或原生后台验收。核心范围已完成，不追加显示或系统矩阵。
+
+本轮没有 SDK 代码修改，未重复运行 SDK 全量；训练包 tree 相同不代表锁屏冻结修复。用户明确“先不做耳机测试，现在没有真机”，故未运行 ADB、原生构建、安装或耳机锁屏课程，D-34 继续已知失败；历史 +17 单服务、数据保留及安装结论仅按原日期来源复用。日志与导出留 E 盘 Git 忽略目录，不代表远端备份。本轮仅在审阅分支保存复核记录，不自动合入或推送 main、不递增版本或上传商店。
+
+以下为此前各阶段验证历史。
+
 **已获同意，两个main均已合入并推送。** 2026-10-21用户明确“合并并推送，保留锁屏已知问题”；SDK main为d193a70（PR #2已MERGED，00:39:10），HipLab主线集成点691ace2（00:39:31）。已安装包保持0.3.9+17/79c172d、21原记录/4组/UUID保持；锁屏冻结仍是已知失败，由用户后测，不重建/重测、不改手机省电设置、不上传商店。[合并与边界](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
 以下按日期保留的候选、安装与失败段落均为历史快照，其中“当前”“未合main”“待解锁”描述当时现场；当前交付与授权以页首最新结论及对应台账为准。
