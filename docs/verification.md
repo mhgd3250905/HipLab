@@ -53,6 +53,12 @@
 
 阶段二复核10份现有文档，已发现的版本/状态/索引finding清零；413个本地文件链接、21个本次新增锚点全部有效，`git diff --check`通过。5816c1b至Preflight HEAD及当前未提交差异均不改变业务、配置、测试、原生或资源；受管改动仅本次Agent的10份文档，未跟踪仍为上述4份既有快照，无新增不明路径。按明确路径暂存、提交，并核对完整HEAD后普通推送；远端结果须在实际成功后追加，不能由本地commit推断。
 
+### 提交与推送回执（2026-10-22）
+
+本地收束提交 `c236bd2466a901495578f88fe0349c644945e31b`（10份文档）已成功执行 `git push --set-upstream origin HEAD:refs/heads/codex/coach-tools-0.2`，目标为 `https://github.com/mhgd3250905/HipLab.git`；`git ls-remote --heads origin refs/heads/codex/coach-tools-0.2 refs/heads/main` 回读开发分支为同一完整SHA，main仍 `e456d2a1988d0b5a3d238202d52337ef99e6e585`。分支已推送，AI未合main，未创建PR或发布。
+
+本段及当前状态/日志的后续提交仅补实际回执；最终文档HEAD与远端同名分支再回读核对，业务验证继续绑定5816c1b，版本/构建/安装不变。四份既有未跟踪快照继续保留；没有重复App测试、构建或手机操作。
+
 ## 2026-10-21 AI 工具会话升级
 
 本轮基线为已合入并推送的 main `e456d2a1988d0b5a3d238202d52337ef99e6e585`；开发分支 `codex/coach-tools-0.2`，最终运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`（主接入 `257761d`，随后修复预设过滤/单位表示）。SDK main 固定 `09a392bc0b736e6a23eef71d55d86108660e0e59`，coach 0.2.0 / trainer 0.1.4。工具为 Flutter 3.44.7 stable / Dart 3.12.2。后续文档不改变运行来源。
