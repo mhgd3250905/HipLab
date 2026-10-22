@@ -6,9 +6,11 @@
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-21**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-22**；按页内日期保留历史交付与验证。
 
-2026-10-21，**训练包接入及AI新中转已获同意合入并推送两仓库main**：HipLab集成点691ace2，SDK d193a70（PR #2已MERGED，coach0.1.3/trainer0.1.4）。手机已保留数据安装0.3.9+17，运行源79c172d；锁屏冻结仍是已知失败，用户后测，本轮不再排查/复测，不上传商店。[合并与验收边界](docs/android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
+**2026-10-22 版本与阶段收束：** 当前开发分支 `codex/coach-tools-0.2` 已接入 coach 0.2.0 / trainer 0.1.4，Git 依赖固定 SDK `09a392bc0b736e6a23eef71d55d86108660e0e59`，运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`；沿用 10 月 21 日 analyze 0、469/469 和 Web 核心验证。main / origin/main 核对为 `e456d2a`，仍用旧 SDK d193a70 / coach 0.1.3；本轮 AI 尚未合 main。App 共用版本保持 **0.3.9+17**，最后已核验手机包为 79c172d，与开发候选分别记录。本次仅对齐文档并按用户授权推送当前分支，实际推送结果见[收束回执](docs/verification.md#2026-10-22-版本管理与阶段收束)；不生成新 APK，真机与真实 Worker 冷烟由后续补测，D-34 锁屏失败保留。[版本快照](docs/version-management.md#当前对齐快照2026-10-22) · [AI 工具会话](docs/ai-coach-tools-2026-10-21.md)。
+
+2026-10-21 主线集成历史，**训练包接入及AI新中转已获同意合入并推送两仓库main**：HipLab集成点691ace2，SDK d193a70（PR #2已MERGED，coach0.1.3/trainer0.1.4）。手机已保留数据安装0.3.9+17，运行源79c172d；锁屏冻结仍是已知失败，用户后测，本轮不再排查/复测，不上传商店。[合并与验收边界](docs/android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
 本仓库是 **HipLab App 主仓库，`main` 为开发基线**。[PR #2](https://github.com/mhgd3250905/HipLab/pull/2) 和 [PR #1](https://github.com/mhgd3250905/HipLab/pull/1) 已审核合并，App、高清素材和台账均已集成至 main；审核与提交身份见[主线集成记录](docs/mainline-integration-2026-10-17.md)。手机安装版本与 Git 提交分别登记。
 
@@ -30,7 +32,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 **#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
-当前未验边界以[验证台账](docs/verification.md)及[开发事项](docs/development-roadmap.md)的最新日期记录为准：+15已实际完成手机AI生成、保存和开练，+17保留数据升级已核验；这些结果不代表完整锁屏课程通过。D-34保留小米后台冻结失败，由用户后测；断网回落、其他未执行专项及iOS仍按原记录待验。下列为通用构建命令，不代表本次执行发布。
+当前未验边界以[验证台账](docs/verification.md)及[开发事项](docs/development-roadmap.md)的最新日期记录为准：旧 +15 手机AI生成、保存和开练及 +17 保留数据升级已核验，不覆盖本轮 coach 0.2.0 原生/真实 Worker；本轮 Web 断网预设回落已通过。D-34 保留小米后台冻结失败，由用户后测；其他原生专项及 iOS 仍按原记录待验。下列为通用构建命令，不代表本次执行发布。
 
 ```bash
 flutter pub get

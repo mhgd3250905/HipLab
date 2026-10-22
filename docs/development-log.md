@@ -1,5 +1,11 @@
 # 开发日志
 
+## 2026-10-22：AI 阶段版本管理与文档收束
+
+用户显式调用 cockpit-closeout 并授权保存、提交、push。只读 Preflight 以任务起点 e456d2a 为基线，HEAD7281822，确认3提交/22路径；完整状态仅4份已在阶段前记录的 Playwright 快照，保持不读不动。根 AGENTS/README 声明的事实源发现后，修正版本管理页旧 SDK“目前”表述、根入口缺失的AI0.2候选、当前状态/工作流的旧基线及事项索引缺D-35。分列开发分支09a392b、main e456d2a/d193a70、最后安装79c172d；App0.3.9+17和素材版本不变。
+
+5816c1b到7281822只有8份文档变化，验证输入差异为空；沿用10月21日469/469、AI62/62、analyze0和Web核心，不记成本次重跑。只验证文档事实、链接、diff及完整归属，提交并按授权普通推送当前分支；实际结果见[Preflight与回执](verification.md#2026-10-22-版本管理与阶段收束)。未合main、重建安装、读取忽略日志/产物或跨仓操作，真实Worker/真机后测及D-34失败保持。
+
 ## 2026-10-21：AI 升级至 ugk_coach 0.2.0 工具会话
 
 确认训练包接入已合 main 后，从 e456d2a 开 `codex/coach-tools-0.2`；257761d 将旧 ask/plan/reply 流程改为 CoachSession、ValidatedActions/ValidatedPlan 和实际用户上下文，固定 SDK main 09a392b，保留 App Key/持久 UUID、模板及保存开练流程。独立复核发现模板 mapper 会补回门禁排除动作；5816c1b 只保留准入步骤，并处理既有目录/动作包单位差异，保留原剂量、节奏和停留。未改 SDK、pub 缓存、原生服务、自测或语音引擎。

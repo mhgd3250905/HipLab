@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-10-22：版本记录收束（无新构建或安装）
+
+用户要求版本管理、文档/台账对齐后提交 push。本次只收束 `codex/coach-tools-0.2` 的记录；共用版本保持 **0.3.9+17**，开发候选业务源5816c1b、SDK09a392b（coach0.2.0/trainer0.1.4），main仍e456d2a/SDKd193a70。最后已核验手机安装沿用79c172d/SDKd193a70，未重新读取设备，也没有新APK、安装或发布流水。旧Web构建身份仍归10月21日5816c1b，不改写为本次构建；[版本身份快照](version-management.md#当前对齐快照2026-10-22)、[提交/分支推送实际回执](verification.md#2026-10-22-版本管理与阶段收束)分别记录。
+
 ## 2026-10-21：AI 工具会话临时 Web 验证构建
 
 没有新的 APK、安装或商店交付，共用版本仍 `0.3.9+17`，手机保持此前 79c172d 来源。仅在 `build/coach-tools-20261021/web-preview` 编译临时 Web 预览：最终运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`、SDK main `09a392bc0b736e6a23eef71d55d86108660e0e59`（coach 0.2.0 / trainer 0.1.4）；59 个 lib 文件和 pubspec/lock 与生产工作区逐字节一致。Flutter 3.44.7 release Web 构建 31.0 秒成功，`main.dart.js` 为 3,756,176 bytes，SHA256 `603254b786164c4b605d33c9a7b4a04aac24081b660a2470824f6340237dd8b5`。构建命令、来源身份和日志在同目录上一级 `web-build-command.txt`、`web-source-identity.json`、`web-build.log`、`web-build-result.json`（Git 忽略，本机证据）。

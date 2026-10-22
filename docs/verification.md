@@ -1,5 +1,58 @@
 # 验证台账
 
+## 2026-10-22 版本管理与阶段收束
+
+用户显式调用 cockpit-closeout 并授权保存、提交、push；本次只对齐当前 AI 工具会话阶段的版本、文档和台账，普通推送 `codex/coach-tools-0.2`。不切分支、合main、变更业务/依赖/版本/素材、重建安装、发布或跨仓。App仍0.3.9+17；实际保存与推送结果在本节追加。
+
+### Preflight（只读完成后才编辑）
+
+| 项目 | 实际核对结果 |
+|---|---|
+| 仓库边界 | `git rev-parse --show-toplevel` = `E:/AII-3D/3D-Hip`；根AGENTS和README已读，stage delta祖先路径没有嵌套AGENTS |
+| baseline | `e456d2a1988d0b5a3d238202d52337ef99e6e585`，ref为main/origin/main；选择依据为本AI任务已记录起点。`rev-parse --verify <SHA>^{commit}`成功，`merge-base --is-ancestor <baseline> HEAD`退出0；远端main经`ls-remote`回读同SHA |
+| HEAD / stage delta | Preflight HEAD `728182237361971de52b98e6bf033bc75a10ed32`；baseline..HEAD 为257761d、5816c1b、7281822三提交、22路径：6业务、2依赖、6测试、8文档。有限log/name-status逐项核对，未把全仓历史当阶段范围 |
+| 完整工作区归属 | `git status --porcelain=v1 --untracked-files=all`完整返回4项：tracked/staged/unstaged/deleted/renamed均0，untracked4。全部为阶段前已记录快照，仅核对路径/数量，不读内容、不纳入提交；路径见下段 |
+| 版本和配置 | pubspec版本0.3.9+17；当前分支两个SDK精确ref/resolved-ref均09a392bc0b736e6a23eef71d55d86108660e0e59，coach0.2.0/trainer0.1.4；依赖delta没有升级其他包。main仍e456d2a，未有该AI候选；远端当时尚无同名开发分支 |
+| 复用证据适用性 | `git diff --name-status 5816c1b..7281822`仅8份docs；对lib/test/test_screens/pubspec.yaml/pubspec.lock/android/ios/assets/tools的diff为空且退出0。无未提交业务改动，故已有检查继续绑定5816c1b，文档HEAD不记为新跑或新构建 |
+
+完整未跟踪项：`.playwright-cli/page-2026-10-19T02-40-08-297Z.yml`、`.playwright-cli/page-2026-10-19T03-12-59-813Z.yml`、`.playwright-mcp/page-2026-10-17T07-26-38-832Z.yml`、`.playwright-mcp/page-2026-10-17T07-29-48-965Z.yml`。此归属与阶段开始记录一致，本次未清理、覆盖、暂存或读取其内容。
+
+### Canonical 发现与确定性修正
+
+发现从根AGENTS/README明确声明的事实源开始，沿文档入口只追一跳；没有全仓扫描，也未读凭据、日志、浏览器profile或构建产物。逐项核对如下，current与历史段落分开解释。
+
+| 实际检查路径 | 分类 / 判定依据 | 本次结果 |
+|---|---|---|
+| `README.md`、`docs/README.md` | current，根入口声明为项目摘要/文档台账入口 | 根摘要补AI0.2开发候选与main/已安装包区分，文档索引补本轮工具会话 |
+| `pubspec.yaml`、`pubspec.lock` | current，版本规则声明版本/依赖来源 | 实际版本与精确固定ref一致，本次不修改 |
+| `docs/version-management.md` | current，根入口指定版本登记规则/快照 | 旧“目前coach0.1.3”改为分列分支/main/已安装包；补10月22日快照，旧快照标历史保留 |
+| `docs/current-state.md` | current，AGENTS指定Git/设备/状态事实 | 当前分支与main表同步，候选469项与旧手机验收分开，旧691ace2注明历史节点 |
+| `docs/version-ledger.md` | current，AGENTS指定构建/安装/发布流水 | 追加本次无新构建/安装的版本记录，10月21日Web产物身份不改写 |
+| `docs/verification.md` | current，AGENTS指定检查结果与来源 | 本节列Preflight、证据绑定及保存/推送回执；既有业务验证保留原日期和SHA |
+| `docs/development-roadmap.md` | current，AGENTS指定事项 | 当前索引补D-35待审核；D-34失败及后测边界保持 |
+| `docs/development-log.md` | current，AGENTS指定阶段成果 | 追加本轮版本/文档收束及边界，推送结果指向本节 |
+| `docs/development-workflow.md` | current，根入口指定工作流 | 最新基线明确e456d2a与当前AI分支，旧691ace2段标历史；此次只推当前分支 |
+| `docs/ai-coach-tools-2026-10-21.md` | current，当前文档入口指定本轮接口/配置专题 | 核对工具会话、门禁、上下文和模板事实，追加文档收束说明，不变验收结论 |
+| `docs/ai-coach.md` | 页首current指向候选，其余PR25流程为archive/history | 已注明旧流程历史，未当作0.2现行接口或本次新验收，不改内容 |
+| `docs/android-lockscreen-fix-2026-10-21.md` | archive/history，根入口直接引用的当次安装/主线确认 | 仅核对既有79c172d/0.3.9+17安装、d193a70/691ace2集成及失败边界；未把旧节点当当前HEAD，不改内容 |
+
+确定性finding为旧SDK“目前”表述、入口缺候选、Git/验证表混用旧节点、D-35缺索引及保存授权待登记。只在上述10份现有文档有限修正；业务、配置、测试及历史专题不变。
+
+### 沿用的业务证据（2026-10-21，来源5816c1b）
+
+完整source SHA为 `5816c1b21dc5c4d398312922d70855633f2f7963`。来源为本会话已返回的实际执行结果及本台账10月21日节，不在closeout中重新读取忽略日志或产物。
+
+- `flutter analyze --no-pub`：0 issues，2.7秒。
+- `flutter test --no-pub test/hip/coach_filtered_preset_test.dart test/hip/coach_tools_session_test.dart test/hip/hip_ai_coach_test.dart test/hip/hip_coach_relay_test.dart test/hip/coach_context_test.dart --reporter expanded`：62/62，9秒。
+- 设置 `VOICE_TIMELINE_OUT=<本机忽略目录>`、`VOICE_LANG=zh`、`VOICE_ROUTINE=A` 后，`flutter test --no-pub --concurrency=1 --reporter expanded`：469/469、0失败/跳过，4分34秒，导出260条语音事件。
+- 临时Web壳的 `flutter build web --release --no-pub --no-web-resources-cdn --no-wasm-dry-run --target lib/main.dart --dart-define=UGK_COACH_APP_KEY=<假测试值>`：31.0秒成功；受控HTTP的动作/计划/保存开练、会话和回落核心通过。精确JS身份留[10月21日版本流水](version-ledger.md#2026-10-21ai-工具会话临时-web-验证构建)，不推断真实Worker或原生通过。
+
+本次必要验证仅为文档事实/版本/本地链接、`git diff --check`、受影响canonical复核和完整状态/归属复查；不重复Flutter检查或构建。真实Worker/真机/iOS后测，D-34锁屏已知失败保持。
+
+### 本地收束验证
+
+阶段二复核10份现有文档，已发现的版本/状态/索引finding清零；413个本地文件链接、21个本次新增锚点全部有效，`git diff --check`通过。5816c1b至Preflight HEAD及当前未提交差异均不改变业务、配置、测试、原生或资源；受管改动仅本次Agent的10份文档，未跟踪仍为上述4份既有快照，无新增不明路径。按明确路径暂存、提交，并核对完整HEAD后普通推送；远端结果须在实际成功后追加，不能由本地commit推断。
+
 ## 2026-10-21 AI 工具会话升级
 
 本轮基线为已合入并推送的 main `e456d2a1988d0b5a3d238202d52337ef99e6e585`；开发分支 `codex/coach-tools-0.2`，最终运行来源 `5816c1b21dc5c4d398312922d70855633f2f7963`（主接入 `257761d`，随后修复预设过滤/单位表示）。SDK main 固定 `09a392bc0b736e6a23eef71d55d86108660e0e59`，coach 0.2.0 / trainer 0.1.4。工具为 Flutter 3.44.7 stable / Dart 3.12.2。后续文档不改变运行来源。
