@@ -1,5 +1,9 @@
 # 开发事项台账
 
+## D-36：SDK 共用训练和聊天界面（2026-10-24，待审核）
+
+main 后续开发候选在 `codex/sdk-shared-ui-20261024`，1.1.0+21，锁定 coach0.4.1 / trainer0.2.1 / coach_ui0.1.0；保留原液态玻璃 WIP 和 release/1.0。SDK TrainerPlayer、共用聊天与ask_user五条、多轮同agent、可信白名单门禁和无Key隐藏已完成。分析0、测试集合451通过/1跳过、release编译及真机M自然4/4、保存/数据保持和FGS释放通过，语音由用户确认正常。合 main 和推送仍需开哥本轮同意。[记录](sdk-shared-ui-2026-10-24.md)。
+
 ## D-07 / D-35：iOS 1.0 TestFlight（2026-10-24）
 
 iOS平台发布配置和验证已完成，复用com.ugk.hipinterlude的1.0.0(20)已上传、处理并对开哥个人内部组开放；iPhone16Pro已从TestFlight安装启动。442/1、analyze0、签名验包、12张原生商店截图及草稿已完成，完整真机耳机/锁屏仍待验，D-07暂不关闭。未更改Android、业务规则、依赖、素材或版本；商店资料与正式送审仍由开哥处理。[发布记录](release-1.0/ios/README.md)。

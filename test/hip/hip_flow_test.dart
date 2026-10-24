@@ -173,9 +173,15 @@ void main() {
     await tester.pumpAndSettle();
     final plan = store.todayPlan!;
     // The package preparation label precedes the first drill.
-    expect(find.text('准备 · 第一个动作'), findsOneWidget);
+    expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
     expect(find.text(plan.steps.first.drill.name), findsWidgets);
-    expect(find.text('1 / ${plan.steps.length}'), findsOneWidget);
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('index')))
+          .properties
+          .label,
+      '1 / ${plan.steps.length}',
+    );
     await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pumpAndSettle();
     expect(find.text(plan.steps.first.drill.name), findsOneWidget);

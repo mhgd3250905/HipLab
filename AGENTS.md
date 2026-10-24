@@ -1,5 +1,11 @@
 # HipLab 协作约定
 
+## 2026-10-24 main 后续 SDK 共用界面接入
+
+本轮用户要求从最新 main 建分支接入正式 tags `ugk_coach-v0.4.1`、`ugk_trainer-v0.2.1`、`ugk_coach_ui-v0.1.0`，不改 SDK、不复制 SmartFit。无 Key 时全部 AI 入口隐藏，覆盖下文基础版“保留现有 AI 入口”的历史决定。此要求仅作用于本轮开发分支；`release/1.0` 不动。测试、编译和训练链路验证完成后，仍须开哥同意才合入 main 并推送，覆盖本轮自动合 main 的一般授权。用户随后明确可以使用当前真机，停止模拟器验证以减少电脑资源占用；真机覆盖安装须保持测试签名和已有数据。
+
+本轮开发共用版本 `1.1.0+21`；送审基础版仍为 `1.0.0+20`。接入和实际验证见 [SDK 共用界面记录](docs/sdk-shared-ui-2026-10-24.md)。
+
 ## 2026-10-24 Mac iOS 发布授权
 
 本轮从 `release/1.0` 准备 iOS 1.0.0(20)，复用 Hip Interlude 的 `com.ugk.hipinterlude`（不是独立的 `com.ugk.hiplab` App 记录）。用户已授权自动签名、TestFlight 上传、提交推送 release 并合回 main；2026-10-24 用户随后明确授权填写目标 App 的商店资料并提交 App Review，覆盖原第七条；审核后保留手动发布，尚未授权正式公开发布。本轮 iOS 隐藏 AI 入口且不传 Key，覆盖下文旧的 iOS 禁传及保留 AI 入口限制；Android 仍按其原决定。只改 iOS 配置、iOS 平台界面守卫及发布证据，保持 Android、业务规则、版本、SDK 和依赖不变。真实耳机/锁屏验收不可由模拟器替代。当前证据见 [iOS 发布记录](docs/release-1.0/ios/README.md)。

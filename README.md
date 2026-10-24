@@ -1,5 +1,7 @@
 # HipLab · 开胯训练助手
 
+**2026-10-24 SDK 共用界面候选：** 从 main 8880c71 建立 `codex/sdk-shared-ui-20261024`，开发版 1.1.0+21；锁定 coach 0.4.1 / trainer 0.2.1 / coach_ui 0.1.0 正式 tags，SDK TrainerPlayer 与共用聊天界面接入。无 Key 全部 AI 入口隐藏；分析0、完整测试集合451通过/1跳过、release编译和真机M自然4/4通过；语音用户确认正常，等待开哥同意再合 main。release/1.0 不动。[接入与验证](docs/sdk-shared-ui-2026-10-24.md)。
+
 **2026-10-24 13:09：** 1.0.0(20)已提交Alpha审核，Submission ID2状态审核中；前台服务演示和公开隐私已补齐。正式版仍需12名真实测试者连续14天，用户选择稍后组织。[执行回执](docs/play-store-release-2026-10-24.md)。以下上架准备段落保留历史。
 
 **2026-10-24 基础版上架准备：** `release/1.0` 从 main e456d2a 建立，1.0.0+20 / SDK固定d193a70，无Key本地预设、保留AI入口。上传签名AAB和商店/FGS材料已准备；Play由开哥操作，Mac从release分支接iOS。[本轮交付](docs/release-1.0/README.md)。以下日期条目为历史记录。

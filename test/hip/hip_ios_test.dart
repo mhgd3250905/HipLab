@@ -270,8 +270,22 @@ void main() {
         // Time passes on the call: the ring does not move.
         final ring = find.byKey(const ValueKey('pause'));
         expect(ring, findsOneWidget);
+        final pausedCounter = tester
+            .widget<trainer.TrainerCountdownDigits>(
+              find.byType(trainer.TrainerCountdownDigits),
+            )
+            .value;
         await tester.pump(const Duration(seconds: 20));
         expect(find.text('已暂停'), findsOneWidget);
+        expect(
+          tester
+              .widget<trainer.TrainerCountdownDigits>(
+                find.byType(trainer.TrainerCountdownDigits),
+              )
+              .value,
+          pausedCounter,
+          reason: 'the interruption freezes the session counter',
+        );
 
         // The OS ends the interruption: still paused until the user taps.
         output.events.add(AudioInterruption.ended);
@@ -291,7 +305,7 @@ void main() {
           reason: 'the session clock resumed before the old tag fades away',
         );
         await tester.pump(
-          trainer.TrainerMotion.fast + const Duration(milliseconds: 20),
+          trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
         );
         expect(find.text('已暂停'), findsNothing);
         expect(output.reactivations, 1);
@@ -315,10 +329,25 @@ void main() {
       expect(find.text('已暂停'), findsOneWidget);
       output.events.add(AudioInterruption.began);
       await tester.pump(const Duration(milliseconds: 200));
+      // The interruption keeps its OS gate even if the user was already
+      // paused. Resume is ignored until the platform reports ended.
+      await tester.tap(find.byKey(const ValueKey('pause')));
+      await tester.pump();
+      expect(
+        tester
+            .widget<trainer.TrainerCountdownDigits>(
+              find.byType(trainer.TrainerCountdownDigits),
+            )
+            .dim,
+        isTrue,
+      );
+      expect(output.reactivations, 0);
+      output.events.add(AudioInterruption.ended);
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump();
       await tester.pump(
-        trainer.TrainerMotion.fast + const Duration(milliseconds: 20),
+        trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
       expect(find.text('已暂停'), findsNothing);
       expect(

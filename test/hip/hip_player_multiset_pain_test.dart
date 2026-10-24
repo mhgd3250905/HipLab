@@ -103,7 +103,9 @@ Future<void> _restThenNext(
   await tester.pump(const Duration(milliseconds: 300));
   expect(find.text('已记录'), findsOneWidget);
   await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
-  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump(
+    trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
+  );
   expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);

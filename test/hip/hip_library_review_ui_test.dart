@@ -166,16 +166,27 @@ void main() {
       expect(store.sessions.where((s) => s.completed).length, 1);
       final player = tester.state(find.byType(HipPlayerPage));
 
+      // Replay starts its welcome cue immediately. Measure from before the
+      // tap, rather than requiring another cue in an arbitrary later 3s gap.
+      final beforeRound2 = out.spoken.length;
       await tester.tap(find.byKey(const ValueKey('player-again')));
       await tester.pumpAndSettle(const Duration(milliseconds: 100));
       // The output is still open for round 2 (was: begin → begin → end).
       expect(find.byType(HipPlayerPage), findsOneWidget);
       expect(out.events.where((e) => e == 'end'), isEmpty);
       expect(out.began, isTrue);
-      final before = out.spoken.length;
       await tester.pump(const Duration(seconds: 3));
       expect(out.dropped, 0);
-      expect(out.spoken.length, greaterThan(before), reason: 'round 2 speaks');
+      expect(
+        out.spoken.length,
+        greaterThan(beforeRound2),
+        reason: 'round 2 speaks through the still-open shared output',
+      );
+      expect(
+        out.spoken.skip(beforeRound2).expand((assets) => assets),
+        contains(loadVoiceLibrary().asset('p.welcome', lang: 'zh')),
+        reason: 'the new round schedules its own welcome voice',
+      );
       // Same page: no second route whose old page would end() the output.
       expect(tester.state(find.byType(HipPlayerPage)), same(player));
       expect(find.byKey(const ValueKey('player-again')), findsNothing);

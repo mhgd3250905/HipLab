@@ -1,5 +1,19 @@
 # 版本交付台账
 
+## 2026-10-24：1.1.0+21 SDK 共用界面待审包
+
+运行源 `429eaf5c0e952d60199ca95362bd3dd2880f8606`，分支 `codex/sdk-shared-ui-20261024`；后续测试/文档提交不改运行代码。coach0.4.1 / trainer0.2.1 / coach_ui0.1.0均锁正式tag，Pose-Hub仍v0.2.0；release/1.0保持1.0.0+20。
+
+| 产物 | 身份与用途 |
+|---|---|
+| `E:/AII-3D/hiplab-releases/sdk-shared-ui-20261024/hiplab-1.1.0+21-arm64-release.apk` | 104134291 bytes；SHA256 `9fa080472102ad6c42cb4fc2fb76ff93daf4ac4494b65a7b9ac848a3ccedc685`；上传证书签名的本地编译结果，未上传任何商店 |
+| 同目录 `hiplab-1.1.0+21-device-test.apk` | 104240666 bytes；SHA256 `5d2923880587bf9c57e3493bb5de136c575384f2b1beaa67f6e4491d3827ee0a`；同一release运行负载重签为原手机测试证书，以保留数据覆盖安装 |
+
+包名 `com.ugk.hiplab`，versionName1.1.0、versionCode21、min24/target36、arm64-v8a，无AI Key。真机证书SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`与原0.3.10+19完全相同；不卸载、不清数据。首个缺插件注册的试装失败已留档；最终补Flutter生成后重编译，正常覆盖启动。签名密钥和key.properties不入仓库。
+
+分析0、完整测试集合451通过/1跳过，分批证据和未验范围见[验证台账](verification.md#2026-10-24sdk-共用界面候选验证)；安装、真机完整训练及数据保持的实际结果见[接入报告](sdk-shared-ui-2026-10-24.md)。当前未合main、未推送开发分支或商店；合main/推送等待开哥同意。
+
+
 ## 2026-10-24：iOS 1.0.0(20) TestFlight
 
 - App：HipLab，复用 Hip Interlude / `com.ugk.hipinterlude`；编译源 `e7ac0836eb69e1cc81c53660ac4f94e270b46538`。

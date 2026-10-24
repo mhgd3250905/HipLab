@@ -1,5 +1,20 @@
 # 验证台账
 
+## 2026-10-24：SDK 共用界面候选验证
+
+分支 `codex/sdk-shared-ui-20261024`，运行源码 `429eaf5c0e952d60199ca95362bd3dd2880f8606`，版本 `1.1.0+21`。三个正式 tag 的 resolved-ref 见[接入报告](sdk-shared-ui-2026-10-24.md)。后续测试断言迁移不改运行代码或重建身份。
+
+- `flutter analyze --no-pub`：0 issues。
+- 全部测试文件最终覆盖 **451 通过 / 1 条件跳过**：未变化的 `hip_voice_pr24_review_test.dart` 10项在本轮首轮全量通过；其余全部文件在最后一轮重新执行，**441通过 / 1跳过，2分24秒**。分批结果覆盖完整集合，没有未解决失败。
+- 首次全量为441通过/10失败/1跳过（6分38秒）。10项旧SDK界面/时序假设已迁移：新的准备标签、500ms淡出、舞台布局、再练welcome基线；OS中断仍活跃时不能手动恢复，等待ended后才能恢复。保留并加强计时冻结、两轮实际语音、疼痛、休息和幂等保存断言。
+- AI与共用聊天专项41项通过：含SDK真实门禁、三轮澄清、同agent、原选项及顺序、防重复、取消/新对话/销毁/历史恢复失效、长20动作详情滚动、7模板门禁、无Key零请求/零UUID及入口隐藏。
+- `flutter pub get --offline --enforce-lockfile`通过；Android arm64 release编译98.1秒通过，不传AI Key。首个试装包曾因只执行Dart pub get缺少Flutter生成的插件注册文件而启动失败，已保留失败证据；补正常Flutter pub get后重编译并验证APK内注册类存在，最终正常启动。
+- `python tools/pose_hub_sync.py ... --check`：92匹配，0漂移；App目录归一化工具重复运行字节一致，46个快照ID未增删，运行时白名单仍45。
+- `git diff --check`通过。真实训练、数据与服务释放另见接入报告最终真机段；iOS原生编译/安装、真实模型端到端、耳机/锁屏矩阵未执行，不以widget测试代替。
+
+日志位于 `E:/AII-3D/hiplab-releases/sdk-shared-ui-20261024/`：`flutter-test-full.log`、`flutter-test-final-rest.log`、`flutter-test-trainer-final.log`、`flutter-analyze.log`、`android-release-build-final.log`。首轮失败保留，不改写为首次全量通过。
+
+
 ## 2026-10-24 16:05：iOS 1.0 已正式提交 App Review
 
 复用 Hip Interlude（`com.ugk.hipinterlude`），**1.0.0 (20)** 已正式送审，Apple 回执与服务端状态 **WAITING_FOR_REVIEW（等待审核）**，提交 ID `5f1196c4-3a44-4105-9833-4175e0fca7c5`；保留手动发布，尚未公开发布。中英文商店资料、三尺寸各 6 张原生截图、无登录审核备注、隐私“未收集数据”及公开政策/支持链接均已完成。免费下载，供应保留中国大陆；Mac / Vision 兼容分发关闭。旧草稿 4 张失效 iPad 截图移除后通过提交校验。
