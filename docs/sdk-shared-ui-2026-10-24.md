@@ -36,7 +36,7 @@ Android arm64 release最终编译98.1秒通过，不传AI Key。真机包与原�
 
 第一轮从“练习→套路→M详情→开始”进入SDK舞台播放器，自然完成4/4（完成页3分钟），未跳过或暂停。完成按钮保存并返回套路，再到进度显示累计5天/连续1天，自测10/12保持。训练时唯一SDK TrainingSessionService为mediaPlayback/type0x2、通知4107；自然完成后服务不存在，通知记录为0。本包PID27089全程保持，crash buffer为空，logcat未发现fatal/Flutter未处理异常。
 
-实际语音焦点CONTENT_TYPE_SPEECH活动已记录。用户随后要求“你再播放一次”，第二轮从同一M套路正常开始，并明确反馈 **“OK 我听到了没问题”**，本轮真机语音听感据此记为用户确认正常，非Agent实听。未扩展耳机、蓝牙、锁屏或来电矩阵；历史D-34仍保留。第二轮自然完成的追加证据在本地产物目录记录，不重复开第三轮。
+实际语音焦点CONTENT_TYPE_SPEECH活动已记录。用户随后要求“你再播放一次”，第二轮从同一M套路正常开始，并明确反馈 **“OK 我听到了没问题”**，本轮真机语音听感据此记为用户确认正常，非Agent实听。未扩展耳机、蓝牙、锁屏或来电矩阵；历史D-34仍保留。第二轮已推进到4/4，其后回到套路页且服务释放；Agent未捕获该轮完成页或保存操作，不将第二轮另记为完整训练通过。重播证据另存本地，未开第三轮。
 
 首轮证据为 `native/final-native-result.json`，截图包括 `existing-group-and-no-ai.png`、`no-ai-usage-settings.png`、`training-work-2.png`、`natural-completion.png`、`saved-progress-after-training.png`；安装包在手机base.apk上的SHA也与本地一致。用户听感回执为 `native/user-audio-confirmation.json`。这些本地证据不进入Git，不代表已远端备份。
 
