@@ -1,10 +1,10 @@
 # 验证台账
 
-## 2026-10-24：iOS TestFlight 1.0.0(20)
+## 2026-10-24 16:05：iOS 1.0 已正式提交 App Review
 
-源码e7ac083，Flutter3.44.7/Dart3.12.2、Xcode26.6；pub get按原镜像enforce-lockfile通过，92项冻结素材无漂移。最终442通过/1条件跳、analyze0、iOS静态检查/diff检查通过；iOS/AI/隐私专项58通过。原生Release编译、自动签名Archive/IPA及精确上传包deep/strict签名、arm64、iPhone-only、iOS15、audio、分发profile、6份隐私清单与无密钥检查通过。iOS Simulator原生12截图尺寸/无alpha核验通过；一节391秒6/6锁屏训练自然完成并保存，进程未重启，但CoreMedia/WebKit诊断及音频听感未据此判定通过。真机TestFlight20已安装，视频、隐藏AI及包内说明已查看；完整耳机锁屏验收待补。[精确身份与证据边界](release-1.0/ios/README.md)。
+复用 Hip Interlude（`com.ugk.hipinterlude`），**1.0.0 (20)** 已正式送审，Apple 回执与服务端状态 **WAITING_FOR_REVIEW（等待审核）**，提交 ID `5f1196c4-3a44-4105-9833-4175e0fca7c5`；保留手动发布，尚未公开发布。中英文商店资料、三尺寸各 6 张原生截图、无登录审核备注、隐私“未收集数据”及公开政策/支持链接均已完成。免费下载，供应保留中国大陆；Mac / Vision 兼容分发关闭。旧草稿 4 张失效 iPad 截图移除后通过提交校验。
 
-**用户后续收束决定：** 声音/耳机专项跳过，由用户确认可用、后续自己使用反馈；首版不再扩展细节验收。真机15:12起退出镜像并锁定约9分钟，PID10545未变、无新Runner崩溃报告，重连界面为暂停；正常结束后保存45秒、0/6、endedEarly=true、full=false记录。此观察不代表整节后台完成，暂停原因未继续排查，完整训练/锁屏持续播放保留未验。上述“待补”不再作为本轮申请准备阻塞。
+编译源仍 e7ac083，上传 IPA SHA256 e2203298…，未重建；既有 442 过/1 条件跳、analyze0、验签及 TestFlight 安装结果保持。用户主动暂缓声音/耳机和完整锁屏专项，不改写为通过。此阶段只改发布文档及已授权外部资料，不改 Android、业务逻辑、SDK、依赖或版本。[完整回执和证据范围](release-1.0/ios/README.md)。
 
 ## 2026-10-24：Play 与 YouTube 远程回执
 

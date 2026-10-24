@@ -1,6 +1,6 @@
-# App Review Notes 草稿
+# App Review Notes
 
-仅交付开哥复制，未写入 App Store Connect，未提交审核。
+英文备注已于 2026-10-24 写入 App Store Connect，随 1.0.0 (20) 正式提交；中文保留作为对应说明。
 
 ## 中文
 
@@ -22,8 +22,8 @@ To test: complete the initial safety prompts and select a practice profile, open
 
 The app provides general fitness guidance, not medical diagnosis or treatment, automated movement recognition or measurement.
 
-## 提交前核对
+## 提交时证据范围
 
-本草稿描述预期行为；必须结合精确候选的真机耳机/锁屏验收记录复核，不能把待验行为写成已验证。后台能力的用途依据：[App Review Guidelines 2.5.4](https://developer.apple.com/app-store/review/guidelines/#software-requirements)。
+备注描述后台能力用途与复现步骤，不宣称待验行为已经真机专项通过；精确候选的真机安装和测试范围见发布记录。后台能力的用途依据：[App Review Guidelines 2.5.4](https://developer.apple.com/app-store/review/guidelines/#software-requirements)。
 
 本轮用户后续明确跳过声音/耳机听感，确认可用并由其后续自行使用反馈；这是用户报告，不能将本轮后台计时与保存检查扩写为 Agent 已听完全部口令。

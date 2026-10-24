@@ -2,11 +2,11 @@
 
 ## 2026-10-24 Mac iOS 发布授权
 
-本轮从 `release/1.0` 准备 iOS 1.0.0(20)，复用 Hip Interlude 的 `com.ugk.hipinterlude`（不是独立的 `com.ugk.hiplab` App 记录）。用户已授权自动签名、TestFlight 上传、提交推送 release 并合回 main；不提交 App Review、不修改商店信息。本轮 iOS 隐藏 AI 入口且不传 Key，覆盖下文旧的 iOS 禁传及保留 AI 入口限制；Android 仍按其原决定。只改 iOS 配置、iOS 平台界面守卫及发布证据，保持 Android、业务规则、版本、SDK 和依赖不变。真实耳机/锁屏验收不可由模拟器替代。当前证据见 [iOS 发布记录](docs/release-1.0/ios/README.md)。
+本轮从 `release/1.0` 准备 iOS 1.0.0(20)，复用 Hip Interlude 的 `com.ugk.hipinterlude`（不是独立的 `com.ugk.hiplab` App 记录）。用户已授权自动签名、TestFlight 上传、提交推送 release 并合回 main；2026-10-24 用户随后明确授权填写目标 App 的商店资料并提交 App Review，覆盖原第七条；审核后保留手动发布，尚未授权正式公开发布。本轮 iOS 隐藏 AI 入口且不传 Key，覆盖下文旧的 iOS 禁传及保留 AI 入口限制；Android 仍按其原决定。只改 iOS 配置、iOS 平台界面守卫及发布证据，保持 Android、业务规则、版本、SDK 和依赖不变。真实耳机/锁屏验收不可由模拟器替代。当前证据见 [iOS 发布记录](docs/release-1.0/ios/README.md)。
 
 用户随后明确“声音部分可以不用测试，跳过，我确认 ok，后续自己使用测试反馈”。本轮声音/耳机听感记为用户确认与主动跳过，不再等待耳机就绪，不写成 Agent 实测通过；真机非声音的完整训练、锁屏计时、保存与崩溃检查仍按实际证据记录。
 
-同轮用户再次明确首版不再关注测试细节、优先完成 Apple 商店申请，后续亲自使用测试并迭代。按此要求收束额外验收；完整训练与锁屏持续播放保留未验，不再作为本轮申请准备的阻塞项。是否代填商店资料/正式送审须以用户对原第七条边界的新明确答复为准。
+同轮用户再次明确首版不再关注测试细节、优先完成 Apple 商店申请，后续亲自使用测试并迭代。按此要求收束额外验收；完整训练与锁屏持续播放保留未验，不再作为本轮申请准备的阻塞项。用户已明确回复“授权填写资料并提交审核”，目标限定为 Hip Interlude 记录（com.ugk.hipinterlude）的 HipLab 1.0.0 (20)。可更新对应公开隐私/支持页，保留其它 App/Android 政策和另一条等待审核记录。
 
 ## 2026-10-24 上架执行追加授权
 

@@ -1,6 +1,6 @@
-# HipLab iOS 商店文案草稿
+# HipLab iOS 已提交商店文案
 
-适用候选：`com.ugk.hipinterlude` / `1.0.0 (20)`，复用 Hip Interlude（Apple ID `6806806172`）。仅交付开哥审阅和手动替换；未保存到 App Store Connect。
+适用候选：`com.ugk.hipinterlude` / `1.0.0 (20)`，复用 Hip Interlude（Apple ID `6806806172`）。已于 2026-10-24 保存至 App Store Connect 并随本候选正式提交，当前等待审核；审核后手动发布。
 
 ## 简体中文
 
@@ -56,9 +56,9 @@ Practice records, self-checks, discomfort feedback and preferences stay in priva
 
 HipLab is for general fitness. It is not a medical device and does not diagnose, treat, cure or prevent disease. Stop exercising if you experience pain, numbness, injury or discomfort, and seek qualified professional advice.
 
-## 开哥替换前复核
+## 已执行的商店复核
 
 - 不继续使用旧 Hip Interlude 的“18 个动作、六种界面语言、振动节拍、1–4 分钟”描述。
-- 支持及隐私链接须覆盖此 iOS 候选；现有公开政策主要描述 Android，iOS 补充草稿见同目录 privacy-labels.md。
-- 截图只使用当前候选的实际界面，不把测试渲染图或 Android 截图当 iOS 实机截图。
+- 支持网址为 https://mhgd3250905.github.io/HipLab/ios/hipinterlude/support.html；隐私网址为 https://mhgd3250905.github.io/HipLab/ios/hipinterlude/，均已公开并写入对应本地化。
+- 使用同源码的 iOS Simulator 原生界面截图，6.3 / 6.5 / 6.7 英寸各 6 张；未使用 widget 渲染图或 Android 图。
 - 本文不宣称候选已通过真机耳机/锁屏验收或已正式上架，验收结果见发布记录。
