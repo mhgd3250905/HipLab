@@ -1,5 +1,7 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
+**2026-10-24 main 已集成：** coach0.4.2 / trainer0.2.2 / coach_ui0.1.1均锁正式tag至3302d62；无App源码适配，分析0、App全量451通过/1跳过、窄屏专项13通过，已按授权合入并推送main（功能集成点88d8802）。下方候选和旧API段落保留历史。[当前接入与回执](sdk-tag-patch-2026-10-24.md)。
+
 **2026-10-24 后续开发候选：** `codex/sdk-shared-ui-20261024` 改用 CoachAgent0.4.1 和 coach_ui0.1.0 SDK 组件，支持同一 agent 多轮 ask_user；无Key隐藏入口和用量。下方旧 CoachAssistant、最多追问一次、未配置入口和历史截图均为此前实现，不代表本轮候选。[新接入契约与验证](sdk-shared-ui-2026-10-24.md)。
 
 **当前main已改用新中转：** 默认 `api.uuugk.win/v1` / `deepseek-v4-flash-0731`，通过App Key和持久设备UUID请求，无Authorization；固定SDKd193a70/coach0.1.3，已获同意合main；构建、验证与原生边界见[2026-10-20新中转迁移](ai-relay-migration-2026-10-20.md)。下方PR25段落保留旧接入来源。

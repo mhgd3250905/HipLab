@@ -2,7 +2,7 @@
 
 ## 2026-10-24：SDK 修复 tag 与框架版本
 
-本轮从候选5c4d32e更新三个正式tags到同一3302d62；App仍1.1.0+21，不因只改锁且无新构建而递增版本。默认E:/flutter现为3.47.8，本项目按约定显式使用E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat（3.44.7/Dart3.12.2），保持其余hosted依赖不变。无App源码适配，不重复真机、不更新手机安装身份；release/1.0不变。[实际检查与集成](sdk-tag-patch-2026-10-24.md)。
+本轮从候选5c4d32e更新三个正式tags到同一3302d62，已按授权合入并推送main（功能集成点88d8802）；App仍1.1.0+21，不因只改锁且无新构建而递增版本。默认E:/flutter现为3.47.8，本项目按约定显式使用E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat（3.44.7/Dart3.12.2），保持其余hosted依赖不变。无App源码适配，不重复真机、不更新手机安装身份；release/1.0不变。[实际检查与集成](sdk-tag-patch-2026-10-24.md)。
 
 ## 2026-10-24：main 后续开发候选
 

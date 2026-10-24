@@ -1,6 +1,6 @@
 # HipLab · 开胯训练助手
 
-**2026-10-24 SDK 修复 tag：** 已按用户确认从候选5c4d32e改锁 coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（均3302d62）；使用固定Flutter3.44.7从远端重新pub get，App源码和其余hosted依赖保持。分析0、窄屏大字体专项13通过，全量451通过/1条件跳过；用户已授权通过后直接合入并推送main，release/1.0不动。[补丁与集成回执](docs/sdk-tag-patch-2026-10-24.md)。以下保留此前候选记录。
+**2026-10-24 SDK 修复 tag：** 已按用户确认从候选5c4d32e改锁 coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（均3302d62）；使用固定Flutter3.44.7从远端重新pub get，App源码和其余hosted依赖保持。分析0、窄屏大字体专项13通过，全量451通过/1条件跳过；已按授权合入并普通推送main（功能集成点88d8802），release/1.0不动。[补丁与集成回执](docs/sdk-tag-patch-2026-10-24.md)。以下保留此前候选记录。
 
 **2026-10-24 SDK 共用界面候选：** 从 main 8880c71 建立 `codex/sdk-shared-ui-20261024`，开发版 1.1.0+21；锁定 coach 0.4.1 / trainer 0.2.1 / coach_ui 0.1.0 正式 tags，SDK TrainerPlayer 与共用聊天界面接入。无 Key 全部 AI 入口隐藏；分析0、完整测试集合451通过/1跳过、release编译和真机M自然4/4通过；语音用户确认正常，等待开哥同意再合 main。release/1.0 不动。[接入与验证](docs/sdk-shared-ui-2026-10-24.md)。
 
