@@ -4,6 +4,8 @@
 
 源码e7ac083，Flutter3.44.7/Dart3.12.2、Xcode26.6；pub get按原镜像enforce-lockfile通过，92项冻结素材无漂移。最终442通过/1条件跳、analyze0、iOS静态检查/diff检查通过；iOS/AI/隐私专项58通过。原生Release编译、自动签名Archive/IPA及精确上传包deep/strict签名、arm64、iPhone-only、iOS15、audio、分发profile、6份隐私清单与无密钥检查通过。iOS Simulator原生12截图尺寸/无alpha核验通过；一节391秒6/6锁屏训练自然完成并保存，进程未重启，但CoreMedia/WebKit诊断及音频听感未据此判定通过。真机TestFlight20已安装，视频、隐藏AI及包内说明已查看；完整耳机锁屏验收待补。[精确身份与证据边界](release-1.0/ios/README.md)。
 
+**用户后续收束决定：** 声音/耳机专项跳过，由用户确认可用、后续自己使用反馈；首版不再扩展细节验收。真机15:12起退出镜像并锁定约9分钟，PID10545未变、无新Runner崩溃报告，重连界面为暂停；正常结束后保存45秒、0/6、endedEarly=true、full=false记录。此观察不代表整节后台完成，暂停原因未继续排查，完整训练/锁屏持续播放保留未验。上述“待补”不再作为本轮申请准备阻塞。
+
 ## 2026-10-24：Play 与 YouTube 远程回执
 
 Playwright MCP正常复用用户授权的浏览器登录态，未读取/导出凭据。Google接收既有AAB20/1.0.0/min24/target36/3ABI；预览仅体积增大警告。中英商店与6张1.0原生截图保存，原图标AI标签保留；数据安全只读核对为不收集/不分享、政策URL正确。mediaPlayback声明保存实际视频URL，送审后应用内容显示无待注意声明。

@@ -2,7 +2,7 @@
 
 ## 2026-10-24：iOS 1.0 TestFlight 已上传并可内部测试
 
-复用 Hip Interlude（`com.ugk.hipinterlude`），1.0.0(20) 已上传且 Apple 处理/验证通过；仅开哥个人内部组已启用。编译源 e7ac083，iOS 隐藏 AI、无 Key，未改 Android/业务规则/SDK/版本。442 过/1 条件跳、analyze0，签名验包及两尺寸各6张原生截图通过；iPhone16Pro/iOS26.5已从TestFlight安装启动。完整耳机/锁屏训练仍待验，不记为已通过；未改商店信息、未提交 App Review。详见 [iOS 发布记录](release-1.0/ios/README.md)。
+复用 Hip Interlude（`com.ugk.hipinterlude`），1.0.0(20) 已上传且 Apple 处理/验证通过；仅开哥个人内部组已启用。编译源 e7ac083，iOS 隐藏 AI、无 Key，未改 Android/业务规则/SDK/版本。442 过/1 条件跳、analyze0，签名验包及两尺寸各6张原生截图通过；iPhone16Pro/iOS26.5已从TestFlight安装启动。用户决定首版优先申请、后续亲自测试迭代；声音/耳机主动跳过、完整训练/锁屏持续播放未记为通过，不再阻塞准备。镜像断开后的暂停测试已正常结束保存，观察期进程未重启、无新Runner崩溃报告。未改商店信息、未提交 App Review。详见 [iOS 发布记录](release-1.0/ios/README.md)。
 
 ## 2026-10-24 13:09：1.0 Alpha 已送审
 

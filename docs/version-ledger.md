@@ -5,7 +5,7 @@
 - App：HipLab，复用 Hip Interlude / `com.ugk.hipinterlude`；编译源 `e7ac0836eb69e1cc81c53660ac4f94e270b46538`。
 - 最终 Organizer 上传 IPA：104,827,002 bytes，SHA-256 `e2203298729d6ced8ec9b09e2a8086a55dfe22c960fc60ac35ab8d0027d5f0ea`；Archive、IPA 与原生截图在本机 Git 忽略目录。
 - 13:57 Xcode 上传完成、ASC 记录13:58；Apple处理完成，Build `97aa451f-dede-40b7-aebf-ef2ad456257a`，开哥个人内部组“正在测试”。未新增测试员或外部分发，未提交正式审核、未改商店资料。
-- 真机iPhone16Pro/iOS26.5从TestFlight安装，回读1.0.0/20；启动、视频和平台入口已验，完整耳机/锁屏待验。两尺寸各6张原生截图及文案/隐私/审核备注草稿已准备。[完整候选及边界](release-1.0/ios/README.md)。
+- 真机iPhone16Pro/iOS26.5从TestFlight安装，回读1.0.0/20；启动、视频和平台入口已验。后续锁屏观察进程未重启、无新Runner崩溃，重连时训练为暂停，手动结束保存45秒/0-of-6/未完成测试记录。用户明确声音专项跳过，首版优先申请，完整训练/锁屏持续播放由其后续使用反馈，不记为实测通过。两尺寸各6张原生截图及文案/隐私/审核备注草稿已准备。[完整候选及边界](release-1.0/ios/README.md)。
 
 ## 2026-10-24 13:09：1.0.0+20 Alpha 已提交审核
 
