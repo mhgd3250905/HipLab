@@ -341,19 +341,11 @@ void main() {
       String first,
       String second,
     ) async {
-      final conv = uc.CoachConversation();
-      await s.ask(first, conv);
-      return (await s.ask(second, conv)).reply?.plan;
+      await s.load();
+      addTearDown(s.dispose);
+      await s.conversation!.send(first);
+      return (await s.conversation!.send(second))?.plan?.plan;
     }
-
-    test('未配置：先说做了手术，第二轮仍不给可开始的计划', () async {
-      final s = service();
-      final conv = uc.CoachConversation();
-      expect((await s.ask('我做了手术，想恢复训练', conv)).reply!.plan, isNull);
-      final a2 = await s.ask('给我一个简单方案', conv);
-      expect(a2.reply!.plan, isNull);
-      expect(a2.reply!.text, contains('就医'));
-    });
 
     test('首轮模型建议就医、第二轮断网：回落仍不给计划', () async {
       final s = service(
@@ -403,9 +395,7 @@ void main() {
         await coach.dispose();
         asset.complete(File(CoachService.catalogAsset).readAsStringSync());
         await loading;
-        expect(coach.agent, isNull);
-        final answer = await coach.ask('12 分钟', uc.CoachConversation());
-        expect(answer.cancelled, isTrue);
+        expect(coach.conversation, isNull);
         expect(fake.requests, isEmpty);
       },
     );
@@ -430,7 +420,7 @@ void main() {
     );
 
     test(
-      'three clarifications keep one agent; options use original strings/order and cannot double submit',
+      'App binds controller messages, callbacks and current gate history',
       () async {
         final fake = CoachFakeClient([
           question('在哪里练？', options: ['在家', '办公室']),
@@ -438,79 +428,87 @@ void main() {
           question('想练多久？'),
           validPlanEnvelope(),
         ]);
-        final coach = service(fake: fake);
-        final session = AiCoachSession(coach);
+        final session = AiCoachSession(service(fake: fake));
         addTearDown(session.dispose);
-        final progressAnswerability = <bool>[];
-        final subscription = coach.events.listen((e) {
-          if (e.kind == uc.AgentEventKind.askUser) {
-            progressAnswerability.add(session.awaitingQuestionId != null);
-          }
-        });
-        addTearDown(subscription.cancel);
+        await session.load();
+        final controller = session.conversation!;
         await session.send('想练开胯');
-        final agent = coach.agent;
-        expect(session.awaitingQuestionId, 0);
-        await session.answerChoices(0, ['篡改选项']);
-        expect(fake.requests, hasLength(1));
-        final first = session.answerChoices(0, ['在家']);
-        expect(session.questionEnabled(0), isFalse);
-        final userCount = session.messages.where((m) => m.isUser).length;
-        await session.answerChoices(0, ['办公室']);
-        expect(session.messages.where((m) => m.isUser), hasLength(userCount));
-        await first;
-        expect(identical(coach.agent, agent), isTrue);
-        await session.answerChoices(1, ['垫子', '椅子']);
-        expect(session.answeredChoices[1], ['椅子', '垫子']);
-        expect(session.messages.where((m) => m.isUser).last.text, '椅子、垫子');
-        await session.answerText(2, '12 分钟');
-        expect(identical(coach.agent, agent), isTrue);
-        expect(session.awaitingQuestionId, isNull);
-        expect(session.messages.last.answer!.plan, isNotNull);
-        expect(progressAnswerability, [false, false, false]);
-        expect(
-          fake.requests.last.messages
-              .where((m) => m.role == uc.LlmRole.user)
-              .map((m) => m.content)
-              .join(' '),
-          contains('12 分钟'),
-        );
-        expect(session.questionEnabled(0), isFalse);
-        expect(session.questionEnabled(1), isFalse);
-        expect(session.questionEnabled(2), isFalse);
+        expect(identical(session.messages, controller.state.messages), isTrue);
+        final history = [...session.messages];
+        await session.answerChoices(controller.state.pendingQuestion!.id, [
+          '在家',
+        ]);
+        await session.answerChoices(controller.state.pendingQuestion!.id, [
+          '垫子',
+          '椅子',
+        ]);
+        await session.answerText(controller.state.pendingQuestion!.id, '12 分钟');
+        final message = session.messages.last;
+        expect(message.plan, isNotNull);
+        expect(session.statusFor(message), uc.TurnStatus.ok);
+        expect(identical(session.conversation, controller), isTrue);
+        session.restoreHistory(history);
+        expect(session.messages, hasLength(2));
+        expect(session.messages.last.questionAnswered, isTrue);
+        expect(controller.canAnswer(history.last.id), isFalse);
+        session.reset();
+        expect(session.messages, isEmpty);
+        expect(identical(session.conversation, controller), isTrue);
       },
     );
 
     test(
-      'new turn, cancel, reset, restored history and disposal expire questions',
+      'restored plans and actions are readmitted against HipLab scope',
       () async {
-        final fake = CoachFakeClient([
-          question('多久？'),
-          question('在哪里？'),
-          question('器材？'),
-          question('还有呢？'),
+        final coach = service(fake: CoachFakeClient([]));
+        final session = AiCoachSession(coach);
+        addTearDown(session.dispose);
+        await session.load();
+        final broader = uc.ToolGate(
+          catalog: coach.catalog,
+          profile: uc.CoachProfile.fromJson(
+            jsonDecode(File(CoachService.profileAsset).readAsStringSync())
+                as Map<String, Object?>,
+          ),
+        );
+        final envelope = validPlanEnvelope();
+        final blocks = (envelope['plan'] as Map)['blocks'] as List;
+        (blocks.last as Map)['items'] = [
+          item('n-thomas-test', 'time', 1, 30, perSide: true),
+        ];
+        final foreignPlan = broader.admitTemplate(parsePlan(envelope));
+        final foreignActions = broader.check('', [
+          uc.LlmToolCall(
+            id: 'foreign',
+            name: 'show_actions',
+            arguments: jsonEncode({
+              'items': [
+                {'actionId': 'n-thomas-test'},
+              ],
+            }),
+          ),
+        ]).actions;
+        expect(foreignPlan, isNotNull);
+        expect(foreignActions, isNotNull);
+        final admitted = coach.gate.admitTemplate(
+          parsePlan(validPlanEnvelope()),
+        );
+        session.restoreHistory([
+          uc.CoachConversationMessage(id: 'plan', at: _now, plan: foreignPlan),
+          uc.CoachConversationMessage(
+            id: 'actions',
+            at: _now,
+            actions: foreignActions,
+          ),
+          uc.CoachConversationMessage(id: 'valid', at: _now, plan: admitted),
         ]);
-        final session = AiCoachSession(service(fake: fake));
-        await session.send('开始');
-        final first = session.awaitingQuestionId!;
-        final history = [...session.messages];
-        await session.send('改成别的需求');
-        expect(session.questionEnabled(first), isFalse);
-        session.stop();
-        expect(session.awaitingQuestionId, isNull);
-        session.reset();
-        expect(session.messages, isEmpty);
-        await session.send('新任务');
-        session.expireQuestion();
-        expect(session.awaitingQuestionId, isNull);
-        session.restoreHistory(history);
-        expect(session.messages, hasLength(2));
-        expect(session.awaitingQuestionId, isNull);
-        final count = fake.requests.length;
-        await session.answerText(first, '12 分钟');
-        expect(fake.requests, hasLength(count));
-        session.dispose();
-        expect(session.questionEnabled(first), isFalse);
+        expect(session.messages[0].plan, isNull);
+        expect(session.messages[1].actions, isNull);
+        expect(
+          session.messages[2].plan!.plan.exerciseIds,
+          admitted!.plan.exerciseIds,
+        );
+        expect(session.conversation!.state.admittedPlans, hasLength(1));
       },
     );
 
@@ -523,7 +521,9 @@ void main() {
         ];
         final fake = CoachFakeClient([invalid, validPlanEnvelope()]);
         final coach = service(fake: fake);
-        final answer = await coach.ask('在家练', uc.CoachConversation());
+        await coach.load();
+        addTearDown(coach.dispose);
+        final answer = (await coach.conversation!.send('在家练'))!;
         expect(fake.requests, hasLength(2));
         expect(
           fake.requests.last.messages.last.content,
@@ -632,7 +632,12 @@ void main() {
 
     Finder inList(String key) {
       if (key == 'coach-option-0') {
-        return find.byKey(const ValueKey('question-option-0-0'));
+        return find
+            .descendant(
+              of: find.byType(ui.CoachQuestionBubble),
+              matching: find.text('在家'),
+            )
+            .first;
       }
       if (key.startsWith('coach-row-')) {
         return find.byKey(
@@ -914,21 +919,164 @@ void main() {
       expect(usage.records.last.turnOutcome, uc.TurnOutcome.fallback);
     });
 
+    testWidgets(
+      'SDK history ordinary assistant text and its question both render',
+      (tester) async {
+        final fake = CoachFakeClient([
+          uc.LlmResponse(
+            content: '先确认一下你的训练条件。',
+            toolCalls: [
+              uc.LlmToolCall(
+                id: 'context-question',
+                name: 'ask_user',
+                arguments: jsonEncode({'question': '准备在哪里练？', 'mode': 'text'}),
+              ),
+            ],
+          ),
+        ]);
+        final coach = service(fake: fake);
+        await pumpApp(tester, coach);
+        await openCoach(tester);
+        await say(tester, '想开胯');
+        final messages = coach.conversation!.state.messages;
+        coach.conversation!.restoreHistory([
+          ...messages.take(messages.length - 1),
+          messages.last.copyWith(text: '先确认一下你的训练条件。'),
+        ]);
+        await tester.pumpAndSettle();
+        expect(find.text('先确认一下你的训练条件。'), findsOneWidget);
+        expect(find.text('准备在哪里练？'), findsOneWidget);
+        expect(find.byType(ui.CoachQuestionBubble), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('new conversation clears the waiting draft and late reply', (
+      tester,
+    ) async {
+      final fake = CoachFakeClient([
+        (uc.LlmRequest _) async {
+          await Future<void>.delayed(const Duration(seconds: 30));
+          return jsonEncode(validPlanEnvelope());
+        },
+      ]);
+      await pumpApp(tester, service(fake: fake));
+      await openCoach(tester);
+      await tester.enterText(inList('coach-input'), '这条输入会被新对话取消');
+      await tester.tap(inList('coach-send'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('这条输入会被新对话取消'), findsOneWidget);
+      expect(find.text('说说你想怎么练'), findsNothing);
+      expect(inList('coach-thinking'), findsOneWidget);
+      await tester.tap(inList('coach-reset'));
+      await tester.pump(const Duration(seconds: 31));
+      await tester.pumpAndSettle();
+      expect(find.text('这条输入会被新对话取消'), findsNothing);
+      expect(inList('coach-plan-card'), findsNothing);
+      expect(inList('coach-thinking'), findsNothing);
+      expect(find.text('说说你想怎么练'), findsOneWidget);
+      expect(
+        tester.widget<TextField>(inList('coach-input')).controller!.text,
+        isEmpty,
+      );
+    });
+
+    testWidgets(
+      'SDK conversation limit keeps the new conversation action visible',
+      (tester) async {
+        final fake = CoachFakeClient(
+          List.generate(20, (_) => {'kind': 'reply', 'text': '在不痛的范围内练。'}),
+        );
+        final coach = service(fake: fake);
+        await pumpApp(tester, coach);
+        await openCoach(tester);
+        await tester.runAsync(() async {
+          for (var i = 0; i < 20; i++) {
+            await coach.conversation!.send('第$i轮');
+          }
+        });
+        await tester.pumpAndSettle();
+        await say(tester, '再练一轮');
+        expect(fake.requests, hasLength(20));
+        expect(
+          coach.conversation!.state.lastResult!.status,
+          uc.TurnStatus.limitReached,
+        );
+        final reset = find.text('对话已满，开始新对话');
+        expect(reset, findsOneWidget);
+        await tester.ensureVisible(reset);
+        await tester.tap(reset);
+        await tester.pumpAndSettle();
+        expect(coach.conversation!.state.messages, isEmpty);
+        expect(find.text('说说你想怎么练'), findsOneWidget);
+      },
+    );
+
+    testWidgets('loading cannot queue an input across a new conversation', (
+      tester,
+    ) async {
+      final asset = Completer<String>();
+      final fake = CoachFakeClient([validPlanEnvelope()]);
+      final coach = CoachService(
+        config: const CoachConfig(appKey: 'test'),
+        content: content,
+        client: fake,
+        usage: CoachUsageStore(),
+        storage: MemoryStorage(),
+        readAsset: (path) =>
+            path == CoachService.catalogAsset ? asset.future : readAsset(path),
+      );
+      await pumpApp(tester, coach);
+      await openCoach(tester, accept: false);
+      expect(tester.widget<TextField>(inList('coach-input')).enabled, isFalse);
+      await tester.tap(inList('coach-send'));
+      await tester.tap(inList('coach-reset'));
+      asset.complete(File(CoachService.catalogAsset).readAsStringSync());
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(inList('coach-input')).enabled, isTrue);
+      expect(fake.requests, isEmpty);
+      expect(find.text('说说你想怎么练'), findsOneWidget);
+    });
+
+    testWidgets('waiting user row keeps its identity after the SDK commits', (
+      tester,
+    ) async {
+      final coach = service(
+        fake: CoachFakeClient([
+          (uc.LlmRequest _) async {
+            await Future<void>.delayed(const Duration(seconds: 2));
+            return jsonEncode(validPlanEnvelope());
+          },
+        ]),
+      );
+      await pumpApp(tester, coach);
+      await openCoach(tester);
+      await tester.enterText(inList('coach-input'), '睡前开胯');
+      await tester.tap(inList('coach-send'));
+      await tester.pump(const Duration(milliseconds: 100));
+      final pendingList = tester.widget<ui.CoachChatList>(inList('coach-list'));
+      final pendingId = pendingList.entries.singleWhere((m) => m.isUser).id;
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
+      final completedList = tester.widget<ui.CoachChatList>(
+        inList('coach-list'),
+      );
+      expect(completedList.entries.singleWhere((m) => m.isUser).id, pendingId);
+      expect(
+        coach.conversation!.state.messages.where((m) => m.isUser),
+        hasLength(1),
+      );
+      expect(find.text('睡前开胯'), findsOneWidget);
+      expect(inList('coach-plan-card'), findsOneWidget);
+    });
+
     testWidgets('未配置Key时练习页没有AI入口也不触发模型', (tester) async {
       final coach = service();
       await pumpApp(tester, coach);
       expect(inList('practice-ai-coach'), findsNothing);
       expect(inList('practice-ai-unconfigured'), findsNothing);
       expect(coach.usage.totals.calls, 0);
-    });
-
-    test('离线 / 未配置红旗仍只给就医建议，不给计划', () async {
-      final answer = await service().ask(
-        '昨天大腿后侧刚拉伤，还有点肿',
-        uc.CoachConversation(),
-      );
-      expect(answer.reply!.text, contains('建议先就医'));
-      expect(answer.plan, isNull);
     });
 
     testWidgets('首次使用显示一行免责，确认后不再显示', (tester) async {
@@ -966,6 +1114,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(inList('coach-thinking'), findsOneWidget);
+      expect(find.text('睡前开胯'), findsOneWidget);
       expect(find.byType(ui.CoachTypingBubble), findsOneWidget);
       expect(find.textContaining('正在理解你的需求'), findsOneWidget);
       await tester.pump(const Duration(seconds: 8));

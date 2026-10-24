@@ -1,5 +1,9 @@
 # HipLab 协作约定
 
+## 2026-10-24 CoachConversationController 候选授权
+
+本轮从 HipLab main 64daf6a 建分支，锁 coach0.5.0 / trainer0.2.3（d7e0b8f），UI0.1.1不变。仅用 SDK controller 替换会话/问题状态，保持 App 认证、白名单/profile、映射和开练边界，无 Key 隐藏全部入口。执行严格锁文件 pub get、分析和全量测试，本轮不需真机；**验证完成后仍须开哥同意才合入 main 并推送**，覆盖下方上一轮补丁“直接合入并推送main，无需再请求合并同意”的授权。release/1.0不动，不改SDK或复制其他App代码。见[接入记录](docs/sdk-conversation-controller-2026-10-24.md)。
+
 ## 2026-10-24 SDK 补丁与直接集成授权
 
 用户已确认 `ugk_coach-v0.4.2`、`ugk_trainer-v0.2.2`、`ugk_coach_ui-v0.1.1`（均3302d62）已推送，并明确授权在候选5c4d32e上改锁、远端pub get、分析和测试通过后直接合入并推送main，无需再请求合并同意。release/1.0不动；若无需App源码适配，沿用已有真机验收，不重做。本轮已按授权合入并推送main（功能集成点88d8802），release仍8880c71。共用版本保持1.1.0+21。固定Flutter仍3.44.7；本机默认工具已升级，当前可显式使用E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat，避免无关框架及hosted依赖升级。[本轮回执](docs/sdk-tag-patch-2026-10-24.md)。

@@ -1,7 +1,6 @@
 // AI 定制：SDK（ugk_coach）+ HipLab 的范围交集、预设回落、记账、免责标记。
 // 结构沿用 3D-Body feat/ai-coach `app/lib/coach/coach_service.dart`（PR #122），
 // 数据换成 HipLab 的内容包 / 动作包 / 内置套路。
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -18,40 +17,6 @@ import 'template_fallback.dart';
 import 'usage_store.dart';
 
 typedef AssetReader = Future<String> Function(String path);
-
-/// 一轮问答在 App 里的结果。
-class CoachAnswer {
-  const CoachAnswer({
-    this.reply,
-    this.presetReason,
-    this.cancelled = false,
-    this.rewritten = false,
-    this.tokens = 0,
-    this.plan,
-    this.actions,
-    this.question,
-    this.status = uc.TurnStatus.ok,
-  });
-
-  /// 给用户的回复（取消时为 null）。
-  final uc.CoachReply? reply;
-
-  /// Only SDK-admitted output can become a training or exercise card.
-  final uc.ValidatedPlan? plan;
-  final uc.ValidatedActions? actions;
-  final uc.AskUserQuestion? question;
-  final uc.TurnStatus status;
-
-  /// 非 null = 这是 App 内置预设方案（或离线安全提示），不是 AI 生成的。
-  final PresetReason? presetReason;
-  final bool cancelled;
-
-  /// 第一次输出没过校验、重写后通过。
-  final bool rewritten;
-  final int tokens;
-
-  bool get preset => presetReason != null;
-}
 
 /// HipLab 的 AI 训练助理。
 ///
@@ -115,14 +80,10 @@ class CoachService {
     content,
     catalog: catalog,
   );
-  uc.CoachAgent? _agent;
-  uc.CoachConversation? _conversation;
-  final _events = StreamController<uc.AgentEvent>.broadcast(sync: true);
-  StreamSubscription<uc.AgentEvent>? _agentEvents;
+  uc.CoachConversationController? _conversation;
   bool _disposed = false;
 
-  Stream<uc.AgentEvent> get events => _events.stream;
-  uc.CoachAgent? get agent => _agent;
+  uc.CoachConversationController? get conversation => _conversation;
   uc.ToolGate get gate => uc.ToolGate(
     catalog: catalog,
     profile: profile,
@@ -184,7 +145,7 @@ class CoachService {
     };
     _profile = uc.CoachProfile.fromJson(profileJson);
     if (_client case final client?) {
-      _agent = uc.CoachAgent(
+      final agent = uc.CoachAgent(
         client: client,
         catalog: () => _repo.current,
         profile: _profile,
@@ -199,16 +160,15 @@ class CoachService {
           final reply = templates.reply(
             r.userText,
             reason: PresetReason.of(r.reason),
-            history: _conversation == null
-                ? const []
-                : TemplateFallback.userTexts(_conversation!),
+            history: [
+              for (final message in _conversation!.state.messages)
+                if (message.isUser) message.text,
+            ],
           );
           return uc.SessionFallbackReply(reply.text, plan: reply.plan);
         },
       );
-      _agentEvents = _agent!.events.listen((event) {
-        if (!_disposed) _events.add(event);
-      });
+      _conversation = uc.CoachConversationController(agent: agent);
     }
     await usage.load();
     try {
@@ -234,94 +194,11 @@ class CoachService {
     }
   }
 
-  /// 问一轮。
-  Future<CoachAnswer> ask(
-    String text,
-    uc.CoachConversation conversation, {
-    uc.CancelToken? cancel,
-  }) async {
-    await load();
-    final agent = _agent;
-    if (_disposed || (cancel?.isCancelled ?? false)) {
-      return const CoachAnswer(cancelled: true);
-    }
-    if (agent == null) {
-      return _preset(text, conversation, PresetReason.notConfigured, 0);
-    }
-    if (_conversation != null && !identical(_conversation, conversation)) {
-      agent.reset();
-    }
-    _conversation = conversation;
-    final result = await agent.send(text, cancel: cancel);
-    final tokens = result.usage.totalTokens;
-    if (result.status == uc.TurnStatus.cancelled) {
-      return CoachAnswer(
-        cancelled: true,
-        tokens: tokens,
-        status: result.status,
-      );
-    }
-    final reply = result.plan != null
-        ? uc.CoachReply.plan(result.text, result.plan!.plan)
-        : uc.CoachReply.text(result.text);
-    // This mirror is App-owned fallback context, not the agent's task state.
-    final now = DateTime.now();
-    conversation
-      ..addUser(text.trim(), now)
-      ..addAssistant(reply, now);
-    return CoachAnswer(
-      reply: reply,
-      plan: result.plan,
-      actions: result.actions,
-      question: result.question,
-      status: result.status,
-      presetReason: result.status == uc.TurnStatus.fallback
-          ? PresetReason.of(result.fallbackReason!)
-          : null,
-      tokens: tokens,
-      rewritten: result.resubmits > 0,
-    );
-  }
-
-  void reset() {
-    _agent?.reset();
-    _conversation = null;
-  }
-
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
-    _agent?.reset();
-    await _agentEvents?.cancel();
-    await _agent?.dispose();
-    await _events.close();
-  }
-
-  CoachAnswer _preset(
-    String text,
-    uc.CoachConversation conversation,
-    PresetReason reason,
-    int tokens,
-  ) {
-    final reply = templates.reply(
-      text,
-      reason: reason,
-      history: TemplateFallback.userTexts(conversation),
-    );
-    final now = DateTime.now();
-    conversation
-      ..addUser(text.trim(), now)
-      ..addAssistant(reply, now);
-    final admitted = reply.plan == null
-        ? null
-        : gate.admitTemplate(reply.plan!);
-    return CoachAnswer(
-      reply: admitted == null ? uc.CoachReply.text(reply.text) : reply,
-      plan: admitted,
-      presetReason: reason,
-      tokens: tokens,
-      status: uc.TurnStatus.fallback,
-    );
+    await _conversation?.dispose();
+    if (_client case final uc.OpenAiCompatibleClient client) client.close();
   }
 
   @visibleForTesting

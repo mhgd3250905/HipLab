@@ -134,10 +134,11 @@ void main() {
           return 'unused';
         },
       );
-      final answer = await service.ask('睡前放松', uc.CoachConversation());
+      await service.load();
+      addTearDown(service.dispose);
       await Future<void>.delayed(const Duration(milliseconds: 100));
       expect(service.configured, isFalse);
-      expect(answer.preset, isTrue);
+      expect(service.conversation, isNull);
       expect(fake.requests, isEmpty);
       expect(requests, 0);
       expect(identityLoads, 0);
@@ -189,13 +190,15 @@ void main() {
         readAsset: readAsset,
         deviceId: identity.load,
       );
-      final answer = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
+      await service.load();
+      addTearDown(service.dispose);
+      final answer = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
       expect(
-        answer.preset,
-        isFalse,
+        answer.status,
+        uc.TurnStatus.ok,
         reason: 'the real SDK must parse and validate the local response',
       );
-      expect(answer.reply!.kind, uc.ReplyKind.plan);
+      expect(answer.plan, isNotNull);
     }
     expect(captured, hasLength(2));
     for (final request in captured) {
@@ -247,16 +250,18 @@ void main() {
           return 'e3992abc-aa29-4a48-a2f5-d806171828cf';
         },
       );
-      final failed = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
-      expect(failed.preset, isTrue);
+      await service.load();
+      addTearDown(service.dispose);
+      final failed = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
+      expect(failed.status, uc.TurnStatus.fallback);
       expect(
         relay.requests,
         isEmpty,
         reason: 'no request without a persistent device identity',
       );
       expect(loads, 1);
-      final retried = await service.ask('睡前在家开胯 12 分钟', uc.CoachConversation());
-      expect(retried.preset, isFalse);
+      final retried = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
+      expect(retried.status, uc.TurnStatus.ok);
       expect(loads, 2);
       expect(relay.requests, hasLength(1));
       expect(

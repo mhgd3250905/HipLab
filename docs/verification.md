@@ -1,5 +1,9 @@
 # 验证台账
 
+## 2026-10-24：CoachConversationController 候选
+
+分支 `codex/coach-conversation-050-20261024`，基于main64daf6a。coach0.5.0/trainer0.2.3@d7e0b8f，UI0.1.1@3302d62；固定Flutter3.44.7/Dart3.12.2的 `pub get --enforce-lockfile` 成功，其余依赖未变。分析0、最终全量454通过/1条件跳过、AI专项44通过。按用户本轮范围不构建/安装/真机测试，旧手机身份和原生验收边界保持。[本轮检查与日志](sdk-conversation-controller-2026-10-24.md)。
+
 ## 2026-10-24：SDK 0.4.2 / 0.2.2 / UI 0.1.1
 
 基于5c4d32e，三个tag均3302d62，正常在线pub get完成，固定Flutter3.44.7/Dart3.12.2；其余hosted锁定未变，App运行代码/测试未改。分析0，SDK原始套路卡溢出回归13项通过（320px/2倍字体、父约束、长剂量、RTL、深浅色及动画），App全量451通过/1条件跳过。按用户要求沿用原真机，不构建/安装新包。完整输出与结果见[本轮证据](sdk-tag-patch-2026-10-24.md)。下方451项分批结果为此前旧tag阶段。

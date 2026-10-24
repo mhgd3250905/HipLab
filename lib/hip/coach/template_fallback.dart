@@ -103,12 +103,6 @@ class TemplateFallback {
     );
   }
 
-  /// 对话里用户说过的话（回落时带上，保留先前的禁忌和场景约束）。
-  static List<String> userTexts(uc.CoachConversation c) => [
-    for (final t in c.turns)
-      if (t.isUser) t.text,
-  ];
-
   /// 内置套路转成 TrainingPlan v1（source=template，templateId=套路 id），剂量照套路原样。
   uc.TrainingPlan build(HipRoutine r) {
     final items = <uc.PlanItem>[];

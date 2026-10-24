@@ -1,6 +1,7 @@
 // HipLab owns the agent, trusted mapping and navigation. Shared conversation
 // layout, bubbles, clarification controls and routine cards are SDK widgets.
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -27,29 +28,44 @@ bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
     Theme.of(context).platform != TargetPlatform.iOS &&
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
 
-class CoachMessage {
-  const CoachMessage.user(String this.text, {required this.at})
-    : answer = null,
-      resultId = -1;
-  const CoachMessage.answer(
-    CoachAnswer this.answer,
-    this.resultId, {
-    required this.at,
-  }) : text = null;
-  final String? text;
-  final CoachAnswer? answer;
-  final DateTime at;
-  final int resultId;
-  bool get isUser => text != null;
-}
-
-/// The App shell retains one conversation and one agent across page/route hops.
+/// App presentation only. The SDK controller owns messages and question state.
 class AiCoachSession extends ChangeNotifier {
   AiCoachSession(this.service, {DateTime Function()? now})
-    : _now = now ?? DateTime.now {
-    _events = service.events.listen((event) {
-      // askUser is progress only. Never expose an answerable question until
-      // await service.ask (and therefore await agent.send) has returned.
+    : _now = now ?? DateTime.now;
+
+  final CoachService service;
+  final DateTime Function() _now;
+  StreamSubscription<uc.AgentEvent>? _events;
+  final Map<String, String> saved = {};
+  // Badges/status belong to the App; these never determine question validity.
+  final Map<String, ({uc.TurnStatus status, String? userEntryId})> _turns = {};
+  uc.CoachConversationMessage? _draft;
+  DateTime? _startedAt;
+  bool _loaded = false;
+  bool _disposed = false;
+  String? cancelledText;
+  String progress = '正在理解你的需求…';
+
+  uc.CoachConversationController? get conversation => service.conversation;
+  List<uc.CoachConversationMessage> get messages =>
+      conversation?.state.messages ?? const [];
+  uc.CoachConversationMessage? get draft => _draft;
+  bool get busy => conversation?.state.isWaiting ?? false;
+  DateTime? get startedAt => _startedAt;
+  bool get loaded => _loaded;
+  bool get showDisclaimer => _loaded && !service.disclaimerAccepted;
+  uc.TurnStatus? statusFor(uc.CoachConversationMessage message) =>
+      _turns[message.turnId]?.status;
+  String entryIdFor(uc.CoachConversationMessage message) => message.isUser
+      ? _turns[message.turnId]?.userEntryId ?? message.id
+      : message.id;
+
+  Future<void> load() async {
+    await service.load();
+    if (_disposed || _loaded) return;
+    _loaded = true;
+    conversation?.addListener(_changed);
+    _events = conversation?.events.listen((event) {
       if (event.kind != uc.AgentEventKind.askUser &&
           event.kind != uc.AgentEventKind.done &&
           busy) {
@@ -63,34 +79,6 @@ class AiCoachSession extends ChangeNotifier {
         _notify();
       }
     });
-  }
-
-  final CoachService service;
-  final DateTime Function() _now;
-  late final StreamSubscription<uc.AgentEvent> _events;
-  uc.CoachConversation conversation = uc.CoachConversation();
-  final List<CoachMessage> messages = [];
-  final Map<int, String> saved = {};
-  final Map<int, List<String>> answeredChoices = {};
-  final Set<int> answeredQuestions = {};
-  int? awaitingQuestionId;
-  int _nextResult = 0;
-  int _generation = 0;
-  uc.CancelToken? _cancel;
-  DateTime? _startedAt;
-  bool _loaded = false;
-  bool _disposed = false;
-  String? cancelledText;
-  String progress = '正在理解你的需求…';
-
-  bool get busy => _cancel != null;
-  DateTime? get startedAt => _startedAt;
-  bool get loaded => _loaded;
-  bool get showDisclaimer => _loaded && !service.disclaimerAccepted;
-
-  Future<void> load() async {
-    await service.load();
-    _loaded = true;
     _notify();
   }
 
@@ -99,126 +87,125 @@ class AiCoachSession extends ChangeNotifier {
     _notify();
   }
 
-  bool questionEnabled(int id) =>
-      !_disposed && !busy && awaitingQuestionId == id;
-
-  CoachMessage? _question(int id) => messages
-      .where((m) => !m.isUser && m.resultId == id && m.answer?.question != null)
-      .firstOrNull;
-
-  Future<void> answerText(int id, String raw) async {
-    final q = _question(id)?.answer?.question;
-    final answer = raw.trim();
-    if (!questionEnabled(id) ||
-        q?.mode != uc.AskUserMode.text ||
-        answer.isEmpty ||
-        answer.runes.length > 300) {
-      return;
-    }
-    answeredQuestions.add(id);
-    // send closes the old question synchronously before its first await.
-    await send(answer);
-  }
-
-  Future<void> answerChoices(int id, List<String> values) async {
-    final q = _question(id)?.answer?.question;
-    if (!questionEnabled(id) || q?.mode != uc.AskUserMode.choice) return;
-    final question = q!;
-    if (values.isEmpty ||
-        values.toSet().length != values.length ||
-        values.any((v) => !question.options.contains(v)) ||
-        (!question.multiple && values.length != 1)) {
-      return;
-    }
-    final ordered = [
-      for (final v in question.options)
-        if (values.contains(v)) v,
-    ];
-    answeredChoices[id] = List.unmodifiable(ordered);
-    answeredQuestions.add(id);
-    await send(ordered.join('、'));
-  }
-
-  Future<void> send(String raw) async {
-    final text = raw.trim();
-    if (text.isEmpty || busy || _disposed) return;
-    awaitingQuestionId = null;
-    final generation = _generation;
-    final cancel = uc.CancelToken();
-    _cancel = cancel;
-    _startedAt = _now();
-    progress = '正在理解你的需求…';
-    messages.add(CoachMessage.user(text, at: _now()));
-    _notify();
-    CoachAnswer answer;
-    try {
-      answer = await service.ask(text, conversation, cancel: cancel);
-    } on Object {
-      answer = const CoachAnswer(
-        reply: uc.CoachReply.text('出了点问题，没能排出计划。请稍后再试。'),
+  void _changed() {
+    if (conversation?.state.lastResult case final result?) {
+      _turns.putIfAbsent(
+        result.turnId,
+        () => (status: result.status, userEntryId: _draft?.id),
       );
     }
-    if (_disposed || generation != _generation) return;
-    _cancel = null;
-    _startedAt = null;
-    if (answer.cancelled) {
-      if (messages.isNotEmpty && messages.last.isUser) messages.removeLast();
-      cancelledText = text;
+    if (busy) {
+      _startedAt ??= _now();
     } else {
-      final id = _nextResult++;
-      messages.add(CoachMessage.answer(answer, id, at: _now()));
-      if (answer.question != null) awaitingQuestionId = id;
+      _startedAt = null;
+      _draft = null;
     }
     _notify();
+  }
+
+  Future<void> send(String text) async {
+    if (!_loaded) return;
+    final controller = conversation;
+    if (controller == null || _disposed) return;
+    await _submit(text, () => controller.send(text));
+  }
+
+  Future<void> answerText(String id, String text) async {
+    final controller = conversation;
+    if (controller == null || !controller.canAnswer(id)) return;
+    await _submit(text, () => controller.answerText(id, text));
+  }
+
+  Future<void> answerChoices(String id, List<String> choices) async {
+    final controller = conversation;
+    final text = controller?.choiceText(id, choices);
+    if (text == null) return;
+    await _submit(text, () => controller!.answerChoices(id, choices));
+  }
+
+  // The pending input is a visual draft until SDK messages are committed.
+  // No local history, question IDs, answer validation or cancellation tokens.
+  Future<void> _submit(
+    String text,
+    Future<uc.CoachTurnResult?> Function() submit,
+  ) async {
+    if (_disposed || busy || text.trim().isEmpty) return;
+    progress = '正在理解你的需求…';
+    _draft = uc.CoachConversationMessage(
+      id: 'pending-input-${_now().microsecondsSinceEpoch}',
+      at: _now(),
+      isUser: true,
+      text: text.trim(),
+    );
+    try {
+      await submit();
+    } on Object {
+      // The controller publishes errors. Presentation never invents a result.
+    }
   }
 
   void stop() {
-    awaitingQuestionId = null;
-    _cancel?.cancel();
-    service.reset();
-    _notify();
+    if (busy) cancelledText = _draft?.text;
+    conversation?.cancel();
   }
 
-  /// Leaving a question/history does not restore a pending SDK task later.
-  void expireQuestion() {
-    if (awaitingQuestionId != null) {
-      awaitingQuestionId = null;
-      service.reset();
-      _notify();
-    }
-  }
+  void expireQuestion() => conversation?.invalidateQuestion();
 
   void reset() {
-    _generation++;
-    _cancel?.cancel();
-    _cancel = null;
-    _startedAt = null;
-    awaitingQuestionId = null;
     cancelledText = null;
-    service.reset();
-    conversation = uc.CoachConversation();
-    messages.clear();
     saved.clear();
-    answeredQuestions.clear();
-    answeredChoices.clear();
+    _turns.clear();
+    conversation?.newConversation();
+  }
+
+  /// History is display-only; stored outputs must pass today's App gate again.
+  void restoreHistory(Iterable<uc.CoachConversationMessage> history) {
+    final controller = conversation;
+    if (controller == null) return;
+    cancelledText = null;
+    saved.clear();
+    controller.restoreHistory([
+      for (final message in history)
+        uc.CoachConversationMessage(
+          id: message.id,
+          at: message.at,
+          isUser: message.isUser,
+          text: message.text,
+          question: message.question,
+          questionAnswered: message.questionAnswered,
+          answeredChoices: message.answeredChoices,
+          turnId: message.turnId,
+          plan: message.plan == null
+              ? null
+              : service.gate.admitTemplate(message.plan!.plan),
+          actions: message.actions == null
+              ? null
+              : service.gate.check('', [
+                  uc.LlmToolCall(
+                    id: message.id,
+                    name: 'show_actions',
+                    arguments: jsonEncode({
+                      'items': [
+                        for (final action in message.actions!.items)
+                          {
+                            'actionId': action.id,
+                            if (action.note != null) 'note': action.note,
+                          },
+                      ],
+                    }),
+                  ),
+                ]).actions,
+        ),
+    ]);
+  }
+
+  void markSaved(String messageId, String routineId) {
+    saved[messageId] = routineId;
     _notify();
   }
 
-  /// Restored snapshots are display history, never a reconstructed agent task.
-  void restoreHistory(Iterable<CoachMessage> history) {
-    reset();
-    messages.addAll(history);
-    _nextResult = messages.fold(0, (n, m) => math.max(n, m.resultId + 1));
-    _notify();
-  }
-
-  void markSaved(int resultId, String routineId) {
-    saved[resultId] = routineId;
-    _notify();
-  }
-
-  CustomRoutine? savedRoutine(int resultId, HipStore store) {
-    final id = saved[resultId];
+  CustomRoutine? savedRoutine(String messageId, HipStore store) {
+    final id = saved[messageId];
     return id == null ? null : store.customRoutine(id);
   }
 
@@ -229,9 +216,8 @@ class AiCoachSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    awaitingQuestionId = null;
-    _cancel?.cancel();
-    unawaited(_events.cancel());
+    conversation?.removeListener(_changed);
+    unawaited(_events?.cancel());
     unawaited(service.dispose());
     super.dispose();
   }
@@ -326,8 +312,8 @@ class _AiCoachPageState extends State<AiCoachPage> {
   final _scroll = ScrollController();
   Timer? _ticker;
   late final Set<String> _initiallySeen;
-  String _entryId(CoachMessage message) =>
-      'message-${identityHashCode(message)}';
+  String _entryId(uc.CoachConversationMessage message) =>
+      session.entryIdFor(message);
 
   /// 本次等待已过的秒数（按 1 秒节拍累加）。
   int _elapsed = 0;
@@ -396,13 +382,13 @@ class _AiCoachPageState extends State<AiCoachPage> {
 
   void _send([String? text]) {
     final value = (text ?? _input.text).trim();
-    if (value.isEmpty || session.busy) return;
+    if (value.isEmpty || session.busy || !session.loaded) return;
     _input.clear();
     FocusScope.of(context).unfocus();
     unawaited(session.send(value));
   }
 
-  Future<void> _save(uc.TrainingPlan plan, int resultId) async {
+  Future<void> _save(uc.TrainingPlan plan, String resultId) async {
     final store = widget.actions.store;
     final mapping = CoachPlanMapper(
       store.content,
@@ -417,7 +403,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
 
   Future<void> _start(
     uc.TrainingPlan plan,
-    int resultId,
+    String resultId,
     BuildContext? from,
   ) async {
     final store = widget.actions.store;
@@ -470,7 +456,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
                         )
                       : null,
                   entries: [
-                    if (session.messages.isEmpty)
+                    if (session.messages.isEmpty && session.draft == null)
                       ui.CoachChatEntry(
                         id: 'intro',
                         at: DateTime.now(),
@@ -478,7 +464,9 @@ class _AiCoachPageState extends State<AiCoachPage> {
                         greeting: true,
                         child: _Intro(
                           configured: session.service.configured,
-                          onExample: session.busy ? null : _send,
+                          onExample: session.busy || !session.loaded
+                              ? null
+                              : _send,
                         ),
                       ),
                     for (final (i, m) in session.messages.indexed)
@@ -486,18 +474,53 @@ class _AiCoachPageState extends State<AiCoachPage> {
                         id: _entryId(m),
                         at: m.at,
                         isUser: m.isUser,
-                        isCard: m.answer?.plan != null,
+                        isCard: m.plan != null,
                         child: KeyedSubtree(
                           key: ValueKey('coach-msg-$i'),
                           child: m.isUser
-                              ? _bubble(m.text!, user: true, id: 'user-$i')
+                              ? _bubble(m.text, user: true, id: 'user-$i')
                               : _answer(m),
                         ),
                       ),
+                    if (session.draft case final draft?)
+                      ui.CoachChatEntry(
+                        id: draft.id,
+                        at: draft.at,
+                        isUser: true,
+                        child: _bubble(draft.text, user: true, id: draft.id),
+                      ),
+                    if (session.conversation?.state.lastResult?.status ==
+                        uc.TurnStatus.limitReached)
+                      ui.CoachChatEntry(
+                        id: 'conversation-full',
+                        at: DateTime.now(),
+                        isUser: false,
+                        child: TextButton(
+                          onPressed: session.reset,
+                          child: const Text('对话已满，开始新对话'),
+                        ),
+                      ),
+                    if (session.conversation?.state case final state?)
+                      if (state.error != null &&
+                          state.lastResult == null &&
+                          !state.isWaiting)
+                        ui.CoachChatEntry(
+                          id: 'conversation-error',
+                          at: DateTime.now(),
+                          isUser: false,
+                          child: _bubble(
+                            '出了点问题，没能排出计划。请稍后再试。',
+                            id: 'conversation-error',
+                          ),
+                        ),
                   ],
                 ),
               ),
-              _Composer(controller: _input, busy: session.busy, onSend: _send),
+              _Composer(
+                controller: _input,
+                busy: session.busy || !session.loaded,
+                onSend: _send,
+              ),
             ],
           ),
         ),
@@ -512,10 +535,10 @@ class _AiCoachPageState extends State<AiCoachPage> {
         onOption: (_) {},
       );
 
-  Widget _answer(CoachMessage message) {
-    final answer = message.answer!;
-    final question = answer.question;
-    final id = message.resultId;
+  Widget _answer(uc.CoachConversationMessage message) {
+    final status = session.statusFor(message);
+    final question = message.question;
+    final id = message.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -523,24 +546,23 @@ class _AiCoachPageState extends State<AiCoachPage> {
           ui.CoachQuestionBubble(
             key: ValueKey('coach-question-$id'),
             question: ui.CoachQuestionData(
-              id: '$id',
+              id: id,
               question: question.question,
               mode: question.mode == uc.AskUserMode.text
                   ? ui.CoachQuestionMode.text
                   : ui.CoachQuestionMode.choice,
               options: question.options,
               multiple: question.multiple,
-              answered: session.answeredQuestions.contains(id),
-              answeredChoices: session.answeredChoices[id] ?? const [],
+              answered: message.questionAnswered,
+              answeredChoices: message.answeredChoices,
             ),
-            enabled: session.questionEnabled(id),
+            enabled: session.conversation!.canAnswer(id),
             onTextAnswer: (text) => session.answerText(id, text),
             onChoiceAnswer: (choices) => session.answerChoices(id, choices),
-          )
-        else if (answer.reply?.text.isNotEmpty ?? false)
-          _bubble(answer.reply!.text, id: 'answer-$id'),
-        if (answer.plan case final admitted?) _planCard(admitted, answer, id),
-        if (answer.actions case final admitted?)
+          ),
+        if (message.text.isNotEmpty) _bubble(message.text, id: 'answer-$id'),
+        if (message.plan case final admitted?) _planCard(admitted, status, id),
+        if (message.actions case final admitted?)
           for (final action in admitted.items)
             TextButton(
               onPressed: () => Navigator.of(context).push(
@@ -555,17 +577,18 @@ class _AiCoachPageState extends State<AiCoachPage> {
                 '${widget.actions.store.content.drill(action.id).name}${action.note == null ? '' : ' · ${action.note}'}',
               ),
             ),
-        if (answer.status == uc.TurnStatus.limitReached)
-          TextButton(onPressed: session.reset, child: const Text('对话已满，开始新对话')),
       ],
     );
   }
 
   Widget _planCard(
     uc.ValidatedPlan admitted,
-    CoachAnswer answer,
-    int resultId,
+    uc.TurnStatus? status,
+    String resultId,
   ) {
+    final preset =
+        status == uc.TurnStatus.fallback ||
+        (status == null && admitted.plan.source == 'template');
     final plan = admitted.plan;
     final store = widget.actions.store;
     final mapper = CoachPlanMapper(store.content);
@@ -582,17 +605,15 @@ class _AiCoachPageState extends State<AiCoachPage> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Text(
-            answer.preset ? '预设方案' : 'AI 定制',
-            key: ValueKey(
-              answer.preset ? 'coach-badge-preset' : 'coach-badge-ai',
-            ),
+            preset ? '预设方案' : 'AI 定制',
+            key: ValueKey(preset ? 'coach-badge-preset' : 'coach-badge-ai'),
             style: TextStyle(
               color: HipColors.jadeText,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        if (answer.preset)
+        if (preset)
           const Text(
             '这是 App 内置的套路，不是 AI 按你的需求生成的。',
             key: ValueKey('coach-preset-note'),

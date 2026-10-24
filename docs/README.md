@@ -1,5 +1,7 @@
 # HipLab 文档与开发台账
 
+**2026-10-24 对话 controller 候选：** `codex/coach-conversation-050-20261024` 基于 main64daf6a，采用 coach0.5.0 / trainer0.2.3@d7e0b8f，UI0.1.1保持；SDK接管消息、问题、回答整理和取消/重置/恢复。严格锁解析完成，分析0、全量454通过/1条件跳过、AI专项44通过，候选已完成待审，main合推等待本轮同意。release/1.0不动。[接入与删除范围](sdk-conversation-controller-2026-10-24.md)。
+
 **2026-10-24 SDK 修复 tag：** coach0.4.2 / trainer0.2.2 / coach_ui0.1.1均固定3302d62，远端解析完成；分析0、窄屏专项13通过，全量451通过/1条件跳过。本轮已合入并推送main（功能集成点88d8802），release/1.0不动，真机沿用既有证据。[补丁与集成回执](sdk-tag-patch-2026-10-24.md)。以下为先前阶段记录。
 
 **2026-10-24 SDK 共用界面候选：** 开发版 1.1.0+21 位于 `codex/sdk-shared-ui-20261024`，coach 0.4.1 / trainer 0.2.1 / coach_ui 0.1.0 正式 tag 固定。无 Key 隐藏 AI，本轮分析0、451通过/1跳过、release编译及真机M自然完成通过，语音用户确认正常；等待最终合并同意；release/1.0 保持基础版。[接入与验证](sdk-shared-ui-2026-10-24.md)。
