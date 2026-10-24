@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-10-24 13:09：1.0.0+20 Alpha 已提交审核
+
+沿用本页下方已核验的4b56b82编译AAB，139,920,761字节 / SHA256 51e3ebe86e23189067e6defe033a041b60934fca98a4e7f58ea62e6eea4a4478，不重建、不递增版本。Google识别20(1.0.0)、min24/target36/3ABI，估算新装下载91.3MB；仅有体积增大警告，无阻塞版本错误。
+
+Alpha Release2及商店5项更改已送审，提交ID2、状态审核中；mediaPlayback声明已更新并含[YouTube演示](https://youtube.com/shorts/GRzBK2GvXRU)。当前无Production发布或审核通过结果，测试者0/12和14天门槛仍待用户后续组织。隐私gh-pages发布7ecda06/HTTP200，128秒原生模拟器视频已不公开列出。新证据在E盘play-submission-20261024目录，不进Git；原手机安装未变。[完整回执](play-store-release-2026-10-24.md)。
+
 ## 2026-10-24：1.0.0+20 上传签名 AAB
 
 构建源码 `4b56b827cf635e05ac55281bc37e7bd9dff7fa09`，由main e456d2a的基础版派生，未带入AI0.2或液态玻璃候选。Flutter3.44.7 stable，SDK固定d193a703e3a8bef6d41e7705a55ae250e23e6a69。执行 `flutter build appbundle --release --no-pub`，183.9秒成功，无Key/私有define文件；版本1.0.0+20，包名com.ugk.hiplab，min24/target36、non-debuggable。

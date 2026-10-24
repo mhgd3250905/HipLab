@@ -21,7 +21,7 @@ HipLab helps adults build a personal hip mobility and flexibility practice. Foll
 • Local progress: review practice dates, self-checks and training records. Choose a light or dark theme.
 • Offline essentials: exercise videos and audio are included. Basic practice does not require an account or an internet connection.
 
-The app interface is primarily in Chinese, with Chinese and English voice guidance options. This English store description does not indicate a fully localized English interface.
+The app interface is primarily in Chinese, with Chinese and English voice guidance options.
 
 The existing AI customization entry remains visible, but this release has no configured online AI service. Requests entered there use local preset fallbacks without calling an online model; those presets are not presented as AI-generated plans. There are no ads, subscriptions or in-app purchases.
 

@@ -1,5 +1,7 @@
 # HipLab 1.0.0 基础版上架交付
 
+**2026-10-24执行更新：** 用户后续授权已执行YouTube上传、隐私部署及Play提交；本版Alpha提交ID2，13:09状态审核中。[演示视频](https://youtube.com/shorts/GRzBK2GvXRU)与[公开隐私](https://mhgd3250905.github.io/HipLab/)已生效，前台服务声明已保存视频链接。当前状态和剩余正式版测试门槛见[执行回执](../play-store-release-2026-10-24.md)；以下原草稿中的待补/未操作后台说明保留为准备阶段历史。
+
 2026-10-24，按开哥授权从远端 main `e456d2a1988d0b5a3d238202d52337ef99e6e585` 建立 `release/1.0`。此分支只做上架/审核修复，完成后合回 main，日常功能继续在 main 开发。原目录 `codex/liquid-glass-design` 的未提交改动完整保留，不带入本版。
 
 ## 构建合同

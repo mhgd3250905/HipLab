@@ -1,5 +1,7 @@
 # HipLab 1.0 Play 声明填写草稿
 
+**2026-10-24执行更新：** 用户后续授权已执行YouTube上传、隐私部署及Play提交；本版Alpha提交ID2，13:09状态审核中。[演示视频](https://youtube.com/shorts/GRzBK2GvXRU)与[公开隐私](https://mhgd3250905.github.io/HipLab/)已生效，前台服务声明已保存视频链接。当前状态和剩余正式版测试门槛见[执行回执](../play-store-release-2026-10-24.md)；以下原草稿中的待补/未操作后台说明保留为准备阶段历史。
+
 2026-10-24；`com.ugk.hiplab`，`1.0.0+20`，SDK 固定 `d193a703e3a8bef6d41e7705a55ae250e23e6a69`。仅准备文案，开哥在 Play 后台填写。本轮未读取、修改或提交 Console。
 
 ## 前台服务声明：必须提交的内容
