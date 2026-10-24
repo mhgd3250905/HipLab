@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-10-24：iOS 1.0 TestFlight 已上传并可内部测试
+
+复用 Hip Interlude（`com.ugk.hipinterlude`），1.0.0(20) 已上传且 Apple 处理/验证通过；仅开哥个人内部组已启用。编译源 e7ac083，iOS 隐藏 AI、无 Key，未改 Android/业务规则/SDK/版本。442 过/1 条件跳、analyze0，签名验包及两尺寸各6张原生截图通过；iPhone16Pro/iOS26.5已从TestFlight安装启动。完整耳机/锁屏训练仍待验，不记为已通过；未改商店信息、未提交 App Review。详见 [iOS 发布记录](release-1.0/ios/README.md)。
+
 ## 2026-10-24 13:09：1.0 Alpha 已送审
 
 用户追加授权后，已通过 Playwright MCP 上传既有1.0.0+20 AAB、保存前台服务与中英商店资料，并提交5项更改；提交ID **2**，Google后台状态 **审核中**。视频已[非公开列出](https://youtube.com/shorts/GRzBK2GvXRU)，[隐私政策](https://mhgd3250905.github.io/HipLab/)已更新生效，应用内容无待注意声明。正式版权限仍需12名真实测试者连续14天，本轮0人，用户选择稍后组织。当前不是Production已发布或审核通过。App编译源4b56b82、SDK d193a70、版本和AAB SHA保持；原液态玻璃WIP未改。[完整回执](play-store-release-2026-10-24.md)。

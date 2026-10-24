@@ -1,5 +1,9 @@
 # 验证台账
 
+## 2026-10-24：iOS TestFlight 1.0.0(20)
+
+源码e7ac083，Flutter3.44.7/Dart3.12.2、Xcode26.6；pub get按原镜像enforce-lockfile通过，92项冻结素材无漂移。最终442通过/1条件跳、analyze0、iOS静态检查/diff检查通过；iOS/AI/隐私专项58通过。原生Release编译、自动签名Archive/IPA及精确上传包deep/strict签名、arm64、iPhone-only、iOS15、audio、分发profile、6份隐私清单与无密钥检查通过。iOS Simulator原生12截图尺寸/无alpha核验通过；一节391秒6/6锁屏训练自然完成并保存，进程未重启，但CoreMedia/WebKit诊断及音频听感未据此判定通过。真机TestFlight20已安装，视频、隐藏AI及包内说明已查看；完整耳机锁屏验收待补。[精确身份与证据边界](release-1.0/ios/README.md)。
+
 ## 2026-10-24：Play 与 YouTube 远程回执
 
 Playwright MCP正常复用用户授权的浏览器登录态，未读取/导出凭据。Google接收既有AAB20/1.0.0/min24/target36/3ABI；预览仅体积增大警告。中英商店与6张1.0原生截图保存，原图标AI标签保留；数据安全只读核对为不收集/不分享、政策URL正确。mediaPlayback声明保存实际视频URL，送审后应用内容显示无待注意声明。

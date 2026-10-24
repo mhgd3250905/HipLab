@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-10-24：Mac iOS 基础版候选
+
+从release/1.0准备iOS专属分支，按本轮用户决定复用Hip Interlude身份、隐藏AI并保持无Key。发现设置试听缺会话收尾，iOS隐藏该入口，避免非练习页面开启后台保活；训练/自测沿用冻结SDK，未动业务算法或Android。442/1及analyze0后，以源码e7ac083自动签名并上传1.0.0(20)，Apple已处理且开哥个人内部组可测。新Mac补齐完整Xcode平台支持，原生媒体/UI、两尺寸截图、真机TestFlight安装启动已验；真机耳机/锁屏完整验收仍待补。[脱敏发布记录与草稿](release-1.0/ios/README.md)。
+
 ## 2026-10-24：执行 YouTube 与 Play 1.0 送审
 
 在用户明确扩展上架操作授权后，用指定登录态的 Playwright MCP 完成Google Play AAB上传、Alpha Release2保存、中英商店文案和六张新截图、mediaPlayback前台服务声明。制作原生API35实际画面/内部音轨演示，128秒视频上传YouTube并设不公开，匿名上下文可载入；如实标注模拟器与合成语音来源。隐私页沿原URL以gh-pages7ecda06发布，HTTP200验证生效，无需新建Cloudflare部署。
