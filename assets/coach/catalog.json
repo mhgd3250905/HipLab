@@ -27,6 +27,11 @@
      "hiplab"
     ]
    }
+  },
+  "hiplabDoseSource": {
+   "path": "assets/action_kits/index.json",
+   "sha256": "be4c05c66e86e32152a30b523553d654e2c1820b722b7fffce1a32174e060396",
+   "rules": "HipLab DoseRules kit defaults; no motion IDs added"
   }
  },
  "taxonomy": {
@@ -345,18 +350,18 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 3,
-    "reps": 10,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     4
+     3
     ],
     "reps": [
-     5,
-     15
+     1,
+     12
     ],
     "restSeconds": [
      0,
@@ -644,9 +649,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 8,
-    "restSeconds": 10
+    "sets": 1,
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -654,7 +659,7 @@
      3
     ],
     "reps": [
-     4,
+     1,
      12
     ],
     "restSeconds": [
@@ -916,19 +921,19 @@
     "home"
    ],
    "defaultDose": {
-    "mode": "time",
+    "mode": "reps",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "reps": 5,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     10
     ],
     "restSeconds": [
      0,
@@ -1202,9 +1207,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 12,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -1212,8 +1217,8 @@
      3
     ],
     "reps": [
-     6,
-     18
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -1488,17 +1493,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -1769,17 +1774,17 @@
    "defaultDose": {
     "mode": "reps",
     "sets": 1,
-    "reps": 10,
-    "restSeconds": 10
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     5,
-     15
+     1,
+     12
     ],
     "restSeconds": [
      0,
@@ -2051,17 +2056,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -2337,16 +2342,16 @@
     "mode": "reps",
     "sets": 1,
     "reps": 6,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     3,
-     9
+     1,
+     12
     ],
     "restSeconds": [
      0,
@@ -2620,19 +2625,19 @@
     "home"
    ],
    "defaultDose": {
-    "mode": "time",
+    "mode": "reps",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     12
     ],
     "restSeconds": [
      0,
@@ -2892,17 +2897,17 @@
    "defaultDose": {
     "mode": "reps",
     "sets": 1,
-    "reps": 5,
-    "restSeconds": 10
+    "reps": 3,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     2,
-     8
+     1,
+     6
     ],
     "restSeconds": [
      0,
@@ -3191,9 +3196,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 12,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -3201,8 +3206,8 @@
      3
     ],
     "reps": [
-     6,
-     18
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -3485,18 +3490,18 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 3,
-    "reps": 12,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     4
+     3
     ],
     "reps": [
-     6,
-     18
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -3754,19 +3759,19 @@
     "home"
    ],
    "defaultDose": {
-    "mode": "time",
+    "mode": "reps",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "reps": 3,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     6
     ],
     "restSeconds": [
      0,
@@ -4040,12 +4045,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 40,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      20,
@@ -4314,17 +4319,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 45,
-    "restSeconds": 10
+    "seconds": 60,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     22,
-     90
+     30,
+     120
     ],
     "restSeconds": [
      0,
@@ -4590,18 +4595,18 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 3,
+    "sets": 1,
     "reps": 8,
-    "restSeconds": 30
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     4
+     3
     ],
     "reps": [
-     4,
-     12
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -4886,16 +4891,16 @@
     "mode": "reps",
     "sets": 1,
     "reps": 6,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     3,
-     9
+     1,
+     12
     ],
     "restSeconds": [
      0,
@@ -5166,17 +5171,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -5461,17 +5466,17 @@
    "defaultDose": {
     "mode": "reps",
     "sets": 1,
-    "reps": 6,
-    "restSeconds": 10
+    "reps": 4,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     3,
-     9
+     1,
+     8
     ],
     "restSeconds": [
      0,
@@ -5746,19 +5751,19 @@
     "office"
    ],
    "defaultDose": {
-    "mode": "time",
+    "mode": "reps",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "reps": 4,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     8
     ],
     "restSeconds": [
      0,
@@ -6017,9 +6022,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 10,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -6027,8 +6032,8 @@
      3
     ],
     "reps": [
-     5,
-     15
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -6313,17 +6318,17 @@
    "defaultDose": {
     "mode": "reps",
     "sets": 1,
-    "reps": 10,
-    "restSeconds": 10
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     5,
-     15
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -6582,19 +6587,19 @@
     "home"
    ],
    "defaultDose": {
-    "mode": "reps",
+    "mode": "time",
     "sets": 1,
-    "reps": 8,
-    "restSeconds": 10
+    "seconds": 30,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "reps": [
-     4,
-     12
+    "seconds": [
+     15,
+     60
     ],
     "restSeconds": [
      0,
@@ -6856,19 +6861,19 @@
     "office"
    ],
    "defaultDose": {
-    "mode": "time",
-    "sets": 2,
-    "seconds": 30,
-    "restSeconds": 30
+    "mode": "reps",
+    "sets": 1,
+    "reps": 3,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
      3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     6
     ],
     "restSeconds": [
      0,
@@ -7129,19 +7134,19 @@
     "office"
    ],
    "defaultDose": {
-    "mode": "time",
-    "sets": 2,
-    "seconds": 30,
-    "restSeconds": 30
+    "mode": "reps",
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
      3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -7409,9 +7414,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 8,
-    "restSeconds": 10
+    "sets": 1,
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -7419,7 +7424,7 @@
      3
     ],
     "reps": [
-     4,
+     1,
      12
     ],
     "restSeconds": [
@@ -7681,19 +7686,19 @@
     "home"
    ],
    "defaultDose": {
-    "mode": "time",
+    "mode": "reps",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
-    "seconds": [
-     15,
-     60
+    "reps": [
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -7954,17 +7959,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 40,
-    "restSeconds": 10
+    "seconds": 75,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     20,
-     80
+     40,
+     150
     ],
     "restSeconds": [
      0,
@@ -8235,12 +8240,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 30,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      15,
@@ -8518,17 +8523,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -8802,16 +8807,16 @@
     "mode": "reps",
     "sets": 1,
     "reps": 8,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "reps": [
-     4,
-     12
+     1,
+     16
     ],
     "restSeconds": [
      0,
@@ -9070,17 +9075,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 25,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      15,
-     60
+     50
     ],
     "restSeconds": [
      0,
@@ -9353,17 +9358,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -9646,12 +9651,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 30,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      15,
@@ -9927,12 +9932,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 30,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      15,
@@ -10208,17 +10213,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 40,
-    "restSeconds": 10
+    "seconds": 35,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      20,
-     80
+     70
     ],
     "restSeconds": [
      0,
@@ -10493,12 +10498,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 40,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      20,
@@ -10759,17 +10764,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 40,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     80
     ],
     "restSeconds": [
      0,
@@ -11037,17 +11042,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 40,
-    "restSeconds": 10
+    "seconds": 60,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     20,
-     80
+     30,
+     120
     ],
     "restSeconds": [
      0,
@@ -11298,12 +11303,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 30,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      15,
@@ -11579,17 +11584,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 35,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     70
     ],
     "restSeconds": [
      0,
@@ -11862,17 +11867,17 @@
    "defaultDose": {
     "mode": "time",
     "sets": 1,
-    "seconds": 30,
-    "restSeconds": 10
+    "seconds": 35,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
-     15,
-     60
+     20,
+     70
     ],
     "restSeconds": [
      0,
@@ -12158,12 +12163,12 @@
     "mode": "time",
     "sets": 1,
     "seconds": 40,
-    "restSeconds": 10
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     2
+     3
     ],
     "seconds": [
      20,
@@ -12434,9 +12439,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 8,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 6,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -12444,7 +12449,7 @@
      3
     ],
     "reps": [
-     4,
+     1,
      12
     ],
     "restSeconds": [
@@ -12697,9 +12702,9 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 2,
-    "reps": 15,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 10,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
@@ -12707,8 +12712,8 @@
      3
     ],
     "reps": [
-     8,
-     22
+     1,
+     20
     ],
     "restSeconds": [
      0,
@@ -12969,18 +12974,18 @@
    ],
    "defaultDose": {
     "mode": "reps",
-    "sets": 3,
-    "reps": 12,
-    "restSeconds": 30
+    "sets": 1,
+    "reps": 8,
+    "restSeconds": 15
    },
    "doseRange": {
     "sets": [
      1,
-     4
+     3
     ],
     "reps": [
-     6,
-     18
+     1,
+     16
     ],
     "restSeconds": [
      0,

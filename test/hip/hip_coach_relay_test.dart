@@ -43,7 +43,17 @@ _startRelay() async {
           {
             'message': {
               'role': 'assistant',
-              'content': jsonEncode(validPlanEnvelope()),
+              'content': validPlanEnvelope()['text'],
+              'tool_calls': [
+                {
+                  'id': 'plan',
+                  'type': 'function',
+                  'function': {
+                    'name': 'show_plan',
+                    'arguments': jsonEncode(validPlanEnvelope()['plan']),
+                  },
+                },
+              ],
             },
             'finish_reason': 'stop',
           },
@@ -194,7 +204,8 @@ void main() {
       expect(request.uri.hasQuery, isFalse);
       expect(request.body['model'], 'deepseek-v4-flash-0731');
       expect(request.body['stream'], isFalse);
-      expect(request.body['response_format'], {'type': 'json_object'});
+      expect(request.body.containsKey('response_format'), isFalse);
+      expect(request.body['tools'], isNotEmpty);
       expect(request.body['messages'], isNotEmpty);
       expect(request.headers['x-app-key'], 'local-relay-test-app');
       expect(request.headers, isNot(contains('authorization')));

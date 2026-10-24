@@ -312,6 +312,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       mediaBuilder: (context, request) => AspectRatio(
         aspectRatio: 1,
         child: HipMediaFrame(
+          // The shared stage supplies its own edge treatment. Follow the
+          // player request so App thumbnails do not round the stage again.
+          radius: request.theme.radius,
           child: HipDrillArt(
             drill: widget.store.content.drill(request.drill.id),
             play: !request.paused,

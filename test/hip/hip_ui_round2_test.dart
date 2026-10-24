@@ -184,7 +184,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pumpAndSettle();
-      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       // The training package owns the playback controls and its icon set.
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('pause')), findsOneWidget);
@@ -278,7 +278,7 @@ void main() {
       // The covered home answers (a dim), not a plain fade.
       expect(find.byType(HipCoveredTransition), findsOneWidget);
       await tester.pumpAndSettle();
-      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
     });
@@ -373,7 +373,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();

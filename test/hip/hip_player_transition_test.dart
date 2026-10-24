@@ -1,7 +1,6 @@
-// Prep / rest in the player (rep-rhythm PR): the next drill's demo is shown
-// whole – no dark layer, no text on the media – and the feedback on the
-// drill just done sits under it; answering it never skips or shortens the
-// rest countdown.
+// Trainer 0.2 stage: the App supplies media and a rest feedback pendant;
+// the SDK owns the top information card and transport. Answering the
+// feedback never skips or shortens the rest countdown.
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,18 +63,18 @@ void main() {
   });
 
   int ringSeconds(WidgetTester tester) {
-    final ring = tester.widget<trainer.TrainerCountdownRing>(
-      find.byType(trainer.TrainerCountdownRing),
+    final ring = tester.widget<trainer.TrainerCountdownDigits>(
+      find.byType(trainer.TrainerCountdownDigits),
     );
     return int.parse(ring.value);
   }
 
-  testWidgets('prep: the demo stays uncovered; the phase label is below it', (
+  testWidgets('prep: the top card and App demo follow the shared stage', (
     tester,
   ) async {
     final store = await start(tester);
     final first = store.todayPlan!.steps.first;
-    final prep = find.byKey(const ValueKey('label-准备 · 第一个动作'));
+    final prep = find.textContaining('准备 · 第一个动作');
     expect(prep, findsOneWidget);
     expect(onMedia(prep), findsNothing);
     expect(onMedia(find.text(first.drill.name)), findsNothing);
@@ -94,7 +93,7 @@ void main() {
       ),
       findsNothing,
     );
-    // name + dose live under the media
+    // Name + authored dose live in the shared top card, outside the demo.
     expect(find.text(first.drill.name), findsOneWidget);
     expect(find.textContaining(first.dose), findsWidgets);
   });
@@ -146,7 +145,7 @@ void main() {
     );
   });
 
-  testWidgets('rest: feedback under the media; a tap records, never skips', (
+  testWidgets('rest: App feedback pendant records without skipping', (
     tester,
   ) async {
     final store = await start(tester);
@@ -155,10 +154,19 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
     await tester.pump(const Duration(seconds: 2));
-    expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('index')))
+          .properties
+          .label,
+      '2 / ${plan.steps.length}',
+    );
     final ok = find.byKey(const ValueKey('feel-ok'));
     expect(ok, findsOneWidget);
-    expect(onMedia(ok), findsNothing);
+    expect(
+      find.descendant(of: find.byType(HipDrillArt), matching: ok),
+      findsNothing,
+    );
     expect(onMedia(find.byKey(const ValueKey('tag-next'))), findsOneWidget);
     final before = ringSeconds(tester);
     await tester.tap(ok);
@@ -167,7 +175,13 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     // still the rest before drill 2: same step, countdown kept going
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
-    expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('index')))
+          .properties
+          .label,
+      '2 / ${plan.steps.length}',
+    );
     final after = ringSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
@@ -216,18 +230,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('skip')));
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);
-      // The shared player keeps transport pinned and scrolls its content on
-      // short screens. Exercise the real scroll rather than bypassing hit tests.
-      await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('feel-ok')),
-        120,
-        scrollable: find
-            .descendant(
-              of: find.byType(trainer.TrainerPlayer),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
+      // The shared stage keeps feedback and transport in fixed visible slots.
       await tester.ensureVisible(find.byKey(const ValueKey('feel-ok')));
       await tester.pump(trainer.TrainerMotion.fast);
       for (final k in ['ok', 'tight', 'pain']) {

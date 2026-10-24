@@ -52,7 +52,7 @@ class HipApp extends StatefulWidget {
   final HipVoice? voice;
 
   /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
-  /// otherwise built from --dart-define (unconfigured → 预设方案 only).
+  /// otherwise built from external configuration (unconfigured → hidden).
   final CoachService? coach;
 
   @override
@@ -1487,7 +1487,8 @@ class HipProgressPage extends StatelessWidget {
         HipVoiceSettingsPanel(store: store),
         const SizedBox(height: 12),
         HipAppearancePanel(store: store),
-        if (coach != null && aiCoachAvailable(context)) ...[
+        if (coach != null &&
+            aiCoachAvailable(context, configured: coach!.configured)) ...[
           const SizedBox(height: 12),
           HipCoachUsagePanel(usage: coach!.usage),
         ],

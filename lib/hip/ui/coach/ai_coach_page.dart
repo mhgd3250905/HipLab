@@ -1,13 +1,14 @@
-// AI 定制（docs/ai-coach.md）：描述需求 → 最多追问一次 → 计划卡 →「开始训练」/
-// 「保存为自定义训练组」。交互沿用 3D-Body feat/ai-coach `app/lib/ui/ai_coach_page.dart`
-// （PR #122），换成 HipLab 的组件与配色（HipPanel / HipPrimaryButton / LibChip …）。
+// HipLab owns the agent, trusted mapping and navigation. Shared conversation
+// layout, bubbles, clarification controls and routine cards are SDK widgets.
 import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
+import 'package:ugk_coach_ui/ugk_coach_ui.dart' as ui;
 
 import '../../coach/coach_service.dart';
+import '../../coach/coach_config.dart';
 import '../../coach/plan_mapping.dart';
 import '../../control/hip_store.dart';
 import '../../domain/hip_library.dart';
@@ -16,50 +17,71 @@ import '../hip_routes.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import '../library/drill_detail_page.dart';
-import '../library/lib_text.dart';
 import '../library/library_actions.dart';
 import '../library/library_widgets.dart';
 import '../library/practice_page.dart' show startGroup;
 
-/// iOS 基础版隐藏 AI 入口；其他平台仍只在中文界面显示。
-bool aiCoachAvailable(BuildContext context) =>
+/// Keep the existing platform/language scope; a missing key hides all entries.
+bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
+    (configured ?? CoachConfig.fromEnvironment.configured) &&
     Theme.of(context).platform != TargetPlatform.iOS &&
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
 
-/// 对话里的一条。
 class CoachMessage {
-  const CoachMessage.user(String this.text) : answer = null, resultId = -1;
-  const CoachMessage.answer(CoachAnswer this.answer, this.resultId)
-    : text = null;
+  const CoachMessage.user(String this.text, {required this.at})
+    : answer = null,
+      resultId = -1;
+  const CoachMessage.answer(
+    CoachAnswer this.answer,
+    this.resultId, {
+    required this.at,
+  }) : text = null;
   final String? text;
   final CoachAnswer? answer;
-
-  /// 应用给每份回答分配的身份（会话内唯一），保存状态按它绑定，不依赖模型给的 plan id。
+  final DateTime at;
   final int resultId;
   bool get isUser => text != null;
 }
 
-/// 一次 AI 定制对话的状态。由首页外壳持有：进训练、看动作再回来，对话还在。
+/// The App shell retains one conversation and one agent across page/route hops.
 class AiCoachSession extends ChangeNotifier {
   AiCoachSession(this.service, {DateTime Function()? now})
-    : _now = now ?? DateTime.now;
+    : _now = now ?? DateTime.now {
+    _events = service.events.listen((event) {
+      // askUser is progress only. Never expose an answerable question until
+      // await service.ask (and therefore await agent.send) has returned.
+      if (event.kind != uc.AgentEventKind.askUser &&
+          event.kind != uc.AgentEventKind.done &&
+          busy) {
+        progress = switch (event.kind) {
+          uc.AgentEventKind.reading || uc.AgentEventKind.listing => '正在查阅动作资料…',
+          uc.AgentEventKind.checking => '正在核对训练方案…',
+          uc.AgentEventKind.retrying => '网络不稳，正在重试…',
+          uc.AgentEventKind.slow => '仍在准备回复，可以继续等待或停止',
+          _ => '正在理解你的需求…',
+        };
+        _notify();
+      }
+    });
+  }
 
   final CoachService service;
   final DateTime Function() _now;
-  final uc.CoachConversation conversation = uc.CoachConversation();
+  late final StreamSubscription<uc.AgentEvent> _events;
+  uc.CoachConversation conversation = uc.CoachConversation();
   final List<CoachMessage> messages = [];
-
-  /// 已保存的回答：回答身份（[CoachMessage.resultId]）→ 训练组 id。
-  /// 训练组可能已被删除，是否「已保存」以 store 里实际存在为准（[savedRoutine]）。
   final Map<int, String> saved = {};
+  final Map<int, List<String>> answeredChoices = {};
+  final Set<int> answeredQuestions = {};
+  int? awaitingQuestionId;
   int _nextResult = 0;
+  int _generation = 0;
   uc.CancelToken? _cancel;
   DateTime? _startedAt;
   bool _loaded = false;
   bool _disposed = false;
-
-  /// 刚被停止的那句话（页面取走后清空）。
   String? cancelledText;
+  String progress = '正在理解你的需求…';
 
   bool get busy => _cancel != null;
   DateTime? get startedAt => _startedAt;
@@ -77,13 +99,56 @@ class AiCoachSession extends ChangeNotifier {
     _notify();
   }
 
+  bool questionEnabled(int id) =>
+      !_disposed && !busy && awaitingQuestionId == id;
+
+  CoachMessage? _question(int id) => messages
+      .where((m) => !m.isUser && m.resultId == id && m.answer?.question != null)
+      .firstOrNull;
+
+  Future<void> answerText(int id, String raw) async {
+    final q = _question(id)?.answer?.question;
+    final answer = raw.trim();
+    if (!questionEnabled(id) ||
+        q?.mode != uc.AskUserMode.text ||
+        answer.isEmpty ||
+        answer.runes.length > 300) {
+      return;
+    }
+    answeredQuestions.add(id);
+    // send closes the old question synchronously before its first await.
+    await send(answer);
+  }
+
+  Future<void> answerChoices(int id, List<String> values) async {
+    final q = _question(id)?.answer?.question;
+    if (!questionEnabled(id) || q?.mode != uc.AskUserMode.choice) return;
+    final question = q!;
+    if (values.isEmpty ||
+        values.toSet().length != values.length ||
+        values.any((v) => !question.options.contains(v)) ||
+        (!question.multiple && values.length != 1)) {
+      return;
+    }
+    final ordered = [
+      for (final v in question.options)
+        if (values.contains(v)) v,
+    ];
+    answeredChoices[id] = List.unmodifiable(ordered);
+    answeredQuestions.add(id);
+    await send(ordered.join('、'));
+  }
+
   Future<void> send(String raw) async {
     final text = raw.trim();
-    if (text.isEmpty || busy) return;
+    if (text.isEmpty || busy || _disposed) return;
+    awaitingQuestionId = null;
+    final generation = _generation;
     final cancel = uc.CancelToken();
     _cancel = cancel;
     _startedAt = _now();
-    messages.add(CoachMessage.user(text));
+    progress = '正在理解你的需求…';
+    messages.add(CoachMessage.user(text, at: _now()));
     _notify();
     CoachAnswer answer;
     try {
@@ -93,28 +158,65 @@ class AiCoachSession extends ChangeNotifier {
         reply: uc.CoachReply.text('出了点问题，没能排出计划。请稍后再试。'),
       );
     }
-    if (_disposed) return;
+    if (_disposed || generation != _generation) return;
     _cancel = null;
     _startedAt = null;
     if (answer.cancelled) {
-      // 停止：撤回这句话，页面把它放回输入框。
       if (messages.isNotEmpty && messages.last.isUser) messages.removeLast();
       cancelledText = text;
     } else {
-      messages.add(CoachMessage.answer(answer, _nextResult++));
+      final id = _nextResult++;
+      messages.add(CoachMessage.answer(answer, id, at: _now()));
+      if (answer.question != null) awaitingQuestionId = id;
     }
     _notify();
   }
 
-  /// 停止正在进行的请求（HTTP 真正中止，不回落、不记进对话）。
-  void stop() => _cancel?.cancel();
+  void stop() {
+    awaitingQuestionId = null;
+    _cancel?.cancel();
+    service.reset();
+    _notify();
+  }
+
+  /// Leaving a question/history does not restore a pending SDK task later.
+  void expireQuestion() {
+    if (awaitingQuestionId != null) {
+      awaitingQuestionId = null;
+      service.reset();
+      _notify();
+    }
+  }
+
+  void reset() {
+    _generation++;
+    _cancel?.cancel();
+    _cancel = null;
+    _startedAt = null;
+    awaitingQuestionId = null;
+    cancelledText = null;
+    service.reset();
+    conversation = uc.CoachConversation();
+    messages.clear();
+    saved.clear();
+    answeredQuestions.clear();
+    answeredChoices.clear();
+    _notify();
+  }
+
+  /// Restored snapshots are display history, never a reconstructed agent task.
+  void restoreHistory(Iterable<CoachMessage> history) {
+    reset();
+    messages.addAll(history);
+    _nextResult = messages.fold(0, (n, m) => math.max(n, m.resultId + 1));
+    _notify();
+  }
 
   void markSaved(int resultId, String routineId) {
     saved[resultId] = routineId;
     _notify();
   }
 
-  /// 这份回答保存成的训练组（用户可能编辑过）；没保存或已删除 = null。
   CustomRoutine? savedRoutine(int resultId, HipStore store) {
     final id = saved[resultId];
     return id == null ? null : store.customRoutine(id);
@@ -127,7 +229,10 @@ class AiCoachSession extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    awaitingQuestionId = null;
     _cancel?.cancel();
+    unawaited(_events.cancel());
+    unawaited(service.dispose());
     super.dispose();
   }
 }
@@ -220,6 +325,9 @@ class _AiCoachPageState extends State<AiCoachPage> {
   final _input = TextEditingController();
   final _scroll = ScrollController();
   Timer? _ticker;
+  late final Set<String> _initiallySeen;
+  String _entryId(CoachMessage message) =>
+      'message-${identityHashCode(message)}';
 
   /// 本次等待已过的秒数（按 1 秒节拍累加）。
   int _elapsed = 0;
@@ -229,6 +337,9 @@ class _AiCoachPageState extends State<AiCoachPage> {
   @override
   void initState() {
     super.initState();
+    _initiallySeen = {
+      for (final message in session.messages) _entryId(message),
+    };
     session.addListener(_changed);
     if (!session.loaded) unawaited(session.load());
     if (session.busy) _startTicker();
@@ -237,6 +348,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
   @override
   void dispose() {
     session.removeListener(_changed);
+    session.expireQuestion();
     _ticker?.cancel();
     _input.dispose();
     _scroll.dispose();
@@ -274,7 +386,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
   void _toEnd() {
     if (!mounted || !_scroll.hasClients) return;
     _scroll.animateTo(
-      _scroll.position.maxScrollExtent,
+      0, // CoachChatList is a reverse viewport; newest rows are at offset zero.
       duration: MediaQuery.of(context).disableAnimations
           ? const Duration(milliseconds: 1)
           : HipMotion.medium,
@@ -320,122 +432,346 @@ class _AiCoachPageState extends State<AiCoachPage> {
 
   @override
   Widget build(BuildContext context) {
-    final configured = session.service.configured;
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HipTopBar(
-              title: 'AI 定制训练',
-              subtitle: configured ? null : '未配置 AI · 使用预设方案',
-              icon: HipGlyph.back,
-              tooltip: '返回',
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                key: const ValueKey('coach-list'),
-                controller: _scroll,
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (session.showDisclaimer)
-                      _Disclaimer(onAccept: session.acceptDisclaimer),
+    return ui.CoachUiTheme(
+      style: hipCoachStyle(context, blocked: widget.actions.store.blocked),
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              HipTopBar(
+                title: 'AI 定制训练',
+                icon: HipGlyph.back,
+                tooltip: '返回',
+                trailing: TextButton(
+                  key: const ValueKey('coach-reset'),
+                  onPressed: session.reset,
+                  child: const Text('新对话'),
+                ),
+              ),
+              if (session.showDisclaimer)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _Disclaimer(onAccept: session.acceptDisclaimer),
+                ),
+              Expanded(
+                child: ui.CoachChatList(
+                  key: const ValueKey('coach-list'),
+                  controller: _scroll,
+                  dockHeight: 0,
+                  topColor: HipColors.background,
+                  timeMarkBuilder: (at, now) => ui.CoachTimeMark(at, now: now),
+                  initiallySeen: _initiallySeen,
+                  typing: session.busy
+                      ? ui.CoachTypingBubble(
+                          key: const ValueKey('coach-thinking'),
+                          progressLabel: '${session.progress} · 已用 $_elapsed 秒',
+                          onCancel: session.stop,
+                        )
+                      : null,
+                  entries: [
                     if (session.messages.isEmpty)
-                      _Intro(
-                        configured: configured,
-                        onExample: session.busy ? null : _send,
+                      ui.CoachChatEntry(
+                        id: 'intro',
+                        at: DateTime.now(),
+                        isUser: false,
+                        greeting: true,
+                        child: _Intro(
+                          configured: session.service.configured,
+                          onExample: session.busy ? null : _send,
+                        ),
                       ),
                     for (final (i, m) in session.messages.indexed)
-                      KeyedSubtree(
-                        key: ValueKey('coach-msg-$i'),
-                        child: m.isUser
-                            ? _UserBubble(m.text!)
-                            : _answer(m, i),
+                      ui.CoachChatEntry(
+                        id: _entryId(m),
+                        at: m.at,
+                        isUser: m.isUser,
+                        isCard: m.answer?.plan != null,
+                        child: KeyedSubtree(
+                          key: ValueKey('coach-msg-$i'),
+                          child: m.isUser
+                              ? _bubble(m.text!, user: true, id: 'user-$i')
+                              : _answer(m),
+                        ),
                       ),
-                    if (session.busy)
-                      _Thinking(
-                        key: const ValueKey('coach-thinking'),
-                        seconds: _elapsed,
-                        onStop: session.stop,
+                  ],
+                ),
+              ),
+              _Composer(controller: _input, busy: session.busy, onSend: _send),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bubble(String text, {bool user = false, required String id}) =>
+      ui.CoachMessageBubble(
+        message: ui.CoachBubbleData(id: id, text: text, isUser: user),
+        optionsActive: false,
+        onOption: (_) {},
+      );
+
+  Widget _answer(CoachMessage message) {
+    final answer = message.answer!;
+    final question = answer.question;
+    final id = message.resultId;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (question != null)
+          ui.CoachQuestionBubble(
+            key: ValueKey('coach-question-$id'),
+            question: ui.CoachQuestionData(
+              id: '$id',
+              question: question.question,
+              mode: question.mode == uc.AskUserMode.text
+                  ? ui.CoachQuestionMode.text
+                  : ui.CoachQuestionMode.choice,
+              options: question.options,
+              multiple: question.multiple,
+              answered: session.answeredQuestions.contains(id),
+              answeredChoices: session.answeredChoices[id] ?? const [],
+            ),
+            enabled: session.questionEnabled(id),
+            onTextAnswer: (text) => session.answerText(id, text),
+            onChoiceAnswer: (choices) => session.answerChoices(id, choices),
+          )
+        else if (answer.reply?.text.isNotEmpty ?? false)
+          _bubble(answer.reply!.text, id: 'answer-$id'),
+        if (answer.plan case final admitted?) _planCard(admitted, answer, id),
+        if (answer.actions case final admitted?)
+          for (final action in admitted.items)
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                HipRoute.push<Object?>(
+                  (_) => DrillDetailPage(
+                    actions: widget.actions,
+                    drillId: action.id,
+                  ),
+                ),
+              ),
+              child: Text(
+                '${widget.actions.store.content.drill(action.id).name}${action.note == null ? '' : ' · ${action.note}'}',
+              ),
+            ),
+        if (answer.status == uc.TurnStatus.limitReached)
+          TextButton(onPressed: session.reset, child: const Text('对话已满，开始新对话')),
+      ],
+    );
+  }
+
+  Widget _planCard(
+    uc.ValidatedPlan admitted,
+    CoachAnswer answer,
+    int resultId,
+  ) {
+    final plan = admitted.plan;
+    final store = widget.actions.store;
+    final mapper = CoachPlanMapper(store.content);
+    final original = mapper.map(plan, id: 'preview', at: store.now());
+    final saved = session.savedRoutine(resultId, store);
+    final mapping = saved == null
+        ? original
+        : mapper.fromRoutine(saved, original);
+    if (mapping.entries.isEmpty) return const SizedBox.shrink();
+    return Column(
+      key: const ValueKey('coach-plan-card'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            answer.preset ? '预设方案' : 'AI 定制',
+            key: ValueKey(
+              answer.preset ? 'coach-badge-preset' : 'coach-badge-ai',
+            ),
+            style: TextStyle(
+              color: HipColors.jadeText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        if (answer.preset)
+          const Text(
+            '这是 App 内置的套路，不是 AI 按你的需求生成的。',
+            key: ValueKey('coach-preset-note'),
+          ),
+        ui.CoachPlanCard(
+          key: ValueKey('coach-plan-$resultId'),
+          plan: ui.CoachRoutine(
+            id: mapping.routine.id,
+            title: mapping.routine.name,
+            items: [
+              for (final entry in mapping.entries)
+                ui.CoachRoutineItem(
+                  exerciseId: entry.drill.id,
+                  dose: entry.doseText,
+                ),
+            ],
+            durationLabel:
+                '约 ${math.max(1, (mapping.seconds(store.content) / 60).round())} 分钟',
+            gearLabel: '按动作准备器材',
+            levelLabel: '舒适范围',
+            metaLabel: '${mapping.entries.length} 个动作',
+            adjustmentsLabel: mapping.adjusted ? '剂量已按动作包的训练参数换算' : null,
+          ),
+          library: hipCoachLibrary(store),
+          saved: saved != null,
+          onSave: () {
+            if (saved == null) unawaited(_save(plan, resultId));
+          },
+          onStart: (_) {
+            if (!store.blocked) unawaited(_start(plan, resultId, null));
+          },
+          onOpen: () => showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => SafeArea(
+              child: SizedBox(
+                height: MediaQuery.sizeOf(context).height * .8,
+                child: ListView(
+                  key: const ValueKey('coach-plan-details'),
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    Text(
+                      plan.title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    for (final entry in mapping.entries)
+                      ListTile(
+                        title: Text(entry.drill.name),
+                        subtitle: Text(entry.doseText),
+                        onTap: () => Navigator.of(context).push(
+                          HipRoute.push<Object?>(
+                            (_) => DrillDetailPage(
+                              actions: widget.actions,
+                              drillId: entry.drill.id,
+                            ),
+                          ),
+                        ),
                       ),
                   ],
                 ),
               ),
             ),
-            _Composer(controller: _input, busy: session.busy, onSend: _send),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _answer(CoachMessage message, int index) {
-    final answer = message.answer!;
-    final reply = answer.reply;
-    if (reply == null) return const SizedBox.shrink();
-    final latest = index == session.messages.length - 1;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (reply.text.isNotEmpty)
-          _CoachBubble(
-            text: reply.text,
-            preset: answer.preset && reply.plan == null,
           ),
-        if (reply.kind == uc.ReplyKind.ask && reply.options.isNotEmpty)
+        ),
+        for (final note in {...plan.safetyNotes, '在不痛的范围内做，出现疼痛、麻木或头晕立即停止。'})
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final (i, option) in reply.options.indexed)
-                  LibChip(
-                    option,
-                    key: ValueKey('coach-option-$i'),
-                    onTap: latest && !session.busy ? () => _send(option) : null,
-                  ),
-              ],
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              note,
+              style: TextStyle(fontSize: 12, color: HipColors.muted),
             ),
           ),
-        if (reply.plan case final plan?)
-          _planCard(plan, answer, message.resultId),
+        if (store.blocked)
+          Text(
+            '安全提示里有需要先问医生的情况，暂时不能开始训练。',
+            key: const ValueKey('coach-blocked'),
+            style: TextStyle(color: HipColors.pain),
+          ),
       ],
     );
   }
+}
 
-  Widget _planCard(uc.TrainingPlan plan, CoachAnswer answer, int resultId) {
-    final store = widget.actions.store;
-    final mapper = CoachPlanMapper(store.content);
-    final original = mapper.map(plan, id: 'preview', at: store.now());
-    // 保存后以「我的」里的训练组为准（含用户编辑）：卡片展示与开练是同一份。
-    final routine = session.savedRoutine(resultId, store);
-    final mapping = routine == null
-        ? original
-        : mapper.fromRoutine(routine, original);
-    final saved = routine != null;
-    final empty = mapping.entries.isEmpty;
-    return _PlanCard(
-      key: ValueKey('coach-plan-$resultId'),
-      plan: plan,
-      mapping: mapping,
-      seconds: mapping.seconds(store.content),
-      preset: answer.preset,
-      saved: saved,
-      blocked: store.blocked,
-      onDrill: (id) => Navigator.of(context).push(
-        HipRoute.push<Object?>(
-          (_) => DrillDetailPage(actions: widget.actions, drillId: id),
-        ),
+/// Only App-resolved asset paths and locally admitted exercise IDs enter DTOs.
+ui.CoachExerciseLibrary hipCoachLibrary(HipStore store) =>
+    ui.CoachExerciseLibrary([
+      for (final drill in store.content.drills.values)
+        if (inLibrary(store.content, drill.id) && drill.poster != null)
+          ui.CoachExercise(
+            id: drill.id,
+            name: drill.name,
+            poster: HipMediaVariants.themed(drill.poster!),
+            cues: [if (drill.note.isNotEmpty) drill.note],
+            stage: ui.CoachMediaPalette(
+              mediaStage: HipColors.mediaBackdrop,
+              onStage: HipColors.text,
+              onStageMuted: HipColors.muted,
+            ),
+          ),
+    ]);
+
+ui.CoachUiStyle hipCoachStyle(BuildContext context, {bool blocked = false}) {
+  final theme = Theme.of(context);
+  return ui.CoachUiStyle(
+    colors: ui.CoachUiColors(
+      brightness: theme.brightness,
+      text: HipColors.text,
+      muted: HipColors.muted,
+      faint: HipColors.faint,
+      surface: HipColors.surface,
+      thumb: HipColors.thumb,
+      accent: HipColors.jade,
+      accentText: HipColors.jadeText,
+      accentSoft: tintOf(HipColors.jade),
+      onAccent: HipColors.onJade,
+      userBubble: tintOf(HipColors.jade),
+      assistantBubble: HipColors.surface,
+      stage: ui.CoachMediaPalette(
+        mediaStage: HipColors.mediaBackdrop,
+        onStage: HipColors.text,
+        onStageMuted: HipColors.muted,
       ),
-      onSave: saved || empty ? null : () => _save(plan, resultId),
-      onStart: empty || store.blocked
-          ? null
-          : (from) => _start(plan, resultId, from),
-    );
-  }
+      emphasis: HipColors.jade,
+      onEmphasis: HipColors.onJade,
+      onMedia: HipColors.text,
+      mediaScrim: HipColors.scrim,
+      landingHighlight: HipColors.jade,
+    ),
+    typography: ui.CoachUiTypography(
+      body: const TextStyle(
+        fontFamily: hipFontFamily,
+        fontSize: 15,
+        height: 1.5,
+      ),
+      callout: const TextStyle(
+        fontFamily: hipFontFamily,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+      ),
+      label: const TextStyle(fontFamily: hipFontFamily, fontSize: 12),
+      caption: const TextStyle(fontFamily: hipFontFamily, fontSize: 12),
+      greeting: const TextStyle(
+        fontFamily: hipFontFamily,
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    strings: ui.CoachUiStrings(
+      expand: '展开',
+      collapse: '收起',
+      expandDetails: '展开动作',
+      collapseDetails: '收起动作',
+      save: '保存为自定义训练组',
+      saved: '已保存到「我的」',
+      start: '开始训练',
+      cancel: '停止',
+      preparing: '正在准备回复…',
+      progressHint: '正在核对动作和训练方案',
+      answerHint: '说说你的情况',
+      submitAnswer: '继续',
+      multipleHint: '可选择多项',
+      planDetails: (title) => '训练详情：$title',
+      timeLabel: (at, now) =>
+          '${at.hour.toString().padLeft(2, '0')}:${at.minute.toString().padLeft(2, '0')}',
+    ),
+    builders: ui.CoachUiBuilders(
+      startButton: (_, button) => HipCircleButton(
+        key: const ValueKey('coach-start'),
+        icon: HipGlyph.play,
+        tooltip: '开始训练',
+        onPressed: blocked ? null : button.onTap,
+      ),
+      textAction: (_, action) => TextButton(
+        key: action.label.contains('保存') ? const ValueKey('coach-save') : null,
+        onPressed: action.onPressed,
+        child: Text(action.label),
+      ),
+    ),
+  );
 }
 
 class _Disclaimer extends StatelessWidget {
@@ -535,381 +871,6 @@ class _Intro extends StatelessWidget {
           ],
         ),
       ],
-    ),
-  );
-}
-
-class _UserBubble extends StatelessWidget {
-  const _UserBubble(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerRight,
-    child: Padding(
-      padding: const EdgeInsets.only(left: 48, bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: tintOf(HipColors.jade),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(18),
-            topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(18),
-            bottomRight: Radius.circular(6),
-          ),
-        ),
-        child: Text(text, style: const TextStyle(fontSize: 15, height: 1.45)),
-      ),
-    ),
-  );
-}
-
-class _CoachBubble extends StatelessWidget {
-  const _CoachBubble({required this.text, this.preset = false});
-  final String text;
-  final bool preset;
-  @override
-  Widget build(BuildContext context) => Align(
-    alignment: Alignment.centerLeft,
-    child: Padding(
-      padding: const EdgeInsets.only(right: 32, bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: HipColors.surface,
-          border: Border.all(color: HipColors.line),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(18),
-            topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(6),
-            bottomRight: Radius.circular(18),
-          ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 15,
-            height: 1.5,
-            color: preset ? HipColors.muted : HipColors.text,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-/// 推理模型出一份计划约 30–40 秒：分步提示 + 已用时 + 进度条 + 可停止。
-class _Thinking extends StatelessWidget {
-  const _Thinking({super.key, required this.seconds, required this.onStop});
-  final int seconds;
-  final VoidCallback onStop;
-
-  static (String, String) stage(int seconds) => switch (seconds) {
-    < 6 => ('正在理解你的需求…', '第 1 步 / 共 3 步'),
-    < 22 => ('正在从动作大全里挑动作、配剂量…', '第 2 步 / 共 3 步'),
-    < 45 => ('正在核对动作范围、剂量和安全…', '第 3 步 / 共 3 步'),
-    _ => ('比平时久一点，可以继续等，或停止后改改需求再发', '仍在等待'),
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final (title, step) = stage(seconds);
-    final progress = (seconds / 40).clamp(.04, .94);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: HipPanel(
-        radius: 18,
-        padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.4,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(3),
-                child: LinearProgressIndicator(
-                  key: const ValueKey('coach-progress'),
-                  value: progress,
-                  minHeight: 5,
-                  backgroundColor: HipColors.track,
-                  color: HipColors.jade,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '$step · 已用 $seconds 秒，通常 30–40 秒',
-                    key: const ValueKey('coach-elapsed'),
-                    style: TextStyle(fontSize: 12, color: HipColors.faint),
-                  ),
-                ),
-                TextButton.icon(
-                  key: const ValueKey('coach-stop'),
-                  onPressed: onStop,
-                  icon: HipIcon(
-                    HipGlyph.stop,
-                    size: 16,
-                    color: HipColors.tight,
-                  ),
-                  label: Text('停止', style: TextStyle(color: HipColors.tight)),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    super.key,
-    required this.plan,
-    required this.mapping,
-    required this.seconds,
-    required this.preset,
-    required this.saved,
-    required this.blocked,
-    required this.onDrill,
-    required this.onSave,
-    required this.onStart,
-  });
-  final uc.TrainingPlan plan;
-  final CoachPlanMapping mapping;
-  final int seconds;
-  final bool preset;
-  final bool saved;
-  final bool blocked;
-  final ValueChanged<String> onDrill;
-  final VoidCallback? onSave;
-  final void Function(BuildContext? from)? onStart;
-
-  static const stopLine = '在不痛的范围内做，出现疼痛、麻木或头晕立即停止。';
-
-  @override
-  Widget build(BuildContext context) {
-    final t = LibText.of(context);
-    final entries = mapping.entries;
-    final startKey = GlobalKey();
-    String? lastBlock;
-    final notes = <String>{
-      if (plan.avoid.isNotEmpty) '已避开${plan.avoid.join('、')}受力较大的动作。',
-      ...plan.safetyNotes,
-      if (mapping.adjusted) '剂量已按动作包的训练参数换算（标 * 的动作）。',
-      stopLine,
-    };
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: HipPanel(
-        key: const ValueKey('coach-plan-card'),
-        borderColor: preset ? null : HipColors.jade.withValues(alpha: .55),
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                KeyedSubtree(
-                  key: ValueKey(
-                    preset ? 'coach-badge-preset' : 'coach-badge-ai',
-                  ),
-                  child: tintTag(
-                    preset ? '预设方案' : 'AI 定制',
-                    color: preset ? HipColors.tight : null,
-                  ),
-                ),
-                Text(
-                  '${t.movesCount(entries.length)} · 约 ${math.max(1, (seconds / 60).round())} 分钟',
-                  key: const ValueKey('coach-plan-meta'),
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              plan.title,
-              style: const TextStyle(
-                fontSize: 19,
-                height: 1.3,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            if (plan.summary.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                plan.summary,
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.45,
-                  color: HipColors.muted,
-                ),
-              ),
-            ],
-            if (preset) ...[
-              const SizedBox(height: 6),
-              Text(
-                '这是 App 内置的套路，不是 AI 按你的需求生成的。',
-                key: const ValueKey('coach-preset-note'),
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.4,
-                  color: HipColors.tight,
-                ),
-              ),
-            ],
-            const SizedBox(height: 10),
-            for (final (i, entry) in entries.indexed) ...[
-              if (entry.blockName != lastBlock && !preset)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6, bottom: 2),
-                  child: Text(
-                    lastBlock = entry.blockName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: HipColors.jadeText,
-                    ),
-                  ),
-                ),
-              _EntryRow(
-                key: ValueKey('coach-row-$i'),
-                entry: entry,
-                onTap: () => onDrill(entry.drill.id),
-              ),
-            ],
-            const SizedBox(height: 4),
-            for (final note in notes)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: HipIcon(
-                        HipGlyph.info,
-                        size: 14,
-                        color: HipColors.faint,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        note,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.4,
-                          color: HipColors.muted,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (blocked) ...[
-              const SizedBox(height: 8),
-              Text(
-                '安全提示里有需要先问医生的情况，暂时不能开始训练。',
-                key: const ValueKey('coach-blocked'),
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.4,
-                  color: HipColors.pain,
-                ),
-              ),
-            ],
-            const SizedBox(height: 14),
-            KeyedSubtree(
-              key: startKey,
-              child: HipPrimaryButton(
-                key: const ValueKey('coach-start'),
-                icon: HipGlyph.play,
-                label: '开始训练',
-                onPressed: onStart == null
-                    ? null
-                    : () => onStart!(startKey.currentContext),
-              ),
-            ),
-            const SizedBox(height: 10),
-            HipSecondaryButton(
-              key: const ValueKey('coach-save'),
-              label: saved ? '已保存到「我的」' : '保存为自定义训练组',
-              onPressed: onSave,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EntryRow extends StatelessWidget {
-  const _EntryRow({super.key, required this.entry, required this.onTap});
-  final CoachPlanEntry entry;
-  final VoidCallback onTap;
-  @override
-  Widget build(BuildContext context) => HipPressable(
-    semanticLabel: entry.drill.name,
-    scale: .98,
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          HipThumb(
-            size: 52,
-            radius: 12,
-            child: HipDrillArt(drill: entry.drill, showPendingLabel: false),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.drill.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.3,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  entry.adjusted ? '${entry.doseText} *' : entry.doseText,
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.35,
-                    color: HipColors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          HipIcon(HipGlyph.chevronRight, size: 18, color: HipColors.faint),
-        ],
-      ),
     ),
   );
 }

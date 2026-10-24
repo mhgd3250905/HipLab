@@ -32,6 +32,34 @@ void main() {
     return store;
   }
 
+  testWidgets('a no-key build hides AI training and usage entries', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      seed: (s) {
+        s.safety = {'pregnancy': false, 'surgery': false, 'acute': false};
+        s.identity = HipIdentity.office;
+      },
+    );
+    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('practice-2')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('new-group')), findsOneWidget);
+    expect(find.byKey(const ValueKey('practice-ai-coach')), findsNothing);
+    expect(find.text('AI 定制训练'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('privacy-policy')),
+      300,
+    );
+    expect(find.byKey(const ValueKey('coach-usage')), findsNothing);
+    expect(find.text('AI 定制用量'), findsNothing);
+  });
+
   testWidgets(
     'first launch: 3 safety cards, identity, then home with one start button',
     (tester) async {
@@ -253,8 +281,8 @@ void main() {
     expect(find.text('开胯训练助手 HipLab'), findsOneWidget);
     expect(find.textContaining('不会自动上传'), findsOneWidget);
     expect(find.text('AI 定制与设备标识'), findsNothing);
-    expect(find.text('AI 入口与本地预设'), findsOneWidget);
-    expect(find.textContaining('不启用在线 AI'), findsNWidgets(2));
+    expect(find.text('在线 AI 未启用'), findsOneWidget);
+    expect(find.textContaining('AI 定制及用量入口均隐藏'), findsOneWidget);
 
     final copy = find.byKey(const ValueKey('copy-privacy-url'));
     await tester.scrollUntilVisible(

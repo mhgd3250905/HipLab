@@ -1,5 +1,5 @@
-/// HipLab relay settings. Only the relay's app credential is bundled; the
-/// upstream provider key remains on the server.
+/// HipLab relay settings. No credential has a bundled default. Builds without
+/// an externally supplied app credential hide AI; provider keys stay server-side.
 ///
 /// ```
 /// flutter run --dart-define=UGK_COACH_APP_KEY=<HipLab app key> \

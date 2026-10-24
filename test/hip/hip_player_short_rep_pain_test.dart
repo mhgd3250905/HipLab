@@ -12,8 +12,8 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<trainer.TrainerCountdownRing>(
-        find.byType(trainer.TrainerCountdownRing),
+      .widget<trainer.TrainerCountdownDigits>(
+        find.byType(trainer.TrainerCountdownDigits),
       )
       .value,
 );
@@ -77,8 +77,8 @@ void main() {
       expect(work.fold<double>(0, (sum, p) => sum + p.seconds), target.seconds);
       expect(
         tester
-            .widget<trainer.TrainerCountdownRing>(
-              find.byType(trainer.TrainerCountdownRing),
+            .widget<trainer.TrainerCountdownDigits>(
+              find.byType(trainer.TrainerCountdownDigits),
             )
             .value,
         '1',
@@ -93,7 +93,13 @@ void main() {
       // Halving leaves 4s/side, shorter than one 7s lift-hold-lower cycle.
       // The current action must be skipped, rather than starting a partial rep.
       expect(find.text(next.drill.name), findsOneWidget);
-      expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const ValueKey('index')))
+            .properties
+            .label,
+        '2 / ${plan.steps.length}',
+      );
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
       expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
       expect(
@@ -120,7 +126,13 @@ void main() {
       expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
       expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
-      expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+      expect(
+        tester
+            .widget<Semantics>(find.byKey(const ValueKey('index')))
+            .properties
+            .label,
+        '2 / ${plan.steps.length}',
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();

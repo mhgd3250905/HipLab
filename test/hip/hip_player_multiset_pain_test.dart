@@ -18,8 +18,8 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<trainer.TrainerCountdownRing>(
-        find.byType(trainer.TrainerCountdownRing),
+      .widget<trainer.TrainerCountdownDigits>(
+        find.byType(trainer.TrainerCountdownDigits),
       )
       .value,
 );
@@ -83,7 +83,13 @@ Future<void> _restThenNext(
   String next,
 ) async {
   expect(find.text(next), findsOneWidget);
-  expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+  expect(
+    tester
+        .widget<Semantics>(find.byKey(const ValueKey('index')))
+        .properties
+        .label,
+    '2 / ${plan.steps.length}',
+  );
   expect(find.byKey(const ValueKey('discomfort')), findsNothing);
   expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
   final before = _secondsLeft(tester);
@@ -101,7 +107,13 @@ Future<void> _restThenNext(
   expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
-  expect(find.text('2 / ${plan.steps.length}'), findsOneWidget);
+  expect(
+    tester
+        .widget<Semantics>(find.byKey(const ValueKey('index')))
+        .properties
+        .label,
+    '2 / ${plan.steps.length}',
+  );
 }
 
 TrainingPlan _group(
@@ -137,7 +149,7 @@ void main() {
         await _open(tester, store, plan);
         await _pinch(tester);
         // Halved, no set fits one full squat: no 8 s countdown without cues.
-        expect(find.byType(trainer.TrainerCountdownRing), findsNothing);
+        expect(find.byType(trainer.TrainerCountdownDigits), findsNothing);
         expect(find.byKey(const ValueKey('player-done-note')), findsOneWidget);
         expect(find.text('今天先到这里'), findsOneWidget);
         expect(find.byKey(const ValueKey('player-again')), findsOneWidget);
@@ -234,8 +246,8 @@ void main() {
       // Counted work displays a rep number; it is not a seconds countdown.
       expect(
         tester
-            .widget<trainer.TrainerCountdownRing>(
-              find.byType(trainer.TrainerCountdownRing),
+            .widget<trainer.TrainerCountdownDigits>(
+              find.byType(trainer.TrainerCountdownDigits),
             )
             .value,
         '1',

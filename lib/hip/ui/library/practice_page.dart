@@ -419,7 +419,11 @@ class _PracticePageState extends State<PracticePage> {
     return [
       _newGroupCard(t),
       // AI 定制 (docs/ai-coach.md): next to the custom groups, zh UI only.
-      if (actions.coach != null && aiCoachAvailable(context)) ...[
+      if (actions.coach != null &&
+          aiCoachAvailable(
+            context,
+            configured: actions.coach!.service.configured,
+          )) ...[
         const SizedBox(height: 10),
         AiCoachEntryCard(actions: actions),
       ],

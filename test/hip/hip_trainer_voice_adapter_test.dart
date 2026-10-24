@@ -89,8 +89,10 @@ void main() {
             plan: coachPlan,
             totalExercises: 1,
           ).finish(engine, activeSeconds: offset);
-          expect(result.items.single.plannedSets, 3);
-          expect(result.items.single.completedSets, 3);
+          // Trainer 0.2 counts every required unique set identity. The tight
+          // side's fourth set is required even though the other side has 3.
+          expect(result.items.single.plannedSets, 4);
+          expect(result.items.single.completedSets, 4);
           expect(result.items.single.plannedSideSets, {'right': 3, 'left': 4});
           expect(result.items.single.completedSideSets, {
             'right': 3,
@@ -109,4 +111,54 @@ void main() {
       );
     }
   }
+
+  test(
+    'D-01 extra side set remains required when the final set is skipped',
+    () {
+      const id = 'glute-max-A';
+      final kit = content.kit(id)!;
+      final plan = planner.customPlan(
+        CustomRoutine(
+          id: 'asymmetric-result',
+          name: 'asymmetric-result',
+          steps: [
+            CustomStep.fromDose(
+              kit,
+              const LibraryDose(reps: 6, sets: 3, holdSeconds: 10),
+            ),
+          ],
+        ),
+        TrainingProfile(
+          level: 3,
+          asymmetry: {content.drill(id).directions.first: HipSide.left},
+        ),
+      )!;
+      final script = HipSessionScript(
+        lib: loadVoiceLibrary(),
+        lang: 'zh',
+        steps: plan.steps,
+        kits: content.kits,
+      );
+      final coachPlan = toTrainerPlan(plan);
+      final phases = HipSessionBuilder(script: script).phases(coachPlan);
+      final finalWork = phases.lastWhere((p) => p.isWork);
+      expect(finalWork.side, trainer.Side.left);
+      expect(finalWork.set, 4);
+      final finalStart = phases
+          .takeWhile((p) => !identical(p, finalWork))
+          .fold(0.0, (sum, p) => sum + p.seconds);
+      final engine = trainer.SessionEngine(phases)..update(finalStart);
+      expect(engine.phase, same(finalWork));
+      engine.skip(finalStart);
+      final result = trainer.SessionRecorder(
+        plan: coachPlan,
+        totalExercises: 1,
+      ).finish(engine, activeSeconds: finalStart);
+      expect(result.full, isFalse);
+      expect(result.completedExercises, 0);
+      expect(result.items.single.plannedSets, 4);
+      expect(result.items.single.completedSets, 3);
+      expect(result.items.single.completedSideSets, {'right': 3, 'left': 3});
+    },
+  );
 }

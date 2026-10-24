@@ -102,20 +102,8 @@ void main() {
       await tester.pump(HipMotion.expand + const Duration(milliseconds: 100));
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('finish')), findsNothing);
-      // In the default 800x600 test viewport the square demonstration is
-      // taller than the visible body; reach the lazily built counter through
-      // the package's real player list rather than treating it as absent.
-      await tester.scrollUntilVisible(
-        find.byType(trainer.TrainerCountdownRing),
-        200,
-        scrollable: find
-            .descendant(
-              of: find.byType(trainer.TrainerPlayer),
-              matching: find.byType(Scrollable),
-            )
-            .first,
-      );
-      expect(find.byType(trainer.TrainerCountdownRing), findsOneWidget);
+      // The shared stage pins the counter and transport in the viewport.
+      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pumpAndSettle();
       handle.dispose();

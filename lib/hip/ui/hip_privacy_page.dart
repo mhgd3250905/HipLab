@@ -67,12 +67,10 @@ class HipPrivacyPage extends StatelessWidget {
                   )
                 else if (Theme.of(context).platform != TargetPlatform.iOS)
                   const _PolicySection(
-                    title: 'AI 入口与本地预设',
+                    title: '在线 AI 未启用',
                     body:
-                        '此基础版保留 AI 定制入口，但不启用在线 AI。'
-                        '你在该页面输入的需求仅在本机匹配内置预设方案和安全提示，'
-                        '不会向 AI 服务发送对话，也不会为该功能新建安装标识。'
-                        '本地预设会明确标注，不是 AI 生成的计划。',
+                        '此版本未配置 AI 凭据，AI 定制及用量入口均隐藏。'
+                        '不会向 AI 服务发送对话，也不会为该功能新建安装标识。',
                   ),
                 _PolicySection(
                   title: '视频、网络与权限',

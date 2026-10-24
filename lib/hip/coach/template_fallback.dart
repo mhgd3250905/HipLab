@@ -27,8 +27,9 @@ enum PresetReason {
 /// 回落：从 App 现有内置套路（A–F、M）里按关键词挑最接近的一套，原样作为预设方案。
 /// 不生成新内容，也不改剂量（沿用套路里写好的剂量，保存时同「复制成我的训练组」）。
 class TemplateFallback {
-  TemplateFallback(this.content);
+  TemplateFallback(this.content, {this.catalog});
   final HipContent content;
+  final uc.Catalog? catalog;
 
   /// 没命中任何关键词时用的套路：D 久坐解压 10 分钟（髋前侧 + 臀 + 内旋，最通用）。
   static const defaultRoutine = 'D';
@@ -88,7 +89,9 @@ class TemplateFallback {
     required PresetReason reason,
     List<String> history = const [],
   }) {
-    if (anyRedFlag(text, history)) return const uc.CoachReply.text(redFlagReply);
+    if (anyRedFlag(text, history)) {
+      return const uc.CoachReply.text(redFlagReply);
+    }
     var routine = content.routine(pickRoutine(text, history: history));
     final chairOnly = [text, ...history].any(_chairOnly.hasMatch);
     if (chairOnly && routine.scene != HipScene.chair) {
@@ -136,6 +139,11 @@ class TemplateFallback {
       scene: r.scene == HipScene.chair ? 'office' : 'home',
       level: 1,
       targetMinutes: r.minutes < 1 ? 1 : r.minutes,
+      equipment: catalog == null
+          ? const ['mat', 'chair', 'wall', 'block']
+          : (<String>{
+              for (final item in items) ...catalog![item.exerciseId]!.equipment,
+            }.toList()..sort()),
       blocks: [
         uc.PlanBlock(
           id: 'b1',

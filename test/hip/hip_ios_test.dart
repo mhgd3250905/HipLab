@@ -283,8 +283,8 @@ void main() {
         await tester.pump();
         expect(
           tester
-              .widget<trainer.TrainerCountdownRing>(
-                find.byType(trainer.TrainerCountdownRing),
+              .widget<trainer.TrainerCountdownDigits>(
+                find.byType(trainer.TrainerCountdownDigits),
               )
               .dim,
           isFalse,
@@ -323,8 +323,8 @@ void main() {
       expect(find.text('已暂停'), findsNothing);
       expect(
         tester
-            .widget<trainer.TrainerCountdownRing>(
-              find.byType(trainer.TrainerCountdownRing),
+            .widget<trainer.TrainerCountdownDigits>(
+              find.byType(trainer.TrainerCountdownDigits),
             )
             .dim,
         isFalse,
