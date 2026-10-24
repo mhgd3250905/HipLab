@@ -58,8 +58,10 @@ class CoachService {
     LocalStateStorage? storage,
     AssetReader? readAsset,
     Future<String> Function()? deviceId,
-  }) : _client =
-           client ?? _clientFor(config, deviceId ?? CoachDeviceId.device.load),
+  }) : _client = !config.configured
+           ? null
+           : client ??
+                 _clientFor(config, deviceId ?? CoachDeviceId.device.load),
        usage = usage ?? CoachUsageStore.device(),
        _storage = storage ?? SharedPreferencesLocalStateStorage(),
        _read = readAsset ?? rootBundle.loadString;
@@ -98,7 +100,7 @@ class CoachService {
     );
   }
 
-  /// 有模型可调；false 时入口显示「未配置」，问什么都给预设方案。
+  /// 有模型可调；false 时入口显示「未配置」，问什么都给本地预设方案。
   bool get configured => _client != null;
   bool get disclaimerAccepted => _disclaimerAccepted;
 
@@ -110,7 +112,8 @@ class CoachService {
   Future<void> load() => _loading ??= _load();
 
   Future<void> _load() async {
-    final manifest = config.catalogManifestUrl;
+    // A no-key build is fully offline, including optional catalog updates.
+    final manifest = configured ? config.catalogManifestUrl : '';
     _repo = uc.CatalogRepository(
       bundled: uc.BundledCatalogSource(() => _read(catalogAsset)),
       remote: manifest.isEmpty

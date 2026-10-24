@@ -1,5 +1,13 @@
 # HipLab 协作约定
 
+## 2026-10-24 基础版上架分支（用户新授权）
+
+- `release/1.0` 从 main `e456d2a` 建立，只接纳上架和审核修复，完成后合回 main；后续功能在 main 开发。Mac 本轮从 `release/1.0` 开 `ios/…` 分支打 iOS 包，不带入未验收的 AI 0.2 或液态玻璃候选。
+- 共用版本为 `1.0.0+20`，Android applicationId 保持 `com.ugk.hiplab`。SDK 固定到完整 commit `d193a703e3a8bef6d41e7705a55ae250e23e6a69`；不传 AI Key。用户同日最新决定保留现有 AI 入口，无 Key 使用本地预设回落，覆盖此前“全部隐藏”的要求。
+- 已授权本机修改发布配置、复用并备份既有上传密钥、构建上传签名 release AAB、验证和推送 release 分支；这些是下文旧“发布配置仅版本号”限制的本轮例外。签名凭据、产物和用户数据不进 Git。
+- 真机耳机完整训练、锁屏/后台及结束通知清理是本轮明确验收项，优先于下文旧“不扩展耳机/锁屏矩阵”的阶段限制；用户报告与本机实际验证分开记录，不把历史 D-34 改成通过。
+- 不在 Google Play 后台执行任何操作，由开哥上传、填写声明和提交审核；不上传 App Store/TestFlight。参阅 [本轮交付](docs/release-1.0/README.md)。
+
 - 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是开发基线，本目录为日常开发入口；后续动作素材由 `mhgd3250905/3D-Pose-Hub` 按发布版本提供。开工先读 `docs/README.md`、`docs/current-state.md` 和 `docs/development-roadmap.md`，再检查实际 Git 状态；手机已安装、分支已推送、main 已合并分别记录，不能混用。
 - 本机 Windows 是主干线：按用户 2026-10-18 明确授权审核合并贡献 PR，验证后直接提交和推送 main，无需再开 PR；不要 force push。其他贡献方仍走分支 + PR。已有明确授权不重复询问。
 - 本仓库暂无 CI。提 PR 前本地跑 `flutter analyze` 和 `flutter test`，结果写进 PR 说明。

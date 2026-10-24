@@ -13,6 +13,15 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+// Store candidates must never silently use a developer/debug certificate.
+val releaseRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true) ||
+        it.substringAfterLast(':') in setOf("build", "assemble", "bundle")
+}
+check(!releaseRequested || keystorePropertiesFile.exists()) {
+    "Release signing requires android/key.properties and the HipLab upload key."
+}
+
 android {
     namespace = "com.ugk.hiplab"
     compileSdk = flutter.compileSdkVersion
@@ -46,12 +55,11 @@ android {
 
     buildTypes {
         release {
-            // Without android/key.properties (e.g. on another machine) keep the
-            // historical debug-signed behavior so builds still succeed.
+            // Missing credentials leave no signing config; never fall back to debug.
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                null
             }
         }
     }

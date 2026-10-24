@@ -95,6 +95,46 @@ void main() {
   });
 
   test(
+    'no key sends no model or catalog request and creates no device ID',
+    () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      var requests = 0;
+      server.listen((request) async {
+        requests++;
+        request.response.statusCode = HttpStatus.notFound;
+        await request.response.close();
+      });
+      addTearDown(() => server.close(force: true));
+      var identityLoads = 0;
+      final fake = uc.FakeLlmClient([validPlanEnvelope()]);
+      final base = 'http://${server.address.address}:${server.port}';
+      final service = CoachService(
+        config: CoachConfig(
+          appKey: '  ',
+          baseUrl: '$base/v1',
+          catalogManifestUrl: '$base/manifest.json',
+        ),
+        content: loadContent(),
+        client: fake,
+        usage: CoachUsageStore(),
+        storage: MemoryStorage(),
+        readAsset: readAsset,
+        deviceId: () async {
+          identityLoads++;
+          return 'unused';
+        },
+      );
+      final answer = await service.ask('睡前放松', uc.CoachConversation());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(service.configured, isFalse);
+      expect(answer.preset, isTrue);
+      expect(fake.requests, isEmpty);
+      expect(requests, 0);
+      expect(identityLoads, 0);
+    },
+  );
+
+  test(
     'relay auth has exactly two headers and retries failed identity loads',
     () async {
       var loads = 0;

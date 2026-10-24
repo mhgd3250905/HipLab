@@ -2,7 +2,11 @@
     <!-- WebView plays bundled assets through a loopback HTTP server. Android
          requires INTERNET for these local sockets; no remote service is used. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- ugk_trainer merges the training foreground service and its permissions. -->
+    <!-- User-started training plays spoken coaching while backgrounded/locked.
+         Keep this app-level declaration explicit for the Play FGS declaration. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:label="开胯训练助手"
         android:name="${applicationName}"
@@ -10,6 +14,11 @@
         android:supportsRtl="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round">
+        <service
+            android:name="com.ugk.trainer.TrainingSessionService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            android:stopWithTask="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
