@@ -1,5 +1,7 @@
 # HipLab · 开胯训练助手
 
+**2026-10-24 Controller 已合入 main：** 开哥明确同意后，固定候选448f109已快进合入并普通推送，远端回读一致。分析0、全量454通过/1条件跳过、专项44通过保持；release/1.0不动。以下候选待审描述为批准前历史。[集成回执](docs/sdk-conversation-controller-2026-10-24.md#主线集成回执)。
+
 **2026-10-24 对话 controller 候选：** 从 main64daf6a 建 `codex/coach-conversation-050-20261024`，锁 coach0.5.0 / trainer0.2.3@d7e0b8f，UI0.1.1保持。自有会话/问题状态已交给 SDK，界面与业务边界保持；严格锁解析完成，分析0、全量454通过/1条件跳过、AI专项44通过，候选已完成待审，等待本轮同意后合 main。release/1.0不动。[接入与删除范围](docs/sdk-conversation-controller-2026-10-24.md)。
 
 **2026-10-24 SDK 修复 tag：** 已按用户确认从候选5c4d32e改锁 coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（均3302d62）；使用固定Flutter3.44.7从远端重新pub get，App源码和其余hosted依赖保持。分析0、窄屏大字体专项13通过，全量451通过/1条件跳过；已按授权合入并普通推送main（功能集成点88d8802），release/1.0不动。[补丁与集成回执](docs/sdk-tag-patch-2026-10-24.md)。以下保留此前候选记录。

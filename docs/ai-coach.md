@@ -1,5 +1,7 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
+**2026-10-24 Controller 已集成：** 候选448f109已获开哥同意，快进合入并普通推送main，远端回读一致；coach0.5.0/trainer0.2.3@d7e0b8f、UI0.1.1保持，分析0、454通过/1条件跳过、专项44通过。以下待审与旧接口描述保留历史。[主线集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。
+
 **2026-10-24 controller 待审候选：** coach0.5.0/trainer0.2.3正式tag@d7e0b8f，UI0.1.1不变；SDK controller接管会话/问题生命周期，App旧状态机删除。分支基线main64daf6a，验证与删除范围见[本轮接入](sdk-conversation-controller-2026-10-24.md)，合main等待开哥本轮同意。以下main0.4.2及旧接口段落保留历史。
 
 **2026-10-24 main 已集成：** coach0.4.2 / trainer0.2.2 / coach_ui0.1.1均锁正式tag至3302d62；无App源码适配，分析0、App全量451通过/1跳过、窄屏专项13通过，已按授权合入并推送main（功能集成点88d8802）。下方候选和旧API段落保留历史。[当前接入与回执](sdk-tag-patch-2026-10-24.md)。

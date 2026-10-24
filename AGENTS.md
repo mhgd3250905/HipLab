@@ -1,5 +1,9 @@
 # HipLab 协作约定
 
+## 2026-10-24 Controller 合入已获批准
+
+开哥已明确同意将固定候选 `448f1096a96746a235913a58a172826431b3ec13` 合入 main 并推送。本机已完成快进和普通推送，远端回读一致；下方“仍须开哥同意”是批准前的候选约束，已由本次同意满足。release/1.0保持8880c71。后续回执只改文档，运行代码及既有分析0、全量454通过/1条件跳过、专项44通过保持；不重建或操作手机。[集成回执](docs/sdk-conversation-controller-2026-10-24.md#主线集成回执)。
+
 ## 2026-10-24 CoachConversationController 候选授权
 
 本轮从 HipLab main 64daf6a 建分支，锁 coach0.5.0 / trainer0.2.3（d7e0b8f），UI0.1.1不变。仅用 SDK controller 替换会话/问题状态，保持 App 认证、白名单/profile、映射和开练边界，无 Key 隐藏全部入口。执行严格锁文件 pub get、分析和全量测试，本轮不需真机；**验证完成后仍须开哥同意才合入 main 并推送**，覆盖下方上一轮补丁“直接合入并推送main，无需再请求合并同意”的授权。release/1.0不动，不改SDK或复制其他App代码。见[接入记录](docs/sdk-conversation-controller-2026-10-24.md)。

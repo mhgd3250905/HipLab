@@ -1,5 +1,9 @@
 # 验证台账
 
+## 2026-10-24：Controller 获准合入后的核对
+
+固定候选448f109已获用户明确同意并快进合入、普通推送main，远端回读448f109；release/1.0仍8880c71。本轮合入未改已验App代码、依赖和版本，沿用下方严格锁解析、分析0、完整454通过/1条件跳过及AI/接口44通过。后续提交仅为文档回执，验证改动范围、链接及git diff --check，不重复App测试或构建。[集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。
+
 ## 2026-10-24：CoachConversationController 候选
 
 分支 `codex/coach-conversation-050-20261024`，基于main64daf6a。coach0.5.0/trainer0.2.3@d7e0b8f，UI0.1.1@3302d62；固定Flutter3.44.7/Dart3.12.2的 `pub get --enforce-lockfile` 成功，其余依赖未变。分析0、最终全量454通过/1条件跳过、AI专项44通过。按用户本轮范围不构建/安装/真机测试，旧手机身份和原生验收边界保持。[本轮检查与日志](sdk-conversation-controller-2026-10-24.md)。

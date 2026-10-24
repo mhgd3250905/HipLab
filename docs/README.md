@@ -1,5 +1,7 @@
 # HipLab 文档与开发台账
 
+**2026-10-24 Controller 已合入 main：** 固定候选448f109已获开哥同意，快进合入并普通推送main、远端回读一致。既有分析0、全量454通过/1条件跳过和专项44通过保持；release/1.0不动。以下待审记录为批准前历史。[集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。
+
 **2026-10-24 对话 controller 候选：** `codex/coach-conversation-050-20261024` 基于 main64daf6a，采用 coach0.5.0 / trainer0.2.3@d7e0b8f，UI0.1.1保持；SDK接管消息、问题、回答整理和取消/重置/恢复。严格锁解析完成，分析0、全量454通过/1条件跳过、AI专项44通过，候选已完成待审，main合推等待本轮同意。release/1.0不动。[接入与删除范围](sdk-conversation-controller-2026-10-24.md)。
 
 **2026-10-24 SDK 修复 tag：** coach0.4.2 / trainer0.2.2 / coach_ui0.1.1均固定3302d62，远端解析完成；分析0、窄屏专项13通过，全量451通过/1条件跳过。本轮已合入并推送main（功能集成点88d8802），release/1.0不动，真机沿用既有证据。[补丁与集成回执](sdk-tag-patch-2026-10-24.md)。以下为先前阶段记录。
