@@ -1,5 +1,13 @@
 # 验证台账
 
+## 2026-10-24：1.0 基础版候选验证
+
+源4b56b82 / SDK固定d193a70 / App1.0.0+20。`flutter analyze --no-pub`：0问题；`flutter test --no-pub --reporter expanded`：**440通过、1条件跳过，5分08秒**；`git diff --check`通过。新增回归验证无Key不访问远端模型/目录、不为请求加载UUID；保留现有AI入口与本地预设回落。冻结Pose-Hub lock check为92匹配/0漂移。
+
+release AAB编译183.9秒成功；签名证书与旧上传证书一致，bundletool validate、non-debuggable、包名/版本/min24/target36、单一mediaPlayback前台服务、实际权限核验通过。最终权限另含播放依赖ACCESS_NETWORK_STATE与应用自有signature动态接收器权限，已补入声明；没有POST_NOTIFICATIONS、录音、定位等敏感权限。ELF16KB/BundleConfig PAGE_ALIGNMENT_16K及universal APK zipalign16KB通过，非16KB真机运行证明。缺key.properties时Gradle dry-run明确拒绝release构建并恢复本机配置，原密钥不动。
+
+同AAB派生universal APK安装原生API35模拟器，冷启动和当前截图已采集；完整运行「久坐提醒·椅边」4动作短训练，界面自然完成4/4、3分钟；后台媒体会话PLAYING，锁屏Asleep期间mediaPlayback服务保持，未唤醒前训练已自然结束，服务/训练通知和媒体会话均已移除。App日志无FATAL EXCEPTION。模拟器以no-audio启动，此证据不声称人耳听音或真机耳机通过。2026-10-24用户表示App已都测试通过，作为用户报告保留，未据此虚构新AAB同包耳机日志。旧D-34失败历史保留，iOS未验。所有新日志、截图、APK/AAB在非C盘交付目录，不进Git；不访问Play后台。[声明草稿](release-1.0/play-declarations.md)。
+
 ## 2026-10-21 10:47：本轮复核记录合并确认
 
 用户明确“推进合并”。fetch 后本地与远端 main 均为 cb7ae4f；来源 `354d0f12be52109ebeca5a02969cc478ba94b492` 仅修改六份复核文档，diff 检查通过。`git merge --ff-only` 后与来源树逐字一致，普通 push 成功，`git ls-remote origin refs/heads/main` 回读同一完整 SHA。以下本轮检查继续绑定原 App cb7ae4f / SDK d193a70；合并及回执不改运行代码，未重复测试或构建。下文“留审阅分支、未合 main”保留为授权前快照，当前合并事实以此处为准。

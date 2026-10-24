@@ -43,7 +43,7 @@ The user may be exercising away from the screen. Interrupting or restarting play
 | 项目 | 目前可作出的结论 |
 |---|---|
 | 用户现有 App 体验 | 用户 2026-10-24 表示「app我已经都测试通过了」；未明确该报告所指构建号和逐项耳机/锁屏证据 |
-| 新 `1.0.0+20` 完整训练 | 依本轮主验收记录填写；此草稿不预判通过 |
+| 新 `1.0.0+20` 完整训练 | 真机新包未重测；API35原生模拟器同AAB短训练4/4自然完成，锁屏/后台服务保持、结束通知及会话清理通过，不替代耳机人耳试听 |
 | 历史 D-34 小米锁屏冻结 | 失败历史保留，不能据一般体验反馈追溯改为通过 |
 | 声明理由、影响和演示步骤 | 本文件已提供，待匹配最终产物及真实视频 |
 | Play 表单实际填写/送审 | 本轮未操作，由开哥完成 |
@@ -75,6 +75,8 @@ Google 要求功能描述、延迟/中断影响、用户触发演示及视频链
 | 项目 | 建议填写 |
 |---|---|
 | `INTERNET` | 普通权限，内置视频通过 `127.0.0.1` 本机服务播放，无 Key 基础版不调用 AI 服务；不勾选位置、录音等无关用途 |
+| `ACCESS_NETWORK_STATE` | 最终合并清单中由播放依赖带入的普通权限，用于网络状态检查，不授权读取或上传训练记录，无运行时弹窗 |
+| `com.ugk.hiplab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | 最终合并清单的应用自有 signature 权限，保护 AndroidX 内部动态广播接收器；非用户数据权限，无运行时弹窗 |
 | `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_MEDIA_PLAYBACK` | 按本页 mediaPlayback 声明；用户主动开始的训练指导音频，显示训练通知 |
 | `WAKE_LOCK` | 训练/自测会话内的计时和语音连续性；会话结束按生命周期释放，非持续追踪 |
 | 通知权限 | 固定 SDK 和 App 源 Manifest 未声明 `POST_NOTIFICATIONS`；不要声称请求了提醒通知权限。训练媒体通知与尚未实现的久坐提醒是两回事，以最终合并 Manifest 为准 |

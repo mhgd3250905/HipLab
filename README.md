@@ -1,5 +1,7 @@
 # HipLab · 开胯训练助手
 
+**2026-10-24 基础版上架准备：** `release/1.0` 从 main e456d2a 建立，1.0.0+20 / SDK固定d193a70，无Key本地预设、保留AI入口。上传签名AAB和商店/FGS材料已准备；Play由开哥操作，Mac从release分支接iOS。[本轮交付](docs/release-1.0/README.md)。以下日期条目为历史记录。
+
 开胯训练 App：围绕髋部的放松、柔韧和主动控制训练，基础训练离线可用，AI 定制可配置联网生成并提供预设回落。面向久坐人群和舞者，打开就能练，小白也能上手。和「托马斯训练助手 FlareLab」同一家族（石墨底 + 青玉 `#3ccfa4`），但是独立 App、独立仓库。
 
 - Android applicationId / iOS bundle id：`com.ugk.hiplab`

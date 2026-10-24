@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-10-24：1.0.0+20 上传签名 AAB
+
+构建源码 `4b56b827cf635e05ac55281bc37e7bd9dff7fa09`，由main e456d2a的基础版派生，未带入AI0.2或液态玻璃候选。Flutter3.44.7 stable，SDK固定d193a703e3a8bef6d41e7705a55ae250e23e6a69。执行 `flutter build appbundle --release --no-pub`，183.9秒成功，无Key/私有define文件；版本1.0.0+20，包名com.ugk.hiplab，min24/target36、non-debuggable。
+
+AAB：`E:/AII-3D/hiplab-releases/1.0.0+20/hiplab-1.0.0+20-release.aab`，**139,920,761字节**，SHA-256 **51e3ebe86e23189067e6defe033a041b60934fca98a4e7f58ea62e6eea4a4478**。上传证书SHA-256 **8f8c114e8e1f8650d3e461abaf2a1c719e11ab390bb0ba285c87bb072433b7ad**，与旧Play上传证书一致；密钥/密码未入Git，F盘受限备份与原件SHA匹配，同机备份不代表异地备份。
+
+bundletool1.18.3 validate、jarsigner验证、合并清单/单mediaPlayback服务、三ABI native ELF 16KB及universal APK zipalign16KB通过。证书自签名/无时间戳为上传密钥的常见jarsigner提示，不是采用debug证书。当前只构建/本机验证，未操作Play、未上传或送审。新包未覆盖用户真机；用户报告现有App已测试通过。最终身份和截图来源见交付目录release-identity.json及[本轮说明](release-1.0/README.md)。
+
 ## 2026-10-21：训练包复核 Web 临时构建
 
 App 源 `cb7ae4f2c50ce40243dbba0537ec0fa1aefdb637`，固定 SDK d193a70，版本保持 0.3.9+17。在 `build/trainer-recheck-20261021/web-preview/` 以 Flutter 3.44.7 release 编译真实 main.dart，45.1 秒成功；main.dart.js 3,729,931 字节，CanvasKit wasm 7,229,467 字节。58 个 lib 文件及 pubspec/lock 与工作区逐字节相同，原资产通过 E 盘 junction 使用。临时预览 `http://127.0.0.1:8769/` 仅供本机测试，没有部署网站或上传商店。
