@@ -1,5 +1,7 @@
 # HipLab 共用 SDK 训练与聊天界面接入
 
+**后续更新：** 用户确认修复tags后，本轮改锁coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（均3302d62），检查通过即可直接合main推送。下方旧tags及待审描述保留当时事实；当前主线结果以[修复补丁回执](sdk-tag-patch-2026-10-24.md)为准。
+
 本轮从远端 main `8880c71` 创建 `codex/sdk-shared-ui-20261024`，工作副本 `E:/AII-3D/3D-Hip-worktrees/sdk-shared-ui/3D-Hip`。当前为待审开发分支；未合 main。`release/1.0`、原日常目录的液态玻璃未提交改动均保持原状。
 
 ## 依赖与实现

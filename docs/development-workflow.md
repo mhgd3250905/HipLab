@@ -1,5 +1,9 @@
 # 主线开发工作流
 
+## 2026-10-24 Windows 固定工具入口
+
+本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。最新三个SDK正式tag及本轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
+
 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，本工作目录 `E:\AII-3D\3D-Hip` 用于后续 main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态。
 
 ## 主线基线与更新
