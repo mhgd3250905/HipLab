@@ -48,11 +48,12 @@ class HipPrivacyPage extends StatelessWidget {
                       '这些信息用于本机生成练习建议、显示进度和调整训练安排。'
                       '本应用没有开发者运营的云端账号或同步服务。',
                 ),
-                const _PolicySection(
+                _PolicySection(
                   title: '保留、删除与系统备份',
                   body:
                       '记录会保留在设备上，直到你通过系统设置清除应用存储或卸载应用。'
-                      '卸载会清除本机应用数据；Android 系统可能根据设备设置备份并在重新安装时恢复数据。'
+                      '卸载会清除本机应用数据；'
+                      '${Theme.of(context).platform == TargetPlatform.iOS ? 'iOS' : 'Android'} 系统可能根据设备设置备份并在重新安装时恢复数据。'
                       '本应用未禁用系统备份。你可以在设备的系统备份设置中管理相关备份。'
                       '我们无法访问或代你删除设备及系统备份中的记录。',
                 ),
@@ -64,7 +65,7 @@ class HipPrivacyPage extends StatelessWidget {
                         '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。'
                         '该标识不是手机硬件序列号。App 不会自动发送本机自测结果或训练历史。',
                   )
-                else
+                else if (Theme.of(context).platform != TargetPlatform.iOS)
                   const _PolicySection(
                     title: 'AI 入口与本地预设',
                     body:
@@ -76,18 +77,22 @@ class HipPrivacyPage extends StatelessWidget {
                 _PolicySection(
                   title: '视频、网络与权限',
                   body:
-                      '动作视频随应用内置，可以离线播放。Android 的网络权限用于 '
+                      '动作视频随应用内置，可以离线播放。'
+                      '${Theme.of(context).platform == TargetPlatform.iOS ? 'iOS 播放器使用 ' : 'Android 的网络权限用于 '}'
                       '127.0.0.1 本机媒体服务，让播放器读取内置素材。'
                       '${CoachConfig.fromEnvironment.configured ? '网络权限也用于你主动使用的 AI 定制请求。' : ''}'
                       '应用不访问相机、麦克风、联系人或位置。',
                 ),
-                const _PolicySection(
+                _PolicySection(
                   title: '训练语音与后台播放',
-                  body:
-                      '你主动开始训练后，应用使用媒体播放前台服务和唤醒锁，'
-                      '让训练语音在锁屏或切换应用时继续播放，并显示训练通知。'
-                      '训练结束或退出训练后停止服务并移除训练通知。'
-                      '应用不通过麦克风录制声音，也不读取耳机或蓝牙设备标识。',
+                  body: Theme.of(context).platform == TargetPlatform.iOS
+                      ? '你主动开始训练或语音自测后，应用使用 iOS 后台音频播放训练口令、倒数和换边提示。'
+                            '训练或自测结束、退出后停止播放并释放音频会话；关闭人声和提示音时不启用后台音频。'
+                            '应用不通过麦克风录制声音，也不读取耳机或蓝牙设备标识。'
+                      : '你主动开始训练后，应用使用媒体播放前台服务和唤醒锁，'
+                            '让训练语音在锁屏或切换应用时继续播放，并显示训练通知。'
+                            '训练结束或退出训练后停止服务并移除训练通知。'
+                            '应用不通过麦克风录制声音，也不读取耳机或蓝牙设备标识。',
                 ),
                 const _PolicySection(
                   title: '运动与健康提示',

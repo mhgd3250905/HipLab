@@ -1641,15 +1641,19 @@ class HipVoiceSettingsPanel extends StatelessWidget {
               HipIcon(HipGlyph.volume, size: 20, color: HipColors.muted),
             ],
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              key: const ValueKey('voice-preview'),
-              onPressed: v.voice || v.chimes ? () => _preview(context) : null,
-              icon: const HipIcon(HipGlyph.today, size: 20),
-              label: const Text('试听'),
+          // The iOS base release only opens background audio for guided
+          // exercise sessions. The shared settings preview has no session
+          // lifetime, so do not expose it on iOS.
+          if (Theme.of(context).platform != TargetPlatform.iOS)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                key: const ValueKey('voice-preview'),
+                onPressed: v.voice || v.chimes ? () => _preview(context) : null,
+                icon: const HipIcon(HipGlyph.today, size: 20),
+                label: const Text('试听'),
+              ),
             ),
-          ),
         ],
       ),
     );

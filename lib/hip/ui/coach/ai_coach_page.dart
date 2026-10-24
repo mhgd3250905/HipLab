@@ -21,8 +21,9 @@ import '../library/library_actions.dart';
 import '../library/library_widgets.dart';
 import '../library/practice_page.dart' show startGroup;
 
-/// AI 定制只做中文（模型、目录文案都是中文），其他语言界面不显示入口。
+/// iOS 基础版隐藏 AI 入口；其他平台仍只在中文界面显示。
 bool aiCoachAvailable(BuildContext context) =>
+    Theme.of(context).platform != TargetPlatform.iOS &&
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
 
 /// 对话里的一条。

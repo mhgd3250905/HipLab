@@ -21,6 +21,7 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_assessment.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
@@ -200,6 +201,38 @@ Future<List<String>> scrolledEndOffenders(
 
 void main() {
   final ios = TargetPlatformVariant.only(TargetPlatform.iOS);
+
+  testWidgets('iOS base release hides both AI entry points', (tester) async {
+    await bootIos(tester);
+    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('我的'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('new-group')), findsOneWidget);
+    expect(find.text('AI 定制训练'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('这是运动练习，不能替代医生的建议。'), 300);
+    expect(find.text('AI 定制用量'), findsNothing);
+    expect(find.byKey(const ValueKey('voice-preview')), findsNothing);
+  }, variant: ios);
+
+  testWidgets('iOS privacy explains the offline audio session', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.iOS),
+        home: const HipPrivacyPage(),
+      ),
+    );
+    await tester.scrollUntilVisible(
+      find.text('训练语音与后台播放'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('iOS 后台音频'), findsOneWidget);
+    expect(find.text('AI 入口与本地预设'), findsNothing);
+    expect(find.textContaining('媒体播放前台服务'), findsNothing);
+  }, variant: ios);
 
   group('audio interruptions pause the session', () {
     late FakeInterruptibleOutput output;

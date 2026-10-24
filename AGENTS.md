@@ -1,5 +1,9 @@
 # HipLab 协作约定
 
+## 2026-10-24 Mac iOS 发布授权
+
+本轮从 `release/1.0` 准备 iOS 1.0.0(20)，复用 Hip Interlude 的 `com.ugk.hipinterlude`（不是独立的 `com.ugk.hiplab` App 记录）。用户已授权自动签名、TestFlight 上传、提交推送 release 并合回 main；不提交 App Review、不修改商店信息。本轮 iOS 隐藏 AI 入口且不传 Key，覆盖下文旧的 iOS 禁传及保留 AI 入口限制；Android 仍按其原决定。只改 iOS 配置、iOS 平台界面守卫及发布证据，保持 Android、业务规则、版本、SDK 和依赖不变。真实耳机/锁屏验收不可由模拟器替代。当前证据见 [iOS 发布记录](docs/release-1.0/ios/README.md)。
+
 ## 2026-10-24 上架执行追加授权
 
 用户在本轮物料交付后明确授权使用 Playwright MCP 复用其指定浏览器登录态，制作并上传 YouTube 演示、执行 Google Play 上传/填写/送审及完成当前可用发布流程；隐私政策、使用条款等必要公开页面可直接部署，允许使用本机已配置的 Cloudflare。此授权覆盖下文旧“Play 后台由开哥操作”的限制，不包括伪造测试者、绕过正式版权限或虚构审核通过。当前正式版受至少12人连续14天封闭测试门槛限制，先完成现有 Alpha 轨道提交；实际平台状态、账号门槛和本机验证分开记录。

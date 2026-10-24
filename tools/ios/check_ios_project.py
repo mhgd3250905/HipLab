@@ -238,7 +238,7 @@ def check_pbxproj():
         bs = cfg["buildSettings"]
         name = cfg["name"]
         seen[name] = bs
-        if bs.get("PRODUCT_BUNDLE_IDENTIFIER") != "com.ugk.hiplab":
+        if bs.get("PRODUCT_BUNDLE_IDENTIFIER") != "com.ugk.hipinterlude":
             fail(f"pbxproj: {name} bundle id {bs.get('PRODUCT_BUNDLE_IDENTIFIER')}")
         if bs.get("INFOPLIST_FILE") != "Runner/Info.plist":
             fail(f"pbxproj: {name} INFOPLIST_FILE {bs.get('INFOPLIST_FILE')}")
