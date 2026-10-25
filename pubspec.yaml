@@ -39,12 +39,12 @@ dependencies:
   ugk_trainer:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: ugk_trainer-v0.2.3
+      ref: ugk_trainer-v0.2.9
       path: packages/ugk_trainer
   ugk_coach_ui:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: ugk_coach_ui-v0.1.1
+      ref: ugk_coach_ui-v0.1.3
       path: packages/ugk_coach_ui
 
 dev_dependencies:

@@ -11,6 +11,7 @@ import '../hip_routes.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import 'group_editor_page.dart';
+import 'hip_manual_preview.dart';
 import 'lib_text.dart';
 import 'library_actions.dart';
 import 'library_widgets.dart';
@@ -72,6 +73,13 @@ class DrillDetailPage extends StatefulWidget {
 class _DrillDetailPageState extends State<DrillDetailPage> {
   late LibraryDose _dose;
   final _startKey = GlobalKey();
+  final _preview = HipPreviewCoordinator();
+
+  @override
+  void dispose() {
+    _preview.dispose();
+    super.dispose();
+  }
 
   HipContent get content => widget.actions.store.content;
   HipDrill get drill => content.drill(widget.drillId);
@@ -157,33 +165,11 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
                 key: const ValueKey('detail-list'),
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                 children: [
-                  SizedBox(
-                    height: 232,
-                    child: HipMediaFrame(
-                      radius: 24,
-                      color: HipColors.mediaBackdrop,
-                      overlays: [
-                        Positioned(
-                          left: 12,
-                          top: 12,
-                          child: mediaPill(t.loopPlaying, icon: HipGlyph.loop),
-                        ),
-                        if (d.advanced)
-                          Positioned(
-                            right: 12,
-                            top: 12,
-                            child: mediaPill(
-                              t.advanced,
-                              color: HipPalette.dark.tight,
-                            ),
-                          ),
-                      ],
-                      child: HipDrillArt(
-                        drill: d,
-                        play: true,
-                        alignment: const Alignment(0, -.1),
-                      ),
-                    ),
+                  HipManualPreview(
+                    drill: d,
+                    coordinator: _preview,
+                    slot: 'detail',
+                    radius: 24,
                   ),
                   for (final n in notices) ...[const SizedBox(height: 12), n],
                   const SizedBox(height: 16),
@@ -242,7 +228,13 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
             child: HipSecondaryButton(
               key: const ValueKey('detail-add'),
               label: t.addToGroup,
-              onPressed: () => _addToGroup(context),
+              onPressed: () async {
+                _preview.suspend();
+                await WidgetsBinding.instance.endOfFrame;
+                if (!context.mounted) return;
+                await _addToGroup(context);
+                if (mounted) _preview.resume();
+              },
             ),
           ),
           const SizedBox(width: 12),
@@ -287,28 +279,39 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     ),
   );
 
-  void _start() {
+  Future<void> _start() async {
+    _preview.suspend();
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
     final store = widget.actions.store;
     final plan = store.planner.singlePlan(drill, _dose, store.profile);
     if (plan == null) return;
-    widget.actions.startPlan(
+    await widget.actions.startPlan(
       plan,
       from: _startKey.currentContext,
       radius: 28,
       originColor: HipColors.jade,
     );
+    if (mounted) _preview.resume();
   }
 
   /// 看入门版: the easier move's detail on top of this one. Its 看放松
   /// result is handed on to whoever opened this page (PR #22 F4); a
   /// replacement route would have ended that wait with null right away.
   Future<void> _openEasier(String id) async {
+    _preview.suspend();
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
     final jump = await Navigator.of(context).push<Object?>(
       HipRoute.push<Object?>(
         (_) => DrillDetailPage(actions: widget.actions, drillId: id),
       ),
     );
-    if (jump is LibraryJump && mounted) Navigator.of(context).pop(jump);
+    if (jump is LibraryJump && mounted) {
+      Navigator.of(context).pop(jump);
+    } else if (mounted) {
+      _preview.resume();
+    }
   }
 
   Future<void> _addToGroup(BuildContext context) async {

@@ -209,11 +209,12 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     final before = ringSeconds(tester);
     await tester.tap(find.byKey(const ValueKey('feel-pain')));
-    await tester.pumpAndSettle();
+    // The new SDK pause control breathes continuously; settle only the sheet.
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('哪种疼？'), findsOneWidget);
     // dismiss without choosing
     await tester.tapAt(const Offset(195, 80));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
     expect(ringSeconds(tester), closeTo(before, 1));
   });

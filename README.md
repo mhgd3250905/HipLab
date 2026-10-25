@@ -1,5 +1,7 @@
 # HipLab · 开胯训练助手
 
+**2026-10-25 App体验测试候选：** `codex/sdk-029-app-feedback-20261025`升级trainer0.2.9/UI0.1.3（coach0.5.0保持），接入文章式套路/AI详情与手动预览，分析0、受影响92/92、Web真实视频/交接检查通过。暂不真机、不合main、release/1.0不动；SDK单次手动导航也有150ms延迟的差异待裁决。[移植取舍与证据](docs/sdk-029-app-feedback-2026-10-25.md)。
+
 **2026-10-24 Controller 已合入 main：** 开哥明确同意后，固定候选448f109已快进合入并普通推送，远端回读一致。分析0、全量454通过/1条件跳过、专项44通过保持；release/1.0不动。以下候选待审描述为批准前历史。[集成回执](docs/sdk-conversation-controller-2026-10-24.md#主线集成回执)。
 
 **2026-10-24 对话 controller 候选：** 从 main64daf6a 建 `codex/coach-conversation-050-20261024`，锁 coach0.5.0 / trainer0.2.3@d7e0b8f，UI0.1.1保持。自有会话/问题状态已交给 SDK，界面与业务边界保持；严格锁解析完成，分析0、全量454通过/1条件跳过、AI专项44通过，候选已完成待审，等待本轮同意后合 main。release/1.0不动。[接入与删除范围](docs/sdk-conversation-controller-2026-10-24.md)。

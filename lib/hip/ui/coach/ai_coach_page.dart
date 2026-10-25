@@ -18,6 +18,7 @@ import '../hip_routes.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import '../library/drill_detail_page.dart';
+import '../library/hip_training_article.dart';
 import '../library/library_actions.dart';
 import '../library/library_widgets.dart';
 import '../library/practice_page.dart' show startGroup;
@@ -651,28 +652,34 @@ class _AiCoachPageState extends State<AiCoachPage> {
             builder: (_) => SafeArea(
               child: SizedBox(
                 height: MediaQuery.sizeOf(context).height * .8,
-                child: ListView(
-                  key: const ValueKey('coach-plan-details'),
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    Text(
-                      plan.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+                child: HipTrainingArticle(
+                  listKey: const ValueKey('coach-plan-details'),
+                  content: store.content,
+                  title: mapping.routine.name,
+                  introduction: plan.summary,
+                  seconds: mapping.seconds(store.content),
+                  restSeconds: mapping.routine.restSeconds,
+                  steps: [
                     for (final entry in mapping.entries)
-                      ListTile(
-                        title: Text(entry.drill.name),
-                        subtitle: Text(entry.doseText),
-                        onTap: () => Navigator.of(context).push(
-                          HipRoute.push<Object?>(
-                            (_) => DrillDetailPage(
-                              actions: widget.actions,
-                              drillId: entry.drill.id,
-                            ),
-                          ),
-                        ),
+                      HipArticleStep(
+                        drill: entry.drill,
+                        dose: entry.doseText,
+                        section: entry.blockName,
+                        note: entry.drill.note,
                       ),
                   ],
+                  notices: [for (final note in plan.safetyNotes) Text(note)],
+                  onOpenDrill: (drill) => Navigator.of(context).push<void>(
+                    HipRoute.push<void>(
+                      (_) => DrillDetailPage(
+                        actions: widget.actions,
+                        drillId: drill.id,
+                      ),
+                    ),
+                  ),
+                  onStart: store.blocked
+                      ? null
+                      : (from) => _start(plan, resultId, from),
                 ),
               ),
             ),

@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-10-25：SDK 0.2.9 App体验 Web 测试构建
+
+测试分支 `codex/sdk-029-app-feedback-20261025`，共用版本保持1.1.0+21，未构建/安装APK/AAB。固定Flutter3.44.7，以同一pubspec/lock和源文件junction在E盘独立host构建release Web，输出 `E:/AII-3D/hiplab-releases/sdk-029-app-feedback-20261025/web-host/build/web/`；无Key、未向仓库加入Web工程。最终源码SHA见该目录上级的review-receipt.json，预览/DOM证据同目录上级保存。92项受影响测试与analyze0通过，浏览器只验文章与训练路由交接；手机仍为原已验安装，原生播放/FGS未重验，不上传商店。[构建与边界](sdk-029-app-feedback-2026-10-25.md)。
+
 ## 2026-10-24：SDK 修复 tag 更新，未重建或安装
 
 已合入并推送main的功能集成点88d8802，从5c4d32e改锁coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（同3302d62），共用App版本保持1.1.0+21；本轮未生成新APK/IPA/AAB，手机仍是源429eaf5/SDK旧tags的已验5d292388…测试包。用户明确允许无需源码适配时沿用真机证据，本轮不冒充新tag原生安装。release/1.0的1.0.0+20及已送审产物身份不动。[补丁及主线回执](sdk-tag-patch-2026-10-24.md)。
