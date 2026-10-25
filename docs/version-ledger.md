@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-10-26：1.1.0+22 release 已安装指定红米
+
+测试分支codex/sdk-029-app-feedback-20261025，构建源06c559c（5351f42仅版本+21→+22）。Flutter3.44.7严格锁解析及release构建通过，无Key。安装包 `E:/AII-3D/hiplab-releases/sdk-029-redmi-20261026/hiplab-1.1.0+22-redmi-release.apk`，104437388字节 / SHA256 `1ec9c7d5d7bc975cdab89bb5b39b95d20972c8b8d83ddbdedfbca34362806773`，签名与旧安装连续。仅QSG6Q8IFDMDELVGQ覆盖安装-r成功，回读1.1.0/22，共5天、进阶10/12、音量84%保持，未卸载/清数据。原上传签名release制品同目录保留，未上传商店。任务Gradle/JDK已退出，不合main、不动release。[身份及证据](sdk-029-redmi-install-2026-10-26.md)。
+
 ## 2026-10-25：SDK 0.2.9 App体验 Web 测试构建
 
 测试分支 `codex/sdk-029-app-feedback-20261025`，共用版本保持1.1.0+21，未构建/安装APK/AAB。固定Flutter3.44.7，以同一pubspec/lock和源文件junction在E盘独立host构建release Web，输出 `E:/AII-3D/hiplab-releases/sdk-029-app-feedback-20261025/web-host/build/web/`；无Key、未向仓库加入Web工程。最终源码SHA见该目录上级的review-receipt.json，预览/DOM证据同目录上级保存。92项受影响测试与analyze0通过，浏览器只验文章与训练路由交接；手机仍为原已验安装，原生播放/FGS未重验，不上传商店。[构建与边界](sdk-029-app-feedback-2026-10-25.md)。
