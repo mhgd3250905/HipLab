@@ -8,6 +8,8 @@ import 'package:hiplab/hip/voice/session_script.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer/engine.dart' as trainer;
 
+import '../../tools/coach/coach_v2_native_metrics.dart'
+    show loadCoachMetricVoiceScript;
 import 'hip_domain_test.dart' show loadContent;
 import 'hip_voice_test.dart' show loadVoiceLibrary;
 
@@ -138,6 +140,80 @@ void main() {
             .every((p) => p.holdSeconds == 7),
         isTrue,
       );
+    },
+  );
+
+  test(
+    'saved AI main rounds execute all sets without changing the saved plan',
+    () {
+      final json = fullPlan().toJson();
+      final main = (json['blocks'] as List).first as Map;
+      main['rounds'] = 2;
+      main['restBetweenRoundsSeconds'] = 29;
+      final original = const coach.PlanCodec().decodeStrict(json).plan!;
+      final saved = CoachPlanMapper(content)
+          .map(original, id: 'saved-main-rounds', at: DateTime(2026, 10, 31))
+          .routine;
+      final native = planner.customPlan(
+        CustomRoutine.fromJson(saved.toJson(), content)!,
+        const TrainingProfile(),
+      )!;
+      expect(toTrainerPlan(native).toJson(), original.toJson());
+      expect(native.steps, hasLength(4)); // two main + two circuit occurrences
+      final phases = builder().phases(toTrainerPlan(native));
+      final work = phases
+          .where((phase) => phase.isWork && phase.blockIndex == 0)
+          .toList();
+      expect(work.map((phase) => phase.seconds), [23, 23, 23, 23]);
+      expect(work.map((phase) => phase.round), [1, 1, 2, 2]);
+      expect(work.map((phase) => phase.set), [1, 2, 1, 2]);
+      expect(
+        phases
+            .where((phase) => phase.kind == trainer.PhaseKind.roundRest)
+            .map((phase) => phase.seconds),
+        [29, 31],
+      );
+      final total = phases.fold<double>(0, (sum, phase) => sum + phase.seconds);
+      final engine = trainer.SessionEngine(phases)..update(total + .001);
+      expect(engine.done, isTrue);
+      expect(engine.fullyCompletedExercises, 4);
+      expect(
+        engine.visits.fold<double>(0, (sum, visit) => sum + visit.seconds),
+        closeTo(total, .000001),
+      );
+      expect(saved.coachPlan, original.toJson());
+    },
+  );
+
+  test(
+    'offline bundled Chinese switch timing matches the actual AI player script',
+    () {
+      final metricScript = loadCoachMetricVoiceScript(content);
+      final actualScript = HipSessionScript(
+        lib: loadVoiceLibrary(),
+        lang: 'zh',
+        steps: const [],
+        kits: content.kits,
+        useSdkPhases: true,
+      );
+      for (final kit in content.kits.values) {
+        final item = coach.PlanItem(
+          exerciseId: kit.id,
+          mode: coach.DoseMode.time,
+          sets: 1,
+          restSeconds: 0,
+          workSeconds: 30,
+          perSide: true,
+        );
+        final rhythm = trainer.Rhythm.fromActionKitJson(kit.raw);
+        for (final side in trainer.Side.values) {
+          expect(
+            metricScript.switchSecondsFor(item, rhythm, side),
+            actualScript.switchSecondsFor(item, rhythm, side),
+            reason: '${kit.id} ${side.name}',
+          );
+        }
+      }
     },
   );
 

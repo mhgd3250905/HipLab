@@ -12,6 +12,8 @@ import 'package:hiplab/hip/coach/usage_store.dart';
 import 'package:hiplab/hip/data/hip_content_loader.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 
+import 'coach_v2_native_metrics.dart' show measureCoachPlanTiming;
+
 class _Storage implements LocalStateStorage {
   final values = <String, String>{};
   @override
@@ -95,12 +97,33 @@ void main() {
     () async {
       const config = CoachConfig.fromEnvironment;
       const output = String.fromEnvironment('HIPLAB_SMOKE_OUTPUT');
+      const sdkCommit = String.fromEnvironment('HIPLAB_SMOKE_SDK_COMMIT');
       expect(config.baseUrl, 'https://ai.uuugk.win/v1');
       expect(config.model, 'deepseek-flash');
       expect(config.authMode, 'bearer');
       expect(config.token, isNotEmpty);
       expect(config.llmConfig.maxRetries, 0);
       expect(output, isNotEmpty);
+      expect(sdkCommit, matches(RegExp(r'^[0-9a-f]{40}$')));
+      final lock = File('pubspec.lock').readAsStringSync().replaceAll('\r\n', '\n');
+      for (final name in ['ugk_coach', 'ugk_coach_ui', 'ugk_trainer']) {
+        final declaration = RegExp(
+          '^  $name:\\n(.*?)(?=^  \\S|\\Z)',
+          multiLine: true,
+          dotAll: true,
+        ).firstMatch(lock)?.group(1);
+        expect(declaration, isNotNull);
+        expect(
+          declaration!
+              .split('\n')
+              .any(
+                (line) =>
+                    line.trim().replaceAll('"', '') ==
+                    'resolved-ref: $sdkCommit',
+              ),
+          isTrue,
+        );
+      }
       final root = Directory(output).absolute..createSync(recursive: true);
       final resultFile = File('${root.path}/results.json');
       expect(
@@ -145,6 +168,13 @@ void main() {
           final estimateSec = plan == null
               ? null
               : const uc.PlanDuration().estimateSeconds(plan, service.catalog);
+          final nativeTiming = plan == null
+              ? null
+              : measureCoachPlanTiming(
+                  plan: plan,
+                  content: service.content,
+                  catalog: service.catalog,
+                );
           final actions = result?.actions?.items;
           final bodyTags = goal is Iterable
               ? goal
@@ -214,6 +244,11 @@ void main() {
             'errorType': result?.error?.runtimeType.toString(),
             'targetSeconds': targetSec,
             'estimatedSeconds': estimateSec,
+            'nativeTiming': nativeTiming,
+            'nativeTotalSeconds': nativeTiming?['nativeTotalSeconds'],
+            'nativeDurationErrorRatio':
+                nativeTiming?['nativeDurationErrorRatio'],
+            'nativeWithinTolerance': nativeTiming?['nativeWithinTolerance'],
             'durationErrorRatio': estimateSec == null || targetSec == null
                 ? null
                 : (estimateSec - targetSec) / targetSec,
@@ -231,7 +266,7 @@ void main() {
           cases.add(row);
           resultFile.writeAsStringSync(
             const JsonEncoder.withIndent('  ').convert({
-              'sdkCommit': '66dd98a549c1ff5fedecb626a7c88583090a1440',
+              'sdkCommit': sdkCommit,
               'baseUrl': config.baseUrl,
               'model': config.model,
               'auth': config.authMode,
@@ -252,6 +287,18 @@ void main() {
         expect(cases[2]['planCard'], true);
         for (final row in cases) {
           expect(row['status'], 'ok');
+          if (row['planCard'] == true) {
+            expect(
+              (row['durationErrorRatio'] as num).abs(),
+              lessThanOrEqualTo(.1),
+            );
+            expect(
+              row['nativeWithinTolerance'],
+              isTrue,
+              reason:
+                  'The full execution timeline including prep must fit ±10%.',
+            );
+          }
         }
       } finally {
         await service.dispose();
