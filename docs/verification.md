@@ -1,5 +1,28 @@
 # 验证台账
 
+## 2026-10-31：+25 / SDK99 全部门禁
+
+实际工作副本E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip，分支codex/coach-v2，运行源码树 `d428f68e795ab184266416de68cd15f87cb4b136`，三包固定99c14495685f160019e10340ea6f0de6418a65b9。Flutter3.44.7 / Dart3.12.2；后续仅文档回执，不重复运行已通过的App检查或重建。
+
+| 检查 | 实际结果 |
+|---|---|
+| 完整Flutter测试 | `flutter test --no-pub --concurrency=1 --reporter expanded`：**470通过 / 0失败 / 0跳过，5分06秒**；设置VOICE_TIMELINE_OUT、VOICE_LANG=zh、VOICE_ROUTINE=A，包含导出 |
+| 严格分析 | `dart analyze --fatal-infos`：**0问题**；真实探针局部分析也0 |
+| Python | `python -m unittest discover -s tools/tests`：**24通过** |
+| 真实会话 | 3个独立新进程/controller/内存存储，前两句建立上下文再发第三句；3组smoke退出0，全部9轮plan/recommend/plan与固定目标正确，原始输入逐字匹配 |
+| 第三段3/3 | 卡片307/315/315s，含15秒准备和中文换边完整执行317/321/321s，均270–330；同计划v1→v2、replace_all，原稿完整进入SDK引擎，0额外抽样 |
+| 性能 | 39模型调用=39HTTP尝试=39条UsageRecord，348,970 tokens；最长单轮15.047s、最多6调用，9/9无>20s或>8调用异常；tokens按request/record/result三路一致 |
+| 门禁与重草稿 | 6次draft请求=6次执行=6份真实成功回执，0duration_fit_failed/0重草稿；12搜索均实际执行，0skipped，2次空搜索不算失败。1次unseen_actions在推荐段由SDK/模型恢复，已如实计拒绝 |
+| 原两计划重放 | 0模型请求，原JSON/SHA不变；卡片614/300s、含准备中文语音执行629/307s，均±10%，11/6 occurrence全完成，工具退出0 |
+| 依赖与边界 | 实际package_config三包均99c1449 cache，cache HEAD精确且干净，无本机path override；lib/android/assets未改，不增加App配时/轮次/profile策略或第二阶段UI |
+| arm64 release | 编译89.1秒成功，pubspec1.1.0+25、split manifest1.1.0/code2025，非debuggable、仅arm64；签名/ZIP与全部4个ELF的16KB/JNI7个方法4个符号/AOT测试网关配置全部通过 |
+| 签名与资产 | 与留存+22 Redmi测试证书相同，重签前后非META-INF运行项内容相等；catalog/profile随包字节等于源码，上传签名原件另存；[制品身份](version-ledger.md) |
+| 设备与外部动作 | **未ADB、未安装、未播放音频或真机实练**；SDKphase/engine离线完整访问不冒充设备验收。未合main、push/tag、动release或商店，第二阶段未开始 |
+
+根目录 `E:/AII-3D/hiplab-releases/coach-v2-plus25-20261031/`：all-tests.log、analyze-final.log、python-tests.log、timeline-zh-A.json、dependency-source.json、retained-plan-native-metrics.json、live-trials-summary.json、live-acceptance.json、release-apk.json及签名/对齐/JNI日志；trial-01/02/03各保留live/results.json、requests.jsonl、tool-receipts.jsonl、session-1/2/3.json和live-run.log。
+
+末次成功show工具原始回执不由公开API暴露，未用UsageRecord ID伪造回执；所有draft回执都实际捕获，故0重草稿结论完整。SDK内部fitLog调整不算模型调用，本轮真模型未触发超差后的重出路径，不以此声称已实测该路径。完整9轮指标见[+25报告](coach-v2-plus25-2026-10-31.md)。本轮要求的自动门禁通过，真机使用结果后续单独记录。下方“待执行”和+24失败均为历史。
+
 ## 2026-10-31：+25 待执行验收规则
 
 用户确认SDK配时器修复后再测，App不绕过。当前SDK远端main仍caa6817c，没有新修复pin；App当前仍+24，没有执行+25构建或新模型请求。

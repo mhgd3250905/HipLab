@@ -1,5 +1,25 @@
 # 版本交付台账
 
+## 2026-10-31：Coach v2 +25 / SDK99 真机测试候选
+
+编译源 `d428f68e795ab184266416de68cd15f87cb4b136`，分支codex/coach-v2；三包及coach传递覆盖统一固定 `99c14495685f160019e10340ea6f0de6418a65b9`。Flutter3.44.7 / Dart3.12.2，共用版本 **1.1.0+25**；split arm64 manifest **versionName1.1.0 / versionCode2025**（Flutter ABI偏移2000+25），包名com.ugk.hiplab，非debuggable。后续文档回执不改变运行树，原生发布配置保持。
+
+| 项目 | 实际核验 |
+|---|---|
+| 用户真机测试APK | `E:/AII-3D/hiplab-releases/coach-v2-plus25-20261031/hiplab-1.1.0+25-coach-v2-d428f68-test-gateway-arm64-device-release.apk` |
+| 大小 / SHA256 | **111,631,075 bytes（106.46 MiB）**；`b69bfe1d723b5e8f653e448a9390a5f438ea0de8efe0ba281bb7e508e3fd57b8` |
+| 测试签名 | `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与留存+22 Redmi测试包同证书；全部非META-INF ZIP项与原release构建内容相同 |
+| 上传签名原件 | 同目录 `hiplab-1.1.0+25-coach-v2-d428f68-upload-signed-test-gateway-arm64.apk`，仅本机保留，未上传商店 |
+| 编译 | `flutter build apk --release --no-pub --target-platform android-arm64 --split-per-abi`，Gradle89.1秒，实际arm64-only |
+| 测试网关 | dart defines明确指定 `https://ai.uuugk.win/v1`、deepseek-flash、Bearer和本机外部Key；AOT URL/模型/认证/凭据存在检查通过，日志/报告不含Key；maxRetries=0 |
+| 生产默认 | Worker `https://api.uuugk.win/v1` / deepseek-v4-flash-0731，X-App-Key + X-Device-Id，无Authorization，保持 |
+| 静态门禁 | apksigner、ZIP 16KB、全部4个原生ELF LOAD 16KB、JNI 7个方法/4个符号均通过；catalog/profile资产与源码字节相同 |
+| 本轮时长/性能 | 三次第三段307/317、315/321、315/321秒，全部270–330；全部9轮最长15.047秒、最多6调用，无异常；旧两计划614/629、300/307秒通过，细项见[+25报告](coach-v2-plus25-2026-10-31.md) |
+| 证据 | 同目录release-apk.json、apk-signature.log、upload-apk-signature.log、zipalign-16kb.log、jni-native-symbols.log、build-release-arm64-split.log、dependency-source.json及trial-01/02/03完整模型记录 |
+| 设备 / 外部状态 | 未ADB、未安装、未真机实练、未发布；不合main、不push/tag、不动release，第二阶段未开始 |
+
+JNI仍按实际锁定path_provider_android2.3.1、jni1.1.0、jni_flutter1.0.4+1核验；shared_preferences_android2.4.28为平台通道。完整离线结果见[验证台账](verification.md)，不以签名/静态门禁或SDK时间线回放替代真机使用验收。以下+24为历史包，文件未覆盖。
+
 ## 2026-10-31：Coach v2 +24 / caa6817c 真机测试候选
 
 编译源 `f2ad2ffbf38ab5116e8ae2fed46064c5f77b08c6`，分支 `codex/coach-v2`，三包统一固定 SDK `caa6817c51b3cb09c46909288d83aa88bdc2dbd4`。后续回执只改文档，不改变运行树或重建身份。Flutter3.44.7 / Dart3.12.2；pubspec **1.1.0+24**，arm64 split manifest **1.1.0 / versionCode2024**（Flutter ABI偏移2000+24），包名com.ugk.hiplab，非debuggable。没有更改原生发布配置。
