@@ -1,5 +1,29 @@
 # 验证台账
 
+## 2026-11-01：+26 / SDK700（离线与包门禁通过，真实时长2/3）
+
+用户确认+25真机验收通过，按用户结论记录；本轮+26不继承该设备验收。工作副本E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip，分支codex/coach-v2，源码/编译树 `b3d64e102230b3ab67c88989f81b9217cc9a4ae1`，三包统一700d0100f1cb42ef122e774a6ee0076d1916b5e5。Flutter3.44.7 / Dart3.12.2，后续只写文档回执。
+
+| 检查 | 实际结果 |
+|---|---|
+| 全量Flutter | `flutter test --no-pub --concurrency=1 --reporter expanded`：**473通过 / 0失败 / 0跳过，5分22秒**；VOICE_TIMELINE_OUT/zh/A包含原条件导出 |
+| 分析 / Python | `dart analyze --fatal-infos`：**0问题**；`python -m unittest discover -s tools/tests`：**24通过** |
+| 诊断新增回归 | 3项已计入473：纯定时严格自然完成/误差；手动阶段名义估算不伪造完成；卡片门禁不随手动豁免。定向文件12/12，局部分析0 |
+| 三次第三段 | 卡片/含15秒准备中文执行271/280、279/287、326/335秒；**2/3通过**，最后一次纯定时超330秒上限5秒；三次均新v2、replace_all、目标5分钟，原计划保持 |
+| 性能 | 9轮38调用=38HTTP尝试=38UsageRecord，336,432 tokens，10次实际搜索；最慢12.827秒、最多5调用，9/9无>20秒或>8调用异常；request/record/result tokens一致 |
+| 实际回执 | 6次draft请求=6次执行=6份真实成功回执，0拒绝/配时拒绝/重草稿/skipped；末次show原始回执不可见，未伪造。0/0/1为三组smoke退出码，不把最后失败改成通过 |
+| 手动 / 定时分类 | 以最终phase.selfPaced分类，本轮6张计划0手动阶段、Engine均自然完成；335秒不是估算豁免。未来手动阶段列明动作/次数/名义秒数/依据，真实偏差和自然完成N/A、不判native失败，卡片仍严格 |
+| 335秒定位 | SDK卡片准备10秒，播放器15秒（+5）；4个计次work侧authored lead（+4）；换侧语音延长0。326卡片在SDK±10%内、fitLog为空，仍交付；App不调准备/lead/原稿绕过 |
+| 旧两张回放 | 0模型请求，原JSON/SHA保持；卡片614/300、含准备执行629/307秒，均±10%，11/6 occurrence全完成，工具退出0 |
+| SDK与界面 | 实际package_config三包为700 cache，HEAD精确/干净，无path override。lib/android/assets未改；UI插槽不使用、默认路径不变，第二阶段未接入 |
+| arm64 release | 构建96.5秒成功；签名、ZIP/全部4个ELF LOAD的16KB、JNI7方法4符号、AOT测试网关配置均通过；pubspec1.1.0+26、manifest1.1.0/code2026、非debuggable、仅arm64 |
+| 证书/运行负载 | 与已验收+25测试证书相同；非META-INF项与上传签名原件内容相等；catalog/profile随包字节与源码相等；[完整制品](version-ledger.md) |
+| 设备/外部状态 | +26未ADB、安装、清数据、播放音频或真机实练；SDK时间线不是设备实测。未合main/push/tag/动release或商店，原WIP保持，第二阶段未开始 |
+
+证据根目录E:/AII-3D/hiplab-releases/coach-v2-plus26-20261101/：all-tests.log、analyze-final.log、python-tests.log、timeline-zh-A.json、dependency-source.json、retained-plan-native-metrics.json、live-acceptance.json、live-trials-summary.json、release-apk.json及签名/对齐/JNI日志。trial-01/02/03各自live/内保留results.json、requests.jsonl、tool-receipts.jsonl、session-1/2/3.json；组根保留live-run.log。详细回执、阶段拆分与源码在sdk-native-duration-repro.md，原始文件SHA保持。完整9轮指标见[+26报告](coach-v2-plus26-2026-11-01.md)。
+
+本轮离线与静态通过不关闭真实时长未过项；+26仍候选，不能把+25用户真机通过改写为+26验收通过。以下为历史。
+
 ## 2026-10-31：+25 / SDK99 全部门禁
 
 实际工作副本E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip，分支codex/coach-v2，运行源码树 `d428f68e795ab184266416de68cd15f87cb4b136`，三包固定99c14495685f160019e10340ea6f0de6418a65b9。Flutter3.44.7 / Dart3.12.2；后续仅文档回执，不重复运行已通过的App检查或重建。

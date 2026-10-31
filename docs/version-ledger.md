@@ -1,5 +1,25 @@
 # 版本交付台账
 
+## 2026-11-01：Coach v2 +26 / SDK700测试候选
+
+用户于2026-11-01确认+25已通过真机验收，作为用户验收结论记录；下方+25旧回执的未操作设备描述是Agent当时状态，不否定用户后续验收。+26按指定三包统一 `700d0100f1cb42ef122e774a6ee0076d1916b5e5`，编译源 `b3d64e102230b3ab67c88989f81b9217cc9a4ae1`，分支codex/coach-v2。Flutter3.44.7 / Dart3.12.2，pubspec **1.1.0+26**，split arm64 manifest **versionName1.1.0 / versionCode2026**（2000+26），包名com.ugk.hiplab、非debuggable；原生发布配置保持。
+
+| 项目 | 实际核验 |
+|---|---|
+| 真机测试APK | `E:/AII-3D/hiplab-releases/coach-v2-plus26-20261101/hiplab-1.1.0+26-coach-v2-b3d64e1-test-gateway-arm64-device-release.apk` |
+| 大小 / SHA256 | **111,696,611 bytes（106.52 MiB）**；`67717991f537060e083efac94faa47197a142b939bd25cc28a7842683630ab91` |
+| 测试签名 | SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与已验收+25测试包一致；重签前后非META-INF ZIP项内容相等 |
+| 上传签名原件 | 同目录hiplab-1.1.0+26-coach-v2-b3d64e1-upload-signed-test-gateway-arm64.apk，仅本机保留，未上传商店 |
+| 编译 | arm64 release，split-per-abi、no-pub；Gradle96.5秒成功，实际仅arm64 |
+| 测试网关 | dart defines指定ai.uuugk.win/v1、deepseek-flash、Bearer和本机外部Key，AOT参数存在验证通过，不输出凭据；maxRetries=0 |
+| 生产默认 | Worker api.uuugk.win/v1 / deepseek-v4-flash-0731，X-App-Key+X-Device-Id，无Authorization，保持 |
+| 静态门禁 | apksigner、ZIP 16KB、全部4个ELF LOAD 16KB、JNI7个方法/4个符号、catalog/profile字节等于源码，全部通过 |
+| 真实复验 | 第三段271/280、279/287、326/335秒，**2/3通过**，第三次纯定时335秒不能手动豁免；9轮最慢12.827秒/最多5调用、0性能异常；[全部指标](coach-v2-plus26-2026-11-01.md) |
+| 证据 | 同目录release-apk.json、dependency-source.json、live-acceptance.json、retained-plan-native-metrics.json、各签名/对齐/JNI/构建日志、trial-01/02/03原始模型结果及sdk-native-duration-repro.md |
+| 设备与发布 | +26未ADB、未安装/真机验收、未清数据或上传；不合main/push/tag/动release，第二阶段未开；时长未过项不因出包改为通过 |
+
+JNI按锁定path_provider_android2.3.1、jni1.1.0、jni_flutter1.0.4+1核验，shared_preferences_android2.4.28为平台通道。完整离线结果见[验证台账](verification.md)。保留+25文件和历史验收，不将+26候选写成已验收版本。
+
 ## 2026-10-31：Coach v2 +25 / SDK99 真机测试候选
 
 编译源 `d428f68e795ab184266416de68cd15f87cb4b136`，分支codex/coach-v2；三包及coach传递覆盖统一固定 `99c14495685f160019e10340ea6f0de6418a65b9`。Flutter3.44.7 / Dart3.12.2，共用版本 **1.1.0+25**；split arm64 manifest **versionName1.1.0 / versionCode2025**（Flutter ABI偏移2000+25），包名com.ugk.hiplab，非debuggable。后续文档回执不改变运行树，原生发布配置保持。
