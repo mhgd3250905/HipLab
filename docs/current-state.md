@@ -1,5 +1,11 @@
 # 当前状态
 
+**2026-10-31 最新 +24 复测：** `codex/coach-v2` / 升级提交 `f2ad2ffbf38ab5116e8ae2fed46064c5f77b08c6`，三包锁定 `caa6817c51b3cb09c46909288d83aa88bdc2dbd4`，App **1.1.0+24**。本次生产 App 源码、Android 配置和资产未改；不启用第二阶段界面，也没有 App 轮次/配时旁路。
+
+旧两张计划的当前卡片/含15秒准备及中文换边的 SDK 开练时间线为 **614/629s、300/307s**，均在目标 ±10%。新同会话三段真实对话为 plan/recommend/plan；第三段 **335/349s 对目标300s**，分别超时11.67%/16.33%，严格真实对话门禁退出1。SDK允许近似交付，当前拟时算法未搜索热身计次剂量；复现已留给 SDK Agent，固定pin保持，不能记第一阶段验收完成。
+
+测试网关纯arm64 release APK已生成，**111,631,075 bytes / 106.46 MiB**，签名、ZIP/ELF 16KB、JNI均通过，与留存+22真机测试包同证书；manifest为1.1.0/code2024。未执行ADB、安装或真机实练，待用户验收。检查与制品详情见[+24记录](coach-v2-plus24-2026-10-31.md)、[验证台账](verification.md)、[版本台账](version-ledger.md)。本地main1083b49、origin/main1b94fc3、release分支和原日常目录31项WIP保留；未合并、推送或打tag。以下+23及更早段落为历史。
+
 **2026-10-31 Coach Agent v2 候选，等待 SDK 修复提交：** 实现提交 `d0a0181d22d8eb1c4f6c774ebe02b2d8c3ffbfa9` 在 `codex/coach-v2`，工作副本 `E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip`。从本地 main `1083b49` 开始，origin/main 为 `1b94fc3`（本地落后 4 个 iOS 审核记录提交）；没有更新或合并 main。原日常目录液态玻璃 31 项改动保留，release 分支未操作。
 
 三包锁定 SDK `66dd98a`；App **1.1.0+23**，45 动作白名单、默认 Worker 协议、Android + 中文入口保持。SDK 拥有教练决策、失败准入、快照、问题和计划版本；App 已移除模板自动回落与剂量修正。全量 **468 通过 / 0 失败 / 0 跳过**、fatal-infos 0、Python 24 项通过；真实模型 3 轮交付通过。发现 SDK Coach / Trainer 对 main.rounds 的内部不一致，含准备的执行时间线为 461/212 秒，未通过目标时长验收。用户明确由 SDK Agent 修复，App 不展开轮次或改计划绕过；修复提交到位后三包一起改钉，再跑两张开练时长和三段对话。详见[本轮完整记录](coach-agent-v2-2026-10-31.md)。

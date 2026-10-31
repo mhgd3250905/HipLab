@@ -1,5 +1,7 @@
 # HipLab 文档与开发台账
 
+**2026-10-31 +24 / caa6817c 复测：** `codex/coach-v2` 升级提交 `f2ad2ff` 将三包统一固定 caa6817c，版本 **1.1.0+24**。原两张计划卡片/含准备开练时间线为 **614/629s、300/307s**，轮次缺陷已关闭；新三段真实对话均有预期交付，但第三段 **335/349s 对目标300s**，未过 ±10% 门槛。测试网关 arm64 release APK 的签名、16KB、JNI已过，交用户真机验收；全量检查和制品身份分别见[验证台账](verification.md)、[版本台账](version-ledger.md)，完整指标及剩余 SDK 拟时问题见[+24 复测记录](coach-v2-plus24-2026-10-31.md)。App 不改计划绕过，第二阶段未开始，main/release/tag/远端保持。以下同日 +23 记录为历史。
+
 **2026-10-31 Coach Agent v2 第一阶段候选：** `codex/coach-v2` / `d0a0181` 从本地 main `1083b49` 接入精确 SDK `66dd98a`，App **1.1.0+23**；完整快照、SDK 卡片、已保存计划讨论及无损计划执行通路已接。全量 468/468、fatal-infos 0、Python 24/24，三段真实模型交付通过。离线执行发现 SDK 自身遗漏非 circuit 的多轮；用户指定由 SDK Agent 修，App 不加绕过，拿到修复提交后三包一起改钉并重测。当前只留本地候选，main/tag/发布分支保持，第二阶段尚未开始。见[实现、指标与 SDK 缺陷](coach-agent-v2-2026-10-31.md)及[剂量审计](coach-v2-dose-audit.md)。APK 核验状态见[版本台账](version-ledger.md)。
 
 **2026-10-24 Controller 已合入 main：** 固定候选448f109已获开哥同意，快进合入并普通推送main、远端回读一致。既有分析0、全量454通过/1条件跳过和专项44通过保持；release/1.0不动。以下待审记录为批准前历史。[集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。

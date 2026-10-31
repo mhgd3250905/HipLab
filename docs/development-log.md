@@ -1,5 +1,13 @@
 # 开发日志
 
+## 2026-10-31：SDK caa6817c / HipLab +24 复测
+
+在codex/coach-v2将三个包及coach传递覆盖统一改钉caa6817c，版本递增1.1.0+24，提交f2ad2ff；SDK cache实际HEAD和lib解析来源核对一致。仅改依赖、验收工具和两条回归，未改生产App逻辑、Android配置或资产，SDK新界面保持第二阶段边界。
+
+原两张完整计划经真实播放器同配置的SDK phase/engine离线回放，卡片614/300s、含准备与中文换边629/307s，均过±10%，原SDK轮次问题已修复。一次新的同会话真实三段仍交付plan/recommend/plan，但第三段335/349s超出300s目标，严格smoke退出1；保留失败不重抽，不把check.ok或status=ok冒充时长通过。只读诊断确认是SDK近似拟时未搜索热身计次；已留完整JSON/fitLog/check和复现说明，App不绕过。
+
+测试网关arm64 release APK已构建并通过签名、16KB、JNI和AOT网关参数核对，设备副本重签为留存+22的同证书，运行负载未变；原上传证书包另存。全量结果、日志与制品身份见[+24记录](coach-v2-plus24-2026-10-31.md)、[验证台账](verification.md)、[版本台账](version-ledger.md)。未执行ADB、安装、商店操作或第二阶段，未合main、推送、打tag或操作release；原WIP保持。
+
 ## 2026-10-31：Coach Agent v2 接入与 SDK 轮次问题交接
 
 按用户要求从本地main1083b49在E盘创建codex/coach-v2，保留原液态玻璃31项改动。三包统一66dd98a，版本1.1.0+23。移除App模板自动回落、运行时范围交集和剂量门禁；profile静态45动作，SDK组件与完整会话/每卡状态、保存计划focus/更新/另存、完整原稿执行接入。实现已提交d0a0181；全量468/468、fatal-infos0、Python24/24，真实模型三轮交付通过。运行日志与构建产物放E:/AII-3D/hiplab-releases/coach-v2-20261031/。

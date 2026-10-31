@@ -1,5 +1,24 @@
 # 版本交付台账
 
+## 2026-10-31：Coach v2 +24 / caa6817c 真机测试候选
+
+编译源 `f2ad2ffbf38ab5116e8ae2fed46064c5f77b08c6`，分支 `codex/coach-v2`，三包统一固定 SDK `caa6817c51b3cb09c46909288d83aa88bdc2dbd4`。后续回执只改文档，不改变运行树或重建身份。Flutter3.44.7 / Dart3.12.2；pubspec **1.1.0+24**，arm64 split manifest **1.1.0 / versionCode2024**（Flutter ABI偏移2000+24），包名com.ugk.hiplab，非debuggable。没有更改原生发布配置。
+
+| 项目 | 已核验事实 |
+|---|---|
+| 用户真机测试 APK | `E:/AII-3D/hiplab-releases/coach-v2-plus24-20261031/hiplab-1.1.0+24-coach-v2-f2ad2ff-test-gateway-arm64-device-release.apk` |
+| 大小 / SHA256 | **111,631,075 bytes（106.46 MiB）**；`d3a511f3e3b06d52caf4efd7eab51782d10bdc3802cae2022c3e72c50676c35d` |
+| 测试签名 | SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与留存+22 Redmi测试包同证书；全部非META-INF ZIP项内容与原release构建逐项相等 |
+| 原构建包 | 同目录 `hiplab-1.1.0+24-coach-v2-f2ad2ff-upload-signed-test-gateway-arm64.apk` 保留上传证书原件，未上传商店 |
+| 编译配置 | `flutter build apk --release --no-pub --target-platform android-arm64 --split-per-abi`；四项dart define选择 `https://ai.uuugk.win/v1`、deepseek-flash、Bearer、本机外部Key；AOT内相应URL/模型/认证/凭据存在检查通过，不输出Key |
+| 生产默认 | Worker `https://api.uuugk.win/v1` / deepseek-v4-flash-0731，X-App-Key + X-Device-Id，无Authorization；LlmConfig.maxRetries=0；本次不改生产配置 |
+| 包门禁 | apksigner通过；仅arm64；ZIP 16KB与全部4个ELF LOAD 16KB通过；JNI 7个类方法契约、4个原生符号通过，资产catalog/profile与源码相等 |
+| 证据 | 同目录 `release-apk.json`、`apk-signature.log`、`upload-apk-signature.log`、`zipalign-16kb.log`、`jni-native-symbols.log`、`build-release-arm64-split.log`；锁/实际SDK cache来源 `dependency-source.json` |
+| 产品门禁 | 旧两张计划卡片/含准备时间线614/629s、300/307s，均过±10%；新三段第三段335/349s对300s超限，**尚未通过第一阶段时长验收**；详见[+24复测](coach-v2-plus24-2026-10-31.md) |
+| 设备 / 外部状态 | **未安装、未ADB、未真机实练**；交用户验收。未合main、未push/tag、未动release和商店；第二阶段未开始 |
+
+测试证书仅用于保持既有测试安装的数据连续性，未改项目上传签名。JNI契约仍按锁定的path_provider_android2.3.1、jni1.1.0、jni_flutter1.0.4+1；shared_preferences_android2.4.28使用平台通道。全部离线测试与分析结果见[验证台账](verification.md)，不能用包静态门禁替代真实对话时长或设备验收。以下+23为历史包。
+
 ## 2026-10-31：Coach Agent v2 测试网关 arm64 Release 候选
 
 源码提交 `d0a0181d22d8eb1c4f6c774ebe02b2d8c3ffbfa9`，分支 `codex/coach-v2`，三包统一固定SDK `66dd98a549c1ff5fedecb626a7c88583090a1440`。Flutter3.44.7 / Dart3.12.2；pubspec为 **1.1.0+23**，最终 split arm64 APK 的 manifest 为 **1.1.0 / versionCode2023**（Flutter ABI偏移2000+23）。包名和项目签名配置保持，无原生发布配置变更。

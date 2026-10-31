@@ -1,5 +1,26 @@
 # 验证台账
 
+## 2026-10-31：Coach v2 +24 / caa6817c 复测
+
+实际工作副本 `E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip`，源码提交 `f2ad2ffbf38ab5116e8ae2fed46064c5f77b08c6`，三包固定caa6817c。后续回执仅文档，以下检查绑定同一运行树；Flutter3.44.7 / Dart3.12.2。
+
+| 检查 | 本轮实际结果 |
+|---|---|
+| 完整 Flutter 集合 | `flutter test --no-pub --concurrency=1 --reporter expanded`：**470通过 / 0失败 / 0跳过，6分27秒**；设VOICE_TIMELINE_OUT、VOICE_LANG=zh、VOICE_ROUTINE=A，包含时间线导出 |
+| 严格分析 | `dart analyze --fatal-infos`：**0问题** |
+| Python | `python -m unittest discover -s tools/tests`：**24通过** |
+| 新增回归 | main.rounds=2同时保留sets、逐轮休息、完整JSON、全部引擎访问；全部46kit×左右两侧92种中文换边计时与实际HipSessionScript一致。两项已计入470，不另累加 |
+| 依赖解析 | 三包ref/resolved-ref和实际package_config均为精确caa6817c；SDK cache HEAD相同、工作区干净，未用本机path override |
+| 留存两计划 | 无模型请求、原捕获JSON/SHA不变；当前卡片614/300s，含15秒准备和中文语音换边执行629/307s，均±10%；每个occurrence自然完成、phase访问总时长一致 |
+| 新三段真实模型 | 同一会话一次运行，plan/recommend/plan；12调用/4搜索、0门禁拒绝/0传输重试。第三段卡片335s（+11.67%）、含准备349s（+16.33%），**严格时长验收失败，smoke退出1**，不以status/check通过覆盖失败 |
+| 包门禁 | arm64 release编译成功；设备测试副本签名、ZIP/全部4个ELF的16KB、JNI7个方法/4个符号、catalog/profile字节匹配均通过；AOT测试网关/模型/Bearer配置检查通过 |
+| 制品/签名连续性 | pubspec1.1.0+24，split manifest1.1.0/code2024；测试副本与留存+22 Redmi包同证书，与上传签名原件运行负载相同；[完整身份](version-ledger.md) |
+| 范围 | 本次lib/android/assets未改，无App计划轮次或剂量改写；未启用第二阶段界面；未执行ADB、安装、音频播放或真机实练，不以离线时间线冒充设备验收 |
+
+证据根目录 `E:/AII-3D/hiplab-releases/coach-v2-plus24-20261031/`：`all-tests.log`、`analyze-final.log`、`python-tests.log`、`timeline-zh-A.json`、`dependency-source.json`、`retained-plan-native-metrics.json`、`live/results.json`、`live/requests.jsonl`、`release-apk.json`及签名/对齐/JNI日志。
+
+当前SDK近似交付未满足用户本轮±10%要求。已保存 `sdk-duration-gate-repro.md`，明确区分原始plan/fitLog/check与未执行的重建fixture，不虚构成功工具响应；后续由SDK Agent修，App不加旁路。完整对话指标见[+24复测](coach-v2-plus24-2026-10-31.md)。先前一次CRLF预检失败为0模型调用，日志保留；上述真实三轮没有重抽。以下+23及更早条目是各自历史。
+
 ## 2026-10-31：Coach Agent v2 第一阶段候选
 
 实现来源 `d0a0181`，三包精确 `66dd98a`，Flutter3.44.7 / Dart3.12.2。最终完整一轮 **468通过 / 0失败 / 0跳过**（6分9秒，显式执行条件语音导出），`dart analyze --fatal-infos` 0，Python完整24通过，目录剂量来源/只读校验通过。3段真实模型在同一会话一次跑通，调用5/4/4、搜索1/1/0、0拒绝；逐段耗时、请求大小、tokens、缓存、任务和折叠见[报告](coach-agent-v2-2026-10-31.md#真实模型三轮)。本机 API Key 未检出于候选版本文件。
