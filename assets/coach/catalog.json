@@ -31,7 +31,23 @@
   "hiplabDoseSource": {
    "path": "assets/action_kits/index.json",
    "sha256": "be4c05c66e86e32152a30b523553d654e2c1820b722b7fffce1a32174e060396",
-   "rules": "HipLab DoseRules kit defaults; no motion IDs added"
+   "rules": "HipLab action-kit training defaults including holdSeconds; first video repSeconds is the complete kit cycle; no motion IDs added",
+   "alignedCatalog": {
+    "sdkCommit": "66dd98a549c1ff5fedecb626a7c88583090a1440",
+    "path": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/catalog/catalog.json",
+    "version": "0.3.0",
+    "sha256": "40610dbb71b58886ebe001409ae15161761747b4f776e74a252e7b1f8df6e983",
+    "unitCorrections": [
+     "h-adductor-rock",
+     "h-knee-hug",
+     "h-sumo-pry",
+     "n-pelvis-circle",
+     "n-seated-ir-drop",
+     "n-seated-knee-lift",
+     "n-seated-squeeze",
+     "n-squat-shift"
+    ]
+   }
   }
  },
  "taxonomy": {
@@ -1024,7 +1040,8 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "showsSide": "right"
+       "showsSide": "right",
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -2443,7 +2460,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0,
+       "repSeconds": 4.0,
        "showsSide": "right"
       },
       {
@@ -2726,7 +2743,8 @@
        "path": "assets/packs/h-knee-hug/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -3003,7 +3021,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0,
+       "repSeconds": 8.0,
        "showsSide": "right"
       },
       {
@@ -3762,7 +3780,8 @@
     "mode": "reps",
     "sets": 1,
     "reps": 3,
-    "restSeconds": 15
+    "restSeconds": 15,
+    "holdSeconds": 10
    },
    "doseRange": {
     "sets": [
@@ -3863,7 +3882,8 @@
        "path": "assets/packs/h-sumo-pry/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 12.35
       },
       {
        "app": "hiplab",
@@ -4709,7 +4729,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -4992,7 +5012,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -5568,7 +5588,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0,
+       "repSeconds": 8.0,
        "showsSide": "right"
       },
       {
@@ -5854,7 +5874,8 @@
        "path": "assets/packs/n-pelvis-circle/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 8.0
       },
       {
        "app": "hiplab",
@@ -6864,7 +6885,8 @@
     "mode": "reps",
     "sets": 1,
     "reps": 3,
-    "restSeconds": 15
+    "restSeconds": 15,
+    "holdSeconds": 5
    },
    "doseRange": {
     "sets": [
@@ -6961,7 +6983,8 @@
        "path": "assets/packs/n-seated-knee-lift/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 7.0
       },
       {
        "app": "hiplab",
@@ -7235,7 +7258,8 @@
        "path": "assets/packs/n-seated-squeeze/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -7788,7 +7812,8 @@
        "path": "assets/packs/n-squat-shift/demo.mp4",
        "width": 720,
        "height": 720,
-       "loopSeconds": 8.0
+       "loopSeconds": 8.0,
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -8905,7 +8930,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0
+       "repSeconds": 4.0
       },
       {
        "app": "hiplab",
@@ -12539,7 +12564,7 @@
        "width": 720,
        "height": 720,
        "loopSeconds": 8.0,
-       "repSeconds": 3.0
+       "repSeconds": 2.5
       },
       {
        "app": "hiplab",

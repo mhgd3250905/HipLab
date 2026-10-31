@@ -1,5 +1,5 @@
-// HipLab owns the agent, trusted mapping and navigation. Shared conversation
-// layout, bubbles, clarification controls and routine cards are SDK widgets.
+// The SDK owns coaching and admission. HipLab supplies trusted content,
+// persistence, navigation, localized copy and theme.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 import 'package:ugk_coach_ui/ugk_coach_ui.dart' as ui;
 
+import '../../../core/storage/local_state_storage.dart';
 import '../../coach/coach_service.dart';
 import '../../coach/coach_config.dart';
 import '../../coach/plan_mapping.dart';
@@ -21,20 +22,29 @@ import '../library/drill_detail_page.dart';
 import '../library/library_actions.dart';
 import '../library/library_widgets.dart';
 import '../library/practice_page.dart' show startGroup;
+import 'coach_history.dart';
 
 /// Keep the existing platform/language scope; a missing key hides all entries.
 bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
     (configured ?? CoachConfig.fromEnvironment.configured) &&
-    Theme.of(context).platform != TargetPlatform.iOS &&
+    Theme.of(context).platform == TargetPlatform.android &&
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
 
 /// App presentation only. The SDK controller owns messages and question state.
-class AiCoachSession extends ChangeNotifier {
-  AiCoachSession(this.service, {DateTime Function()? now})
-    : _now = now ?? DateTime.now;
+class AiCoachSession extends ChangeNotifier with WidgetsBindingObserver {
+  AiCoachSession(
+    this.service, {
+    DateTime Function()? now,
+    LocalStateStorage? storage,
+  }) : _now = now ?? DateTime.now,
+       _storage = storage ?? SharedPreferencesLocalStateStorage();
 
+  static const storageKey = 'hip.coach.session.v2';
   final CoachService service;
   final DateTime Function() _now;
+  final LocalStateStorage _storage;
+  Future<void> _writes = Future.value();
+  Future<void>? _loading;
   StreamSubscription<uc.AgentEvent>? _events;
   final Map<String, String> saved = {};
   // Badges/status belong to the App; these never determine question validity.
@@ -42,7 +52,9 @@ class AiCoachSession extends ChangeNotifier {
   uc.CoachConversationMessage? _draft;
   DateTime? _startedAt;
   bool _loaded = false;
+  bool _resetBeforeLoad = false;
   bool _disposed = false;
+  bool persistenceFailed = false;
   String? cancelledText;
   String progress = '正在理解你的需求…';
 
@@ -60,10 +72,54 @@ class AiCoachSession extends ChangeNotifier {
       ? _turns[message.turnId]?.userEntryId ?? message.id
       : message.id;
 
-  Future<void> load() async {
+  Future<void> load() => _loading ??= _load();
+
+  Future<void> _load() async {
     await service.load();
     if (_disposed || _loaded) return;
+    String? encoded;
+    try {
+      encoded = await _storage.read(storageKey);
+    } on Object {
+      persistenceFailed = true;
+    }
+    if (_disposed) return;
+    if (encoded != null && conversation != null && !_resetBeforeLoad) {
+      try {
+        final data = jsonDecode(encoded) as Map<String, dynamic>;
+        final restored = <uc.CoachConversationMessage>[];
+        for (final row in data['messages'] as List? ?? const []) {
+          try {
+            restored.add(
+              coachMessageFromJson(
+                Map<String, dynamic>.from(row as Map),
+                service.gate,
+              ),
+            );
+          } on Object {
+            // Keep the remaining display history when one legacy row is bad.
+          }
+        }
+        if (data['snapshot'] == null) {
+          conversation!.restoreHistory(restored);
+        } else {
+          conversation!.restoreSession(
+            uc.CoachSessionSnapshot.fromJson(data['snapshot']),
+            restored,
+          );
+          // Reopening history never makes an old question actionable again.
+          conversation!.invalidateQuestion();
+        }
+        saved.addAll(
+          (data['saved'] as Map? ?? const {}).cast<String, String>(),
+        );
+      } on Object {
+        // Unreadable persistence must not prevent starting a new conversation.
+      }
+    }
+    if (_resetBeforeLoad) conversation?.newConversation();
     _loaded = true;
+    WidgetsBinding.instance.addObserver(this);
     conversation?.addListener(_changed);
     _events = conversation?.events.listen((event) {
       if (event.kind != uc.AgentEventKind.askUser &&
@@ -76,9 +132,14 @@ class AiCoachSession extends ChangeNotifier {
           uc.AgentEventKind.slow => '仍在准备回复，可以继续等待或停止',
           _ => '正在理解你的需求…',
         };
+        _persist();
         _notify();
       }
     });
+    if (_resetBeforeLoad) {
+      _resetBeforeLoad = false;
+      _persist();
+    }
     _notify();
   }
 
@@ -100,6 +161,7 @@ class AiCoachSession extends ChangeNotifier {
       _startedAt = null;
       _draft = null;
     }
+    _persist();
     _notify();
   }
 
@@ -123,6 +185,24 @@ class AiCoachSession extends ChangeNotifier {
     await _submit(text, () => controller!.answerChoices(id, choices));
   }
 
+  Future<void> answerForm(String id, Map<String, List<String>> answers) async {
+    final controller = conversation;
+    if (controller == null || !controller.canAnswer(id)) return;
+    await _submit(
+      answers.values.expand((values) => values).join('、'),
+      () => controller.answerForm(id, answers),
+    );
+  }
+
+  Future<void> skipQuestion(String id) async {
+    final controller = conversation;
+    if (controller == null || !controller.canAnswer(id)) return;
+    await _submit(
+      controller.state.pendingQuestion!.question!.skipLabel,
+      () => controller.skipQuestion(id),
+    );
+  }
+
   // The pending input is a visual draft until SDK messages are committed.
   // No local history, question IDs, answer validation or cancellation tokens.
   Future<void> _submit(
@@ -142,6 +222,7 @@ class AiCoachSession extends ChangeNotifier {
     } on Object {
       // The controller publishes errors. Presentation never invents a result.
     }
+    await flush();
   }
 
   void stop() {
@@ -152,56 +233,95 @@ class AiCoachSession extends ChangeNotifier {
   void expireQuestion() => conversation?.invalidateQuestion();
 
   void reset() {
+    if (!_loaded) _resetBeforeLoad = true;
     cancelledText = null;
     saved.clear();
     _turns.clear();
     conversation?.newConversation();
   }
 
-  /// History is display-only; stored outputs must pass today's App gate again.
+  /// Legacy display restoration delegates question and active-plan state to SDK.
   void restoreHistory(Iterable<uc.CoachConversationMessage> history) {
     final controller = conversation;
     if (controller == null) return;
     cancelledText = null;
     saved.clear();
-    controller.restoreHistory([
-      for (final message in history)
-        uc.CoachConversationMessage(
-          id: message.id,
-          at: message.at,
-          isUser: message.isUser,
-          text: message.text,
-          question: message.question,
-          questionAnswered: message.questionAnswered,
-          answeredChoices: message.answeredChoices,
-          turnId: message.turnId,
-          plan: message.plan == null
-              ? null
-              : service.gate.admitTemplate(message.plan!.plan),
-          actions: message.actions == null
-              ? null
-              : service.gate.check('', [
-                  uc.LlmToolCall(
-                    id: message.id,
-                    name: 'show_actions',
-                    arguments: jsonEncode({
-                      'items': [
-                        for (final action in message.actions!.items)
-                          {
-                            'actionId': action.id,
-                            if (action.note != null) 'note': action.note,
-                          },
-                      ],
-                    }),
-                  ),
-                ]).actions,
-        ),
-    ]);
+    controller.restoreHistory(history.toList());
   }
 
   void markSaved(String messageId, String routineId) {
     saved[messageId] = routineId;
+    _persist();
     _notify();
+  }
+
+  /// The SDK checks the full saved plan before accepting its external identity.
+  Future<uc.CoachPlanFocusResult?> focusRoutine(
+    CustomRoutine routine,
+    HipStore store,
+  ) async {
+    await load();
+    final controller = conversation;
+    if (controller == null) return null;
+    uc.TrainingPlan? plan;
+    try {
+      final encoded = store.coachPlanJson[routine.id];
+      plan = encoded == null
+          ? CoachPlanMapper(store.content).toSdkPlan(
+              routine,
+              service.catalog,
+              scene: store.scene.name == 'chair' ? 'office' : store.scene.name,
+            )
+          : const uc.PlanCodec().decodeStrict(jsonDecode(encoded)).plan;
+    } on Object {
+      return null;
+    }
+    if (plan == null) return null;
+    final result = controller.focusExternalPlan(
+      externalId: routine.id,
+      plan: plan,
+      title: routine.name,
+    );
+    await flush();
+    return result;
+  }
+
+  /// One queued write contains both portable facts and the matching display.
+  void _persist() {
+    final controller = conversation;
+    if (!_loaded || controller == null || _disposed) return;
+    final encoded = jsonEncode({
+      'snapshot': controller.exportSession().toJson(),
+      'messages': [for (final message in messages) coachMessageJson(message)],
+      'saved': Map<String, String>.of(saved),
+    });
+    _writes = _writes.catchError((Object _) {}).then((_) async {
+      await _storage.write(storageKey, encoded);
+      if (persistenceFailed) {
+        persistenceFailed = false;
+        _notify();
+      }
+    });
+    unawaited(
+      _writes.catchError((Object _) {
+        persistenceFailed = true;
+        _notify();
+        debugPrint('HipLab coach: session could not be persisted');
+      }),
+    );
+  }
+
+  Future<void> flush() async {
+    try {
+      await _writes;
+    } on Object {
+      // The save error is observable without rejecting an admitted SDK turn.
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _persist();
   }
 
   CustomRoutine? savedRoutine(String messageId, HipStore store) {
@@ -215,7 +335,9 @@ class AiCoachSession extends ChangeNotifier {
 
   @override
   void dispose() {
+    _persist();
     _disposed = true;
+    WidgetsBinding.instance.removeObserver(this);
     conversation?.removeListener(_changed);
     unawaited(_events?.cancel());
     unawaited(service.dispose());
@@ -312,6 +434,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
   final _scroll = ScrollController();
   Timer? _ticker;
   late final Set<String> _initiallySeen;
+  final Set<String> _expandedPlans = {};
   String _entryId(uc.CoachConversationMessage message) =>
       session.entryIdFor(message);
 
@@ -388,17 +511,41 @@ class _AiCoachPageState extends State<AiCoachPage> {
     unawaited(session.send(value));
   }
 
-  Future<void> _save(uc.TrainingPlan plan, String resultId) async {
+  Future<void> _save(
+    uc.ValidatedPlan admitted,
+    String resultId, {
+    bool update = false,
+  }) async {
     final store = widget.actions.store;
+    final plan = admitted.plan;
+    final externalId = update ? admitted.savedRef?.externalId : null;
+    final existing = externalId == null
+        ? null
+        : store.customRoutine(externalId);
+    if (update && existing == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('原计划已不存在，请另存一份。')));
+      return;
+    }
     final mapping = CoachPlanMapper(
       store.content,
-    ).map(plan, id: store.newCustomId(), at: store.now());
-    final routine = await store.saveCustomRoutine(mapping.routine);
+    ).map(plan, id: externalId ?? store.newCustomId(), at: store.now());
+    final routine = await store.saveCustomRoutine(
+      mapping.routine,
+      coachPlan: plan.toJson(),
+    );
     if (!mounted) return;
     session.markSaved(resultId, routine.id);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('已保存到「我的」训练组：${routine.name}')));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${update ? '已更新「我的」计划' : '已保存到「我的」训练组'}：${routine.name}',
+          ),
+        ),
+      );
   }
 
   Future<void> _start(
@@ -408,11 +555,15 @@ class _AiCoachPageState extends State<AiCoachPage> {
   ) async {
     final store = widget.actions.store;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    final routine =
-        session.savedRoutine(resultId, store) ??
-        CoachPlanMapper(
-          store.content,
-        ).map(plan, id: 'ai_${plan.id}', at: store.now()).routine;
+    // A saved group can be edited independently. The immutable card always
+    // starts the exact SDK plan displayed on that card.
+    final routine = CoachPlanMapper(store.content)
+        .map(
+          plan,
+          id: session.savedRoutine(resultId, store)?.id ?? 'ai_${plan.id}',
+          at: store.now(),
+        )
+        .routine;
     await startGroup(context, widget.actions, routine, from: from);
   }
 
@@ -440,12 +591,22 @@ class _AiCoachPageState extends State<AiCoachPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _Disclaimer(onAccept: session.acceptDisclaimer),
                 ),
+              if (session.persistenceFailed)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 6,
+                  ),
+                  child: Text(
+                    '对话暂时未能保存到本机，当前内容仍可继续使用。',
+                    style: TextStyle(color: HipColors.tight, fontSize: 12),
+                  ),
+                ),
               Expanded(
                 child: ui.CoachChatList(
                   key: const ValueKey('coach-list'),
                   controller: _scroll,
                   dockHeight: 0,
-                  topColor: HipColors.background,
                   timeMarkBuilder: (at, now) => ui.CoachTimeMark(at, now: now),
                   initiallySeen: _initiallySeen,
                   typing: session.busy
@@ -474,7 +635,7 @@ class _AiCoachPageState extends State<AiCoachPage> {
                         id: _entryId(m),
                         at: m.at,
                         isUser: m.isUser,
-                        isCard: m.plan != null,
+                        isCard: m.plan != null || m.actions != null,
                         child: KeyedSubtree(
                           key: ValueKey('coach-msg-$i'),
                           child: m.isUser
@@ -508,9 +669,9 @@ class _AiCoachPageState extends State<AiCoachPage> {
                           id: 'conversation-error',
                           at: DateTime.now(),
                           isUser: false,
-                          child: _bubble(
-                            '出了点问题，没能排出计划。请稍后再试。',
-                            id: 'conversation-error',
+                          child: ui.CoachFailureBubble(
+                            enabled: !session.busy,
+                            onRetry: () => session.send('重试'),
                           ),
                         ),
                   ],
@@ -542,42 +703,99 @@ class _AiCoachPageState extends State<AiCoachPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (message.isFailure) _failure(message),
         if (question != null)
           ui.CoachQuestionBubble(
             key: ValueKey('coach-question-$id'),
             question: ui.CoachQuestionData(
               id: id,
               question: question.question,
-              mode: question.mode == uc.AskUserMode.text
-                  ? ui.CoachQuestionMode.text
-                  : ui.CoachQuestionMode.choice,
+              mode: switch (question.mode) {
+                uc.AskUserMode.text => ui.CoachQuestionMode.text,
+                uc.AskUserMode.choice => ui.CoachQuestionMode.choice,
+                uc.AskUserMode.form => ui.CoachQuestionMode.form,
+              },
               options: question.options,
               multiple: question.multiple,
               answered: message.questionAnswered,
               answeredChoices: message.answeredChoices,
+              answeredForm: message.answeredForm,
+              isConfirmation: question.isConfirmation,
+              focus: question.focus,
+              defaultSelections: question.defaultSelections,
+              skipLabel: question.skipLabel,
+              fields: [
+                for (final field in question.fields)
+                  ui.CoachQuestionField(
+                    key: field.key,
+                    label: field.label,
+                    options: field.options,
+                    multiple: field.multiple,
+                    initialSelections: field.preselected,
+                    previousSelections: field.previousSelections,
+                    optionsByScene: field.optionsByScene,
+                  ),
+              ],
             ),
             enabled: session.conversation!.canAnswer(id),
             onTextAnswer: (text) => session.answerText(id, text),
             onChoiceAnswer: (choices) => session.answerChoices(id, choices),
+            onFormAnswer: (answers) => session.answerForm(id, answers),
+            onSkip: () => session.skipQuestion(id),
           ),
-        if (message.text.isNotEmpty) _bubble(message.text, id: 'answer-$id'),
+        if (message.text.isNotEmpty &&
+            !message.isFailure &&
+            message.actions == null)
+          _bubble(message.text, id: 'answer-$id'),
         if (message.plan case final admitted?) _planCard(admitted, status, id),
         if (message.actions case final admitted?)
-          for (final action in admitted.items)
-            TextButton(
-              onPressed: () => Navigator.of(context).push(
-                HipRoute.push<Object?>(
-                  (_) => DrillDetailPage(
-                    actions: widget.actions,
-                    drillId: action.id,
-                  ),
-                ),
-              ),
-              child: Text(
-                '${widget.actions.store.content.drill(action.id).name}${action.note == null ? '' : ' · ${action.note}'}',
+          ui.CoachRecommendCard(
+            actionIds: [for (final action in admitted.items) action.id],
+            note: message.text,
+            library: hipCoachLibrary(widget.actions.store),
+            onOpenAction: (id) => Navigator.of(context).push(
+              HipRoute.push<Object?>(
+                (_) => DrillDetailPage(actions: widget.actions, drillId: id),
               ),
             ),
+            onPlanFromActions: (_) => _send('请把刚才推荐的动作排成计划。'),
+          ),
       ],
+    );
+  }
+
+  Widget _failure(uc.CoachConversationMessage message) {
+    final controller = session.conversation!;
+    final current = session.messages.last.id == message.id;
+    uc.TrainingPlan? candidate;
+    if (current) {
+      for (final encoded in widget.actions.store.coachPlanJson.values) {
+        Object? raw;
+        try {
+          raw = jsonDecode(encoded);
+        } on FormatException {
+          continue;
+        }
+        final decoded = const uc.PlanCodec().decodeStrict(raw);
+        if (decoded.plan case final plan?) {
+          if (controller.canOfferPreset(plan)) {
+            candidate = plan;
+            break;
+          }
+        }
+      }
+    }
+    final preset = candidate;
+    return ui.CoachFailureBubble(
+      enabled: current && !session.busy,
+      onRetry: () => session.send('重试'),
+      presetMatchesFocus: preset != null && controller.canOfferPreset(preset),
+      onSecondary: preset == null
+          ? null
+          : () async {
+              controller.requestPreset(preset);
+              await session.flush();
+            },
     );
   }
 
@@ -591,13 +809,13 @@ class _AiCoachPageState extends State<AiCoachPage> {
         (status == null && admitted.plan.source == 'template');
     final plan = admitted.plan;
     final store = widget.actions.store;
-    final mapper = CoachPlanMapper(store.content);
-    final original = mapper.map(plan, id: 'preview', at: store.now());
     final saved = session.savedRoutine(resultId, store);
-    final mapping = saved == null
-        ? original
-        : mapper.fromRoutine(saved, original);
-    if (mapping.entries.isEmpty) return const SizedBox.shrink();
+    final external = admitted.savedRef;
+    final expanded = _expandedPlans.contains(resultId);
+    final duration = const uc.PlanDuration().estimateSeconds(
+      plan,
+      session.service.catalog,
+    );
     return Column(
       key: const ValueKey('coach-plan-card'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -615,69 +833,63 @@ class _AiCoachPageState extends State<AiCoachPage> {
         ),
         if (preset)
           const Text(
-            '这是 App 内置的套路，不是 AI 按你的需求生成的。',
+            '这是已保存的预设计划，并非本轮 AI 新生成的。',
             key: ValueKey('coach-preset-note'),
           ),
-        ui.CoachPlanCard(
+        ui.CoachPlanExpanded(
           key: ValueKey('coach-plan-$resultId'),
           plan: ui.CoachRoutine(
-            id: mapping.routine.id,
-            title: mapping.routine.name,
+            id: plan.id,
+            title: plan.title,
             items: [
-              for (final entry in mapping.entries)
-                ui.CoachRoutineItem(
-                  exerciseId: entry.drill.id,
-                  dose: entry.doseText,
-                ),
+              for (final block in plan.blocks)
+                for (final item in block.items)
+                  ui.CoachRoutineItem(
+                    exerciseId: item.exerciseId,
+                    dose:
+                        '${_itemDose(item)}'
+                        '${block.rounds > 1 ? ' × ${block.rounds} 轮' : ''}',
+                    detailDose:
+                        '${block.name} · '
+                        '${_itemDose(item)} · 休息 ${item.restSeconds} 秒'
+                        '${block.rounds > 1 ? ' · ${block.rounds} 轮，轮间 ${block.restBetweenRoundsSeconds} 秒' : ''}',
+                  ),
             ],
-            durationLabel:
-                '约 ${math.max(1, (mapping.seconds(store.content) / 60).round())} 分钟',
+            durationLabel: '约 ${math.max(1, (duration / 60).round())} 分钟',
             gearLabel: '按动作准备器材',
             levelLabel: '舒适范围',
-            metaLabel: '${mapping.entries.length} 个动作',
-            adjustmentsLabel: mapping.adjusted ? '剂量已按动作包的训练参数换算' : null,
+            metaLabel: '${plan.items.length} 个动作',
           ),
           library: hipCoachLibrary(store),
-          saved: saved != null,
-          onSave: () {
-            if (saved == null) unawaited(_save(plan, resultId));
-          },
+          expanded: expanded,
+          onCollapse: () => setState(() => _expandedPlans.remove(resultId)),
+          onToggle: () => setState(() {
+            if (expanded) {
+              _expandedPlans.remove(resultId);
+            } else {
+              _expandedPlans.add(resultId);
+            }
+          }),
+          actionLabel: external != null
+              ? '更新到我的计划'
+              : saved != null
+              ? '已保存到「我的」'
+              : '保存为自定义训练组',
+          onAction: saved != null && external == null
+              ? null
+              : () => unawaited(
+                  _save(admitted, resultId, update: external != null),
+                ),
           onStart: (_) {
             if (!store.blocked) unawaited(_start(plan, resultId, null));
           },
-          onOpen: () => showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            builder: (_) => SafeArea(
-              child: SizedBox(
-                height: MediaQuery.sizeOf(context).height * .8,
-                child: ListView(
-                  key: const ValueKey('coach-plan-details'),
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    Text(
-                      plan.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    for (final entry in mapping.entries)
-                      ListTile(
-                        title: Text(entry.drill.name),
-                        subtitle: Text(entry.doseText),
-                        onTap: () => Navigator.of(context).push(
-                          HipRoute.push<Object?>(
-                            (_) => DrillDetailPage(
-                              actions: widget.actions,
-                              drillId: entry.drill.id,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ),
+        if (external != null)
+          TextButton(
+            key: ValueKey('coach-save-copy-$resultId'),
+            onPressed: () => _save(admitted, resultId),
+            child: const Text('另存一份'),
+          ),
         for (final note in {...plan.safetyNotes, '在不痛的范围内做，出现疼痛、麻木或头晕立即停止。'})
           Padding(
             padding: const EdgeInsets.only(top: 6),
@@ -694,6 +906,23 @@ class _AiCoachPageState extends State<AiCoachPage> {
           ),
       ],
     );
+  }
+
+  String _itemDose(uc.PlanItem item) {
+    String scalar(uc.DoseMode mode, int? reps, int? seconds) =>
+        mode == uc.DoseMode.reps ? '$reps 次' : '$seconds 秒';
+    final work = item.segments.isEmpty
+        ? scalar(item.mode, item.reps, item.workSeconds)
+        : item.segments
+              .map((segment) {
+                final name = widget.actions.store.content
+                    .drill(segment.exerciseId)
+                    .name;
+                return '$name ${scalar(segment.mode, segment.reps, segment.workSeconds)}'
+                    '${segment.holdSeconds == null ? '' : '（停留 ${segment.holdSeconds} 秒）'}';
+              })
+              .join(' → ');
+    return '${item.perSide ? '每侧 ' : ''}$work × ${item.sets} 组';
   }
 }
 
@@ -723,8 +952,11 @@ ui.CoachUiStyle hipCoachStyle(BuildContext context, {bool blocked = false}) {
       text: HipColors.text,
       muted: HipColors.muted,
       faint: HipColors.faint,
+      background: HipColors.background,
       surface: HipColors.surface,
-      thumb: HipColors.thumb,
+      surfaceRaised: HipColors.surfaceHigh,
+      outline: HipColors.line,
+      shadow: HipColors.shadow,
       accent: HipColors.jade,
       accentText: HipColors.jadeText,
       accentSoft: tintOf(HipColors.jade),
@@ -739,8 +971,7 @@ ui.CoachUiStyle hipCoachStyle(BuildContext context, {bool blocked = false}) {
       emphasis: HipColors.jade,
       onEmphasis: HipColors.onJade,
       onMedia: HipColors.text,
-      mediaScrim: HipColors.scrim,
-      landingHighlight: HipColors.jade,
+      mediaLabelSurface: HipColors.surfaceHigh,
     ),
     typography: ui.CoachUiTypography(
       body: const TextStyle(
@@ -869,7 +1100,7 @@ class _Intro extends StatelessWidget {
         if (!configured) ...[
           const SizedBox(height: 10),
           Text(
-            'AI 还没配置：现在会直接给出 App 内置的预设方案。',
+            'AI 服务还未配置，请稍后再试。',
             key: const ValueKey('coach-unconfigured-note'),
             style: TextStyle(
               fontSize: 13,

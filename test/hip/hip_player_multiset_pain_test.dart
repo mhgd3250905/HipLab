@@ -15,6 +15,7 @@ import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'trainer_test_pump.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
@@ -64,7 +65,7 @@ Future<void> _open(
 
 Future<void> _pinch(WidgetTester tester) async {
   await tester.tap(find.byKey(const ValueKey('discomfort')));
-  await tester.pumpAndSettle();
+  await pumpPainSheet(tester);
   await tester.tap(find.byKey(const ValueKey('pain-pinch')));
   await tester.pumpAndSettle();
 }
@@ -153,7 +154,9 @@ void main() {
         // Halved, no set fits one full squat: no 8 s countdown without cues.
         expect(find.byType(trainer.TrainerCountdownDigits), findsNothing);
         expect(find.byKey(const ValueKey('player-done-note')), findsOneWidget);
-        expect(find.text('今天先到这里'), findsOneWidget);
+        expect(find.text('练完了！'), findsOneWidget);
+        expect(store.sessions.single.completed, isFalse);
+        expect(store.sessions.single.trainerResult!['full'], isFalse);
         expect(find.byKey(const ValueKey('player-again')), findsOneWidget);
         await _dispose(tester);
       });

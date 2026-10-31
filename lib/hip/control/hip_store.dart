@@ -57,6 +57,13 @@ class HipStore extends ChangeNotifier {
   /// 我的训练组 (custom_routines v1, stored under `customRoutines`).
   final List<CustomRoutine> customRoutines = [];
 
+  /// Full SDK plans keyed by saved group ID. The group remains the library DTO;
+  /// this preserves blocks, per-item rests, rounds and provenance for discussion.
+  Map<String, String> get coachPlanJson => {
+    for (final routine in customRoutines)
+      if (routine.coachPlan != null) routine.id: jsonEncode(routine.coachPlan),
+  };
+
   /// Practice history, newest last, at most [SessionRecord.keep].
   final List<SessionRecord> sessions = [];
 
@@ -389,22 +396,28 @@ class HipStore extends ChangeNotifier {
   }
 
   /// Inserts or replaces (by id); stamps updatedAt.
-  Future<CustomRoutine> saveCustomRoutine(CustomRoutine r) {
+  Future<CustomRoutine> saveCustomRoutine(
+    CustomRoutine r, {
+    Map<String, Object?>? coachPlan,
+  }) {
     final at = now();
+    final existing = customRoutine(r.id);
     final saved = CustomRoutine(
       id: r.id,
       name: CustomRoutine.cleanName(r.name).isEmpty
           ? nextCustomName()
           : CustomRoutine.cleanName(r.name),
-      steps: r.steps.length > CustomRoutine.maxSteps
+      steps: coachPlan == null && r.steps.length > CustomRoutine.maxSteps
           ? r.steps.sublist(0, CustomRoutine.maxSteps)
           : r.steps,
-      restSeconds: CustomRoutine.rests.contains(r.restSeconds)
+      restSeconds:
+          coachPlan != null || CustomRoutine.rests.contains(r.restSeconds)
           ? r.restSeconds
           : CustomRoutine.defaultRest,
       fromRoutine: r.fromRoutine,
-      createdAt: r.createdAt ?? at,
+      createdAt: existing?.createdAt ?? r.createdAt ?? at,
       updatedAt: at,
+      coachPlan: coachPlan,
     );
     final i = customRoutines.indexWhere((x) => x.id == r.id);
     if (i < 0) {

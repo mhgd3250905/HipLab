@@ -1,3 +1,6 @@
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer/engine.dart' as trainer;
+
 import 'hip_assessment.dart';
 import 'hip_library.dart';
 import 'hip_models.dart';
@@ -150,10 +153,17 @@ class TrainingPlan {
     this.source = PlanSource.recommended,
     this.refId,
     this.name,
+    this.sdkPlan,
+    this.sdkSeconds,
   });
   final List<HipRoutine> routines;
   final List<PlanStep> steps;
   final int transitionSeconds;
+
+  /// An AI plan is executed by the SDK without flattening doses or rests.
+  /// [steps] only supplies HipLab's occurrence-indexed safety/result metadata.
+  final coach.TrainingPlan? sdkPlan;
+  final int? sdkSeconds;
 
   /// 首页推荐 / 套路 / 我的训练组 / 单练.
   final PlanSource source;
@@ -166,8 +176,9 @@ class TrainingPlan {
   final String? name;
 
   int get seconds =>
-      steps.fold(0, (s, p) => s + p.seconds) +
-      transitionSeconds * (steps.isEmpty ? 0 : steps.length - 1);
+      sdkSeconds ??
+      (steps.fold(0, (s, p) => s + p.seconds) +
+          transitionSeconds * (steps.isEmpty ? 0 : steps.length - 1));
   int get minutes => (seconds / 60).round();
   String get title =>
       name ??
@@ -370,18 +381,30 @@ class TrainingPlanner {
 
   /// Steps of [r] that will not run for [profile]: their direction is
   /// relax-only this week (or the drill left the library).
-  List<CustomStep> customSkipped(CustomRoutine r, TrainingProfile profile) => [
-    for (final s in r.steps)
-      if (!inLibrary(content, s.kitId) ||
-          lockedOut(content.drill(s.kitId), profile))
-        s,
-  ];
+  List<CustomStep> customSkipped(CustomRoutine r, TrainingProfile profile) {
+    if (r.coachPlan case final json?) {
+      final plan = const coach.PlanCodec().decodeStrict(json).plan;
+      if (plan == null) return r.steps;
+      return [
+        for (final id in plan.exerciseIds)
+          if (!inLibrary(content, id) || lockedOut(content.drill(id), profile))
+            CustomStep(id),
+      ];
+    }
+    return [
+      for (final s in r.steps)
+        if (!inLibrary(content, s.kitId) ||
+            lockedOut(content.drill(s.kitId), profile))
+          s,
+    ];
+  }
 
   /// 我的训练组: the steps as saved, minus relax-only directions. Advanced
   /// drills are not swapped (拍板 4). The tight side gets one more set, as
   /// in the routines. Null when blocked by a safety card.
   TrainingPlan? customPlan(CustomRoutine r, TrainingProfile profile) {
     if (profile.blocked) return null;
+    if (r.coachPlan != null) return _sdkCustomPlan(r, profile);
     final steps = <PlanStep>[];
     for (final s in r.steps) {
       if (!inLibrary(content, s.kitId)) continue;
@@ -416,6 +439,91 @@ class TrainingPlanner {
       source: PlanSource.custom,
       refId: r.id,
       name: r.name,
+    );
+  }
+
+  TrainingPlan? _sdkCustomPlan(CustomRoutine routine, TrainingProfile profile) {
+    final original = const coach.PlanCodec()
+        .decodeStrict(routine.coachPlan)
+        .plan;
+    if (original == null) return null;
+    bool playable(coach.PlanItem item) =>
+        [
+          item.exerciseId,
+          for (final segment in item.segments) segment.exerciseId,
+        ].every(
+          (id) =>
+              inLibrary(content, id) && !lockedOut(content.drill(id), profile),
+        );
+    // The existing App pain-direction lock is enforced at the play boundary.
+    // It never repairs model doses or writes the filtered version to storage.
+    final filtered =
+        original.blocks.any((b) => b.items.any((i) => !playable(i)))
+        ? original.copyWith(
+            blocks: [
+              for (final block in original.blocks)
+                if (block.items.any(playable))
+                  coach.PlanBlock(
+                    id: block.id,
+                    name: block.name,
+                    type: block.type,
+                    rounds: block.rounds,
+                    restBetweenRoundsSeconds: block.restBetweenRoundsSeconds,
+                    items: block.items.where(playable).toList(),
+                  ),
+            ],
+          )
+        : original;
+    final builder = trainer.SessionBuilder(
+      rhythms: {
+        for (final kit in content.kits.values)
+          kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
+      },
+      prepSeconds: 15,
+    );
+    final phases = builder.phases(filtered);
+    final steps = <PlanStep>[];
+    for (var index = 0; index < builder.occurrenceCount(filtered); index++) {
+      final work = phases
+          .where((p) => p.isWork && p.itemIndex == index)
+          .toList();
+      final first = work.first;
+      final item = first.item!;
+      final effective = first.segment?.toPlanItem(item) ?? item;
+      final drill = content.drill(first.exerciseId!);
+      final kit = content.kit(drill.id)!;
+      final dose = LibraryDose(
+        reps: effective.reps,
+        seconds: effective.workSeconds,
+        sets: first.sets,
+        holdSeconds: first.holdSeconds,
+      );
+      steps.add(
+        PlanStep(
+          drill: drill,
+          dose: doseText(kit, dose, single: false),
+          seconds: work.fold<double>(0, (sum, p) => sum + p.seconds).ceil(),
+          sided: item.perSide,
+          sets: first.sets,
+          kitDose: KitDose(
+            reps: effective.reps,
+            seconds: effective.workSeconds,
+            holdSeconds: first.holdSeconds,
+          ),
+          alternative: drill.alternative,
+          tip: item.note ?? '',
+        ),
+      );
+    }
+    return TrainingPlan(
+      routines: const [],
+      steps: steps,
+      transitionSeconds: builder.transitionSeconds,
+      source: PlanSource.custom,
+      refId: routine.id,
+      name: routine.name,
+      sdkPlan: filtered,
+      sdkSeconds: builder.planSeconds(filtered).ceil(),
     );
   }
 }

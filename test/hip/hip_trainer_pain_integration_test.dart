@@ -12,6 +12,7 @@ import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'trainer_test_pump.dart';
 
 void main() {
   final content = loadContent();
@@ -76,12 +77,13 @@ void main() {
     await tester.tap(
       find.byKey(ValueKey(fromFeedback ? 'feel-pain' : 'discomfort')),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    await pumpPainSheet(tester);
     expect(find.byKey(const ValueKey('pain-pinch')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('pain-pinch')));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(
+      trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
+    );
     expect(find.byKey(const ValueKey('pain-pinch')), findsNothing);
   }
 

@@ -4,15 +4,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/hip/coach/coach_auth.dart';
 import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/coach/coach_device_id.dart';
 import 'package:hiplab/hip/coach/coach_service.dart';
 import 'package:hiplab/hip/coach/usage_store.dart';
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 
-import 'hip_ai_coach_test.dart' show readAsset, validPlanEnvelope;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+
+Future<String> readAsset(String path) async => File(path).readAsStringSync();
 
 class _RelayRequest {
   const _RelayRequest(this.method, this.uri, this.headers, this.body);
@@ -43,17 +43,7 @@ _startRelay() async {
           {
             'message': {
               'role': 'assistant',
-              'content': validPlanEnvelope()['text'],
-              'tool_calls': [
-                {
-                  'id': 'plan',
-                  'type': 'function',
-                  'function': {
-                    'name': 'show_plan',
-                    'arguments': jsonEncode(validPlanEnvelope()['plan']),
-                  },
-                },
-              ],
+              'content': 'Gateway response received.',
             },
             'finish_reason': 'stop',
           },
@@ -84,6 +74,9 @@ void main() {
     expect(custom.baseUrl, 'https://relay.example/v1/');
     expect(custom.model, 'my-model');
     expect(custom.configured, isTrue);
+    expect(defaults.authMode, 'worker');
+    expect(defaults.llmConfig.maxRetries, 0);
+    expect(defaults.llmConfig.timeout, const Duration(seconds: 120));
     // The SDK is shared by other Apps; HipLab overrides its selection locally.
     expect(uc.LlmConfig.deepSeekOpenCsg.model, 'deepseek-v4.1-flash-1017');
   });
@@ -116,7 +109,7 @@ void main() {
       });
       addTearDown(() => server.close(force: true));
       var identityLoads = 0;
-      final fake = uc.FakeLlmClient([validPlanEnvelope()]);
+      final fake = uc.FakeLlmClient(['unexpected']);
       final base = 'http://${server.address.address}:${server.port}';
       final service = CoachService(
         config: CoachConfig(
@@ -149,8 +142,8 @@ void main() {
     'relay auth has exactly two headers and retries failed identity loads',
     () async {
       var loads = 0;
-      final auth = CoachRelayAuth(
-        appKey: ' test-app ',
+      final auth = uc.UgkWorkerAuth(
+        appKey: 'test-app',
         deviceId: () async {
           loads++;
           if (loads == 1) throw StateError('storage unavailable');
@@ -179,6 +172,7 @@ void main() {
       // Simulate a new App service using the same installation's persisted ID.
       final identity = CoachDeviceId(storage: storage);
       final service = CoachService(
+        maxRequestRetries: 0,
         config: CoachConfig(
           appKey: 'local-relay-test-app',
           baseUrl: base,
@@ -198,7 +192,7 @@ void main() {
         uc.TurnStatus.ok,
         reason: 'the real SDK must parse and validate the local response',
       );
-      expect(answer.plan, isNotNull);
+      expect(answer.plan, isNull);
     }
     expect(captured, hasLength(2));
     for (final request in captured) {
@@ -235,6 +229,7 @@ void main() {
       addTearDown(() => relay.server.close(force: true));
       var loads = 0;
       final service = CoachService(
+        maxRequestRetries: 0,
         config: CoachConfig(
           appKey: 'local-relay-test-app',
           baseUrl:
@@ -253,7 +248,7 @@ void main() {
       await service.load();
       addTearDown(service.dispose);
       final failed = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
-      expect(failed.status, uc.TurnStatus.fallback);
+      expect(failed.status, uc.TurnStatus.error);
       expect(
         relay.requests,
         isEmpty,
@@ -271,4 +266,79 @@ void main() {
       expect(relay.requests.single.headers, isNot(contains('authorization')));
     },
   );
+
+  test('internal bearer transport has no Worker or device headers', () async {
+    final relay = await _startRelay();
+    addTearDown(() => relay.server.close(force: true));
+    const token = 'local-bearer-fixture';
+    final config = CoachConfig(
+      authMode: 'bearer',
+      token: token,
+      baseUrl: 'http://${relay.server.address.address}:${relay.server.port}/v1',
+      model: 'deepseek-flash',
+    );
+    expect(config.configured, isTrue);
+    expect(config.llmConfig.maxRetries, 0);
+    var identities = 0;
+    final service = CoachService(
+      config: config,
+      content: loadContent(),
+      maxRequestRetries: 0,
+      usage: CoachUsageStore(),
+      storage: MemoryStorage(),
+      readAsset: readAsset,
+      deviceId: () async {
+        identities++;
+        return 'unused';
+      },
+    );
+    await service.load();
+    addTearDown(service.dispose);
+    final result = await service.conversation!.send('hip mobility');
+    expect(result?.status, uc.TurnStatus.ok);
+    expect(identities, 0);
+    expect(relay.requests, hasLength(1));
+    final request = relay.requests.single;
+    expect(request.body['model'], 'deepseek-flash');
+    expect(request.headers['authorization'], 'Bearer $token');
+    expect(request.headers, isNot(contains('x-app-key')));
+    expect(request.headers, isNot(contains('x-device-id')));
+  });
+
+  test('transport does not retry a failed HTTP attempt', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    var requests = 0;
+    server.listen((request) async {
+      requests++;
+      await utf8.decoder.bind(request).join();
+      request.response.statusCode = HttpStatus.serviceUnavailable;
+      request.response.headers.contentType = ContentType.json;
+      request.response.write(
+        jsonEncode({
+          'error': {'message': 'unavailable'},
+        }),
+      );
+      await request.response.close();
+    });
+    final service = CoachService(
+      config: CoachConfig(
+        authMode: 'bearer',
+        token: 'local-failure-fixture',
+        baseUrl: 'http://${server.address.address}:${server.port}/v1',
+        model: 'deepseek-flash',
+      ),
+      content: loadContent(),
+      maxRequestRetries: 0,
+      usage: CoachUsageStore(),
+      storage: MemoryStorage(),
+      readAsset: readAsset,
+    );
+    await service.load();
+    addTearDown(service.dispose);
+    final result = await service.conversation!.send('hip mobility');
+    expect(result?.status, uc.TurnStatus.error);
+    expect(result?.plan, isNull);
+    expect(requests, 1);
+  });
 }

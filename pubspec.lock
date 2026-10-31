@@ -89,6 +89,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.7"
+  cupertino_icons:
+    dependency: transitive
+    description:
+      name: cupertino_icons
+      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.8"
   dbus:
     dependency: transitive
     description:
@@ -582,29 +590,29 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "ugk_coach-v0.5.0"
-      resolved-ref: "d7e0b8fa3afc514fe3a53427cfddb8f7b24c984f"
+      ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
+      resolved-ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
-    version: "0.5.0"
+    version: "0.8.0"
   ugk_coach_ui:
     dependency: "direct main"
     description:
       path: "packages/ugk_coach_ui"
-      ref: "ugk_coach_ui-v0.1.1"
-      resolved-ref: "3302d6235a39e2c2b4b51fa196cc32b37c31b54c"
+      ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
+      resolved-ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
-    version: "0.1.1"
+    version: "0.4.0"
   ugk_trainer:
     dependency: "direct main"
     description:
       path: "packages/ugk_trainer"
-      ref: "ugk_trainer-v0.2.3"
-      resolved-ref: "d7e0b8fa3afc514fe3a53427cfddb8f7b24c984f"
+      ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
+      resolved-ref: "66dd98a549c1ff5fedecb626a7c88583090a1440"
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
-    version: "0.2.3"
+    version: "0.6.0"
   uuid:
     dependency: "direct main"
     description:

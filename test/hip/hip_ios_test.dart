@@ -199,6 +199,30 @@ Future<List<String>> scrolledEndOffenders(
       : const [];
 }
 
+// Trainer now communicates pause through its play/resume control and dimmed
+// counter; a separate "paused" text tag is no longer part of its stage.
+bool playerIsRunning(WidgetTester tester) => tester
+    .widget<trainer.UgkPlayPauseButton>(find.byKey(const ValueKey('pause')))
+    .isPlaying;
+
+String playerCounter(WidgetTester tester) => tester
+    .widget<trainer.TrainerCountdownDigits>(
+      find.byType(trainer.TrainerCountdownDigits),
+    )
+    .value;
+
+void expectPlayerPaused(WidgetTester tester) {
+  expect(playerIsRunning(tester), isFalse);
+  expect(
+    tester
+        .widget<trainer.TrainerCountdownDigits>(
+          find.byType(trainer.TrainerCountdownDigits),
+        )
+        .dim,
+    isTrue,
+  );
+}
+
 void main() {
   final ios = TargetPlatformVariant.only(TargetPlatform.iOS);
 
@@ -256,33 +280,26 @@ void main() {
       ) async {
         await bootIos(tester, voice: voice);
         await tester.tap(find.byKey(const ValueKey('start-today')));
+        await tester.pump();
         await tester.pump(const Duration(seconds: 2));
         expect(output.begins, 1);
-        expect(find.text('已暂停'), findsNothing);
+        expect(playerIsRunning(tester), isTrue);
         final spokenBefore = output.spoken.length;
 
         output.events.add(kind);
         await tester.pump(const Duration(milliseconds: 200));
-        expect(find.text('已暂停'), findsOneWidget);
+        expectPlayerPaused(tester);
         // No "已暂停" announcement into a phone call.
         expect(output.spoken.length, spokenBefore);
 
         // Time passes on the call: the ring does not move.
         final ring = find.byKey(const ValueKey('pause'));
         expect(ring, findsOneWidget);
-        final pausedCounter = tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
-            )
-            .value;
+        final pausedCounter = playerCounter(tester);
         await tester.pump(const Duration(seconds: 20));
-        expect(find.text('已暂停'), findsOneWidget);
+        expectPlayerPaused(tester);
         expect(
-          tester
-              .widget<trainer.TrainerCountdownDigits>(
-                find.byType(trainer.TrainerCountdownDigits),
-              )
-              .value,
+          playerCounter(tester),
           pausedCounter,
           reason: 'the interruption freezes the session counter',
         );
@@ -290,7 +307,7 @@ void main() {
         // The OS ends the interruption: still paused until the user taps.
         output.events.add(AudioInterruption.ended);
         await tester.pump(const Duration(milliseconds: 200));
-        expect(find.text('已暂停'), findsOneWidget);
+        expectPlayerPaused(tester);
         expect(output.reactivations, 0);
 
         await tester.tap(ring);
@@ -302,13 +319,19 @@ void main() {
               )
               .dim,
           isFalse,
-          reason: 'the session clock resumed before the old tag fades away',
+          reason: 'the session clock resumes only after the user taps',
         );
         await tester.pump(
           trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
         );
-        expect(find.text('已暂停'), findsNothing);
+        expect(playerIsRunning(tester), isTrue);
         expect(output.reactivations, 1);
+        await tester.pump(const Duration(seconds: 1));
+        expect(
+          playerCounter(tester),
+          isNot(pausedCounter),
+          reason: 'the countdown advances after explicitly resuming',
+        );
 
         // Leaving the player releases the session.
         await tester.pageBack().catchError((_) {});
@@ -326,7 +349,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump(const Duration(milliseconds: 200));
-      expect(find.text('已暂停'), findsOneWidget);
+      expectPlayerPaused(tester);
+      final pausedCounter = playerCounter(tester);
       output.events.add(AudioInterruption.began);
       await tester.pump(const Duration(milliseconds: 200));
       // The interruption keeps its OS gate even if the user was already
@@ -342,14 +366,23 @@ void main() {
         isTrue,
       );
       expect(output.reactivations, 0);
+      await tester.pump(const Duration(seconds: 20));
+      expectPlayerPaused(tester);
+      expect(
+        playerCounter(tester),
+        pausedCounter,
+        reason: 'tapping resume cannot bypass an active OS interruption',
+      );
       output.events.add(AudioInterruption.ended);
       await tester.pump(const Duration(milliseconds: 200));
+      expectPlayerPaused(tester);
+      expect(output.reactivations, 0);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump();
       await tester.pump(
         trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
-      expect(find.text('已暂停'), findsNothing);
+      expect(playerIsRunning(tester), isTrue);
       expect(
         tester
             .widget<trainer.TrainerCountdownDigits>(
@@ -359,6 +392,8 @@ void main() {
         isFalse,
       );
       expect(output.reactivations, 1);
+      await tester.pump(const Duration(seconds: 1));
+      expect(playerCounter(tester), isNot(pausedCounter));
       await tester.pumpWidget(const SizedBox());
     }, variant: ios);
   });

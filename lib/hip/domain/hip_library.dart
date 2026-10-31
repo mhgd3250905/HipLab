@@ -5,6 +5,9 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer/engine.dart' as trainer;
+
 import 'hip_models.dart';
 
 // ───────────────────────── 动作大全 ─────────────────────────
@@ -382,12 +385,17 @@ class CustomRoutine {
     this.createdAt,
     this.updatedAt,
     this.removed = 0,
+    this.coachPlan,
   });
 
   final String id;
   final String name;
   final int restSeconds;
   final List<CustomStep> steps;
+
+  /// Full SDK plan for AI saves. Its dose, order and rests remain SDK-owned;
+  /// [steps] is the existing library preview/editor representation.
+  final Map<String, Object?>? coachPlan;
 
   /// Built-in routine id when copied (「复制成我的训练组」).
   final String? fromRoutine;
@@ -418,11 +426,23 @@ class CustomRoutine {
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     removed: removed ?? this.removed,
+    coachPlan: coachPlan,
   );
 
   /// Same as TrainingPlan.seconds: work plus rests between drills (no
   /// prep, no side switch).
   int seconds(HipContent c) {
+    if (coachPlan != null) {
+      final plan = const coach.PlanCodec().decodeStrict(coachPlan).plan;
+      if (plan == null) return 0;
+      return trainer.SessionBuilder(
+        rhythms: {
+          for (final kit in c.kits.values)
+            kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
+        },
+        prepSeconds: 15,
+      ).planSeconds(plan).ceil();
+    }
     var s = 0;
     var n = 0;
     for (final st in steps) {
@@ -449,6 +469,7 @@ class CustomRoutine {
     'createdAt': ?createdAt?.toIso8601String(),
     'updatedAt': ?updatedAt?.toIso8601String(),
     'steps': [for (final s in steps) s.toJson()],
+    if (coachPlan != null) 'coachPlan': coachPlan,
   };
 
   /// Reads and validates one stored group against the current content:
@@ -459,6 +480,9 @@ class CustomRoutine {
     final id = j['id'];
     if (id is! String || id.isEmpty) return null;
     final rawSteps = j['steps'];
+    final coachPlan = j['coachPlan'] is Map
+        ? Map<String, Object?>.from(j['coachPlan'] as Map)
+        : null;
     final steps = <CustomStep>[];
     var removed = 0;
     for (final s in rawSteps is List ? rawSteps : const []) {
@@ -481,7 +505,9 @@ class CustomRoutine {
         holdSeconds: asInt(s['holdSeconds']),
         paceSeconds: asInt(s['paceSeconds']),
       );
-      steps.add(CustomStep.fromDose(k, stored.dose(k)));
+      steps.add(
+        coachPlan == null ? CustomStep.fromDose(k, stored.dose(k)) : stored,
+      );
     }
     final rest = j['restSeconds'];
     DateTime? at(Object? v) => v is String ? DateTime.tryParse(v) : null;
@@ -489,8 +515,15 @@ class CustomRoutine {
     return CustomRoutine(
       id: id,
       name: name.isEmpty ? '我的训练组' : name,
-      restSeconds: rests.contains(rest) ? rest as int : defaultRest,
-      steps: steps.length > maxSteps ? steps.sublist(0, maxSteps) : steps,
+      restSeconds: coachPlan != null && rest is int
+          ? rest
+          : rests.contains(rest)
+          ? rest as int
+          : defaultRest,
+      steps: coachPlan == null && steps.length > maxSteps
+          ? steps.sublist(0, maxSteps)
+          : steps,
+      coachPlan: coachPlan,
       fromRoutine: j['fromRoutine'] is String
           ? j['fromRoutine'] as String
           : null,

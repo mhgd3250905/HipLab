@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'trainer_test_pump.dart';
 import 'checkup_entry.dart';
 
 void main() {
@@ -187,7 +188,7 @@ void main() {
     expect(find.text(plan.steps.first.drill.name), findsOneWidget);
     // Pain once → smaller range, half time, "别勉强".
     await tester.tap(find.byKey(const ValueKey('discomfort')));
-    await tester.pumpAndSettle();
+    await pumpPainSheet(tester);
     await tester.tap(find.byKey(const ValueKey('pain-pinch')));
     await tester.pumpAndSettle();
     expect(find.text('幅度小一点，别勉强'), findsOneWidget);
@@ -211,7 +212,8 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     }
     await tester.pumpAndSettle();
-    expect(find.text('训练完成！'), findsOneWidget);
+    expect(find.text('练完了！'), findsOneWidget);
+    expect(store.sessions.single.completed, isTrue);
     expect(store.streak, 1);
     await tester.tap(find.byKey(const ValueKey('finish')));
     await tester.pumpAndSettle();
@@ -233,7 +235,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('discomfort')));
-    await tester.pumpAndSettle();
+    await pumpPainSheet(tester);
     await tester.tap(find.byKey(const ValueKey('pain-nerve')));
     await tester.pumpAndSettle();
     expect(find.text('先停下来'), findsOneWidget);

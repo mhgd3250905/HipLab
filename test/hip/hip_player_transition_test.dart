@@ -13,6 +13,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'trainer_test_pump.dart';
 
 void main() {
   final content = loadContent();
@@ -209,7 +210,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     final before = ringSeconds(tester);
     await tester.tap(find.byKey(const ValueKey('feel-pain')));
-    await tester.pumpAndSettle();
+    await pumpPainSheet(tester);
     expect(find.text('哪种疼？'), findsOneWidget);
     // dismiss without choosing
     await tester.tapAt(const Offset(195, 80));

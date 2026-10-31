@@ -664,10 +664,41 @@ class GroupCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             LibThumbStrip(drills: drills),
+            if (actions.coach != null &&
+                aiCoachAvailable(
+                  context,
+                  configured: actions.coach!.service.configured,
+                ))
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  key: ValueKey('group-to-coach-${g.id}'),
+                  onPressed: actions.coach!.busy
+                      ? null
+                      : () => _sendToCoach(context),
+                  child: const Text('发到对话'),
+                ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _sendToCoach(BuildContext context) async {
+    final result = await actions.coach!.focusRoutine(group, actions.store);
+    if (!context.mounted) return;
+    if (result?.ok != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result?.errors.firstOrNull?.message ?? '这份计划暂时不能发到对话。'),
+        ),
+      );
+      return;
+    }
+    await Navigator.of(
+      context,
+    ).push(HipRoute.push<void>((_) => AiCoachPage(actions: actions)));
   }
 }
 

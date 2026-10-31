@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import '../control/hip_store.dart';
@@ -27,6 +28,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   late final _steps = [...widget.plan.steps];
   final Map<int, String> _felt = {};
   final Set<int> _omitted = {};
+  late coach.TrainingPlan? _activeSdkPlan = widget.plan.sdkPlan;
+  final Map<int, double> _sdkWorkScale = {};
   String? _ladderCue;
 
   HipSessionScript _script() {
@@ -38,15 +41,35 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       kits: widget.store.content.kits,
       routineIds: [for (final r in widget.plan.routines) r.id],
       restSeconds: widget.plan.transitionSeconds,
+      useSdkPhases: widget.plan.sdkPlan != null,
     );
   }
 
-  HipSessionBuilder _builder(HipSessionScript script) => HipSessionBuilder(
-    script: script,
-    transitionSeconds: widget.plan.transitionSeconds,
-  );
+  trainer.SessionBuilder _builder(HipSessionScript script) =>
+      widget.plan.sdkPlan != null
+      ? trainer.SessionBuilder(
+          rhythms: {
+            for (final kit in widget.store.content.kits.values)
+              kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
+          },
+          prepSeconds: 15,
+          transitionSeconds: widget.plan.transitionSeconds,
+          switchSecondsFor: script.switchSecondsFor,
+        )
+      : HipSessionBuilder(
+          script: script,
+          transitionSeconds: widget.plan.transitionSeconds,
+        );
 
   List<trainer.SessionPhase> _replacementPhases() {
+    if (_activeSdkPlan case final plan?) {
+      return sdkSafetyPhases(
+        _builder(_script()),
+        plan,
+        workScale: _sdkWorkScale,
+        omitted: _omitted,
+      );
+    }
     final phases = _builder(_script()).phases(toTrainerPlan(widget.plan));
     return [
       for (final p in phases)
@@ -91,11 +114,16 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       ),
     );
     if (!mounted || kind == null) return null;
-    final target = _steps[index];
+    final actualDrill = _activeSdkPlan == null
+        ? null
+        : widget.store.content.drills[at.phase.exerciseId];
+    final target = actualDrill == null
+        ? _steps[index]
+        : _steps[index].copyWith(drill: actualDrill);
     final action = _ladder.report(
       target.drill.id,
       kind,
-      alternative: target.alternative,
+      alternative: actualDrill?.alternative ?? target.alternative,
     );
     final direction = SessionPainLadder.primaryDirection(target.drill);
     if (kind == PainKind.nerve) {
@@ -135,6 +163,22 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           );
         } else {
           final reduced = target.copyWith(seconds: (target.seconds / 2).ceil());
+          if (_activeSdkPlan case final sdk?) {
+            final scale = (_sdkWorkScale[index] ?? 1) / 2;
+            final fits = _builder(_script())
+                .phases(sdk)
+                .where((phase) => phase.isWork && phase.itemIndex == index)
+                .every((phase) => sdkCanFitFullRep(phase, scale));
+            if (fits) {
+              _sdkWorkScale[index] = scale;
+              _steps[index] = reduced;
+            } else {
+              _omitted.add(index);
+              restart = index + 1;
+              decision = trainer.DiscomfortAction.skip;
+            }
+            break;
+          }
           final kit = widget.store.content.kit(reduced.drill.id);
           if (kit != null && SessionScript.noFullRep(reduced, kit)) {
             _omitted.add(index);
@@ -146,6 +190,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         }
       case PainActionType.substitute:
         final alt = widget.store.content.drill(action.substituteId!);
+        if (_activeSdkPlan case final sdk?) {
+          _activeSdkPlan = substituteSdkExercise(sdk, target.drill.id, alt.id);
+        }
         for (
           var i = at.afterExercise ? restart : index;
           i < _steps.length;
@@ -160,6 +207,17 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         }
         decision = trainer.DiscomfortAction.substitute;
       case PainActionType.skipDirection:
+        if (_activeSdkPlan case final sdk?) {
+          for (final phase in _builder(_script()).phases(sdk)) {
+            if (!phase.isWork || phase.itemIndex < restart) continue;
+            final drill = widget.store.content.drills[phase.exerciseId];
+            if (drill != null &&
+                drill.directions.first == direction &&
+                !drill.isRelax) {
+              _omitted.add(phase.itemIndex);
+            }
+          }
+        }
         for (
           var i = at.afterExercise ? restart : index;
           i < _steps.length;
@@ -266,8 +324,12 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       background: p.background,
       surface: p.surface,
       surfaceHigh: p.surfaceHigh,
+      border: p.line,
+      shadow: p.shadow,
       track: p.track,
+      ringKnob: p.thumb,
       accent: p.jade,
+      accentSubtle: p.jade.withValues(alpha: .12),
       accentText: HipColors.jadeText,
       onAccent: p.onJade,
       text: p.text,
@@ -276,7 +338,6 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       caution: p.tight,
       danger: p.pain,
       mediaStage: p.mediaBackdrop,
-      scrim: p.scrim,
       fontFamily: hipFontFamily,
     );
   }
@@ -322,10 +383,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ),
         ),
       ),
-      doseLabel: (phase) =>
-          phase.itemIndex >= 0 && phase.itemIndex < _steps.length
-          ? _steps[phase.itemIndex].dose
-          : null,
+      doseLabel: widget.plan.sdkPlan != null
+          ? null
+          : (phase) => phase.itemIndex >= 0 && phase.itemIndex < _steps.length
+                ? _steps[phase.itemIndex].dose
+                : null,
       onDiscomfort: _pain,
       announceDiscomfortPause: false,
       restFeedbackBuilder: _restFeedback,

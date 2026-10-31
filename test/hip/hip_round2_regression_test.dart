@@ -80,6 +80,25 @@ Future<void> _keyboardActivate(WidgetTester tester, Finder button) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _expectPausedClock(WidgetTester tester) async {
+  // The shared paused control intentionally breathes indefinitely. Assert its
+  // state and the frozen clock after a finite morph, without waiting for idle.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  expect(
+    tester
+        .widget<trainer.UgkPlayPauseButton>(
+          find.byType(trainer.UgkPlayPauseButton),
+        )
+        .isPlaying,
+    isFalse,
+  );
+  final digits = find.byType(trainer.TrainerCountdownDigits);
+  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  await tester.pump(const Duration(seconds: 2));
+  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+}
+
 void main() {
   testWidgets(
     'zero-time tab reversals leave start hittable and open training',
@@ -105,7 +124,7 @@ void main() {
       // The shared stage pins the counter and transport in the viewport.
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
-      await tester.pumpAndSettle();
+      await _expectPausedClock(tester);
       handle.dispose();
     },
   );
@@ -310,7 +329,7 @@ void main() {
       expect(output.events, ['begin', 'end', 'released', 'begin']);
       expect(find.byType(HipAssessmentPage), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));
-      await tester.pumpAndSettle();
+      await _expectPausedClock(tester);
       expect(
         output.ends,
         1,

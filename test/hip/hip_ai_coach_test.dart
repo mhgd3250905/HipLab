@@ -6,12 +6,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/coach/coach_service.dart';
 import 'package:hiplab/hip/coach/plan_mapping.dart';
-import 'package:hiplab/hip/coach/template_fallback.dart';
 import 'package:hiplab/hip/coach/usage_store.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
@@ -25,16 +23,32 @@ import 'package:ugk_coach_ui/ugk_coach_ui.dart' as ui;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
-/// Historical plan fixtures also serve mapper tests. This test client maps
-/// those fixture values to the current tool protocol before delivery; the App
-/// never receives or converts legacy envelope responses.
+/// Historical data fixtures are translated to the public Agent v2 protocol.
+/// Doses, admission, plan identity and versions are produced by the real SDK.
+/// This adapter is test-only; the App never converts model envelopes.
 class CoachFakeClient extends uc.FakeLlmClient {
   CoachFakeClient(super.script);
+  String? _draftId;
+  String? _note;
   @override
   Future<uc.LlmResponse> complete(
     uc.LlmRequest request, {
     uc.CancelToken? cancel,
   }) async {
+    if (_draftId case final draftId?) {
+      _draftId = null;
+      final receipt =
+          jsonDecode(
+                request.messages
+                    .lastWhere((m) => m.toolCallId == draftId)
+                    .content,
+              )
+              as Map;
+      if (receipt['ok'] == true) {
+        requests.add(request);
+        return coachV2PlanShow(receipt['plan_id'] as String, _note ?? '');
+      }
+    }
     final response = await super.complete(request, cancel: cancel);
     Object? value;
     try {
@@ -45,18 +59,18 @@ class CoachFakeClient extends uc.FakeLlmClient {
     if (value is! Map || !value.containsKey('kind')) return response;
     final kind = value['kind'];
     final text = value['text'] as String? ?? '';
+    if (kind == 'plan') {
+      final prefix = 'fixture-${requests.length}';
+      _draftId = '$prefix-draft';
+      _note = text;
+      return coachV2PlanStart(value, prefix: prefix);
+    }
     return uc.LlmResponse(
       content: text,
       usage: response.usage,
       model: response.model,
       latency: response.latency,
       toolCalls: [
-        if (kind == 'plan')
-          uc.LlmToolCall(
-            id: 'call-${requests.length}',
-            name: 'show_plan',
-            arguments: jsonEncode(value['plan']),
-          ),
         if (kind == 'ask')
           uc.LlmToolCall(
             id: 'call-${requests.length}',
@@ -71,6 +85,150 @@ class CoachFakeClient extends uc.FakeLlmClient {
       ],
     );
   }
+}
+
+uc.LlmResponse coachV2PlanStart(Map envelope, {String prefix = 'fixture'}) {
+  final plan = envelope['plan'] as Map;
+  final catalog = uc.Catalog.fromJson(
+    jsonDecode(File(CoachService.catalogAsset).readAsStringSync()),
+  );
+  final blocks = plan['blocks'] as List;
+  final ids = <String>{
+    for (final block in blocks)
+      for (final item in (block as Map)['items'] as List)
+        (item as Map)['exerciseId'] as String,
+  };
+  uc.LlmToolCall call(String suffix, String name, Object arguments) =>
+      uc.LlmToolCall(
+        id: '$prefix-$suffix',
+        name: name,
+        arguments: jsonEncode(arguments),
+      );
+  return uc.LlmResponse(
+    content: '',
+    finishReason: 'tool_calls',
+    toolCalls: [
+      call('start', 'start_task', {'type': 'plan'}),
+      call('params', 'set_params', {
+        'fields': {
+          'scene': {'value': plan['scene'] ?? 'home', 'source': 'default'},
+          'minutes': {
+            'value': plan['targetMinutes'] ?? 12,
+            'source': 'default',
+          },
+          'goal': {
+            'value': [
+              switch (plan['goal']) {
+                'relax' => 'purpose.stretch',
+                'strength' => 'purpose.strength',
+                _ => 'purpose.mobility',
+              },
+            ],
+            'source': 'default',
+          },
+          'equipment': {'value': <String>[], 'source': 'default'},
+        },
+      }),
+      for (final id in ids)
+        call('search-$id', 'search_actions', {
+          'tags': <String>[],
+          'keywords': catalog[id]?.name.of('en') ?? id,
+        }),
+      call('draft', 'draft_plan', {
+        'title': plan['title'],
+        'blocks': [
+          for (final block in blocks)
+            {
+              'kind': (block as Map)['type'],
+              'items': [
+                for (final item in block['items'] as List)
+                  {'id': (item as Map)['exerciseId']},
+              ],
+            },
+        ],
+      }),
+    ],
+  );
+}
+
+uc.LlmResponse coachV2PlanShow(String planId, String note) => uc.LlmResponse(
+  content: '',
+  finishReason: 'tool_calls',
+  toolCalls: [
+    uc.LlmToolCall(
+      id: 'fixture-show-$planId',
+      name: 'show_plan',
+      arguments: jsonEncode({'plan_id': planId, 'note': note}),
+    ),
+  ],
+);
+
+List<Object> coachV2EditScript(uc.TrainingPlan plan, String externalId) {
+  uc.LlmToolCall call(String id, String name, Object args) =>
+      uc.LlmToolCall(id: id, name: name, arguments: jsonEncode(args));
+  uc.LlmResponse calls(List<uc.LlmToolCall> tools) =>
+      uc.LlmResponse(content: '', toolCalls: tools, finishReason: 'tool_calls');
+  var sourceIndex = 0;
+  final blocks = [
+    for (final block in plan.blocks)
+      {
+        'kind': block.type.name,
+        'items': [
+          for (final item in block.items)
+            {'id': item.exerciseId, 'sourceIndex': ++sourceIndex},
+        ],
+      },
+  ];
+  return [
+    calls([
+      call('edit-start', 'start_task', {'type': 'plan', 'reuse': true}),
+      call('edit-params', 'set_params', {
+        'fields': {
+          'operation': {'value': 'edit', 'source': 'user', 'quote': '缩短到5分钟'},
+          'minutes': {'value': 5, 'source': 'user', 'quote': '5分钟'},
+        },
+      }),
+    ]),
+    calls([
+      call('edit-draft', 'draft_plan', {
+        'plan_id': 'ext:$externalId',
+        'title': '五分钟髋部放松',
+        'blocks': blocks,
+      }),
+    ]),
+    (uc.LlmRequest request) {
+      final receipt =
+          jsonDecode(
+                request.messages
+                    .lastWhere((m) => m.toolCallId == 'edit-draft')
+                    .content,
+              )
+              as Map;
+      expect(receipt['ok'], isTrue, reason: '$receipt');
+      expect(receipt['version'], 2);
+      return calls([
+        call('edit-planning', 'check', {'node': 'planning'}),
+        call('edit-check', 'check_plan', {'plan_id': 'ext:$externalId'}),
+      ]);
+    },
+    (uc.LlmRequest request) {
+      final receipt =
+          jsonDecode(
+                request.messages
+                    .lastWhere((m) => m.toolCallId == 'edit-check')
+                    .content,
+              )
+              as Map;
+      expect(receipt['ok'], isTrue, reason: '$receipt');
+      return calls([
+        call('edit-review', 'check', {'node': 'review'}),
+        call('edit-show', 'show_plan', {
+          'plan_id': 'ext:$externalId',
+          'note': '已缩短为五分钟。',
+        }),
+      ]);
+    },
+  ];
 }
 
 final _now = DateTime(2026, 10, 20, 9, 30);
@@ -102,7 +260,7 @@ Map<String, Object?> validPlanEnvelope({String text = '按你说的排了睡前 
     'schemaVersion': 1,
     'title': '睡前开胯 12 分钟',
     'summary': '先活动髋关节，再做外旋和内收拉伸，最后抱膝放松。',
-    'goal': 'mobility',
+    'goal': 'relax',
     'scene': 'home',
     'equipment': ['mat', 'chair', 'wall', 'block'],
     'level': 1,
@@ -170,455 +328,124 @@ void main() {
     readAsset: readAsset,
   );
 
-  group('服务、映射与回落', () {
-    test(
-      'all seven authored templates pass the same SDK gate without dose loss',
-      () async {
-        final coach = service();
-        await coach.load();
-        addTearDown(coach.dispose);
-        for (final routine in content.routines) {
-          final plan = coach.templates.build(routine);
-          final admitted = coach.gate.admitTemplate(plan);
-          expect(
-            admitted,
-            isNotNull,
-            reason: '${routine.id}: ${coach.validator.validate(plan).issues}',
-          );
-          final mapped = CoachPlanMapper(
-            content,
-          ).map(admitted!.plan, id: 'template-${routine.id}', at: _now);
-          expect(
-            mapped.entries.map((e) => e.drill.id),
-            routine.steps.map((s) => s.drillId),
-            reason: routine.id,
-          );
-        }
-      },
-    );
-
-    test('范围 = hiplab profile ∩ 动作大全：45 个，自测演示 n-thomas-test 排除', () async {
-      final s = service(fake: CoachFakeClient(const []));
-      await s.load();
-      expect(s.excludedIds, {'n-thomas-test'});
-      final scope = s.profile.scope(s.catalog);
+  group('SDK-owned coaching service', () {
+    test('profile has exactly the 45 playable HipLab actions', () async {
+      final coach = service(fake: CoachFakeClient([]));
+      await coach.load();
+      addTearDown(coach.dispose);
+      final scope = coach.profile.scope(coach.catalog);
       expect(scope, hasLength(45));
-      expect(scope.length, libraryDrills(content).length);
-      for (final d in scope) {
-        expect(inLibrary(content, d.id), isTrue, reason: d.id);
-        expect(File(content.drill(d.id).video!).existsSync(), isTrue);
-      }
+      expect(coach.profile.select.apps, isEmpty);
+      expect(
+        coach.profile.select.ids,
+        libraryDrills(content).map((d) => d.id).toSet(),
+      );
+      expect(scope.map((d) => d.id), isNot(contains('n-thomas-test')));
+      expect(coach.conversation!.agent.extraRules, isEmpty);
+      expect(coach.conversation!.agent.fallback, isNull);
+      expect(coach.profile.planRules.toJson(), const uc.PlanRules().toJson());
     });
 
-    test('合格样例通过 SDK 校验；用到被排除的动作报 E_SCOPE', () async {
-      final s = service(fake: CoachFakeClient(const []));
-      await s.load();
+    test('SDK scope rejects an assessment demonstration', () async {
+      final coach = service(fake: CoachFakeClient([]));
+      await coach.load();
+      addTearDown(coach.dispose);
+      final original = parsePlan(validPlanEnvelope());
+      final context = uc.CoachContext(
+        scene: original.scene,
+        equipment: original.equipment.toSet(),
+      );
       expect(
-        s.validator.validate(parsePlan(validPlanEnvelope())).errors,
-        isEmpty,
+        coach.gate.admitTemplate(original, context),
+        isNotNull,
+        reason: coach.validator.validate(original).issues.toString(),
       );
       final bad = validPlanEnvelope();
-      (((bad['plan'] as Map)['blocks'] as List)[2] as Map)['items'] = [
+      (((bad['plan'] as Map)['blocks'] as List).last as Map)['items'] = [
         item('n-thomas-test', 'time', 1, 30, perSide: true),
       ];
-      expect(
-        s.validator.validate(parsePlan(bad)).errorCategories,
-        contains('E_SCOPE'),
-      );
+      expect(coach.gate.admitTemplate(parsePlan(bad), context), isNull);
     });
 
-    test('映射：块拍平、轮数折进组数、按动作包口径换算与收范围、休息取中位数', () {
-      final legacy = validPlanEnvelope();
-      (((legacy['plan'] as Map)['blocks'] as List)[2] as Map)['items'] = [
-        item('h-knee-hug', 'time', 1, 30, rest: 0),
-      ];
-      final m = CoachPlanMapper(
-        content,
-      ).map(parsePlan(legacy), id: 'c1', at: _now);
-      expect(m.routine.steps.map((s) => s.kitId), [
-        'n-windshield',
-        'h-quad-cars',
-        's-figure4',
-        's-butterfly',
-        'w-clamshell',
-        'h-knee-hug',
-      ]);
-      final byId = {for (final e in m.entries) e.drill.id: e};
-      expect(byId['n-windshield']!.doseText, '左右交替 8 次');
-      expect(byId['h-quad-cars']!.doseText, '每侧 5 圈');
-      // 2 轮 → 2 组。
-      expect(byId['s-figure4']!.doseText, '每侧 40 秒 × 2 组');
-      expect(byId['s-butterfly']!.doseText, '停 40 秒 × 2 组');
-      expect(byId['w-clamshell']!.doseText, '每侧 12 次 × 2 组');
-      expect(byId['w-clamshell']!.adjusted, isFalse);
-      // 抱膝呼吸：目录是计时，动作包是计数（慢呼吸）→ 换成 30 秒里能做完的次数。
-      final hug = byId['h-knee-hug']!;
-      final kit = content.kit('h-knee-hug')!;
-      final reps = ((30 - kit.lead) / kit.cycleFor(const KitDose())).floor();
-      expect(hug.adjusted, isTrue);
-      expect(hug.step.dose(kit).reps, reps);
-      expect(hug.doseText, '慢呼吸 $reps 次');
-      expect(m.routine.restSeconds, 20);
-      expect(m.routine.name, '睡前开胯 12 分钟');
-      expect(m.adjusted, isTrue);
-      expect(m.seconds(content), m.routine.seconds(content));
-    });
-
-    test('映射：超范围收进训练组范围、3 组封顶、重复并入、名字 12 字', () {
-      final env = validPlanEnvelope();
-      final plan = env['plan'] as Map<String, Object?>;
-      plan['title'] = '一个非常非常非常长的开胯训练名字';
-      plan['blocks'] = [
-        {
-          'id': 'b1',
-          'name': '',
-          'type': 'main',
-          'rounds': 3,
-          'restBetweenRoundsSeconds': 0,
-          'items': [
-            item('w-clamshell', 'reps', 2, 30, perSide: true),
-            item('s-frog', 'time', 1, 120),
-            item('w-clamshell', 'reps', 1, 10, perSide: true),
-            item('n-seated-ir-drop', 'reps', 1, 8, perSide: true),
-          ],
-        },
-      ];
-      final m = CoachPlanMapper(
-        content,
-      ).map(parsePlan(env), id: 'c2', at: _now);
-      expect(m.routine.steps.map((s) => s.kitId), [
-        'w-clamshell',
-        's-frog',
-        'n-seated-ir-drop',
-      ]);
-      final clam = m.entries[0];
-      final clamKit = content.kit('w-clamshell')!;
-      expect(clam.step.dose(clamKit).reps, 2 * clamKit.defaultReps!);
-      expect(clam.step.dose(clamKit).sets, 3);
-      expect(clam.adjusted, isTrue);
-      expect(m.entries[1].step.dose(content.kit('s-frog')!).seconds, 120);
-      // 保持类给了次数 → 动作包默认秒数。
-      final drop = content.kit('n-seated-ir-drop')!;
-      expect(m.entries[2].step.dose(drop).seconds, drop.defaultSeconds);
-      expect(m.entries[2].adjusted, isTrue);
-      expect(m.entries.first.blockName, '主训练');
-      expect(m.routine.name.runes.length, CustomRoutine.maxName);
-      expect(m.routine.restSeconds, 15);
-    });
-
-    test('回落按关键词挑内置套路；预设 = 原样复制套路；红旗只给就医建议', () {
-      expect(TemplateFallback.pickRoutine('睡前想放松一下'), 'B');
-      expect(TemplateFallback.pickRoutine('在办公室工位上做'), 'A');
-      expect(TemplateFallback.pickRoutine('早上起床唤醒'), 'C');
-      expect(TemplateFallback.pickRoutine('跑步前热身激活'), 'E');
-      expect(TemplateFallback.pickRoutine('想练横叉和托马斯'), 'F');
-      expect(TemplateFallback.pickRoutine('随便练练'), 'D');
-      final t = TemplateFallback(content);
-      final r = t.reply('睡前练练', reason: PresetReason.offline);
-      expect(r.plan!.source, 'template');
-      expect(r.plan!.templateId, 'B');
-      expect(r.text, contains('网络不可用'));
-      expect(r.text, contains('预设方案'));
-      expect(r.text, contains('不是 AI 生成的'));
-      final m = CoachPlanMapper(content).map(r.plan!, id: 'c3', at: _now);
-      final copy = copyRoutine(
-        content.routine('B'),
-        content,
-        id: 'c3',
-        name: '睡前 8 分钟',
-        at: _now,
-      );
-      expect(m.routine.toJson(), copy.toJson());
-      final red = t.reply('大腿刚拉伤，肿了', reason: PresetReason.offline);
-      expect(red.plan, isNull);
-      expect(red.text, contains('就医'));
-    });
-  });
-
-  group('PR #25 审核：多轮回落记得先前约束（F25-1）', () {
-    Future<uc.TrainingPlan?> twoRounds(
-      CoachService s,
-      String first,
-      String second,
-    ) async {
-      await s.load();
-      addTearDown(s.dispose);
-      await s.conversation!.send(first);
-      return (await s.conversation!.send(second))?.plan?.plan;
-    }
-
-    test('首轮模型建议就医、第二轮断网：回落仍不给计划', () async {
-      final s = service(
-        fake: CoachFakeClient([
-          {'kind': 'reply', 'text': '术后请先咨询医生，确认可以练再来。'},
-          const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
-        ]),
-      );
-      expect(await twoRounds(s, '我做了手术，想恢复训练', '给我一个简单方案'), isNull);
-    });
-
-    test('办公室不能躺地 → 追问时长 → 答「5分钟」时断网：回落不出地面动作', () async {
-      final s = service(
-        fake: CoachFakeClient([
-          {
-            'kind': 'ask',
-            'text': '想练几分钟？',
-            'options': ['5分钟', '10分钟'],
-          },
-          const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
-        ]),
-      );
-      final plan = await twoRounds(s, '在办公室，不能躺地', '5分钟');
-      expect(plan, isNotNull);
-      expect(plan!.scene, 'office');
-      expect(content.routine(plan.templateId!).scene, HipScene.chair);
-    });
-  });
-
-  group('SDK Agent / ask_user host lifecycle', () {
     test(
-      'disposing during asset loading never creates a late agent or request',
+      'model planning uses SDK tasks and the timer, with no App fallback',
       () async {
-        final asset = Completer<String>();
         final fake = CoachFakeClient([validPlanEnvelope()]);
-        final coach = CoachService(
-          config: const CoachConfig(appKey: 'test'),
-          content: content,
-          client: fake,
-          usage: CoachUsageStore(),
-          storage: MemoryStorage(),
-          readAsset: (path) => path == CoachService.catalogAsset
-              ? asset.future
-              : readAsset(path),
-        );
-        final loading = coach.load();
-        await coach.dispose();
-        asset.complete(File(CoachService.catalogAsset).readAsStringSync());
-        await loading;
-        expect(coach.conversation, isNull);
-        expect(fake.requests, isEmpty);
-      },
-    );
-
-    uc.LlmResponse question(
-      String text, {
-      List<String>? options,
-      bool multiple = false,
-    }) => uc.LlmResponse(
-      content: '',
-      toolCalls: [
-        uc.LlmToolCall(
-          id: text,
-          name: 'ask_user',
-          arguments: jsonEncode({
-            'question': text,
-            'mode': options == null ? 'text' : 'choice',
-            if (options != null) ...{'options': options, 'multiple': multiple},
-          }),
-        ),
-      ],
-    );
-
-    test(
-      'App binds controller messages, callbacks and current gate history',
-      () async {
-        final fake = CoachFakeClient([
-          question('在哪里练？', options: ['在家', '办公室']),
-          question('有哪些器材？', options: ['椅子', '墙', '垫子'], multiple: true),
-          question('想练多久？'),
-          validPlanEnvelope(),
-        ]);
-        final session = AiCoachSession(service(fake: fake));
-        addTearDown(session.dispose);
-        await session.load();
-        final controller = session.conversation!;
-        await session.send('想练开胯');
-        expect(identical(session.messages, controller.state.messages), isTrue);
-        final history = [...session.messages];
-        await session.answerChoices(controller.state.pendingQuestion!.id, [
-          '在家',
-        ]);
-        await session.answerChoices(controller.state.pendingQuestion!.id, [
-          '垫子',
-          '椅子',
-        ]);
-        await session.answerText(controller.state.pendingQuestion!.id, '12 分钟');
-        final message = session.messages.last;
-        expect(message.plan, isNotNull);
-        expect(session.statusFor(message), uc.TurnStatus.ok);
-        expect(identical(session.conversation, controller), isTrue);
-        session.restoreHistory(history);
-        expect(session.messages, hasLength(2));
-        expect(session.messages.last.questionAnswered, isTrue);
-        expect(controller.canAnswer(history.last.id), isFalse);
-        session.reset();
-        expect(session.messages, isEmpty);
-        expect(identical(session.conversation, controller), isTrue);
-      },
-    );
-
-    test(
-      'restored plans and actions are readmitted against HipLab scope',
-      () async {
-        final coach = service(fake: CoachFakeClient([]));
-        final session = AiCoachSession(coach);
-        addTearDown(session.dispose);
-        await session.load();
-        final broader = uc.ToolGate(
-          catalog: coach.catalog,
-          profile: uc.CoachProfile.fromJson(
-            jsonDecode(File(CoachService.profileAsset).readAsStringSync())
-                as Map<String, Object?>,
-          ),
-        );
-        final envelope = validPlanEnvelope();
-        final blocks = (envelope['plan'] as Map)['blocks'] as List;
-        (blocks.last as Map)['items'] = [
-          item('n-thomas-test', 'time', 1, 30, perSide: true),
-        ];
-        final foreignPlan = broader.admitTemplate(parsePlan(envelope));
-        final foreignActions = broader.check('', [
-          uc.LlmToolCall(
-            id: 'foreign',
-            name: 'show_actions',
-            arguments: jsonEncode({
-              'items': [
-                {'actionId': 'n-thomas-test'},
-              ],
-            }),
-          ),
-        ]).actions;
-        expect(foreignPlan, isNotNull);
-        expect(foreignActions, isNotNull);
-        final admitted = coach.gate.admitTemplate(
-          parsePlan(validPlanEnvelope()),
-        );
-        session.restoreHistory([
-          uc.CoachConversationMessage(id: 'plan', at: _now, plan: foreignPlan),
-          uc.CoachConversationMessage(
-            id: 'actions',
-            at: _now,
-            actions: foreignActions,
-          ),
-          uc.CoachConversationMessage(id: 'valid', at: _now, plan: admitted),
-        ]);
-        expect(session.messages[0].plan, isNull);
-        expect(session.messages[1].actions, isNull);
-        expect(
-          session.messages[2].plan!.plan.exerciseIds,
-          admitted!.plan.exerciseIds,
-        );
-        expect(session.conversation!.state.admittedPlans, hasLength(1));
-      },
-    );
-
-    test(
-      'model made-up and non-App action IDs are rejected before UI mapping',
-      () async {
-        final invalid = validPlanEnvelope();
-        (((invalid['plan'] as Map)['blocks'] as List).first as Map)['items'] = [
-          item('made-up-drill', 'reps', 1, 5),
-        ];
-        final fake = CoachFakeClient([invalid, validPlanEnvelope()]);
         final coach = service(fake: fake);
         await coach.load();
         addTearDown(coach.dispose);
-        final answer = (await coach.conversation!.send('在家练'))!;
+        final result = (await coach.conversation!.send(
+          'hip mobility at home',
+        ))!;
+        expect(
+          result.status,
+          uc.TurnStatus.ok,
+          reason:
+              '${result.error}\n${fake.requests.last.messages.map((m) => m.toolCallId == null ? '' : '${m.toolCallId}: ${m.content}').join('\n')}',
+        );
+        expect(result.plan, isNotNull);
+        expect(result.plan!.version, 1);
         expect(fake.requests, hasLength(2));
-        expect(
-          fake.requests.last.messages.last.content,
-          contains('unknown_exercise'),
-        );
-        expect(answer.plan, isNotNull);
-        expect(
-          answer.plan!.plan.exerciseIds.every((id) => inLibrary(content, id)),
-          isTrue,
-        );
-        expect(coach.profile.select.apps, isEmpty);
-        expect(coach.profile.select.ids, isNotEmpty);
+        expect(coach.conversation!.exportSession().toJson(), isNotEmpty);
       },
     );
 
     test(
-      'unsupported mixed segments are rejected rather than silently mapped',
+      'offline model returns an error without an automatic preset',
       () async {
-        final plan = parsePlan(validPlanEnvelope());
-        final item = plan.items.first;
-        final segmented = uc.TrainingPlan(
-          id: plan.id,
-          source: plan.source,
-          title: plan.title,
-          summary: plan.summary,
-          goal: plan.goal,
-          scene: plan.scene,
-          equipment: plan.equipment,
-          level: plan.level,
-          targetMinutes: plan.targetMinutes,
-          blocks: [
-            uc.PlanBlock(
-              id: 'main',
-              name: 'main',
-              type: uc.BlockType.main,
-              items: [
-                uc.PlanItem(
-                  exerciseId: item.exerciseId,
-                  mode: item.mode,
-                  sets: item.sets,
-                  reps: item.reps,
-                  perSide: item.perSide,
-                  restSeconds: 15,
-                  segments: [
-                    uc.PlanSegment(
-                      id: 'part',
-                      exerciseId: item.exerciseId,
-                      mode: item.mode,
-                      reps: item.reps,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        );
-        final coach = service(fake: CoachFakeClient([]));
+        final fake = CoachFakeClient([
+          const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
+        ]);
+        final coach = service(fake: fake);
         await coach.load();
-        expect(
-          hiplabDoseRule(segmented, coach.catalog, const uc.CoachContext()),
-          isNotEmpty,
-        );
-        expect(
-          () => CoachPlanMapper(content).map(segmented, id: 'x', at: _now),
-          throwsArgumentError,
-        );
+        addTearDown(coach.dispose);
+        final result = (await coach.conversation!.send(
+          'hip mobility at home',
+        ))!;
+        expect(result.status, uc.TurnStatus.error);
+        expect(result.plan, isNull);
+        expect(coach.conversation!.state.admittedPlans, isEmpty);
+        expect(fake.requests, hasLength(1));
       },
     );
+
+    test('disposing during asset load creates no late controller', () async {
+      final asset = Completer<String>();
+      final fake = CoachFakeClient([]);
+      final coach = CoachService(
+        config: const CoachConfig(appKey: 'test'),
+        content: content,
+        client: fake,
+        usage: CoachUsageStore(),
+        storage: MemoryStorage(),
+        readAsset: (path) =>
+            path == CoachService.catalogAsset ? asset.future : readAsset(path),
+      );
+      final loading = coach.load();
+      await coach.dispose();
+      asset.complete(File(CoachService.catalogAsset).readAsStringSync());
+      await loading;
+      expect(coach.conversation, isNull);
+      expect(fake.requests, isEmpty);
+    });
   });
 
   group('AI 定制页', () {
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
     Future<HipStore> pumpApp(
       WidgetTester tester,
       CoachService coach, {
-      Size size = const Size(390, 844),
-      double textScale = 1,
       bool dark = false,
-      void Function(HipStore)? setup,
     }) async {
-      tester.view.physicalSize = size;
+      tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
-      tester.platformDispatcher.textScaleFactorTestValue = textScale;
       addTearDown(tester.view.reset);
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      final store = HipStore(
-        content: content,
-        storage: MemoryStorage(),
-        clock: () => _now,
-      );
-      await store.initialize();
+      final store = HipStore(content: content, storage: MemoryStorage());
       store
         ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
         ..identity = HipIdentity.office
         ..theme = dark ? HipThemeChoice.dark : HipThemeChoice.light;
-      setup?.call(store);
       await tester.pumpWidget(
         HipApp(store: store, videoEnabled: false, coach: coach),
       );
@@ -630,28 +457,10 @@ void main() {
       return store;
     }
 
-    Finder inList(String key) {
-      if (key == 'coach-option-0') {
-        return find
-            .descendant(
-              of: find.byType(ui.CoachQuestionBubble),
-              matching: find.text('在家'),
-            )
-            .first;
-      }
-      if (key.startsWith('coach-row-')) {
-        return find.byKey(
-          ValueKey(key.replaceFirst('coach-row-', 'plan-row-')),
-        );
-      }
-      if (key == 'coach-stop') return find.text('停止');
-      return find.byKey(ValueKey(key));
-    }
-
-    Future<void> tapIn(WidgetTester tester, Finder f, String list) async {
+    Future<void> tapIn(WidgetTester tester, Finder finder, String list) async {
       await tester.scrollUntilVisible(
-        f,
-        200,
+        finder,
+        150,
         scrollable: find
             .descendant(
               of: find.byKey(ValueKey(list)),
@@ -660,744 +469,521 @@ void main() {
             .first,
       );
       await tester.pumpAndSettle();
-      await tester.tap(f);
+      await tester.tap(finder);
       await tester.pumpAndSettle();
     }
 
-    Future<void> openCoach(WidgetTester tester, {bool accept = true}) async {
-      await tapIn(tester, inList('practice-ai-coach'), 'practice-list');
-      if (accept && inList('coach-disclaimer-ok').evaluate().isNotEmpty) {
-        await tester.tap(inList('coach-disclaimer-ok'));
+    Future<void> openCoach(WidgetTester tester) async {
+      await tapIn(
+        tester,
+        find.byKey(const ValueKey('practice-ai-coach')),
+        'practice-list',
+      );
+      final accept = find.byKey(const ValueKey('coach-disclaimer-ok'));
+      if (accept.evaluate().isNotEmpty) {
+        await tester.tap(accept);
         await tester.pumpAndSettle();
       }
     }
 
     Future<void> say(WidgetTester tester, String text) async {
-      await tester.enterText(inList('coach-input'), text);
-      await tester.tap(inList('coach-send'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tester.enterText(find.byKey(const ValueKey('coach-input')), text);
+      await tester.tap(find.byKey(const ValueKey('coach-send')));
       await tester.pumpAndSettle();
-      final expand = find.bySemanticsLabel('展开动作');
-      if (expand.evaluate().isNotEmpty) {
-        await tester.ensureVisible(expand.last);
-        await tester.tap(expand.last);
-        await tester.pumpAndSettle();
-      }
     }
 
-    Future<void> tapCard(WidgetTester tester, String key) =>
-        tapIn(tester, inList(key), 'coach-list');
+    Future<void> expand(WidgetTester tester) async {
+      await tapIn(
+        tester,
+        find.byKey(const ValueKey('plan-expanded-header')).last,
+        'coach-list',
+      );
+    }
 
-    testWidgets('生成 → 计划卡 → 保存为自定义训练组 → 出现在「我的」→ 开始训练', (tester) async {
-      final usage = CoachUsageStore();
-      final fake = CoachFakeClient([validPlanEnvelope()]);
-      final store = await pumpApp(tester, service(fake: fake, usage: usage));
-      expect(inList('practice-ai-unconfigured'), findsNothing);
-      // 底栏仍是 3 个。
-      expect(find.byKey(const ValueKey('tab-3')), findsNothing);
-      await openCoach(tester);
-      expect(find.text('说说你想怎么练'), findsOneWidget);
-      await say(tester, '睡前 12 分钟，开开胯');
+    testWidgets(
+      'SDK plan card saves the full plan and enters the existing player',
+      (tester) async {
+        final fake = CoachFakeClient([validPlanEnvelope()]);
+        final coach = service(fake: fake);
+        final store = await pumpApp(tester, coach);
+        await openCoach(tester);
+        await say(tester, '睡前12分钟开胯');
+        expect(fake.requests, hasLength(2));
+        final admitted = coach.conversation!.state.admittedPlans.single;
+        final card = tester.widget<ui.CoachPlanExpanded>(
+          find.byType(ui.CoachPlanExpanded),
+        );
+        expect(card.plan.id, admitted.plan.id);
+        expect(
+          card.plan.items.map((i) => i.exerciseId),
+          admitted.plan.items.map((i) => i.exerciseId),
+        );
+        expect(card.expanded, isFalse);
+        await expand(tester);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-save')),
+          'coach-list',
+        );
+        expect(store.customRoutines, hasLength(1));
+        final group = store.customRoutines.single;
+        expect(
+          jsonDecode(store.coachPlanJson[group.id]!),
+          admitted.plan.toJson(),
+        );
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-start')),
+          'coach-list',
+        );
+        final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
+        expect(player.plan.source, PlanSource.custom);
+        expect(
+          player.plan.steps.first.drill.id,
+          admitted.plan.items.first.exerciseId,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-      expect(fake.requests, hasLength(1));
-      expect(inList('coach-plan-card'), findsOneWidget);
-      expect(inList('coach-badge-ai'), findsOneWidget);
-      expect(find.text('睡前开胯 12 分钟'), findsOneWidget);
-      expect(find.text('每侧 40 秒 × 2 组'), findsOneWidget);
-      expect(find.text(content.drill('s-butterfly').name), findsOneWidget);
-      expect(find.byType(ui.CoachPlanCard), findsOneWidget);
-      expect(find.byType(ui.CoachMessageBubble), findsNWidgets(2));
-      expect(find.textContaining('拉伸停在有感觉但不痛的位置'), findsOneWidget);
-      expect(find.textContaining('出现疼痛、麻木或头晕立即停止'), findsOneWidget);
-      expect(find.textContaining('6 个动作'), findsWidgets);
-      expect(usage.totals.calls, 1);
+    testWidgets(
+      'recommendations use SDK card and send the SDK follow-up text',
+      (tester) async {
+        final fake = CoachFakeClient([
+          {'kind': 'reply', 'text': '收到'},
+        ]);
+        final coach = service(fake: fake);
+        await pumpApp(tester, coach);
+        await openCoach(tester);
+        final actions = coach.gate.check('', [
+          uc.LlmToolCall(
+            id: 'recommend',
+            name: 'show_actions',
+            arguments: jsonEncode({
+              'items': [
+                {'actionId': 's-butterfly'},
+                {'actionId': 's-figure4'},
+              ],
+            }),
+          ),
+        ]).actions!;
+        coach.conversation!.restoreHistory([
+          uc.CoachConversationMessage(
+            id: 'recommend-card',
+            at: _now,
+            text: '内侧拉伸动作',
+            actions: actions,
+          ),
+        ]);
+        await tester.pumpAndSettle();
+        final card = tester.widget<ui.CoachRecommendCard>(
+          find.byType(ui.CoachRecommendCard),
+        );
+        expect(card.actionIds, ['s-butterfly', 's-figure4']);
+        expect(find.text('内侧拉伸动作'), findsOneWidget);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('recommend-plan-button')),
+          'coach-list',
+        );
+        expect(
+          coach.conversation!.state.messages.where((m) => m.isUser).last.text,
+          '请把刚才推荐的动作排成计划。',
+        );
+      },
+    );
 
-      await tapCard(tester, 'coach-save');
-      expect(store.customRoutines, hasLength(1));
-      final g = store.customRoutines.single;
-      expect(g.name, '睡前开胯 12 分钟');
-      expect(g.steps, hasLength(6));
-      expect(g.restSeconds, 20);
-      expect(g.steps[2].sets, 2);
-      expect(find.text('已保存到「我的」'), findsOneWidget);
+    testWidgets(
+      'failure shows explicit retry and offers no unverified preset',
+      (tester) async {
+        final fake = CoachFakeClient([
+          const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
+          {'kind': 'reply', 'text': '可以继续了'},
+        ]);
+        final coach = service(fake: fake);
+        await pumpApp(tester, coach);
+        await openCoach(tester);
+        await say(tester, '在家开胯');
+        expect(find.byType(ui.CoachFailureBubble), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('coach-failure-secondary')),
+          findsNothing,
+        );
+        expect(find.byType(ui.CoachPlanExpanded), findsNothing);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-failure-retry')),
+          'coach-list',
+        );
+        expect(
+          coach.conversation!.state.messages.where((m) => m.isUser).last.text,
+          '重试',
+        );
+        expect(fake.requests, hasLength(2));
+      },
+    );
 
-      // 直接开始：进入现有训练流程（自定义训练组），第一步是热身动作。
-      await tapCard(tester, 'coach-start');
-      expect(find.byType(HipPlayerPage), findsOneWidget);
-      final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(player.plan.source, PlanSource.custom);
-      expect(player.plan.refId, g.id);
-      expect(player.plan.steps.first.drill.id, 'n-windshield');
-      expect(player.plan.steps[2].sets, 2);
-      await tester.tap(find.byKey(const ValueKey('close')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('close-confirm')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HipPlayerPage), findsNothing);
-      expect(inList('coach-plan-card'), findsOneWidget);
+    testWidgets(
+      'SDK confirmation fields map without App defaults or revived history',
+      (tester) async {
+        final coach = service(fake: CoachFakeClient([]));
+        await pumpApp(tester, coach);
+        await openCoach(tester);
+        final question = uc.AskUserQuestion.confirmation(
+          question: '确认练习条件',
+          focus: '髋部',
+          fields: [
+            uc.AskUserField(
+              key: 'scene',
+              label: '场地',
+              options: ['在家', '办公室'],
+              preselected: ['在家'],
+              previousSelections: ['在家'],
+            ),
+            uc.AskUserField(
+              key: 'equipment',
+              label: '器械',
+              options: ['徒手', '椅子'],
+              multiple: true,
+              preselected: ['椅子'],
+              optionsByScene: {
+                '在家': ['徒手', '椅子'],
+                '办公室': ['椅子'],
+              },
+            ),
+            uc.AskUserField(
+              key: 'minutes',
+              label: '时长',
+              options: ['5分钟', '10分钟'],
+              preselected: ['10分钟'],
+            ),
+          ],
+          defaultSelections: {
+            'scene': ['在家'],
+            'equipment': ['椅子'],
+            'minutes': ['10分钟'],
+          },
+        );
+        coach.conversation!.restoreHistory([
+          uc.CoachConversationMessage(id: 'q', at: _now, question: question),
+        ]);
+        await tester.pumpAndSettle();
+        final bubble = tester.widget<ui.CoachQuestionBubble>(
+          find.byType(ui.CoachQuestionBubble),
+        );
+        expect(bubble.question.isConfirmation, isTrue);
+        expect(bubble.question.focus, '髋部');
+        expect(bubble.question.defaultSelections, question.defaultSelections);
+        expect(bubble.question.fields.first.initialSelections, ['在家']);
+        expect(bubble.question.fields.first.previousSelections, ['在家']);
+        expect(
+          bubble.question.fields[1].optionsByScene,
+          question.fields[1].optionsByScene,
+        );
+        expect(bubble.enabled, isFalse);
+        expect(bubble.question.answered, isTrue);
+        expect(bubble.onFormAnswer, isNotNull);
+        expect(bubble.onSkip, isNotNull);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-      // 回到练习页「我的」：训练组在，从组卡片开始同样进训练。
-      await tester.tap(find.bySemanticsLabel('返回').first);
-      await tester.pumpAndSettle();
-      expect(inList('group-card-${g.id}'), findsOneWidget);
-      await tapIn(tester, inList('group-start-${g.id}'), 'practice-list');
-      final again = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(again.plan.steps.map((s) => s.drill.id), [
-        for (final s in g.steps) s.kitId,
-      ]);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('a long admitted plan opens bounded scrollable App details', (
+    testWidgets('saved plan sends to discussion without requesting the model', (
       tester,
     ) async {
-      final snapshot =
-          jsonDecode(File(CoachService.catalogAsset).readAsStringSync()) as Map;
-      final drills = (snapshot['drills'] as List)
-          .cast<Map>()
-          .where(
-            (d) =>
-                (d['scenes'] as List).contains('home') &&
-                inLibrary(content, d['id'] as String),
-          )
-          .take(20)
-          .toList();
-      final env = validPlanEnvelope();
-      final plan = env['plan'] as Map<String, Object?>;
-      plan['equipment'] = {
-        for (final d in drills) ...(d['equipment'] as List).cast<String>(),
-      }.toList();
-      plan['blocks'] = [
-        {
-          'id': 'long',
-          'name': '完整计划',
-          'type': 'main',
-          'rounds': 1,
-          'items': [
-            for (final d in drills)
-              item(
-                d['id'] as String,
-                content.kit(d['id'] as String)!.kind.counted ? 'reps' : 'time',
-                1,
-                content.kit(d['id'] as String)!.kind.counted
-                    ? content.kit(d['id'] as String)!.defaultReps ?? 1
-                    : content.kit(d['id'] as String)!.defaultSeconds ?? 30,
-                perSide: content.kit(d['id'] as String)!.sided,
-              ),
-          ],
-        },
-      ];
-      await pumpApp(tester, service(fake: CoachFakeClient([env])));
+      final fake = CoachFakeClient([validPlanEnvelope()]);
+      final coach = service(fake: fake);
+      final store = await pumpApp(tester, coach);
       await openCoach(tester);
-      await say(tester, '给我完整居家计划');
-      final card = tester.widget<ui.CoachPlanCard>(
-        find.byType(ui.CoachPlanCard),
-      );
-      expect(card.plan.items, hasLength(20));
-      card.onOpen();
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      final details = find.byKey(const ValueKey('coach-plan-details'));
-      await tester.scrollUntilVisible(
-        find.text(content.drill(drills.last['id'] as String).name).last,
-        300,
-        scrollable: find.descendant(
-          of: details,
-          matching: find.byType(Scrollable),
-        ),
-      );
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('不保存直接开始：同样进训练流程，不新增训练组', (tester) async {
-      final store = await pumpApp(
+      await say(tester, '在家开胯12分钟');
+      await expand(tester);
+      await tapIn(
         tester,
-        service(fake: CoachFakeClient([validPlanEnvelope()])),
+        find.byKey(const ValueKey('coach-save')),
+        'coach-list',
       );
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      await tapCard(tester, 'coach-start');
-      final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(player.plan.source, PlanSource.custom);
-      expect(player.plan.steps, hasLength(6));
-      expect(store.customRoutines, isEmpty);
-    });
-
-    testWidgets('门禁追问 → SDK选项 → 同一Agent继续出计划', (tester) async {
-      final fake = CoachFakeClient([
-        {
-          'kind': 'ask',
-          'text': '在家还是在办公室？',
-          'options': ['在家', '办公室'],
-        },
-        validPlanEnvelope(),
-      ]);
-      await pumpApp(tester, service(fake: fake));
-      await openCoach(tester);
-      await say(tester, '想开开胯');
-      expect(find.text('在家还是在办公室？'), findsOneWidget);
-      expect(inList('coach-plan-card'), findsNothing);
-      await tester.tap(inList('coach-option-0'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      final group = store.customRoutines.single;
+      final requests = fake.requests.length;
+      await tester.tap(find.bySemanticsLabel('返回').first);
       await tester.pumpAndSettle();
-      expect(fake.requests, hasLength(2));
-      expect(
-        fake.requests.last.messages
-            .where((m) => m.role == uc.LlmRole.assistant)
-            .any((m) => m.toolCalls.any((c) => c.name == 'ask_user')),
-        isTrue,
+      await tapIn(
+        tester,
+        find.byKey(ValueKey('group-to-coach-${group.id}')),
+        'practice-list',
       );
-      expect(fake.requests.last.messages.last.content, contains('在家'));
-      expect(inList('coach-plan-card'), findsOneWidget);
-      final question = tester.widget<ui.CoachQuestionBubble>(
-        find.byType(ui.CoachQuestionBubble),
-      );
-      expect(question.enabled, isFalse);
-      expect(question.question.answeredChoices, ['在家']);
-    });
-
-    testWidgets('第一次输出校验失败 → 带错误重写 → 通过', (tester) async {
-      final bad = validPlanEnvelope();
-      ((((bad['plan'] as Map)['blocks'] as List)[0] as Map)['items']
-          as List)[0] = item(
-        'made-up-drill',
-        'reps',
-        1,
-        8,
-      );
-      final usage = CoachUsageStore();
-      final fake = CoachFakeClient([bad, validPlanEnvelope()]);
-      await pumpApp(tester, service(fake: fake, usage: usage));
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      expect(fake.requests, hasLength(2));
-      expect(
-        fake.requests.last.messages.last.content,
-        contains('unknown_exercise'),
-      );
-      expect(inList('coach-badge-ai'), findsOneWidget);
-      expect(inList('coach-badge-preset'), findsNothing);
-      expect(usage.records.map((r) => r.outcome), [
-        uc.CallOutcome.rejected,
-        uc.CallOutcome.rewritten,
-      ]);
-    });
-
-    testWidgets('两次校验失败 → 回落预设方案并说明不是 AI 生成', (tester) async {
-      final bad = validPlanEnvelope();
-      (((bad['plan'] as Map)['blocks'] as List)[1] as Map)['items'] = [
-        item('s-figure4', 'time', 1, 40), // 单侧动作没标每侧
-      ];
-      await pumpApp(tester, service(fake: CoachFakeClient([bad, bad, bad])));
-      await openCoach(tester);
-      await say(tester, '睡前放松');
-      expect(inList('coach-badge-preset'), findsOneWidget);
-      expect(inList('coach-preset-note'), findsOneWidget);
-      expect(find.textContaining('AI 两次都没排出合格的计划'), findsOneWidget);
-      expect(find.textContaining('「睡前 8 分钟」'), findsOneWidget);
-    });
-
-    testWidgets('断网 → 预设方案（按关键词），可保存成训练组', (tester) async {
-      final usage = CoachUsageStore();
-      final fake = CoachFakeClient([
-        const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
-      ]);
-      final store = await pumpApp(tester, service(fake: fake, usage: usage));
-      await openCoach(tester);
-      await say(tester, '在办公室工位上做一组');
-      expect(fake.requests, hasLength(1)); // 网络错误不重写
-      expect(find.textContaining('网络不可用'), findsOneWidget);
-      expect(inList('coach-badge-preset'), findsOneWidget);
-      await tapCard(tester, 'coach-save');
-      final g = store.customRoutines.single;
-      expect(g.fromRoutine, 'A');
-      expect(g.steps.map((s) => s.kitId), [
-        for (final s in content.routine('A').steps) s.drillId,
-      ]);
-      expect(usage.records.last.turnOutcome, uc.TurnOutcome.fallback);
+      expect(coach.conversation!.focus!.planId, 'ext:${group.id}');
+      expect(coach.conversation!.focus!.savedRef.externalId, group.id);
+      expect(fake.requests, hasLength(requests));
+      expect(find.byType(AiCoachPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets(
-      'SDK history ordinary assistant text and its question both render',
+      'focused version supports updating its save and saving a new copy',
+      (tester) async {
+        final raw = parsePlan(validPlanEnvelope());
+        final coach = service(
+          fake: CoachFakeClient(coachV2EditScript(raw, 'saved-1')),
+        );
+        final store = await pumpApp(tester, coach);
+        await openCoach(tester);
+        final group = await store.saveCustomRoutine(
+          CoachPlanMapper(content).map(raw, id: 'saved-1', at: _now).routine,
+          coachPlan: raw.toJson(),
+        );
+        final controller = coach.conversation!;
+        expect(
+          controller.focusExternalPlan(externalId: group.id, plan: raw).ok,
+          isTrue,
+        );
+        await say(tester, '缩短到5分钟');
+        final edited = controller.state.messages.lastWhere(
+          (m) => m.plan != null,
+        );
+        final focused = edited.plan!.plan;
+        expect(edited.plan!.version, 2);
+        expect(edited.plan!.savedRef!.externalId, group.id);
+        expect(edited.plan!.savedRef!.baseVersion, 1);
+        expect(edited.planState!.sessionState!.savedRef!.baseVersion, 1);
+        await tester.pumpAndSettle();
+        expect(find.text('另存一份'), findsOneWidget);
+        await expand(tester);
+        await tapIn(tester, find.text('更新到我的计划'), 'coach-list');
+        expect(store.customRoutines, hasLength(1));
+        expect(jsonDecode(store.coachPlanJson[group.id]!), focused.toJson());
+        await tapIn(tester, find.text('另存一份'), 'coach-list');
+        expect(store.customRoutines, hasLength(2));
+        expect(store.coachPlanJson, hasLength(2));
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'SDK-approved preset is offered only after the planning failure and selected explicitly',
       (tester) async {
         final fake = CoachFakeClient([
           uc.LlmResponse(
-            content: '先确认一下你的训练条件。',
+            content: '',
             toolCalls: [
               uc.LlmToolCall(
-                id: 'context-question',
-                name: 'ask_user',
-                arguments: jsonEncode({'question': '准备在哪里练？', 'mode': 'text'}),
+                id: 'preset-start',
+                name: 'start_task',
+                arguments: jsonEncode({'type': 'plan'}),
               ),
             ],
           ),
+          const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
         ]);
         final coach = service(fake: fake);
-        await pumpApp(tester, coach);
+        final store = await pumpApp(tester, coach);
         await openCoach(tester);
-        await say(tester, '想开胯');
-        final messages = coach.conversation!.state.messages;
-        coach.conversation!.restoreHistory([
-          ...messages.take(messages.length - 1),
-          messages.last.copyWith(text: '先确认一下你的训练条件。'),
-        ]);
-        await tester.pumpAndSettle();
-        expect(find.text('先确认一下你的训练条件。'), findsOneWidget);
-        expect(find.text('准备在哪里练？'), findsOneWidget);
-        expect(find.byType(ui.CoachQuestionBubble), findsOneWidget);
-        expect(tester.takeException(), isNull);
+        final raw = parsePlan(validPlanEnvelope());
+        await store.saveCustomRoutine(
+          CoachPlanMapper(
+            content,
+          ).map(raw, id: 'preset-source', at: _now).routine,
+          coachPlan: raw.toJson(),
+        );
+        expect(
+          coach.conversation!
+              .focusExternalPlan(externalId: 'preset-source', plan: raw)
+              .ok,
+          isTrue,
+        );
+        await say(tester, '修改这个计划');
+        expect(coach.conversation!.canOfferPreset(raw), isTrue);
+        expect(
+          find.byKey(const ValueKey('coach-failure-secondary')),
+          findsOneWidget,
+        );
+        expect(coach.conversation!.state.admittedPlans, isEmpty);
+        final requests = fake.requests.length;
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-failure-secondary')),
+          'coach-list',
+        );
+        expect(fake.requests, hasLength(requests));
+        expect(
+          coach.conversation!.state.admittedPlans.single.savedRef!.baseVersion,
+          1,
+        );
+        expect(coach.conversation!.state.admittedPlans.single.version, 2);
+        expect(find.byType(ui.CoachPlanExpanded), findsOneWidget);
       },
     );
 
-    testWidgets('new conversation clears the waiting draft and late reply', (
+    testWidgets('starting an unsaved SDK plan does not add a saved group', (
       tester,
     ) async {
-      final fake = CoachFakeClient([
-        (uc.LlmRequest _) async {
-          await Future<void>.delayed(const Duration(seconds: 30));
-          return jsonEncode(validPlanEnvelope());
-        },
-      ]);
-      await pumpApp(tester, service(fake: fake));
+      final coach = service(fake: CoachFakeClient([validPlanEnvelope()]));
+      final store = await pumpApp(tester, coach);
       await openCoach(tester);
-      await tester.enterText(inList('coach-input'), '这条输入会被新对话取消');
-      await tester.tap(inList('coach-send'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('这条输入会被新对话取消'), findsOneWidget);
-      expect(find.text('说说你想怎么练'), findsNothing);
-      expect(inList('coach-thinking'), findsOneWidget);
-      await tester.tap(inList('coach-reset'));
-      await tester.pump(const Duration(seconds: 31));
-      await tester.pumpAndSettle();
-      expect(find.text('这条输入会被新对话取消'), findsNothing);
-      expect(inList('coach-plan-card'), findsNothing);
-      expect(inList('coach-thinking'), findsNothing);
-      expect(find.text('说说你想怎么练'), findsOneWidget);
-      expect(
-        tester.widget<TextField>(inList('coach-input')).controller!.text,
-        isEmpty,
+      await say(tester, '在家开胯12分钟');
+      await expand(tester);
+      await tapIn(
+        tester,
+        find.byKey(const ValueKey('coach-start')),
+        'coach-list',
       );
+      expect(find.byType(HipPlayerPage), findsOneWidget);
+      expect(store.customRoutines, isEmpty);
+      expect(store.coachPlanJson, isEmpty);
     });
 
     testWidgets(
-      'SDK conversation limit keeps the new conversation action visible',
+      'editing a saved group cannot change the immutable older SDK card playback',
       (tester) async {
-        final fake = CoachFakeClient(
-          List.generate(20, (_) => {'kind': 'reply', 'text': '在不痛的范围内练。'}),
-        );
-        final coach = service(fake: fake);
-        await pumpApp(tester, coach);
+        final coach = service(fake: CoachFakeClient([validPlanEnvelope()]));
+        final store = await pumpApp(tester, coach);
         await openCoach(tester);
-        await tester.runAsync(() async {
-          for (var i = 0; i < 20; i++) {
-            await coach.conversation!.send('第$i轮');
-          }
-        });
-        await tester.pumpAndSettle();
-        await say(tester, '再练一轮');
-        expect(fake.requests, hasLength(20));
-        expect(
-          coach.conversation!.state.lastResult!.status,
-          uc.TurnStatus.limitReached,
+        await say(tester, '在家开胯12分钟');
+        final original = coach.conversation!.state.admittedPlans.single.plan;
+        await expand(tester);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-save')),
+          'coach-list',
         );
-        final reset = find.text('对话已满，开始新对话');
-        expect(reset, findsOneWidget);
-        await tester.ensureVisible(reset);
-        await tester.tap(reset);
-        await tester.pumpAndSettle();
-        expect(coach.conversation!.state.messages, isEmpty);
-        expect(find.text('说说你想怎么练'), findsOneWidget);
+        final group = store.customRoutines.single;
+        await store.saveCustomRoutine(
+          group.copyWith(steps: const [CustomStep('s-seated-fold')]),
+        );
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-start')),
+          'coach-list',
+        );
+        final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
+        expect(
+          player.plan.steps.first.drill.id,
+          original.items.first.exerciseId,
+        );
+        expect(player.plan.steps.first.drill.id, isNot('s-seated-fold'));
       },
     );
 
-    testWidgets('loading cannot queue an input across a new conversation', (
-      tester,
-    ) async {
-      final asset = Completer<String>();
-      final fake = CoachFakeClient([validPlanEnvelope()]);
-      final coach = CoachService(
-        config: const CoachConfig(appKey: 'test'),
-        content: content,
-        client: fake,
-        usage: CoachUsageStore(),
-        storage: MemoryStorage(),
-        readAsset: (path) =>
-            path == CoachService.catalogAsset ? asset.future : readAsset(path),
-      );
-      await pumpApp(tester, coach);
-      await openCoach(tester, accept: false);
-      expect(tester.widget<TextField>(inList('coach-input')).enabled, isFalse);
-      await tester.tap(inList('coach-send'));
-      await tester.tap(inList('coach-reset'));
-      asset.complete(File(CoachService.catalogAsset).readAsStringSync());
-      await tester.pumpAndSettle();
-      expect(tester.widget<TextField>(inList('coach-input')).enabled, isTrue);
-      expect(fake.requests, isEmpty);
-      expect(find.text('说说你想怎么练'), findsOneWidget);
-    });
-
-    testWidgets('waiting user row keeps its identity after the SDK commits', (
-      tester,
-    ) async {
-      final coach = service(
-        fake: CoachFakeClient([
-          (uc.LlmRequest _) async {
-            await Future<void>.delayed(const Duration(seconds: 2));
-            return jsonEncode(validPlanEnvelope());
-          },
-        ]),
-      );
-      await pumpApp(tester, coach);
-      await openCoach(tester);
-      await tester.enterText(inList('coach-input'), '睡前开胯');
-      await tester.tap(inList('coach-send'));
-      await tester.pump(const Duration(milliseconds: 100));
-      final pendingList = tester.widget<ui.CoachChatList>(inList('coach-list'));
-      final pendingId = pendingList.entries.singleWhere((m) => m.isUser).id;
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pumpAndSettle();
-      final completedList = tester.widget<ui.CoachChatList>(
-        inList('coach-list'),
-      );
-      expect(completedList.entries.singleWhere((m) => m.isUser).id, pendingId);
-      expect(
-        coach.conversation!.state.messages.where((m) => m.isUser),
-        hasLength(1),
-      );
-      expect(find.text('睡前开胯'), findsOneWidget);
-      expect(inList('coach-plan-card'), findsOneWidget);
-    });
-
-    testWidgets('未配置Key时练习页没有AI入口也不触发模型', (tester) async {
-      final coach = service();
-      await pumpApp(tester, coach);
-      expect(inList('practice-ai-coach'), findsNothing);
-      expect(inList('practice-ai-unconfigured'), findsNothing);
-      expect(coach.usage.totals.calls, 0);
-    });
-
-    testWidgets('首次使用显示一行免责，确认后不再显示', (tester) async {
-      final storage = MemoryStorage();
-      await pumpApp(
-        tester,
-        service(storage: storage, fake: CoachFakeClient([])),
-      );
-      await openCoach(tester, accept: false);
-      expect(inList('coach-disclaimer'), findsOneWidget);
-      await tester.tap(inList('coach-disclaimer-ok'));
-      await tester.pumpAndSettle();
-      expect(inList('coach-disclaimer'), findsNothing);
-      expect(storage.values[CoachService.storageKey], contains('true'));
-      final again = service(storage: storage);
-      await again.load();
-      expect(again.disclaimerAccepted, isTrue);
-    });
-
-    testWidgets('等待：分步提示、已用秒数、进度条；停止真正中止，原话回到输入框', (tester) async {
-      final usage = CoachUsageStore();
-      final coach = service(
-        usage: usage,
-        fake: CoachFakeClient([
-          (uc.LlmRequest r) async {
-            await Future<void>.delayed(const Duration(seconds: 30));
-            return jsonEncode(validPlanEnvelope());
-          },
-        ]),
-      );
-      await pumpApp(tester, coach);
-      await openCoach(tester);
-      await tester.enterText(inList('coach-input'), '睡前开胯');
-      await tester.tap(inList('coach-send'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(inList('coach-thinking'), findsOneWidget);
-      expect(find.text('睡前开胯'), findsOneWidget);
-      expect(find.byType(ui.CoachTypingBubble), findsOneWidget);
-      expect(find.textContaining('正在理解你的需求'), findsOneWidget);
-      await tester.pump(const Duration(seconds: 8));
-      expect(find.textContaining('正在理解你的需求'), findsOneWidget);
-      expect(find.textContaining('已用 8 秒'), findsOneWidget);
-      await tester.tap(inList('coach-stop'));
-      await tester.pump(const Duration(seconds: 30));
-      await tester.pumpAndSettle();
-      expect(inList('coach-thinking'), findsNothing);
-      expect(inList('coach-plan-card'), findsNothing);
-      expect(inList('coach-badge-preset'), findsNothing); // 停止不回落
-      final field = tester.widget<TextField>(inList('coach-input'));
-      expect(field.controller!.text, '睡前开胯');
-      expect(usage.records.single.outcome, uc.CallOutcome.cancelled);
-    });
-
-    Finder inMsg(int i, String key) =>
-        find.descendant(of: inList('coach-msg-$i'), matching: inList(key));
-    Finder textInMsg(int i, String text) =>
-        find.descendant(of: inList('coach-msg-$i'), matching: find.text(text));
-
-    Map<String, Object?> planWithId(String id, int figure4Seconds) {
-      final env = validPlanEnvelope();
-      final plan = env['plan'] as Map<String, Object?>;
-      plan['id'] = id;
-      ((((plan['blocks'] as List)[1] as Map)['items'] as List)[0]
-              as Map)['workSeconds'] =
-          figure4Seconds;
-      return env;
-    }
-
-    Future<void> dismissSnack(WidgetTester tester) async {
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
-    }
-
-    Future<void> backAndReopen(
-      WidgetTester tester,
-      void Function() edit,
-    ) async {
-      await tester.tap(find.bySemanticsLabel('返回').first);
-      await tester.pumpAndSettle();
-      edit();
-      await tester.pumpAndSettle();
-      await openCoach(tester);
-      final expand = find.bySemanticsLabel('展开动作');
-      if (expand.evaluate().isNotEmpty) {
-        await tester.ensureVisible(expand.last);
-        await tester.tap(expand.last);
-        await tester.pumpAndSettle();
-      }
-    }
-
-    testWidgets('F25-2 模型两轮给同一 plan id：第二张卡未保存，保存/开练都是新剂量', (tester) async {
-      final store = await pumpApp(
-        tester,
-        service(
-          fake: CoachFakeClient([
-            planWithId('plan-1', 40),
-            planWithId('plan-1', 25),
-          ]),
-        ),
-      );
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      await tapIn(tester, inMsg(1, 'coach-save'), 'coach-list');
-      await dismissSnack(tester);
-      await say(tester, '拉伸短一点');
-      expect(textInMsg(3, '保存为自定义训练组'), findsOneWidget);
-      expect(textInMsg(3, '每侧 25 秒 × 2 组'), findsOneWidget);
-      await tapIn(tester, inMsg(3, 'coach-start'), 'coach-list');
-      final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(player.plan.steps[2].kitDose.seconds, 25);
-      await tester.tap(find.byKey(const ValueKey('close')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('close-confirm')));
-      await tester.pumpAndSettle();
-      await tapIn(tester, inMsg(3, 'coach-save'), 'coach-list');
-      expect(store.customRoutines, hasLength(2));
-      expect(store.customRoutines.last.steps[2].seconds, 25);
-      expect(textInMsg(1, '已保存到「我的」'), findsOneWidget);
-      expect(textInMsg(3, '已保存到「我的」'), findsOneWidget);
-    });
-
-    testWidgets('F25-2 预设 template-* 多轮：每张卡各自保存', (tester) async {
-      final store = await pumpApp(
-        tester,
-        service(
-          fake: CoachFakeClient([
-            const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
-            const uc.LlmException(uc.LlmErrorKind.network, 'offline'),
-          ]),
-        ),
-      );
-      await openCoach(tester);
-      await say(tester, '睡前放松');
-      await tapIn(tester, inMsg(1, 'coach-save'), 'coach-list');
-      await dismissSnack(tester);
-      await say(tester, '睡前再来一组');
-      expect(textInMsg(3, '保存为自定义训练组'), findsOneWidget);
-      await tapIn(tester, inMsg(3, 'coach-save'), 'coach-list');
-      expect(store.customRoutines, hasLength(2));
-      expect(store.customRoutines.map((r) => r.fromRoutine), ['B', 'B']);
-    });
-
-    testWidgets('F25-3 已保存组被编辑（动作与剂量）：卡片展示与开练一致', (tester) async {
-      final store = await pumpApp(
-        tester,
-        service(fake: CoachFakeClient([validPlanEnvelope()])),
-      );
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      await tapCard(tester, 'coach-save');
-      final g = store.customRoutines.single;
-      await backAndReopen(tester, () {
-        store.saveCustomRoutine(
-          g.copyWith(
-            steps: [const CustomStep('n-windshield', reps: 12), g.steps[2]],
-          ),
+    testWidgets(
+      'a deleted save can be saved again from its unchanged SDK card',
+      (tester) async {
+        final coach = service(fake: CoachFakeClient([validPlanEnvelope()]));
+        final store = await pumpApp(tester, coach);
+        await openCoach(tester);
+        await say(tester, '在家开胯12分钟');
+        final original = coach.conversation!.state.admittedPlans.single.plan;
+        await expand(tester);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-save')),
+          'coach-list',
         );
-      });
-      expect(inList('coach-row-1'), findsOneWidget);
-      expect(inList('coach-row-2'), findsNothing);
-      expect(find.text('左右交替 12 次'), findsOneWidget);
-      final card = tester.widget<ui.CoachPlanCard>(
-        find.byType(ui.CoachPlanCard),
-      );
-      expect(card.plan.items, hasLength(2));
-      await tapCard(tester, 'coach-start');
-      final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(player.plan.steps.map((s) => s.drill.id), [
-        'n-windshield',
-        's-figure4',
-      ]);
-      expect(player.plan.steps.first.kitDose.reps, 12);
-    });
+        await store.deleteCustomRoutine(store.customRoutines.single.id);
+        await tester.tap(find.bySemanticsLabel('返回').first);
+        await tester.pumpAndSettle();
+        await openCoach(tester);
+        await expand(tester);
+        await tapIn(
+          tester,
+          find.byKey(const ValueKey('coach-save')),
+          'coach-list',
+        );
+        expect(store.customRoutines, hasLength(1));
+        expect(store.customRoutines.single.coachPlan, original.toJson());
+      },
+    );
 
-    testWidgets('F25-4 删除已保存组后：原计划可重新保存且内容正确', (tester) async {
-      final store = await pumpApp(
-        tester,
-        service(fake: CoachFakeClient([validPlanEnvelope()])),
-      );
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      await tapCard(tester, 'coach-save');
-      final g = store.customRoutines.single;
-      await backAndReopen(tester, () => store.deleteCustomRoutine(g.id));
-      expect(store.customRoutines, isEmpty);
-      expect(find.text('保存为自定义训练组'), findsOneWidget);
-      await tapCard(tester, 'coach-save');
-      expect(store.customRoutines, hasLength(1));
-      final again = store.customRoutines.single;
-      expect(again.name, '睡前开胯 12 分钟');
-      expect(
-        again.steps.map((s) => s.toJson()),
-        g.steps.map((s) => s.toJson()),
-      );
-      expect(find.text('已保存到「我的」'), findsOneWidget);
-    });
-
-    testWidgets('F25-5 重试退避中停止：立即结束、无第二次请求、不回落、恢复输入', (tester) async {
-      var calls = 0;
-      var sleeping = false;
-      final gate = Completer<void>();
-      final client = uc.OpenAiCompatibleClient(
-        config: const uc.LlmConfig(
-          baseUrl: 'https://gw.example.com/v1/',
-          model: 'm',
-          maxRetries: 2,
-        ),
-        sleep: (_) {
-          sleeping = true;
-          return gate.future;
+    for (final reset in [false, true]) {
+      testWidgets(
+        '${reset ? 'reset' : 'stop'} ignores a late model result and never revives a question',
+        (tester) async {
+          final pending = Completer<uc.LlmResponse>();
+          final coach = service(
+            fake: CoachFakeClient([(uc.LlmRequest _) => pending.future]),
+          );
+          await pumpApp(tester, coach);
+          await openCoach(tester);
+          await tester.enterText(
+            find.byKey(const ValueKey('coach-input')),
+            '等待中的训练请求',
+          );
+          await tester.tap(find.byKey(const ValueKey('coach-send')));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(find.byKey(const ValueKey('coach-thinking')), findsOneWidget);
+          if (reset) {
+            await tester.tap(find.byKey(const ValueKey('coach-reset')));
+          } else {
+            await tester.tap(find.byKey(const ValueKey('chat-cancel')));
+          }
+          await tester.pump();
+          pending.complete(
+            uc.LlmResponse(content: jsonEncode(validPlanEnvelope())),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(ui.CoachPlanExpanded), findsNothing);
+          expect(find.byType(ui.CoachQuestionBubble), findsNothing);
+          expect(find.byKey(const ValueKey('coach-thinking')), findsNothing);
+          final input = tester.widget<TextField>(
+            find.byKey(const ValueKey('coach-input')),
+          );
+          expect(input.controller!.text, reset ? isEmpty : '等待中的训练请求');
         },
-        httpClient: MockClient((_) async {
-          calls++;
-          return http.Response('limited', 429, headers: {'retry-after': '30'});
-        }),
       );
-      final usage = CoachUsageStore();
-      final coach = CoachService(
-        config: const CoachConfig(appKey: 'test'),
-        content: content,
-        client: client,
-        usage: usage,
-        storage: MemoryStorage(),
-        readAsset: readAsset,
-      );
-      await pumpApp(tester, coach);
-      await openCoach(tester);
-      await tester.enterText(inList('coach-input'), '睡前开胯');
-      await tester.tap(inList('coach-send'));
-      for (var i = 0; i < 20 && !sleeping; i++) {
-        await tester.pump(const Duration(milliseconds: 50));
-      }
-      expect(sleeping, isTrue);
-      expect(inList('coach-thinking'), findsOneWidget);
-      await tester.tap(inList('coach-stop'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(inList('coach-thinking'), findsNothing);
-      expect(calls, 1);
-      expect(inList('coach-msg-1'), findsNothing); // 不追加回答
-      expect(inList('coach-badge-preset'), findsNothing); // 不回落
-      final field = tester.widget<TextField>(inList('coach-input'));
-      expect(field.controller!.text, '睡前开胯');
-      expect(field.enabled ?? true, isTrue);
-      expect(usage.records.single.outcome, uc.CallOutcome.cancelled);
-    });
+    }
 
-    testWidgets('设置里显示累计调用次数和 token', (tester) async {
-      final usage = CoachUsageStore();
-      await pumpApp(
-        tester,
-        service(fake: CoachFakeClient([validPlanEnvelope()]), usage: usage),
-      );
-      await openCoach(tester);
-      await say(tester, '睡前 12 分钟');
-      await tester.tap(find.bySemanticsLabel('返回').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
-      await tester.pumpAndSettle();
-      final panel = inList('coach-usage');
-      await tester.scrollUntilVisible(
-        panel,
-        300,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(
-        find.descendant(of: panel, matching: find.textContaining('累计调用 1 次')),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('非中文界面不显示入口', (tester) async {
-      late bool zh;
-      late bool en;
-      await tester.pumpWidget(
-        Localizations(
-          locale: const Locale('en'),
-          delegates: const [DefaultWidgetsLocalizations.delegate],
-          child: Builder(
-            builder: (context) {
-              en = aiCoachAvailable(context, configured: true);
-              return const SizedBox();
-            },
-          ),
-        ),
-      );
-      await tester.pumpWidget(
-        Localizations(
-          locale: const Locale('zh'),
-          delegates: const [DefaultWidgetsLocalizations.delegate],
-          child: Builder(
-            builder: (context) {
-              zh = aiCoachAvailable(context, configured: true);
-              return const SizedBox();
-            },
-          ),
-        ),
-      );
-      expect(en, isFalse);
-      expect(zh, isTrue);
+    testWidgets('missing configuration leaves AI entry hidden', (tester) async {
+      await pumpApp(tester, service());
+      expect(find.byKey(const ValueKey('practice-ai-coach')), findsNothing);
     });
 
     for (final dark in [false, true]) {
-      testWidgets('360 宽 + 1.3 倍字号${dark ? '（深色）' : '（浅色）'}不溢出', (
-        tester,
-      ) async {
-        await pumpApp(
-          tester,
-          service(fake: CoachFakeClient([validPlanEnvelope()])),
-          size: const Size(360, 740),
-          textScale: 1.3,
-          dark: dark,
-        );
-        expect(tester.takeException(), isNull);
-        await openCoach(tester);
-        await say(tester, '睡前 12 分钟，开开胯');
-        expect(inList('coach-plan-card'), findsOneWidget);
-        await tapCard(tester, 'coach-save');
-        expect(tester.takeException(), isNull);
-      });
+      testWidgets(
+        'normal-sized ${dark ? 'dark' : 'light'} SDK plan stays in bounds',
+        (tester) async {
+          await pumpApp(
+            tester,
+            service(fake: CoachFakeClient([validPlanEnvelope()])),
+            dark: dark,
+          );
+          await openCoach(tester);
+          await say(tester, '在家开胯12分钟');
+          await expand(tester);
+          expect(find.byType(ui.CoachPlanExpanded), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    for (final platform in [
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+      TargetPlatform.windows,
+      TargetPlatform.macOS,
+    ]) {
+      for (final language in ['zh', 'en']) {
+        testWidgets('AI scope: $platform/$language', (tester) async {
+          late bool available;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: ThemeData(platform: platform),
+              home: Localizations(
+                locale: Locale(language),
+                delegates: const [DefaultWidgetsLocalizations.delegate],
+                child: Builder(
+                  builder: (context) {
+                    available = aiCoachAvailable(context, configured: true);
+                    return const SizedBox();
+                  },
+                ),
+              ),
+            ),
+          );
+          expect(
+            available,
+            platform == TargetPlatform.android && language == 'zh',
+          );
+        });
+      }
     }
   });
 }

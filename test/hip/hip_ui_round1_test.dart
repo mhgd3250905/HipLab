@@ -10,9 +10,27 @@ import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
+import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+
+Future<void> expectPausedClock(WidgetTester tester) async {
+  // Paused controls intentionally keep breathing; wait only for their morph.
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  expect(
+    tester
+        .widget<trainer.UgkPlayPauseButton>(find.byKey(const ValueKey('pause')))
+        .isPlaying,
+    isFalse,
+  );
+  final digits = find.byType(trainer.TrainerCountdownDigits);
+  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).dim, isTrue);
+  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  await tester.pump(const Duration(seconds: 2));
+  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+}
 
 void main() {
   final content = loadContent();
@@ -259,7 +277,7 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.byKey(const ValueKey('pause')));
-    await tester.pumpAndSettle();
+    await expectPausedClock(tester);
   });
 
   testWidgets('#14 appearance: 跟随系统 / 浅色 / 深色 switch the whole app live', (

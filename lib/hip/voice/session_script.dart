@@ -553,12 +553,14 @@ class HipSessionScript extends trainer.SessionScript {
     required this.kits,
     this.routineIds = const [],
     this.restSeconds = 15,
+    this.useSdkPhases = false,
   }) : super(source: _HipSource(lib, kits));
   final VoiceLibrary lib;
   final List<PlanStep> steps;
   final Map<String, ActionKit> kits;
   final List<String> routineIds;
   final int restSeconds;
+  final bool useSdkPhases;
   SessionScript get legacy => SessionScript(
     lib: lib,
     lang: lang,
@@ -572,6 +574,9 @@ class HipSessionScript extends trainer.SessionScript {
     required double planSeconds,
     bool bySkip = false,
   }) {
+    if (useSdkPhases) {
+      return super.cues(p, planSeconds: planSeconds, bySkip: bySkip);
+    }
     if (p.kind == trainer.PhaseKind.rest &&
         p.nextExerciseId == null &&
         p.set > 1) {

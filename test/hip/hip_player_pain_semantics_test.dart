@@ -7,6 +7,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'trainer_test_pump.dart';
 
 void main() {
   testWidgets('video pain action retains a named semantic button and tap', (
@@ -48,7 +49,7 @@ void main() {
       );
 
       await tester.tap(pain);
-      await tester.pumpAndSettle();
+      await pumpPainSheet(tester);
       expect(find.text('哪种疼？'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
