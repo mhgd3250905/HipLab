@@ -37,27 +37,40 @@ class _Observed implements uc.LlmClient {
   @override
   uc.Pricing? get pricing => inner.pricing;
 
-  @override
-  Future<uc.LlmResponse> complete(
-    uc.LlmRequest request, {
-    uc.CancelToken? cancel,
-  }) async {
-    for (final message in request.messages) {
-      if (message.role != uc.LlmRole.tool || message.toolCallId == null) {
+  // Only receipts actually exposed in a subsequent model request are captured.
+  // SDK UsageRecord IDs are unrelated to model tool-call IDs; terminal receipt
+  // bodies that the public API does not expose are never reconstructed here.
+  void observeReceipts(Iterable<uc.LlmMessage> messages) {
+    for (final message in messages) {
+      final id = message.toolCallId;
+      if (message.role != uc.LlmRole.tool ||
+          id == null ||
+          receipts.containsKey(id)) {
         continue;
       }
       try {
         final parsed = jsonDecode(message.content);
         if (parsed is Map) {
-          receipts.putIfAbsent(
-            message.toolCallId!,
-            () => Map<String, Object?>.from(parsed),
+          final receipt = Map<String, Object?>.from(parsed);
+          receipts[id] = receipt;
+          File('${log.parent.path}/tool-receipts.jsonl').writeAsStringSync(
+            '${jsonEncode({'id': id, 'tool': tools[id], 'receipt': receipt})}\n',
+            mode: FileMode.append,
+            flush: true,
           );
         }
       } on FormatException {
         // File disclosures can be plain text; only structured receipts count.
       }
     }
+  }
+
+  @override
+  Future<uc.LlmResponse> complete(
+    uc.LlmRequest request, {
+    uc.CancelToken? cancel,
+  }) async {
+    observeReceipts(request.messages);
     final watch = Stopwatch()..start();
     final row = <String, Object?>{
       'requestBytes': utf8.encode(jsonEncode(inner.buildBody(request))).length,
@@ -73,6 +86,10 @@ class _Observed implements uc.LlmClient {
         'model': response.model,
         'httpAttempts': response.httpAttempts,
         'tools': response.toolCalls.map((c) => c.name).toList(),
+        'toolCalls': [
+          for (final call in response.toolCalls)
+            {'id': call.id, 'name': call.name, 'arguments': call.arguments},
+        ],
         'usage': response.usage.toJson(),
       });
       return response;
@@ -98,6 +115,12 @@ void main() {
       const config = CoachConfig.fromEnvironment;
       const output = String.fromEnvironment('HIPLAB_SMOKE_OUTPUT');
       const sdkCommit = String.fromEnvironment('HIPLAB_SMOKE_SDK_COMMIT');
+      const trialId = String.fromEnvironment(
+        'HIPLAB_SMOKE_TRIAL',
+        defaultValue: '1',
+      );
+      const latencyLimitMs = 20000;
+      const callLimit = 8;
       expect(config.baseUrl, 'https://ai.uuugk.win/v1');
       expect(config.model, 'deepseek-flash');
       expect(config.authMode, 'bearer');
@@ -105,7 +128,9 @@ void main() {
       expect(config.llmConfig.maxRetries, 0);
       expect(output, isNotEmpty);
       expect(sdkCommit, matches(RegExp(r'^[0-9a-f]{40}$')));
-      final lock = File('pubspec.lock').readAsStringSync().replaceAll('\r\n', '\n');
+      final lock = File(
+        'pubspec.lock',
+      ).readAsStringSync().replaceAll('\r\n', '\n');
       for (final name in ['ugk_coach', 'ugk_coach_ui', 'ugk_trainer']) {
         final declaration = RegExp(
           '^  $name:\\n(.*?)(?=^  \\S|\\Z)',
@@ -204,12 +229,44 @@ void main() {
               .skip(diagnosticsStart)
               .map((d) => d.toJson())
               .toList();
-          final rejected = [
+          final toolReceipts = [
             for (final entry in observed.receipts.entries)
-              if (!beforeReceipts.contains(entry.key) &&
-                  entry.value['ok'] == false)
-                {'tool': observed.tools[entry.key], 'receipt': entry.value},
+              if (!beforeReceipts.contains(entry.key))
+                {
+                  'id': entry.key,
+                  'tool': observed.tools[entry.key],
+                  'receipt': entry.value,
+                },
           ];
+          bool skipped(Map<String, Object?> row) =>
+              ((row['receipt'] as Map)['code'] as String? ?? '').startsWith(
+                'skipped_after_',
+              );
+          final rejected = [
+            for (final receipt in toolReceipts)
+              if ((receipt['receipt'] as Map)['ok'] == false &&
+                  !skipped(receipt))
+                receipt,
+          ];
+          final drafts = [
+            for (final receipt in toolReceipts)
+              if (receipt['tool'] == 'draft_plan' && !skipped(receipt)) receipt,
+          ];
+          final toolCalls = [
+            for (final call in calls) ...call['toolCalls'] as List? ?? [],
+          ];
+          final anomalies = [
+            if (elapsedMs > latencyLimitMs) 'elapsed_over_20s',
+            if (calls.length > callLimit) 'calls_over_8',
+          ];
+          File(
+            '${root.path}/session-${cases.length + 1}.json',
+          ).writeAsStringSync(
+            const JsonEncoder.withIndent(
+              '  ',
+            ).convert(controller.exportSession().toJson()),
+            flush: true,
+          );
           final usage = result?.usage ?? uc.TokenUsage.zero;
           final row = <String, Object?>{
             'input': input,
@@ -233,9 +290,37 @@ void main() {
                 : usage.cachedTokens / usage.promptTokens,
             'rejections': rejected.length,
             'rejectedReceipts': rejected,
+            'durationFitRejections': rejected
+                .where(
+                  (r) => (r['receipt'] as Map)['code'] == 'duration_fit_failed',
+                )
+                .length,
+            'skippedToolCalls': toolReceipts.where(skipped).length,
+            'draftCallsRequested': toolCalls
+                .where((c) => (c as Map)['name'] == 'draft_plan')
+                .length,
+            'observedDraftCallsExecuted': drafts.length,
+            'observedDraftRegenerations': math.max(0, drafts.length - 1),
+            'toolReceipts': toolReceipts,
+            'toolReceiptCoverage':
+                'Only structured receipts exposed in subsequent model requests; final terminal bodies may be unavailable.',
+            'unobservedToolCalls': [
+              for (final call in toolCalls)
+                if (!observed.receipts.containsKey((call as Map)['id']))
+                  {'id': call['id'], 'name': call['name']},
+            ],
             'rejectedModelSteps': result?.records
                 .where((r) => r.outcome == uc.CallOutcome.rejected)
                 .length,
+            'durationFitIssueRecords': result?.records
+                .where((r) => r.issueCodes.contains('duration_fit_failed'))
+                .length,
+            'usageRecords': [
+              for (final record in result?.records ?? <uc.UsageRecord>[])
+                record.toJson(),
+            ],
+            'performanceAnomaly': anomalies.isNotEmpty,
+            'anomalyReasons': anomalies,
             'taskType': state.task?.type,
             'status': result?.status.name,
             'planCard': plan != null,
@@ -256,6 +341,7 @@ void main() {
             'bodyHits': bodyTags.isEmpty ? null : bodyHits,
             'bodyItems': ids.length,
             'planCheck': check,
+            'planVersion': latest?.version,
             'folded': diagnostic.any((d) => d['folded'] == true),
             'contextDiagnostics': diagnostic,
             'requests': calls,
@@ -271,6 +357,9 @@ void main() {
               'model': config.model,
               'auth': config.authMode,
               'maxRetries': config.llmConfig.maxRetries,
+              'trialId': trialId,
+              'latencyLimitMs': latencyLimitMs,
+              'callLimit': callLimit,
               'sameConversation': true,
               'cases': cases,
             }),
@@ -278,15 +367,27 @@ void main() {
           );
           stdout.writeln(
             'LIVE_CASE ${jsonEncode({
-              for (final k in ['input', 'elapsedMs', 'calls', 'searches', 'status', 'planCard', 'recommendCard', 'taskType', 'rejections']) k: row[k],
+              for (final k in ['input', 'elapsedMs', 'calls', 'searches', 'totalTokens', 'status', 'planCard', 'recommendCard', 'taskType', 'rejections', 'durationFitRejections', 'observedDraftRegenerations', 'estimatedSeconds', 'nativeTotalSeconds', 'performanceAnomaly']) k: row[k],
             })}',
           );
         }
         expect(cases[0]['planCard'], true);
         expect(cases[1]['recommendCard'], true);
         expect(cases[2]['planCard'], true);
+        expect(cases[0]['targetSeconds'], 600);
+        expect(cases[2]['targetSeconds'], 300);
+        expect((cases[2]['plan'] as Map)['targetMinutes'], 5);
+        expect(
+          jsonEncode(cases[2]['plan']),
+          isNot(jsonEncode(cases[0]['plan'])),
+        );
         for (final row in cases) {
           expect(row['status'], 'ok');
+          expect(
+            row['performanceAnomaly'],
+            false,
+            reason: 'Over 20s or 8 calls is abnormal.',
+          );
           if (row['planCard'] == true) {
             expect(
               (row['durationErrorRatio'] as num).abs(),
