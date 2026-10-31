@@ -50,7 +50,8 @@ Agent 的 `draft_plan` 也能交付 `type=main, rounds=2`；Trainer `SessionBuil
 
 这是未上设备的离线 SDK 执行数据；实际语音可能扩大换边间隔，不会补回缺失的整个 main 轮次。
 复现 `tools/coach/coach_v2_native_metrics.dart` 读取已保存的 `live/results.json`，零模型请求，
-完整计划往返相等，证据保存在 `live/native-metrics.json`。当前候选如实保留此缺陷，已请用户选择修 SDK 换提交或保留固定提交。
+完整计划往返相等，证据保存在 `live/native-metrics.json`。用户已明确选择由 SDK Agent 修复；本任务先完成其余项，
+等修复提交出来后，三个包统一改钉到该提交，再重跑两张计划的开练时长和三段真实对话。App 不自行展开轮数或改写计划绕过。
 不能把下文 Coach 估时通过表述为原生开练时长验收通过。
 
 ## 网关
@@ -111,7 +112,10 @@ catalog 媒体版本与资源保持，provenance 单独声明 SDK 66dd98a 正式
 - SDK 依赖缓存的 HEAD 和实际 lib 内容核对为精确 66dd98a，未使用 `pubspec_overrides.yaml`；候选版本化文件未检出本机 API Key。
 - 初次全量暴露旧测试的暂停文案、持续呼吸动画及完成页差异；已在保留计时冻结、疼痛、保存和中断断言的前提下迁测，最终完整一轮 468 全过。初轮证据保留为 `all-tests-initial.log`，最终 `all-tests-final.log`。
 - `lib/hip/coach/` 相对本地 main 删除 **441 行**、新增 140 行，净减 **301 行**；完全删除的两个文件合计 172 行。剩余代码职责见上方边界。
-- APK 将在本实现提交后构建，签名/16KB/JNI 与源码 SHA 以本目录交付回执和版本台账补记。轮次缺陷保持明确未关闭，不将候选标为产品验收通过。
+- APK 已从实现提交 `d0a0181d22d8eb1c4f6c774ebe02b2d8c3ffbfa9` 构建并核验。最终为 `hiplab-1.1.0+23-coach-v2-d0a0181-test-gateway-arm64-split-release.apk`，**111,504,576 bytes（106.34 MiB）**，SHA256 `128517258d2fc77c855c5b36f2d2849b8bd8dbcc84334508af764c18d93b8af1`。
+- 签名、zipalign 16KB、全部 arm64 ELF LOAD 16KB、JNI 固定类/方法与原生符号均通过。来源及完整核验记录为 `E:/AII-3D/hiplab-releases/coach-v2-20261031/release-apk.json`。使用实际锁定的 JNI/path-provider 契约；shared_preferences_android 2.4.28 使用平台通道，未误套 SmartFit 新版 JNI registrar 契约。
+- 为排除 JNI 附带其他架构，最终使用 `--split-per-abi --target-platform android-arm64`；Flutter 将 pubspec build23 派生为 manifest **versionName1.1.0 / versionCode2023**（arm64 偏移2000），发布配置未改。首次多 ABI JNI 产物保留为 `hiplab-1.1.0+23-initial-extra-jni-abis-unverified.apk`，不作为交付包。
+- 轮次缺陷保持明确未关闭：其余项已完成，等待 SDK Agent 的修复提交；届时三包一起更新并重跑两张开练时长及三段真实对话。当前包仍为原66dd98a候选，不将其标为第一阶段产品验收通过。
 
 未安装或操作手机，未完成原生听音/视觉验收；上述真模型为 Flutter 测试进程中的真实服务/SDK 调用，不冒充设备证据。
 没有上传 Play、App Store 或 TestFlight。第二阶段需用户确认后再开始。

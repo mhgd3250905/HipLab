@@ -1,5 +1,11 @@
 # 当前状态
 
+**2026-10-31 Coach Agent v2 候选，等待 SDK 修复提交：** 实现提交 `d0a0181d22d8eb1c4f6c774ebe02b2d8c3ffbfa9` 在 `codex/coach-v2`，工作副本 `E:/AII-3D/3D-Hip-worktrees/coach-v2/3D-Hip`。从本地 main `1083b49` 开始，origin/main 为 `1b94fc3`（本地落后 4 个 iOS 审核记录提交）；没有更新或合并 main。原日常目录液态玻璃 31 项改动保留，release 分支未操作。
+
+三包锁定 SDK `66dd98a`；App **1.1.0+23**，45 动作白名单、默认 Worker 协议、Android + 中文入口保持。SDK 拥有教练决策、失败准入、快照、问题和计划版本；App 已移除模板自动回落与剂量修正。全量 **468 通过 / 0 失败 / 0 跳过**、fatal-infos 0、Python 24 项通过；真实模型 3 轮交付通过。发现 SDK Coach / Trainer 对 main.rounds 的内部不一致，含准备的执行时间线为 461/212 秒，未通过目标时长验收。用户明确由 SDK Agent 修复，App 不展开轮次或改计划绕过；修复提交到位后三包一起改钉，再跑两张开练时长和三段对话。详见[本轮完整记录](coach-agent-v2-2026-10-31.md)。
+
+当前纯arm64 APK已构建，111,504,576字节，签名、16KB和JNI检查均通过；split manifest为versionName1.1.0/versionCode2023，完整身份见[版本台账](version-ledger.md)。本轮未执行 ADB、安装或设备验收，既有手机状态沿用历史回执；未推送、打 tag 或上传商店。第二阶段的生成卡片、讨论标签和训练页滑入尚未开始。以下记录为各自日期历史。
+
 ## 2026-10-24：Controller 已获批准并合入 main
 
 开哥明确同意固定候选 `448f1096a96746a235913a58a172826431b3ec13` 后，main从64daf6a快进到448f109并普通推送，远端回读一致。coach0.5.0/trainer0.2.3@d7e0b8f、UI0.1.1@3302d62保持；分析0、全量454通过/1条件跳过、专项44通过沿用已验候选。后续回执仅文档，不重建/安装或重复真机。release/1.0仍8880c71，原目录31项WIP保留。下方待审文字保留批准前状态。[集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。

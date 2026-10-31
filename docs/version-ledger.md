@@ -1,5 +1,24 @@
 # 版本交付台账
 
+## 2026-10-31：Coach Agent v2 测试网关 arm64 Release 候选
+
+源码提交 `d0a0181d22d8eb1c4f6c774ebe02b2d8c3ffbfa9`，分支 `codex/coach-v2`，三包统一固定SDK `66dd98a549c1ff5fedecb626a7c88583090a1440`。Flutter3.44.7 / Dart3.12.2；pubspec为 **1.1.0+23**，最终 split arm64 APK 的 manifest 为 **1.1.0 / versionCode2023**（Flutter ABI偏移2000+23）。包名和项目签名配置保持，无原生发布配置变更。
+
+| 项目 | 已核验事实 |
+|---|---|
+| APK | `E:/AII-3D/hiplab-releases/coach-v2-20261031/hiplab-1.1.0+23-coach-v2-d0a0181-test-gateway-arm64-split-release.apk` |
+| 大小 / SHA256 | **111,504,576 bytes（106.34 MiB）**；`128517258d2fc77c855c5b36f2d2849b8bd8dbcc84334508af764c18d93b8af1` |
+| 编译配置 | `flutter build apk --release --no-pub --target-platform android-arm64 --split-per-abi`，四项dart define显式选择测试网关 `https://ai.uuugk.win/v1`、deepseek-flash、Bearer及本机外部Key；不记录Key |
+| 生产默认 | Worker `https://api.uuugk.win/v1` / deepseek-v4-flash-0731，X-App-Key + X-Device-Id，无Authorization；LlmConfig.maxRetries=0 |
+| 静态门禁 | apksigner通过、arm64单架构、非debuggable、zipalign 16KB、全部原生ELF LOAD 16KB、JNI类/方法定义与原生导出符号均通过 |
+| 证据 | 同目录 `release-apk.json`、`apk-signature.log`、`zipalign-16kb.log`、`jni-native-symbols.log`、`build-release-arm64-split.log` |
+| 本机检查 | App全量468/468（0跳过）、dart fatal-infos0、Python24/24、三段真实模型交付通过；细项见[本轮记录](coach-agent-v2-2026-10-31.md) |
+| 验收 / 外部状态 | **尚待SDK轮次修复与新pin复验**；未安装、未操作手机、未上传商店；当前分支仅本地提交，main/release/tag未操作 |
+
+首次未分ABI构建带入其他架构JNI库，未作为交付包；保留为同目录 `hiplab-1.1.0+23-initial-extra-jni-abis-unverified.apk`。最终改为Flutter正式split参数，未改项目发布配置。JNI检查按实际lock：path_provider_android2.3.1、jni1.1.0、jni_flutter1.0.4+1；shared_preferences_android2.4.28仍走平台通道。
+
+用户已明确指定由SDK Agent修复Coach与Trainer对main.rounds的内部不一致。本App不展开轮数或改计划绕过；修复提交到位后三包统一改钉、重跑两张计划开练时长及3段真实对话。本候选的Coach估时通过不代表原生时长验收通过，第二阶段尚未开始。后续文档回执不改变上述编译源，无需重建。
+
 ## 2026-10-24：SDK 修复 tag 更新，未重建或安装
 
 已合入并推送main的功能集成点88d8802，从5c4d32e改锁coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（同3302d62），共用App版本保持1.1.0+21；本轮未生成新APK/IPA/AAB，手机仍是源429eaf5/SDK旧tags的已验5d292388…测试包。用户明确允许无需源码适配时沿用真机证据，本轮不冒充新tag原生安装。release/1.0的1.0.0+20及已送审产物身份不动。[补丁及主线回执](sdk-tag-patch-2026-10-24.md)。
