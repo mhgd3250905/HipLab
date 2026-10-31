@@ -76,22 +76,54 @@ Map<String, Object?> measureCoachPlanTiming({
         switchSecondsFor: script!.switchSecondsFor,
       );
   final phases = builder.phases(toTrainerPlan(native));
-  if (phases.any((phase) => phase.selfPaced)) {
-    throw StateError('Self-paced phases cannot certify a fixed duration.');
-  }
-  final total = phases.fold<double>(0, (sum, phase) => sum + phase.seconds);
+  final manualPhases = [
+    for (final (index, phase) in phases.indexed)
+      if (phase.selfPaced)
+        {
+          'exerciseId': phase.exerciseId,
+          'phaseIndex': index,
+          'itemIndex': phase.itemIndex,
+          'blockIndex': phase.blockIndex,
+          'itemInBlock': phase.itemInBlock,
+          'segmentId': phase.segmentId,
+          'set': phase.set,
+          'round': phase.round,
+          'side': phase.side?.name,
+          'reps': phase.reps,
+          'estimatedReps': phase.reps ?? 10,
+          'nominalSeconds': phase.seconds,
+          'estimateSecondsPerRep': builder.selfPacedRepEstimate,
+          'estimateBasis':
+              'SDK SessionBuilder.workSeconds: (reps ?? 10) * '
+              'selfPacedRepEstimate; completion requires the user to tap '
+              'Complete Set, not elapsed time',
+        },
+  ];
+  final isEstimate = manualPhases.isNotEmpty;
+  final timedSeconds = phases
+      .where((phase) => !phase.selfPaced)
+      .fold<double>(0, (sum, phase) => sum + phase.seconds);
+  final manualSeconds = phases
+      .where((phase) => phase.selfPaced)
+      .fold<double>(0, (sum, phase) => sum + phase.seconds);
+  final total = timedSeconds + manualSeconds;
   final prep = phases
       .where((phase) => phase.kind == trainer.PhaseKind.prep)
       .fold<double>(0, (sum, phase) => sum + phase.seconds);
-  final engine = trainer.SessionEngine(phases)..update(total + .001);
-  final visited = engine.visits.fold<double>(
-    0,
-    (sum, visit) => sum + visit.seconds,
-  );
-  if (!engine.done || (visited - total).abs() > .000001) {
-    throw StateError(
-      'SDK engine did not naturally visit the complete timeline.',
+  double? visited;
+  int? completedOccurrences;
+  if (!isEstimate) {
+    final engine = trainer.SessionEngine(phases)..update(total + .001);
+    visited = engine.visits.fold<double>(
+      0,
+      (sum, visit) => sum + visit.seconds,
     );
+    if (!engine.done || (visited - total).abs() > .000001) {
+      throw StateError(
+        'SDK engine did not naturally visit the complete timeline.',
+      );
+    }
+    completedOccurrences = engine.fullyCompletedExercises;
   }
   final target = plan.targetMinutes * 60;
   if (target <= 0) throw StateError('Plan duration target must be positive.');
@@ -99,24 +131,43 @@ Map<String, Object?> measureCoachPlanTiming({
   final cardError = (card - target) / target;
   final nativeError = (total - target) / target;
   const tolerance = .10;
+  final cardWithinTolerance = cardError.abs() <= tolerance + 1e-9;
+  final nativeWithinTolerance = isEstimate
+      ? null
+      : nativeError.abs() <= tolerance + 1e-9;
+  final nativeDurationGatePassed = isEstimate || nativeWithinTolerance == true;
   return {
     'planId': plan.id,
     'targetSeconds': target,
     'sdkEstimateSeconds': card,
     'cardDurationErrorRatio': cardError,
-    'cardWithinTolerance': cardError.abs() <= tolerance + 1e-9,
+    'cardWithinTolerance': cardWithinTolerance,
+    'isEstimate': isEstimate,
+    'manualCountingPhases': manualPhases,
+    'timedPhaseSeconds': timedSeconds,
+    'manualEstimatedSeconds': manualSeconds,
     'nativePlanSeconds': total - prep,
     'nativePrepSeconds': prep,
     'nativeTotalSeconds': total,
-    'nativeDurationErrorRatio': nativeError,
-    'nativeWithinTolerance': nativeError.abs() <= tolerance + 1e-9,
-    'withinTolerance':
-        cardError.abs() <= tolerance + 1e-9 &&
-        nativeError.abs() <= tolerance + 1e-9,
+    'nativeDurationErrorRatio': isEstimate ? null : nativeError,
+    'nativeEstimateDurationErrorRatio': isEstimate ? nativeError : null,
+    'nativeWithinTolerance': nativeWithinTolerance,
+    'nativeDurationGatePassed': nativeDurationGatePassed,
+    'nativeDurationGateReason': isEstimate
+        ? 'manual_counting_estimate_exempt_by_user'
+        : 'timed_engine_replay_requires_target_within_ten_percent',
+    'withinTolerance': isEstimate
+        ? null
+        : cardWithinTolerance && nativeWithinTolerance == true,
+    'durationGatePassed': cardWithinTolerance && nativeDurationGatePassed,
     'nativeOccurrences': native.steps.length,
     'nativeWorkPhases': phases.where((phase) => phase.isWork).length,
     'nativeEngineVisitSeconds': visited,
-    'fullyCompletedOccurrences': engine.fullyCompletedExercises,
+    'fullyCompletedOccurrences': completedOccurrences,
+    'engineNaturallyCompleted': isEstimate ? null : true,
+    'engineReplayStatus': isEstimate
+        ? 'not_applicable_manual_counting'
+        : 'naturally_completed',
     'completePlanPreserved': true,
     'voiceAwareSwitchTiming': executionBuilder == null,
     'executionBuilder': executionBuilder == null
@@ -172,16 +223,21 @@ void main(List<String> args) {
     });
   }
   final passed =
-      rows.isNotEmpty && rows.every((row) => row['withinTolerance'] == true);
+      rows.isNotEmpty && rows.every((row) => row['durationGatePassed'] == true);
+  final allWithinTolerance = rows.any((row) => row['isEstimate'] == true)
+      ? null
+      : rows.isNotEmpty && rows.every((row) => row['withinTolerance'] == true);
   File(args[1]).writeAsStringSync(
     const JsonEncoder.withIndent('  ').convert({
       'modelRequests': 0,
       'deviceOperated': false,
       'measurement':
-          'AI player bundled zh voice-aware SDK phase sum and natural engine '
-          'visits, including preparation; no audio or device execution',
+          'AI player bundled zh voice-aware SDK phases including preparation: '
+          'natural engine visits for timed plans, nominal estimates for manual '
+          'counting plans; no audio or device execution',
       'toleranceRatio': .10,
-      'allWithinTolerance': passed,
+      'allWithinTolerance': allWithinTolerance,
+      'allDurationGatesPassed': passed,
       'cases': rows,
     }),
   );

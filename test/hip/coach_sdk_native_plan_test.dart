@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/coach/plan_mapping.dart';
 import 'package:hiplab/hip/domain/hip_assessment.dart';
@@ -9,7 +12,7 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer/engine.dart' as trainer;
 
 import '../../tools/coach/coach_v2_native_metrics.dart'
-    show loadCoachMetricVoiceScript;
+    show loadCoachMetricVoiceScript, measureCoachPlanTiming;
 import 'hip_domain_test.dart' show loadContent;
 import 'hip_voice_test.dart' show loadVoiceLibrary;
 
@@ -89,6 +92,51 @@ void main() {
   CustomRoutine routine() => CoachPlanMapper(
     content,
   ).map(fullPlan(), id: 'saved-ai', at: DateTime(2026, 10, 31)).routine;
+  final catalog = coach.Catalog.fromJson(
+    jsonDecode(File('assets/coach/catalog.json').readAsStringSync()),
+  );
+  coach.TrainingPlan timingPlan({int targetMinutes = 5}) => coach.TrainingPlan(
+    id: 'timing-diagnostic',
+    source: 'ai',
+    title: 'Timing diagnostic',
+    summary: 'A timed action and a counted action',
+    goal: 'mobility',
+    scene: 'home',
+    level: 1,
+    targetMinutes: targetMinutes,
+    equipment: const [],
+    blocks: const [
+      coach.PlanBlock(
+        id: 'main',
+        name: 'Main',
+        type: coach.BlockType.main,
+        items: [
+          coach.PlanItem(
+            exerciseId: 's-figure4',
+            mode: coach.DoseMode.time,
+            workSeconds: 265,
+            sets: 1,
+            restSeconds: 0,
+            perSide: false,
+          ),
+          coach.PlanItem(
+            exerciseId: 'h-squat',
+            mode: coach.DoseMode.reps,
+            reps: 2,
+            sets: 1,
+            restSeconds: 0,
+            perSide: false,
+          ),
+        ],
+      ),
+    ],
+  );
+  trainer.SessionBuilder manualBuilder() => trainer.SessionBuilder(
+    prepSeconds: 15,
+    // Deliberately far from target: an estimate cannot certify elapsed time.
+    selfPacedRepEstimate: 200,
+    rhythms: {'h-squat': trainer.Rhythm.selfPacedReps},
+  );
 
   test(
     'saved AI plan roundtrips and native execution retains full SDK data',
@@ -216,6 +264,108 @@ void main() {
       }
     },
   );
+
+  test(
+    'timed diagnostics retain natural completion and the strict duration gate',
+    () {
+      final plan = timingPlan();
+      final timing = measureCoachPlanTiming(
+        plan: plan,
+        content: content,
+        catalog: catalog,
+      );
+      expect(timing['isEstimate'], isFalse);
+      expect(timing['manualCountingPhases'], isEmpty);
+      expect(timing['manualEstimatedSeconds'], 0);
+      expect(timing['timedPhaseSeconds'], timing['nativeTotalSeconds']);
+      expect(timing['engineNaturallyCompleted'], isTrue);
+      expect(timing['engineReplayStatus'], 'naturally_completed');
+      expect(timing['nativeEngineVisitSeconds'], timing['nativeTotalSeconds']);
+      expect(timing['fullyCompletedOccurrences'], 2);
+      expect(timing['nativeWithinTolerance'], isTrue);
+      expect(timing['durationGatePassed'], isTrue);
+
+      final excessiveRest = measureCoachPlanTiming(
+        plan: plan,
+        content: content,
+        catalog: catalog,
+        executionBuilder: trainer.SessionBuilder(
+          prepSeconds: 15,
+          transitionSeconds: 500,
+        ),
+      );
+      expect(excessiveRest['engineNaturallyCompleted'], isTrue);
+      expect(excessiveRest['nativeWithinTolerance'], isFalse);
+      expect(excessiveRest['nativeDurationGatePassed'], isFalse);
+      expect(excessiveRest['withinTolerance'], isFalse);
+      expect(excessiveRest['durationGatePassed'], isFalse);
+    },
+  );
+
+  test(
+    'manual diagnostics expose nominal phases without claiming engine completion',
+    () {
+      final plan = timingPlan();
+      final original = jsonEncode(plan.toJson());
+      final timing = measureCoachPlanTiming(
+        plan: plan,
+        content: content,
+        catalog: catalog,
+        executionBuilder: manualBuilder(),
+      );
+      expect(timing['completePlanPreserved'], isTrue);
+      expect(jsonEncode(plan.toJson()), original);
+      expect(timing['isEstimate'], isTrue);
+      final manual = (timing['manualCountingPhases'] as List).single as Map;
+      expect(manual['exerciseId'], 'h-squat');
+      expect(manual['phaseIndex'], 3);
+      expect(manual['itemIndex'], 1);
+      expect(manual['blockIndex'], 0);
+      expect(manual['set'], 1);
+      expect(manual['round'], 0);
+      expect(manual['side'], isNull);
+      expect(manual['reps'], 2);
+      expect(manual['nominalSeconds'], 400);
+      expect(manual['estimateSecondsPerRep'], 200);
+      expect(manual['estimateBasis'], contains('SessionBuilder.workSeconds'));
+      expect(timing['timedPhaseSeconds'], 295);
+      expect(timing['manualEstimatedSeconds'], 400);
+      expect(timing['nativeTotalSeconds'], 695);
+      expect(timing['nativeWithinTolerance'], isNull);
+      expect(timing['nativeDurationErrorRatio'], isNull);
+      expect(timing['nativeEstimateDurationErrorRatio'], greaterThan(1));
+      expect(timing['nativeEngineVisitSeconds'], isNull);
+      expect(timing['fullyCompletedOccurrences'], isNull);
+      expect(timing['engineNaturallyCompleted'], isNull);
+      expect(timing['engineReplayStatus'], 'not_applicable_manual_counting');
+      expect(timing['nativeDurationGatePassed'], isTrue);
+      expect(
+        timing['nativeDurationGateReason'],
+        'manual_counting_estimate_exempt_by_user',
+      );
+      expect(timing['withinTolerance'], isNull);
+      expect(timing['cardWithinTolerance'], isTrue);
+      expect(timing['durationGatePassed'], isTrue);
+
+      final engine = trainer.SessionEngine(manualBuilder().phases(plan))
+        ..update(100000);
+      expect(engine.done, isFalse);
+      expect(engine.awaitingCompletion, isTrue);
+    },
+  );
+
+  test('manual timing exemption does not bypass the card estimate gate', () {
+    final timing = measureCoachPlanTiming(
+      plan: timingPlan(targetMinutes: 1),
+      content: content,
+      catalog: catalog,
+      executionBuilder: manualBuilder(),
+    );
+    expect(timing['isEstimate'], isTrue);
+    expect(timing['nativeDurationGatePassed'], isTrue);
+    expect(timing['cardWithinTolerance'], isFalse);
+    expect(timing['durationGatePassed'], isFalse);
+  });
 
   test(
     'AI native plan does not add asymmetry sets or impose kit sidedness',

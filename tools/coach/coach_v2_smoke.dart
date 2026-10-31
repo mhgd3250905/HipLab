@@ -333,7 +333,18 @@ void main() {
             'nativeTotalSeconds': nativeTiming?['nativeTotalSeconds'],
             'nativeDurationErrorRatio':
                 nativeTiming?['nativeDurationErrorRatio'],
+            'nativeIsEstimate': nativeTiming?['isEstimate'],
+            'nativeMeasurementLabel': nativeTiming == null
+                ? null
+                : nativeTiming['isEstimate'] == true
+                ? '估算'
+                : '定时回放',
+            'nativeEstimateDurationErrorRatio':
+                nativeTiming?['nativeEstimateDurationErrorRatio'],
             'nativeWithinTolerance': nativeTiming?['nativeWithinTolerance'],
+            'nativeDurationGatePassed':
+                nativeTiming?['nativeDurationGatePassed'],
+            'manualCountingPhases': nativeTiming?['manualCountingPhases'],
             'durationErrorRatio': estimateSec == null || targetSec == null
                 ? null
                 : (estimateSec - targetSec) / targetSec,
@@ -367,7 +378,7 @@ void main() {
           );
           stdout.writeln(
             'LIVE_CASE ${jsonEncode({
-              for (final k in ['input', 'elapsedMs', 'calls', 'searches', 'totalTokens', 'status', 'planCard', 'recommendCard', 'taskType', 'rejections', 'durationFitRejections', 'observedDraftRegenerations', 'estimatedSeconds', 'nativeTotalSeconds', 'performanceAnomaly']) k: row[k],
+              for (final k in ['input', 'elapsedMs', 'calls', 'searches', 'totalTokens', 'status', 'planCard', 'recommendCard', 'taskType', 'rejections', 'durationFitRejections', 'observedDraftRegenerations', 'estimatedSeconds', 'nativeTotalSeconds', 'nativeMeasurementLabel', 'nativeDurationGatePassed', 'performanceAnomaly']) k: row[k],
             })}',
           );
         }
@@ -394,10 +405,10 @@ void main() {
               lessThanOrEqualTo(.1),
             );
             expect(
-              row['nativeWithinTolerance'],
+              row['nativeDurationGatePassed'],
               isTrue,
               reason:
-                  'The full execution timeline including prep must fit ±10%.',
+                  'Timed execution including prep must fit ±10%; manual counting is reported as an estimate under the user exemption.',
             );
           }
         }
