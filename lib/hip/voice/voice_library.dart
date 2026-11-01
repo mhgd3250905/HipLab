@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:ugk_trainer/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 /// 跟随 App / 中文 / English.
 enum VoiceLanguage {

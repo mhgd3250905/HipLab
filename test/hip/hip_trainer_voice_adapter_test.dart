@@ -4,7 +4,7 @@ import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_session.dart';
 import 'package:hiplab/hip/trainer/hip_trainer_plan.dart';
 import 'package:hiplab/hip/voice/session_script.dart';
-import 'package:ugk_trainer/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 import 'hip_domain_test.dart' show loadContent;
 import 'hip_voice_test.dart' show loadVoiceLibrary;
 

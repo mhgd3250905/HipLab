@@ -1,15 +1,15 @@
 import 'dart:math' as math;
 
-import 'package:ugk_trainer/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 import 'package:ugk_coach/ugk_coach.dart' as coach;
-import 'package:ugk_trainer/engine.dart' show VoiceCue, CuePriority;
+import 'package:ugk_trainer_runtime/engine.dart' show VoiceCue, CuePriority;
 
 import '../domain/hip_assessment.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_session.dart';
 import 'voice_library.dart';
 
-export 'package:ugk_trainer/engine.dart' show CuePriority, VoiceCue;
+export 'package:ugk_trainer_runtime/engine.dart' show CuePriority, VoiceCue;
 
 enum PhaseKind { prep, work, switchSide, rest, done }
 
@@ -553,12 +553,14 @@ class HipSessionScript extends trainer.SessionScript {
     required this.kits,
     this.routineIds = const [],
     this.restSeconds = 15,
+    this.useSdkPhases = false,
   }) : super(source: _HipSource(lib, kits));
   final VoiceLibrary lib;
   final List<PlanStep> steps;
   final Map<String, ActionKit> kits;
   final List<String> routineIds;
   final int restSeconds;
+  final bool useSdkPhases;
   SessionScript get legacy => SessionScript(
     lib: lib,
     lang: lang,
@@ -572,6 +574,9 @@ class HipSessionScript extends trainer.SessionScript {
     required double planSeconds,
     bool bySkip = false,
   }) {
+    if (useSdkPhases) {
+      return super.cues(p, planSeconds: planSeconds, bySkip: bySkip);
+    }
     if (p.kind == trainer.PhaseKind.rest &&
         p.nextExerciseId == null &&
         p.set > 1) {

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import '../coach/coach_service.dart';
+import '../coach/hip_coach_chat.dart';
 import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
@@ -17,7 +17,6 @@ import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
-import 'coach/ai_coach_page.dart';
 import 'hip_assessment_page.dart';
 import 'hip_icons.dart';
 import 'hip_player_page.dart';
@@ -53,7 +52,7 @@ class HipApp extends StatefulWidget {
 
   /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
   /// otherwise built from external configuration (unconfigured → hidden).
-  final CoachService? coach;
+  final HipCoachChat? coach;
 
   @override
   State<HipApp> createState() => _HipAppState();
@@ -530,7 +529,7 @@ class HipHome extends StatefulWidget {
   final HipStore store;
 
   /// AI 定制 service; null = built from --dart-define.
-  final CoachService? coach;
+  final HipCoachChat? coach;
   @override
   State<HipHome> createState() => _HipHomeState();
 }
@@ -546,9 +545,7 @@ class _HipHomeState extends State<HipHome> {
   final _practice = PracticeMemory();
 
   /// AI 定制 conversation: survives leaving the page, a session and tabs.
-  late final _coach = AiCoachSession(
-    widget.coach ?? CoachService(content: store.content),
-  );
+  late final _coach = widget.coach ?? HipCoachChat(store: store);
   late final _library = LibraryActions(
     store: store,
     startPlan: _startPlan,
@@ -624,7 +621,7 @@ class _HipHomeState extends State<HipHome> {
               memory: _practice,
               onStartAssessment: _startAssessment,
             ),
-            2 => HipProgressPage(store: store, coach: _coach.service),
+            2 => HipProgressPage(store: store, coach: _coach),
             _ => _today(),
           },
         ),
@@ -1335,7 +1332,7 @@ class HipProgressPage extends StatelessWidget {
   final HipStore store;
 
   /// Shows 「AI 定制用量」 in the settings when set (zh UI only).
-  final CoachService? coach;
+  final HipCoachChat? coach;
 
   @override
   Widget build(BuildContext context) {
@@ -1487,11 +1484,6 @@ class HipProgressPage extends StatelessWidget {
         HipVoiceSettingsPanel(store: store),
         const SizedBox(height: 12),
         HipAppearancePanel(store: store),
-        if (coach != null &&
-            aiCoachAvailable(context, configured: coach!.configured)) ...[
-          const SizedBox(height: 12),
-          HipCoachUsagePanel(usage: coach!.usage),
-        ],
         const SizedBox(height: 12),
         HipPanel(
           padding: EdgeInsets.zero,

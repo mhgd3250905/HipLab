@@ -1,0 +1,325 @@
+{
+  "schema": "hiplab-coach-standing@1",
+  "sourceRepository": "https://github.com/mhgd3250905/ugk-3d-pose-sdk",
+  "sourceCommit": "0a6c3aaea9e3890d938799703f97819d5986ee7d",
+  "sourceDocumentation": "docs/coach-chat-module-design/app-profile-isolation.md",
+  "allowlistSha256": "ad1e11caa6ed550c455516503126affe3570ce2b72377e55b0d89715d0378651",
+  "copyPolicy": "Original bytes; only the 45 configured HipLab candidates. No image rendering or re-encoding.",
+  "assets": [
+    {
+      "actionId": "glute-max-A",
+      "asset": "assets/coach/standing/glute-max-A.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/glute-max-A.webp",
+      "sha256": "8de516069e171799aeec9d856db7138e4e4eb44c3d3a35dc036c434902bd319a",
+      "bytes": 16278
+    },
+    {
+      "actionId": "h-9090-liftoff",
+      "asset": "assets/coach/standing/h-9090-liftoff.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-9090-liftoff.webp",
+      "sha256": "57726046965c5dda04c6e42f647882fa828210802bd4caab524d6e707a97dfa6",
+      "bytes": 19698
+    },
+    {
+      "actionId": "h-adductor-rock",
+      "asset": "assets/coach/standing/h-adductor-rock.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-adductor-rock.webp",
+      "sha256": "b5ff8899a823a06c016c1bf82323bf85282703759287d3779e1ca8f838ef5948",
+      "bytes": 23842
+    },
+    {
+      "actionId": "h-band-hip-ir",
+      "asset": "assets/coach/standing/h-band-hip-ir.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-band-hip-ir.webp",
+      "sha256": "fdba44c42944325fdaaa339b10d9a1d0d534aab9dee6e6d3694638a346184d26",
+      "bytes": 32592
+    },
+    {
+      "actionId": "h-band-leg-out",
+      "asset": "assets/coach/standing/h-band-leg-out.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-band-leg-out.webp",
+      "sha256": "1ef5f9f2f0f453beaab62cc58ccf67be2d1e06bd12f0dbd85702db371f36ef77",
+      "bytes": 26006
+    },
+    {
+      "actionId": "h-butterfly-active",
+      "asset": "assets/coach/standing/h-butterfly-active.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-butterfly-active.webp",
+      "sha256": "9b8c7dbf3853c1a24471a27aaae74b1f69b47f1ba5e76b3a78c46f5c2a9bd09c",
+      "bytes": 31876
+    },
+    {
+      "actionId": "h-couch-stretch",
+      "asset": "assets/coach/standing/h-couch-stretch.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-couch-stretch.webp",
+      "sha256": "73dd6eb96e2cdcfedb27d53241b5daf28ae64533950edabfc63c584172b19063",
+      "bytes": 25952
+    },
+    {
+      "actionId": "h-hip-gate",
+      "asset": "assets/coach/standing/h-hip-gate.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-hip-gate.webp",
+      "sha256": "5c11adf0651ab97f3d60ce7ea6fc7183a8782deeaec3ae907c9b8fbde94dda76",
+      "bytes": 35852
+    },
+    {
+      "actionId": "h-knee-hug",
+      "asset": "assets/coach/standing/h-knee-hug.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-knee-hug.webp",
+      "sha256": "352b1c61163f972b6ef6bb13fc2d29fc1ddc8704b0dad2de8f888a625195421b",
+      "bytes": 16524
+    },
+    {
+      "actionId": "h-quad-cars",
+      "asset": "assets/coach/standing/h-quad-cars.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-quad-cars.webp",
+      "sha256": "41cfb46a9e2dd8878586020a1c92f410a6d17559d7d2dbee3dd197f7a2174508",
+      "bytes": 23698
+    },
+    {
+      "actionId": "h-reverse-clam",
+      "asset": "assets/coach/standing/h-reverse-clam.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-reverse-clam.webp",
+      "sha256": "d3f827ad0ba20eeb11c104a3aad5de1701979d854a50d299bb825102a43ea1b9",
+      "bytes": 25124
+    },
+    {
+      "actionId": "h-squat",
+      "asset": "assets/coach/standing/h-squat.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-squat.webp",
+      "sha256": "0b7c335fcc295d960d85b9c05a088c8968d3ec07d0686b9f4a74d78b3cd51234",
+      "bytes": 19560
+    },
+    {
+      "actionId": "h-sumo-pry",
+      "asset": "assets/coach/standing/h-sumo-pry.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-sumo-pry.webp",
+      "sha256": "f58083a73df7ee77185f6d91db909de6f2aafd6b1354cb5c5274901b7d48f33f",
+      "bytes": 27220
+    },
+    {
+      "actionId": "h-supine-twist",
+      "asset": "assets/coach/standing/h-supine-twist.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-supine-twist.webp",
+      "sha256": "a827d8283b5dda1ab412fdd219ab02d11bf2d346b8114ecb831135f191b4e395",
+      "bytes": 22618
+    },
+    {
+      "actionId": "h-wall-straddle",
+      "asset": "assets/coach/standing/h-wall-straddle.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/h-wall-straddle.webp",
+      "sha256": "1a319e2a500ec8e61b83790bfb54b33d4bc36e67003bf6a892b5ab063d204498",
+      "bytes": 23334
+    },
+    {
+      "actionId": "hip-flexors-A",
+      "asset": "assets/coach/standing/hip-flexors-A.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/hip-flexors-A.webp",
+      "sha256": "99907dfed80c7c4492ab5f6f77a08653e8b7eb2e80f090e354d5736194253e41",
+      "bytes": 16854
+    },
+    {
+      "actionId": "n-chair-wiper",
+      "asset": "assets/coach/standing/n-chair-wiper.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-chair-wiper.webp",
+      "sha256": "1e9a29174b03d0d107a36e824b77834056c5cc437a62a6e155a68d885dfb54b4",
+      "bytes": 34250
+    },
+    {
+      "actionId": "n-half-split",
+      "asset": "assets/coach/standing/n-half-split.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-half-split.webp",
+      "sha256": "dd948a0b2ee97248b1c608caf351103b135a5b5d311560f1765bc6be69a0c767",
+      "bytes": 24360
+    },
+    {
+      "actionId": "n-leg-circles",
+      "asset": "assets/coach/standing/n-leg-circles.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-leg-circles.webp",
+      "sha256": "10eb3e27e598b08cc7516d0b0a75066edeb9e477693ee7781d12483784c24fdd",
+      "bytes": 20748
+    },
+    {
+      "actionId": "n-pelvis-circle",
+      "asset": "assets/coach/standing/n-pelvis-circle.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-pelvis-circle.webp",
+      "sha256": "82d320f7fcd5cdea75c571aa70c5c50650fb93a902603863a0483d713f8960d5",
+      "bytes": 29814
+    },
+    {
+      "actionId": "n-prone-hip-ext",
+      "asset": "assets/coach/standing/n-prone-hip-ext.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-prone-hip-ext.webp",
+      "sha256": "28dd93140fc491bcccde76c75eb04b988ee55c3d4c814e38ec2250f86e0957b5",
+      "bytes": 20616
+    },
+    {
+      "actionId": "n-prone-ir",
+      "asset": "assets/coach/standing/n-prone-ir.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-prone-ir.webp",
+      "sha256": "31b1820baa204ebdbc069c014d047aba479e46f5fd0404ce3c0af7ca4a020086",
+      "bytes": 22652
+    },
+    {
+      "actionId": "n-seated-ir-drop",
+      "asset": "assets/coach/standing/n-seated-ir-drop.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-seated-ir-drop.webp",
+      "sha256": "b8ea54eef45e13c3c01d0d6f3ef928563cef2ac848f88e1375220f2c4dbf9a34",
+      "bytes": 24754
+    },
+    {
+      "actionId": "n-seated-knee-lift",
+      "asset": "assets/coach/standing/n-seated-knee-lift.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-seated-knee-lift.webp",
+      "sha256": "c77f18b2af222c2187ca39ff5e6546cfed48e420ae7955e043d232609638bb92",
+      "bytes": 38008
+    },
+    {
+      "actionId": "n-seated-squeeze",
+      "asset": "assets/coach/standing/n-seated-squeeze.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-seated-squeeze.webp",
+      "sha256": "b66ce28cb0e9b7a0ef24fc23a07444c9aeb83630434be798a71ca90f7cd71a6d",
+      "bytes": 32146
+    },
+    {
+      "actionId": "n-slider-lateral",
+      "asset": "assets/coach/standing/n-slider-lateral.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-slider-lateral.webp",
+      "sha256": "a7d6b8694a72d6d36c4515bcc2d3a1f2dee65f74f8ebcfdf1ad4c3c6caf2823d",
+      "bytes": 30830
+    },
+    {
+      "actionId": "n-squat-shift",
+      "asset": "assets/coach/standing/n-squat-shift.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-squat-shift.webp",
+      "sha256": "9e7cc5b3f6ba6b1ba5844c402c713454b1ff218c573a8f0219a34f1e4e4fefc3",
+      "bytes": 26796
+    },
+    {
+      "actionId": "n-straddle-fold",
+      "asset": "assets/coach/standing/n-straddle-fold.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-straddle-fold.webp",
+      "sha256": "209e6372e150707ab7308bb0cc9b9705193ec9ddf126de2ff3ece51cab126d90",
+      "bytes": 22256
+    },
+    {
+      "actionId": "n-wide-fold",
+      "asset": "assets/coach/standing/n-wide-fold.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-wide-fold.webp",
+      "sha256": "be4f70275ffe28ddc40403a3314bfa6c35dcdc622552c3ff0fe538245ccfe4fa",
+      "bytes": 37308
+    },
+    {
+      "actionId": "n-windshield",
+      "asset": "assets/coach/standing/n-windshield.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/n-windshield.webp",
+      "sha256": "549e75a4cc9efe79f44430d62651469dbdd1c261b5b284680935d64042ef9496",
+      "bytes": 33220
+    },
+    {
+      "actionId": "o-seated-fig4",
+      "asset": "assets/coach/standing/o-seated-fig4.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/o-seated-fig4.webp",
+      "sha256": "5eb0ec3cdcb3656528d588ca796b8ddcd6ca4696ab30879bb6d5f5427dc5ee5f",
+      "bytes": 42066
+    },
+    {
+      "actionId": "o-seated-ham",
+      "asset": "assets/coach/standing/o-seated-ham.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/o-seated-ham.webp",
+      "sha256": "a5b26faf6dedab953ed2502e836f22e72e1196486ec3976a8ea0af64d2691fa9",
+      "bytes": 35858
+    },
+    {
+      "actionId": "o-stand-crossreach",
+      "asset": "assets/coach/standing/o-stand-crossreach.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/o-stand-crossreach.webp",
+      "sha256": "e6bf0f8d7d747718c7ab549635a6490321a9fff80cd4be4188db2d21b908ac78",
+      "bytes": 34930
+    },
+    {
+      "actionId": "o-stand-lunge",
+      "asset": "assets/coach/standing/o-stand-lunge.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/o-stand-lunge.webp",
+      "sha256": "34e5910d7af5ca28ce8068fcea7befc56ed898f47066869102147a7e8504cdc7",
+      "bytes": 25682
+    },
+    {
+      "actionId": "s-9090",
+      "asset": "assets/coach/standing/s-9090.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-9090.webp",
+      "sha256": "b28d97511a6009ce5db47395593cd4e7d3a940bee847907a1ca40045094064bc",
+      "bytes": 32236
+    },
+    {
+      "actionId": "s-butterfly",
+      "asset": "assets/coach/standing/s-butterfly.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-butterfly.webp",
+      "sha256": "837b5a745e7205cecc6c16e17dde6471d3cffe4639c908e5dd9d643db5e87a1e",
+      "bytes": 30688
+    },
+    {
+      "actionId": "s-figure4",
+      "asset": "assets/coach/standing/s-figure4.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-figure4.webp",
+      "sha256": "49e28d1a0ccd56bb71d7d1f6f5de425d09798dee39052d0646b46af5adf63a0d",
+      "bytes": 24748
+    },
+    {
+      "actionId": "s-frog",
+      "asset": "assets/coach/standing/s-frog.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-frog.webp",
+      "sha256": "1782288e6af4d684d9dd154f6ddc2bfb12917c469a093c088dbbd4604bda2c9f",
+      "bytes": 18264
+    },
+    {
+      "actionId": "s-kneel-hipflex",
+      "asset": "assets/coach/standing/s-kneel-hipflex.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-kneel-hipflex.webp",
+      "sha256": "0db2db83b3b7ec28db6b13c38cd3763f200421e185aed5f9ce93f2b7acee5f7c",
+      "bytes": 19298
+    },
+    {
+      "actionId": "s-lizard",
+      "asset": "assets/coach/standing/s-lizard.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-lizard.webp",
+      "sha256": "51206ac47eb7c0c392608b931f37e49caca00df056af732010928432ce37d56a",
+      "bytes": 27124
+    },
+    {
+      "actionId": "s-pigeon",
+      "asset": "assets/coach/standing/s-pigeon.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-pigeon.webp",
+      "sha256": "b4aecb2e1e1183058d2f76bdb42e9453c1bc1ad4e60e9fc9ce03b5adf4732be4",
+      "bytes": 22992
+    },
+    {
+      "actionId": "s-seated-fold",
+      "asset": "assets/coach/standing/s-seated-fold.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/s-seated-fold.webp",
+      "sha256": "82394d8d3f65e3761b8b5c1fd84b08ffc4e994464674370543306c0fcf505049",
+      "bytes": 16070
+    },
+    {
+      "actionId": "t-seated-straddle-lift-1leg",
+      "asset": "assets/coach/standing/t-seated-straddle-lift-1leg.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/t-seated-straddle-lift-1leg.webp",
+      "sha256": "2c851d1cd2978014fb377686d296e51b517c575d8024595215040b8c185167b0",
+      "bytes": 21826
+    },
+    {
+      "actionId": "w-clamshell",
+      "asset": "assets/coach/standing/w-clamshell.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/w-clamshell.webp",
+      "sha256": "34a359ae02408ea34b1d951c87ec871cf957c1b7fcaefb42b241199612cd6e47",
+      "bytes": 21464
+    },
+    {
+      "actionId": "w-feet-on-chair-bridge",
+      "asset": "assets/coach/standing/w-feet-on-chair-bridge.webp",
+      "sourcePath": "packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/w-feet-on-chair-bridge.webp",
+      "sha256": "c52de80d95bc12a86662b3fe1e0f108ef29618414172f28b60ca849aac9fcb03",
+      "bytes": 20202
+    }
+  ]
+}

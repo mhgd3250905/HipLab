@@ -1,31 +1,24 @@
-// Exercise the production Service -> SDK -> HTTP request path locally.
-// No real gateway or credential file is read by this suite.
+// The production config uses SDK auth; this local server never reads real keys.
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/hip/coach/coach_auth.dart';
 import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/coach/coach_device_id.dart';
-import 'package:hiplab/hip/coach/coach_service.dart';
-import 'package:hiplab/hip/coach/usage_store.dart';
-import 'package:ugk_coach/ugk_coach.dart' as uc;
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
-import 'hip_ai_coach_test.dart' show readAsset, validPlanEnvelope;
-import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'hip_domain_test.dart' show MemoryStorage;
 
-class _RelayRequest {
-  const _RelayRequest(this.method, this.uri, this.headers, this.body);
-  final String method;
+class RelayRequest {
+  const RelayRequest(this.uri, this.headers, this.body);
   final Uri uri;
   final Map<String, String> headers;
   final Map<String, Object?> body;
 }
 
-Future<({HttpServer server, List<_RelayRequest> requests})>
-_startRelay() async {
+Future<({HttpServer server, List<RelayRequest> requests})> startRelay() async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-  final captured = <_RelayRequest>[];
+  final captured = <RelayRequest>[];
   server.listen((request) async {
     final headers = <String, String>{};
     request.headers.forEach((name, values) {
@@ -34,31 +27,18 @@ _startRelay() async {
     final body = Map<String, Object?>.from(
       jsonDecode(await utf8.decoder.bind(request).join()) as Map,
     );
-    captured.add(_RelayRequest(request.method, request.uri, headers, body));
+    captured.add(RelayRequest(request.uri, headers, body));
     request.response.headers.contentType = ContentType.json;
     request.response.write(
       jsonEncode({
-        'model': CoachConfig.defaultModel,
+        'model': body['model'],
         'choices': [
           {
-            'message': {
-              'role': 'assistant',
-              'content': validPlanEnvelope()['text'],
-              'tool_calls': [
-                {
-                  'id': 'plan',
-                  'type': 'function',
-                  'function': {
-                    'name': 'show_plan',
-                    'arguments': jsonEncode(validPlanEnvelope()['plan']),
-                  },
-                },
-              ],
-            },
+            'message': {'role': 'assistant', 'content': 'local adapter check'},
             'finish_reason': 'stop',
           },
         ],
-        'usage': {'prompt_tokens': 12, 'completion_tokens': 8},
+        'usage': {'prompt_tokens': 1, 'completion_tokens': 1},
       }),
     );
     await request.response.close();
@@ -66,209 +46,135 @@ _startRelay() async {
   return (server: server, requests: captured);
 }
 
-void main() {
-  test('relay defaults and whitespace use the App gateway/model', () {
-    const defaults = CoachConfig();
-    expect(defaults.baseUrl, 'https://api.uuugk.win/v1');
-    expect(defaults.model, 'deepseek-v4-flash-0731');
-    expect(defaults.configured, isFalse);
-    const blank = CoachConfig(appKey: '  ', baseUrl: ' \t ', model: ' \n ');
-    expect(blank.baseUrl, defaults.baseUrl);
-    expect(blank.model, defaults.model);
-    expect(blank.configured, isFalse);
-    const custom = CoachConfig(
-      appKey: 'test-app',
-      baseUrl: ' https://relay.example/v1/ ',
-      model: ' my-model ',
-    );
-    expect(custom.baseUrl, 'https://relay.example/v1/');
-    expect(custom.model, 'my-model');
-    expect(custom.configured, isTrue);
-    // The SDK is shared by other Apps; HipLab overrides its selection locally.
-    expect(uc.LlmConfig.deepSeekOpenCsg.model, 'deepseek-v4.1-flash-1017');
-  });
+const request = coach.LlmRequest(
+  messages: [coach.LlmMessage.user('adapter check')],
+);
 
-  test('environment credential comes only from the app-key define', () {
+void main() {
+  test('release defaults retain Worker configuration with no bundled key', () {
+    const config = CoachConfig();
+    expect(config.authMode, 'worker');
+    expect(config.token, isEmpty);
+    expect(config.appKey, isEmpty);
+    expect(config.configured, isFalse);
+    expect(config.baseUrl, 'https://api.uuugk.win/v1');
+    expect(config.model, 'deepseek-v4-flash-0731');
+    expect(config.llmConfig.maxRetries, 0);
+    const blank = CoachConfig(baseUrl: ' \t ', model: ' \n ');
+    expect(blank.baseUrl, config.baseUrl);
+    expect(blank.model, config.model);
+    expect(
+      const CoachConfig(authMode: 'worker', token: 'unused').configured,
+      isFalse,
+    );
+    expect(
+      const CoachConfig(authMode: 'bearer', appKey: 'unused').configured,
+      isFalse,
+    );
+    expect(
+      const CoachConfig(authMode: 'unknown', appKey: 'unused').configured,
+      isFalse,
+    );
     expect(
       CoachConfig.fromEnvironment.appKey,
       const String.fromEnvironment('UGK_COACH_APP_KEY'),
     );
-    expect(
-      CoachConfig.fromEnvironment.configured,
-      const String.fromEnvironment('UGK_COACH_APP_KEY').trim().isNotEmpty,
-    );
-  });
-
-  test('no app key: retired define cannot enable the relay', () {
-    expect(CoachConfig.fromEnvironment.appKey, isEmpty);
-    expect(CoachConfig.fromEnvironment.configured, isFalse);
   });
 
   test(
-    'no key sends no model or catalog request and creates no device ID',
+    'Worker client sends only app/device auth and reuses persisted identity',
     () async {
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      var requests = 0;
-      server.listen((request) async {
-        requests++;
-        request.response.statusCode = HttpStatus.notFound;
-        await request.response.close();
-      });
-      addTearDown(() => server.close(force: true));
-      var identityLoads = 0;
-      final fake = uc.FakeLlmClient([validPlanEnvelope()]);
-      final base = 'http://${server.address.address}:${server.port}';
-      final service = CoachService(
-        config: CoachConfig(
-          appKey: '  ',
-          baseUrl: '$base/v1',
-          catalogManifestUrl: '$base/manifest.json',
-        ),
-        content: loadContent(),
-        client: fake,
-        usage: CoachUsageStore(),
-        storage: MemoryStorage(),
-        readAsset: readAsset,
-        deviceId: () async {
-          identityLoads++;
-          return 'unused';
-        },
+      final relay = await startRelay();
+      addTearDown(() => relay.server.close(force: true));
+      final disk = MemoryStorage();
+      for (var run = 0; run < 2; run++) {
+        final identity = CoachDeviceId(storage: disk);
+        final client = CoachConfig(
+          appKey: ' local-app-fixture ',
+          baseUrl:
+              'http://${relay.server.address.address}:${relay.server.port}/v1/',
+        ).createClient(deviceId: identity.load);
+        addTearDown(client.close);
+        expect((await client.complete(request)).content, 'local adapter check');
+      }
+      expect(relay.requests, hasLength(2));
+      for (final captured in relay.requests) {
+        expect(captured.uri.path, '/v1/chat/completions');
+        expect(captured.headers['x-app-key'], 'local-app-fixture');
+        expect(captured.headers['x-device-id'], isNotEmpty);
+        expect(captured.headers, isNot(contains('authorization')));
+        expect(captured.headers, isNot(contains('x-app-token')));
+        expect(captured.body['model'], CoachConfig.defaultModel);
+        expect(captured.body['stream'], isFalse);
+      }
+      expect(
+        relay.requests.first.headers['x-device-id'],
+        relay.requests.last.headers['x-device-id'],
       );
-      await service.load();
-      addTearDown(service.dispose);
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-      expect(service.configured, isFalse);
-      expect(service.conversation, isNull);
-      expect(fake.requests, isEmpty);
-      expect(requests, 0);
-      expect(identityLoads, 0);
+      expect(
+        disk.values[CoachDeviceId.storageKey],
+        relay.requests.last.headers['x-device-id'],
+      );
     },
   );
 
   test(
-    'relay auth has exactly two headers and retries failed identity loads',
+    'internal bearer mode is explicit and does not read the installation ID',
     () async {
-      var loads = 0;
-      final auth = CoachRelayAuth(
-        appKey: ' test-app ',
-        deviceId: () async {
-          loads++;
-          if (loads == 1) throw StateError('storage unavailable');
-          return 'e3992abc-aa29-4a48-a2f5-d806171828cf';
-        },
-      );
-      await expectLater(auth.headers(), throwsStateError);
-      expect(await auth.headers(), {
-        'X-App-Key': 'test-app',
-        'X-Device-Id': 'e3992abc-aa29-4a48-a2f5-d806171828cf',
-      });
-      expect(loads, 2);
+      final relay = await startRelay();
+      addTearDown(() => relay.server.close(force: true));
+      var identityReads = 0;
+      final client =
+          CoachConfig(
+            authMode: 'bearer',
+            token: ' local-token-fixture ',
+            baseUrl:
+                'http://${relay.server.address.address}:${relay.server.port}/v1',
+            model: 'deepseek-flash',
+          ).createClient(
+            deviceId: () async {
+              identityReads++;
+              return 'unused';
+            },
+          );
+      addTearDown(client.close);
+      await client.complete(request);
+      final captured = relay.requests.single;
+      expect(captured.headers['authorization'], 'Bearer local-token-fixture');
+      expect(captured.headers, isNot(contains('x-app-key')));
+      expect(captured.headers, isNot(contains('x-device-id')));
+      expect(captured.body['model'], 'deepseek-flash');
+      expect(identityReads, 0);
     },
   );
 
-  test('production Service sends relay headers, endpoint and default model; '
-      'a new Service reuses the persisted device UUID', () async {
-    final relay = await _startRelay();
-    final server = relay.server;
-    final captured = relay.requests;
-    addTearDown(() => server.close(force: true));
-    final content = loadContent();
-    final storage = MemoryStorage();
-    final base = 'http://${server.address.address}:${server.port}/v1/';
-    for (final model in [CoachConfig.defaultModel, ' \t ']) {
-      // Simulate a new App service using the same installation's persisted ID.
-      final identity = CoachDeviceId(storage: storage);
-      final service = CoachService(
-        config: CoachConfig(
-          appKey: 'local-relay-test-app',
-          baseUrl: base,
-          model: model,
-        ),
-        content: content,
-        usage: CoachUsageStore(),
-        storage: storage,
-        readAsset: readAsset,
-        deviceId: identity.load,
-      );
-      await service.load();
-      addTearDown(service.dispose);
-      final answer = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
-      expect(
-        answer.status,
-        uc.TurnStatus.ok,
-        reason: 'the real SDK must parse and validate the local response',
-      );
-      expect(answer.plan, isNotNull);
-    }
-    expect(captured, hasLength(2));
-    for (final request in captured) {
-      expect(request.method, 'POST');
-      expect(request.uri.path, '/v1/chat/completions');
-      expect(request.uri.hasQuery, isFalse);
-      expect(request.body['model'], 'deepseek-v4-flash-0731');
-      expect(request.body['stream'], isFalse);
-      expect(request.body.containsKey('response_format'), isFalse);
-      expect(request.body['tools'], isNotEmpty);
-      expect(request.body['messages'], isNotEmpty);
-      expect(request.headers['x-app-key'], 'local-relay-test-app');
-      expect(request.headers, isNot(contains('authorization')));
-      expect(request.headers, isNot(contains('x-app-token')));
-      expect(
-        request.headers['x-device-id'],
-        matches(
-          RegExp(
-            r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
-            caseSensitive: false,
-          ),
-        ),
-      );
-    }
-    expect(
-      captured.last.headers['x-device-id'],
-      captured.first.headers['x-device-id'],
-    );
-  });
   test(
-    'failed device identity sends no HTTP and the next ask can retry',
+    'identity storage failure sends no request and can retry without a new client',
     () async {
-      final relay = await _startRelay();
+      final relay = await startRelay();
       addTearDown(() => relay.server.close(force: true));
       var loads = 0;
-      final service = CoachService(
-        config: CoachConfig(
-          appKey: 'local-relay-test-app',
-          baseUrl:
-              'http://${relay.server.address.address}:${relay.server.port}/v1',
-        ),
-        content: loadContent(),
-        usage: CoachUsageStore(),
-        storage: MemoryStorage(),
-        readAsset: readAsset,
-        deviceId: () async {
-          loads++;
-          if (loads == 1) throw StateError('identity persistence unavailable');
-          return 'e3992abc-aa29-4a48-a2f5-d806171828cf';
-        },
-      );
-      await service.load();
-      addTearDown(service.dispose);
-      final failed = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
-      expect(failed.status, uc.TurnStatus.fallback);
-      expect(
-        relay.requests,
-        isEmpty,
-        reason: 'no request without a persistent device identity',
-      );
-      expect(loads, 1);
-      final retried = (await service.conversation!.send('睡前在家开胯 12 分钟'))!;
-      expect(retried.status, uc.TurnStatus.ok);
+      final client =
+          CoachConfig(
+            appKey: 'local-app-fixture',
+            baseUrl:
+                'http://${relay.server.address.address}:${relay.server.port}/v1',
+          ).createClient(
+            deviceId: () async {
+              loads++;
+              if (loads == 1) throw StateError('test identity unavailable');
+              return 'local-persisted-id';
+            },
+          );
+      addTearDown(client.close);
+      await expectLater(client.complete(request), throwsA(anything));
+      expect(relay.requests, isEmpty);
+      await client.complete(request);
       expect(loads, 2);
-      expect(relay.requests, hasLength(1));
       expect(
         relay.requests.single.headers['x-device-id'],
-        'e3992abc-aa29-4a48-a2f5-d806171828cf',
+        'local-persisted-id',
       );
-      expect(relay.requests.single.headers, isNot(contains('authorization')));
     },
   );
 }

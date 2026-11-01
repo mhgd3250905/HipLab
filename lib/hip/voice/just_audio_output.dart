@@ -1,1 +1,1 @@
-export 'package:ugk_trainer/ugk_trainer.dart' show JustAudioVoiceOutput;
+export 'package:ugk_trainer_runtime/ugk_trainer.dart' show JustAudioVoiceOutput;
