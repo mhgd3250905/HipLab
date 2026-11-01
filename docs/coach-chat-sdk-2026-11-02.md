@@ -1,6 +1,6 @@
 # 第 5 批：HipLab 接入 SDK 对话模块
 
-候选分支 `codex/coach-chat-sdk`，基于本机 `main@1083b49`。原日常目录的液态玻璃 WIP、旧 `codex/coach-v2` 和 release 分支均保留；本轮仅推候选分支，不合 main、不打 tag、不提交商店。
+候选分支 `codex/coach-chat-sdk`，基于本机 `main@1083b49`；运行代码提交 `60d3c372e853aada88eb8d441f04e733860dfca2`。原日常目录的液态玻璃 WIP、旧 `codex/coach-v2` 和 release 分支均保留；本轮仅推候选分支，不合 main、不打 tag、不提交商店。
 
 ## 交付边界
 
@@ -27,7 +27,7 @@ SDK pin：`7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`，为用户确认的 SDK ma
 
 ## 验证与产物
 
-新 pin 严格 `flutter analyze --no-pub --fatal-infos` 为零问题；全量 `flutter test --no-pub --concurrency=1` 为 **446 通过、1 条件跳过**（可选 VOICE_TIMELINE_OUT 导出），耗时 4分27秒。Python 全量 **25/25** 通过。最终日志 `analyze-final.log`、`all-tests-final.log`、`python-tests.log` 均在证据目录；APK 结果构建后登记。
+新 pin 严格 `flutter analyze --no-pub --fatal-infos` 为零问题；全量 `flutter test --no-pub --concurrency=1` 为 **446 通过、1 条件跳过**（可选 VOICE_TIMELINE_OUT 导出），耗时 4分27秒。Python 全量 **25/25** 通过。最终日志 `analyze-final.log`、`all-tests-final.log`、`python-tests.log` 均在证据目录。
 
 | 连续输入 | 新 pin 结果 |
 |---|---|
@@ -41,3 +41,5 @@ SDK pin：`7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`，为用户确认的 SDK ma
 浅/深各空态、等待、计划卡、推荐卡、失败共 10 张截图已生成，使用正式 SDK 页面与模拟状态，未做像素对比；它们不代表真机视觉验收。截图记录的是换 pin 前的 0a6c3aa 页面；本轮按用户要求不重复拍图。证据目录 `E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/`，联系图 `screens/contact-sheet.png`，逐图来源见 `screens/capture-manifest.json`。
 
 用户最新安排：手机已拔线，本轮不执行 ADB、不安装；交付同签名 APK，由用户自行覆盖安装并验具体对话、训练、旧数据界面与视觉细节。不扩展耳机/蓝牙、锁屏、极端字号等矩阵，不把未验项目记为通过。
+
+APK：`E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/hiplab-1.1.0+27-coach-chat-sdk-60d3c37-worker-arm64-device-release.apk`，**106,781,267 bytes**，SHA256 `f9ac4b6186c7b665a56c7fe0a0549d3f66b9e0f65ba4b62eef01eb1220c4c0e7`。包名 `com.ugk.hiplab`、versionName `1.1.0`、arm64 split versionCode **2027**（2000+27），可覆盖当前设备此前读回的 2026。同一 release 运行负载重签为原手机测试证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；原上传签名产物保留。签名/CRC/资源闭包/16KB ZIP与ELF/JNI检查通过，Worker endpoint/AppKey存在、外部模型测试凭据不存在；详见 `release-apk.json`。本轮未安装，真实旧数据恢复与视觉仍待用户验收。

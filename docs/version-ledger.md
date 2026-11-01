@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-11-02：1.1.0+27 SDK 对话模块候选 APK（未安装）
+
+分支 `codex/coach-chat-sdk`，运行源 `60d3c372e853aada88eb8d441f04e733860dfca2`，SDK 统一固定 `7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`。Flutter 3.44.7 / Dart 3.12.2 release arm64，versionName1.1.0 / versionCode2027（split ABI偏移2000+27），包名com.ugk.hiplab。原上传签名 APK 与同运行负载的手机测试证书重签 APK 均保存于非C盘证据目录。
+
+交用户安装包：`E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/hiplab-1.1.0+27-coach-chat-sdk-60d3c37-worker-arm64-device-release.apk`，106781267 bytes，SHA256 `f9ac4b6186c7b665a56c7fe0a0549d3f66b9e0f65ba4b62eef01eb1220c4c0e7`。证书 SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7` 与此前从手机读取的+26一致，可保留数据覆盖升级；不卸载、不清数据。
+
+最终 analyze0、Flutter446通过/1条件跳过、Python25/25、四段真实模型通过；签名/资源/CRC/16KB/JNI及 Worker 配置静态核对通过。用户已拔线，明确由本人安装并测试真实操作/旧数据界面/视觉，本轮**未安装、未进行真机验收**。main/release不动、不tag、不上传商店。[一页报告](coach-chat-sdk-2026-11-02.md)。
+
 ## 2026-10-24：SDK 修复 tag 更新，未重建或安装
 
 已合入并推送main的功能集成点88d8802，从5c4d32e改锁coach0.4.2 / trainer0.2.2 / coach_ui0.1.1（同3302d62），共用App版本保持1.1.0+21；本轮未生成新APK/IPA/AAB，手机仍是源429eaf5/SDK旧tags的已验5d292388…测试包。用户明确允许无需源码适配时沿用真机证据，本轮不冒充新tag原生安装。release/1.0的1.0.0+20及已送审产物身份不动。[补丁及主线回执](sdk-tag-patch-2026-10-24.md)。

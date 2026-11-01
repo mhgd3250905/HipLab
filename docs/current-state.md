@@ -2,7 +2,7 @@
 
 ## 2026-11-02：第 5 批 SDK 对话模块候选
 
-`codex/coach-chat-sdk` 基于本机 main `1083b49` 接入 SDK `7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`（256KB/50轮）；App 仅提供 profile、45 动作配置和宿主端口，旧对话页面/服务/回退/映射已删除。旧会话导入和完整计划保存恢复已有回归；四段真实模型及严格 analyze 通过。交付状态和完整门禁见[一页报告](coach-chat-sdk-2026-11-02.md)。用户已拔掉手机，APK 交付后由用户安装并验收视觉/真实操作，本轮不做 ADB。只推候选分支，不合 main、不动 release、不打 tag、不上传商店；原日常目录 WIP 和旧 v2 分支保留。以下均为历史记录。
+`codex/coach-chat-sdk` 基于本机 main `1083b49` 接入 SDK `7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`（256KB/50轮）；运行源 `60d3c37`。App 仅提供 profile、45 动作配置和宿主端口，旧对话页面/服务/回退/映射已删除。旧会话导入和完整计划保存恢复已有回归；Flutter446通过/1条件跳过、Python25/25、四段真实模型与严格 analyze 通过。1.1.0+27同签名Worker网关APK已备好、静态验包通过，完整身份见[一页报告](coach-chat-sdk-2026-11-02.md)及[版本台账](version-ledger.md)。用户已拔掉手机，由用户安装并验收视觉/真实操作，本轮未安装、不做 ADB。只推候选分支，不合 main、不动 release、不打 tag、不上传商店；原日常目录 WIP 和旧 v2 分支保留。以下均为历史记录。
 
 ## 2026-10-24：Controller 已获批准并合入 main
 
