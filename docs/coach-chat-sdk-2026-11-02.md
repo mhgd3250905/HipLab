@@ -2,6 +2,8 @@
 
 候选分支 `codex/coach-chat-sdk`，基于本机 `main@1083b49`；运行代码提交 `60d3c372e853aada88eb8d441f04e733860dfca2`。原日常目录的液态玻璃 WIP、旧 `codex/coach-v2` 和 release 分支均保留；本轮仅推候选分支，不合 main、不打 tag、不提交商店。
 
+分支已普通推送；首次远端回读 `6c30bb911b8700d513d1ee68de389ccb72059489` 与本机一致。后续仅补本推送回执，不改变已验代码或 APK。手机未安装，main 未合入；本机 main 仍为 `1083b49`、release/1.0 仍为 `1f9a172`。
+
 ## 交付边界
 
 App 仅装配 `CoachAppProfile`：HipLab 主题、单一 45 动作白名单、存储、训练/导航回调，以及 compose、原话事件、归档三个端口。页面和会话控制直接使用 `ugk_coach_chat`。release 使用无供应商密钥的 Worker 网关；非中文与 iOS 继续隐藏 AI 入口。参考 Sport-Helper `0863e09` 的宿主适配，未复制旧 v2 的对话逻辑。
