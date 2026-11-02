@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-02：+28 用户真机通过并合入 main（无新制品）
+
+用户确认已交付的1.1.0+28/2028真机测试通过并批准集成，main快进并普通推送到 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，远端回读一致。沿用下方43.40MiB原APK，不重建、不重新安装、不提交商店。后续 `codex/full-action-scope` 受SDK8项训练元数据缺失阻塞；版本尚未递增到+29，未产生+29 APK。[回执与缺项](full-action-scope-2026-11-02.md)。
+
 ## 2026-11-02：1.1.0+28 共享体验最终候选 APK（未安装）
 
 构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`、分支codex/sdk-shared-experience，SDK完整固定d4502f35b1503d41cd782aa7fb3780c7f6591ad0；Flutter3.44.7/Dart3.12.2、com.ugk.hiplab、release arm64 split、versionName1.1.0/versionCode2028。在日常目录使用原签名配置和Worker外部defines构建，未复制密钥；原上传签名包另存，同运行负载重签为此前手机连续测试证书。
