@@ -170,7 +170,7 @@ void main() {
 
   group('SDK 动作库与宿主单练', () {
     testWidgets(
-      '45 scoped actions; SDK Chinese search and category filtering',
+      '211 scoped actions; SDK Chinese search and category filtering',
       (tester) async {
         await pumpApp(tester);
         await toPractice(tester);
@@ -187,7 +187,7 @@ void main() {
                         .childrenDelegate
                     as SliverChildBuilderDelegate)
                 .childCount!;
-        expect(visibleCount(), 45);
+        expect(visibleCount(), 211);
         await tester.enterText(
           find.byKey(const ValueKey('posehub-search')),
           page.mediaPolicy.actionFor('s-pigeon')!.nameZh,

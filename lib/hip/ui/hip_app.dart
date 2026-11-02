@@ -74,7 +74,9 @@ class _HipAppState extends State<HipApp> {
     HipMediaVariants.media = await loadHipActionMedia();
     HipPublicMedia.current = widget.mediaPolicy ?? await HipPublicMedia.load();
     HipSharedLibrary.current = hipSharedLibraryConfig(
-      hipActionScope(await loadHipCoachCatalog()),
+      hipActionScope(
+        store.content.publicCatalog ?? await loadHipCoachCatalog(),
+      ),
     );
     HipVoice voice;
     if (widget.voice != null) {

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import '../domain/hip_library.dart';
+import '../domain/hip_session.dart';
+import '../trainer/hip_sdk_session_builder.dart';
 import '../ui/hip_theme.dart';
 import '../ui/library/library_actions.dart';
 import 'hip_public_media.dart';
@@ -47,29 +49,88 @@ abstract final class HipSharedLibrary {
   }
 
   static bool canStart(LibraryActions actions, String id) {
+    return planFor(actions, id) != null;
+  }
+
+  /// A single action uses the public definition's authored dose, as in the
+  /// SDK single-practice adapter. No local kit or prescription is synthesized.
+  static TrainingPlan? planFor(LibraryActions actions, String id) {
     final store = actions.store;
+    if (current?.allowedActionIds.contains(id) != true || store.blocked) {
+      return null;
+    }
+    if (store.content.publicCatalog case final catalog?) {
+      final source = catalog[id];
+      if (source == null) return null;
+      final dose = source.defaultDose;
+      final original = coach.TrainingPlan(
+        id: 'practice-$id',
+        source: 'template',
+        title: source.name.of('zh'),
+        goal: source.purpose,
+        scene: source.scenes.first,
+        equipment: source.equipment.toList(),
+        level: source.level,
+        targetMinutes: 1,
+        blocks: [
+          coach.PlanBlock(
+            id: 'single',
+            name: source.name.of('zh'),
+            type: coach.BlockType.main,
+            items: [
+              coach.PlanItem(
+                exerciseId: id,
+                mode: dose.mode,
+                sets: dose.sets,
+                reps: dose.reps,
+                workSeconds: dose.seconds,
+                perSide: source.unilateral,
+                restSeconds: dose.restSeconds,
+              ),
+            ],
+          ),
+        ],
+      );
+      final builder = hipSdkSessionBuilder(store.content);
+      final plan = original.copyWith(
+        targetMinutes: (builder.executionTiming(original).totalSeconds / 60)
+            .ceil()
+            .clamp(1, 10000),
+      );
+      final result = store.planner.customPlan(
+        CustomRoutine(
+          id: 'practice-$id',
+          name: source.name.of('zh'),
+          steps: const [],
+          coachPlan: plan.toJson(),
+        ),
+        store.profile,
+      );
+      if (result == null) return null;
+      return TrainingPlan(
+        routines: result.routines,
+        steps: result.steps,
+        transitionSeconds: result.transitionSeconds,
+        source: PlanSource.single,
+        refId: id,
+        name: result.name,
+        sdkPlan: result.sdkPlan,
+        sdkSeconds: result.sdkSeconds,
+      );
+    }
     final drill = store.content.drills[id];
     final kit = store.content.kit(id);
-    return current?.allowedActionIds.contains(id) == true &&
-        drill != null &&
-        kit != null &&
-        store.planner.singlePlan(
-              drill,
-              DoseRules.singleDefault(kit),
-              store.profile,
-            ) !=
-            null;
+    return drill == null || kit == null
+        ? null
+        : store.planner.singlePlan(
+            drill,
+            DoseRules.singleDefault(kit),
+            store.profile,
+          );
   }
 
   static Future<void> start(LibraryActions actions, String id) async {
-    if (!canStart(actions, id)) return;
-    final store = actions.store;
-    final drill = store.content.drill(id);
-    final plan = store.planner.singlePlan(
-      drill,
-      DoseRules.singleDefault(store.content.kit(id)!),
-      store.profile,
-    );
+    final plan = planFor(actions, id);
     if (plan != null) await actions.startPlan(plan);
   }
 

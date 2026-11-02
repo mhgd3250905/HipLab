@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_coach_ui/ugk_coach_ui.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../coach/hip_coach_profile.dart' show hiplabCoachAuthorizedActionIds;
 import '../../domain/hip_models.dart';
+import '../../domain/hip_library.dart';
 import '../../data/hip_public_media.dart';
 import '../hip_icons.dart';
 import '../hip_theme.dart';
@@ -12,7 +14,10 @@ import '../hip_widgets.dart';
 
 /// Only brand roles, local artwork and the existing native preview are bound
 /// here. The SDK owns chat layout, states, controls and animation.
-CoachChatVisuals hipCoachChatVisuals(HipContent content) {
+CoachChatVisuals hipCoachChatVisuals(
+  HipContent content, {
+  coach.Catalog? catalog,
+}) {
   final previews = Expando<Map<String, HipDrillArtHandle>>();
   HipDrillArtHandle surface(BuildContext context, String id) {
     final handles = previews[context] ??= {};
@@ -26,9 +31,11 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
     iconBuilder: _hipChatIcon,
     exerciseFor: (id, brightness) {
       final drill = content.drills[id];
+      final public = (content.publicCatalog ?? catalog)?[id];
+      final action = HipPublicMedia.current?.actionFor(id);
       final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (!hiplabCoachAuthorizedActionIds.contains(id) ||
-          drill == null ||
+          (drill == null && public == null) ||
           poster == null) {
         return null;
       }
@@ -36,13 +43,21 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
       final p = dark ? HipPalette.dark : HipPalette.light;
       return CoachExercise(
         id: id,
-        name: drill.name,
+        name: public?.name.of('zh') ?? drill!.name,
         poster: poster,
         cutout: hipCoachStandingAsset(id),
         stillCutout: hipCoachStandingAsset(id),
-        categoryLabel: drill.methods.map((value) => value.zh).join(' · '),
-        levelLabel: drill.advanced ? '进阶' : '基础',
-        cues: [if (drill.note.isNotEmpty) drill.note],
+        categoryLabel: action != null
+            ? trainer.PoseHubActionFacets.type(action)
+            : drill?.methods.map((value) => value.zh).join(' · ') ?? '',
+        levelLabel: public == null
+            ? (drill!.advanced ? '进阶' : '基础')
+            : switch (public.level) {
+                1 => '入门',
+                2 => '基础',
+                _ => '进阶',
+              },
+        cues: public?.cues['zh'] ?? [if (drill!.note.isNotEmpty) drill.note],
         stage: CoachMediaPalette(
           mediaStage: p.mediaBackdrop,
           onStage: p.text,
@@ -60,7 +75,7 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
       }
     },
     previewBuilder: (context, id, playing) {
-      final drill = content.drills[id];
+      final drill = hipSdkDrill(content, id);
       if (drill == null) return const SizedBox.expand();
       final handle = surface(context, id);
       return HipDrillArt(

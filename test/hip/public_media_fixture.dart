@@ -88,13 +88,7 @@ PublicMediaFixture installPublicMediaFixture({bool sharedLibrary = false}) {
   final fixture = PublicMediaFixture();
   HipPublicMedia.current = fixture.policy;
   HipSharedLibrary.current = sharedLibrary
-      ? hipSharedLibraryConfig(
-          coach.CoachActionScopeManifest.fromCatalogBytes(
-            appId: 'hiplab',
-            catalogBytes: File('assets/coach/catalog.json').readAsBytesSync(),
-            allowedActionIds: hiplabCoachAuthorizedActionIds,
-          ),
-        )
+      ? hipSharedLibraryConfig(hipActionScope(fixture.catalog.toAiCatalog()))
       : null;
   trainer.UgkPackedAlphaVideo.debugPlatform = _UnsupportedPlatform();
   addTearDown(() {

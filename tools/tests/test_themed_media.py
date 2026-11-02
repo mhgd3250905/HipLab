@@ -45,8 +45,13 @@ class ThemedMediaTest(unittest.TestCase):
         index = sdk_root / 'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json'
         catalog = json.loads(index.read_text(encoding='utf-8'))
         covers = {action['id']: action for action in catalog['actions']}
+        delivery = json.loads((ROOT / 'assets/public_media/catalog.json').read_text(encoding='utf-8'))
+        complete_ids = {action['id'] for action in delivery['actions']
+                        if action['trainingDefinitionComplete'] is True}
+        self.assertEqual(len(complete_ids), 211)
+        self.assertTrue(complete_ids.issubset(covers))
         posters = list((ROOT / 'assets/public_posters').glob('*.webp'))
-        self.assertEqual({poster.stem for poster in posters}, set(covers))
+        self.assertEqual({poster.stem for poster in posters}, complete_ids)
         for poster in posters:
             cover = covers[poster.stem]
             data = poster.read_bytes()

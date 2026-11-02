@@ -2,13 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/coach/hip_coach_profile.dart';
-import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:hiplab/hip/data/hip_action_scope.dart';
+import 'package:hiplab/hip/data/hip_public_catalog.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
+import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/coach/hip_coach_visuals.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 HipContent _content() {
   final content = HipContent.fromJson(
@@ -29,20 +33,33 @@ HipContent _content() {
   });
 }
 
+class _BytesOnlyAssets extends CachingAssetBundle {
+  final loaded = <String>[];
+
+  @override
+  Future<ByteData> load(String key) async {
+    loaded.add(key);
+    final bytes = File(key).readAsBytesSync();
+    // Exercise offset/length handling as well as the large-asset byte path.
+    final padded = Uint8List(bytes.length + 8)
+      ..setRange(4, bytes.length + 4, bytes);
+    return ByteData.sublistView(padded, 4, bytes.length + 4);
+  }
+
+  @override
+  Future<String> loadString(String key, {bool cache = true}) =>
+      throw StateError('Catalog loading must retain the byte path');
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUpAll(() async {
-    HipPublicMedia.current = await HipPublicMedia.load(
-      rootDirectory:
-          'F:/codex-worktrees/trainer-no-flash/3D-Pose-SDK/build/library-shared/hip/profile-cache',
-      prefetchBeforeTraining: false,
-    );
-  });
-  tearDownAll(() => HipPublicMedia.current?.repository.dispose());
-  final content = _content();
-  final catalog = coach.Catalog.fromJson(
-    jsonDecode(File(hipCoachCatalogAsset).readAsStringSync()),
+  final pack = coach.PoseHubAppTestCatalog.fromBytes(
+    File(hipPublicCatalogAsset).readAsBytesSync(),
+    semanticCatalogBytes: File(hipPublicSemanticsAsset).readAsBytesSync(),
   );
+  final rhythms = hipPublicRhythms(pack);
+  final catalog = hipCoachCatalogFromPublic(pack, rhythms: rhythms);
+  final content = _content().withPublicTraining(catalog, rhythms);
   final profile = hiplabCoachAppProfile(
     catalog: catalog,
     coachProfile: hiplabCoachProfile,
@@ -50,41 +67,161 @@ void main() {
     content: content,
   );
 
-  test(
-    'one explicit list admits all 45 HipLab candidates and no test demo',
-    () {
-      expect(hiplabCoachAuthorizedActionIds, hasLength(45));
-      expect(hiplabCoachProfile.select.ids, hiplabCoachAuthorizedActionIds);
-      expect(hiplabCoachProfile.select.apps, isEmpty);
-      expect(hiplabCoachProfile.select.idPrefixes, isEmpty);
-      final scope = profile.scopeManifest.restrict(
-        catalog: profile.planningCatalog(catalog),
-        profile: profile.coachProfile,
-      );
-      expect(scope.plannableIds, hiplabCoachAuthorizedActionIds);
-      expect(scope.catalog.ids.toSet(), hiplabCoachAuthorizedActionIds);
-      expect(scope.contains('n-thomas-test'), isFalse);
-      expect(scope.contains('chest-A'), isFalse);
-      expect(profile.conversationPolicy.guidanceEnabled, isFalse);
-    },
-  );
+  setUpAll(() async {
+    HipPublicMedia.current = await HipPublicMedia.load(
+      rootDirectory: 'build/test-public-media/profile-cache',
+      prefetchBeforeTraining: false,
+    );
+  });
+  tearDownAll(() => HipPublicMedia.current?.repository.dispose());
 
-  test('unknown configured action fails rather than shrinking the list', () {
-    final missing = coach.Catalog.fromJson({
-      ...catalog.toJson(),
+  test('one fixed list admits all 211 complete public actions to Coach', () {
+    expect(pack.allActions, hasLength(219));
+    expect(pack.pendingActions, hasLength(8));
+    expect(hiplabCoachAuthorizedActionIds, hasLength(211));
+    expect(
+      coach.computeAllowlistSha256(hiplabCoachAuthorizedActionIds),
+      '2f95a37a379458fbedbbaa6c4940f658d72c75476fd1b4c85b4a65850ee393b9',
+    );
+    expect(
+      hiplabCoachAuthorizedActionIds,
+      pack.semanticCompleteActions.map((action) => action.id).toSet(),
+    );
+    expect(catalog.ids.toSet(), hiplabCoachAuthorizedActionIds);
+    expect(catalog.problems, isEmpty);
+    expect(hiplabCoachProfile.select.ids, hiplabCoachAuthorizedActionIds);
+    expect(hiplabCoachProfile.select.apps, isEmpty);
+    expect(hiplabCoachProfile.select.idPrefixes, isEmpty);
+    final scope = profile.scopeManifest.restrict(
+      catalog: profile.planningCatalog(catalog),
+      profile: profile.coachProfile,
+    );
+    expect(scope.allowedActionIds, hiplabCoachAuthorizedActionIds);
+    expect(scope.plannableIds, hiplabCoachAuthorizedActionIds);
+    expect(scope.catalog.ids.toSet(), hiplabCoachAuthorizedActionIds);
+    expect(scope.contains('n-thomas-test'), isTrue);
+    expect(scope.contains('chest-A'), isTrue);
+    for (final action in pack.pendingActions) {
+      expect(scope.contains(action.id), isFalse, reason: action.id);
+      expect(catalog[action.id], isNull, reason: action.id);
+    }
+    expect(profile.library!.allowedActionIds, scope.allowedActionIds);
+    expect(
+      profile.library!.actions(pack).map((action) => action.id).toSet(),
+      scope.plannableIds,
+    );
+    expect(profile.conversationPolicy.guidanceEnabled, isFalse);
+  });
+
+  test('small fixtures intersect the list without admitting unknown IDs', () {
+    final fixture = coach.Catalog.fromJson({
+      ...catalog.raw,
       'drills': [
-        for (final drill in catalog.drills)
-          if (drill.id != 's-frog') drill.toJson(),
+        catalog['s-frog']!.raw,
+        {...catalog['chest-A']!.raw, 'id': 'not-in-public-catalog'},
       ],
     });
+    final scope = hipActionScope(
+      fixture,
+    ).restrict(catalog: fixture, profile: hiplabCoachProfile);
+    expect(scope.allowedActionIds, {'s-frog'});
+    expect(scope.plannableIds, {'s-frog'});
+    expect(scope.contains('not-in-public-catalog'), isFalse);
+  });
+
+  test('catalog loading verifies both assets through exact bytes', () async {
+    final assets = _BytesOnlyAssets();
+    final loaded = await loadHipCoachCatalog(bundle: assets);
+    expect(assets.loaded, [hipPublicCatalogAsset, hipPublicSemanticsAsset]);
+    expect(loaded.ids.toSet(), hiplabCoachAuthorizedActionIds);
+    expect(loaded.problems, isEmpty);
+    final damaged = File(hipPublicSemanticsAsset).readAsBytesSync();
+    damaged[damaged.length - 1] ^= 1;
     expect(
-      () => hiplabCoachAppProfile(
-        catalog: missing,
-        coachProfile: hiplabCoachProfile,
-        executionTiming: profile.executionTiming,
-        content: content,
+      () => coach.PoseHubAppTestCatalog.fromBytes(
+        File(hipPublicCatalogAsset).readAsBytesSync(),
+        semanticCatalogBytes: damaged,
       ),
-      throwsA(isA<coach.CoachActionScopeConfigurationException>()),
+      throwsFormatException,
+    );
+  });
+
+  test('metadata and authored execution cadence are preserved', () {
+    final source = pack.toAiCatalog();
+    expect(rhythms.keys.toSet(), hiplabCoachAuthorizedActionIds);
+    var authored = 0;
+    for (final drill in source.drills) {
+      final projected = catalog[drill.id]!;
+      for (final field in [
+        'defaultDose',
+        'doseRange',
+        'equipment',
+        'cautions',
+        'contraindications',
+        'rhythm',
+      ]) {
+        expect(
+          projected.raw[field],
+          drill.raw[field],
+          reason: '${drill.id}:$field',
+        );
+      }
+      final rhythm = rhythms[drill.id]!;
+      final metadata = pack.tryGet(drill.id)!.raw['rhythm'] as Map;
+      if (metadata['execution'] case final Map execution) {
+        authored++;
+        var expected = trainer.Rhythm.fromJson(
+          Map<String, dynamic>.from(execution),
+        );
+        final hold = (drill.raw['defaultDose'] as Map)['holdSeconds'];
+        if (hold is int && expected.counted) expected = expected.withHold(hold);
+        expect(rhythm.toJson(), expected.toJson(), reason: drill.id);
+      } else {
+        expect(
+          rhythm.toJson(),
+          drill.defaultDose.mode == coach.DoseMode.reps
+              ? trainer.Rhythm.selfPacedReps.toJson()
+              : trainer.Rhythm.timedHold.toJson(),
+          reason: drill.id,
+        );
+      }
+      if (drill.defaultDose.mode == coach.DoseMode.reps && rhythm.counted) {
+        expect(
+          projected.assets.videos.first.repSeconds,
+          rhythm.cycleFor(),
+          reason: drill.id,
+        );
+      }
+    }
+    expect(authored, 78);
+    expect(rhythms['h-sumo-pry']!.holdSeconds, 10);
+    expect(rhythms['n-seated-knee-lift']!.holdSeconds, 5);
+  });
+
+  test('ambient equipment codes match public catalog IDs through SDK tags', () {
+    final schema = jsonEncode([
+      for (final tool in coach.AgentTools.build(
+        hiplabCoachProfile,
+        catalog,
+        memory: false,
+      ))
+        tool.toJson(),
+    ]);
+    for (final id in ['mat', 'chair', 'wall']) {
+      expect(catalog.taxonomy.equipment, contains(id));
+      expect(schema, contains('"equip.$id"'));
+    }
+    expect(
+      hiplabCoachProfile.ambientEquipmentFor('home'),
+      containsAll(['equip.mat', 'equip.chair', 'equip.wall']),
+    );
+    expect(hiplabCoachProfile.ambientEquipmentFor('office'), {
+      'equip.chair',
+      'equip.wall',
+    });
+    expect(
+      hiplabCoachProfile.ambientEquipmentFor('gym'),
+      isNot(contains('equip.dumbbell')),
     );
   });
 
@@ -99,8 +236,18 @@ void main() {
         expect(exercise?.cutout, hipCoachStandingAsset(id));
         expect(profile.visual.cutoutFor!(id, brightness), isA<AssetImage>());
       }
-      expect(profile.visual.exerciseFor!('chest-A', brightness), isNull);
-      expect(profile.visual.cutoutFor!('chest-A', brightness), isNull);
+      expect(
+        profile.visual.exerciseFor!('not-in-public-catalog', brightness),
+        isNull,
+      );
+      expect(
+        profile.visual.cutoutFor!('not-in-public-catalog', brightness),
+        isNull,
+      );
+      for (final action in pack.pendingActions) {
+        expect(profile.visual.exerciseFor!(action.id, brightness), isNull);
+        expect(profile.visual.cutoutFor!(action.id, brightness), isNull);
+      }
     }
   });
 }

@@ -3,6 +3,8 @@
 library;
 
 import 'action_kit.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 export 'action_kit.dart';
 
@@ -442,10 +444,17 @@ class HipContent {
     required this.rules,
     required this.safetyCards,
     Map<String, ActionKit> kits = const {},
+    this.publicCatalog,
+    this.publicRhythms = const {},
   }) : drills = {for (final d in drills) d.id: d},
        kits = Map.unmodifiable(kits);
 
   final Map<String, HipDrill> drills;
+
+  /// SDK-owned complete definitions. Kept separate from the authored hip
+  /// routines and assessment, which retain their original content and rules.
+  final coach.Catalog? publicCatalog;
+  final Map<String, trainer.Rhythm> publicRhythms;
 
   /// Action kits by Pose-Hub action id (assets/action_kits); empty when the
   /// kits are not loaded – the player then falls back to timed holds.
@@ -468,6 +477,21 @@ class HipContent {
     rules: rules,
     safetyCards: safetyCards,
     kits: kits,
+    publicCatalog: publicCatalog,
+    publicRhythms: publicRhythms,
+  );
+
+  HipContent withPublicTraining(
+    coach.Catalog catalog,
+    Map<String, trainer.Rhythm> rhythms,
+  ) => HipContent(
+    drills: drills.values.toList(),
+    routines: routines,
+    rules: rules,
+    safetyCards: safetyCards,
+    kits: kits,
+    publicCatalog: catalog,
+    publicRhythms: Map.unmodifiable(rhythms),
   );
   final List<HipRoutine> routines;
   final AssessmentRules rules;

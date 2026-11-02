@@ -604,7 +604,9 @@ class GroupCard extends StatelessWidget {
     final secs = g.seconds(content);
     final drills = [
       for (final s in g.steps)
-        if (content.drills.containsKey(s.kitId)) content.drill(s.kitId),
+        ?(g.coachPlan != null
+            ? hipSdkDrill(content, s.kitId)
+            : content.drills[s.kitId]),
     ];
     final large = libLargeText(context);
     final from = g.fromRoutine == null

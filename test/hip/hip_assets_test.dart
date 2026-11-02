@@ -56,14 +56,23 @@ void main() {
   });
 
   test('public poster bundle exactly covers the full shared catalog', () {
-    final expected = actions.keys.toSet();
+    final expected = {
+      for (final entry in actions.entries)
+        if (entry.value['trainingDefinitionComplete'] == true) entry.key,
+    };
     final bundled = Directory('assets/public_posters')
         .listSync()
         .whereType<File>()
         .map((file) => file.uri.pathSegments.last)
         .toSet();
-    expect(expected, hasLength(219));
-    expect(expected, containsAll(hiplabCoachAuthorizedActionIds));
+    expect(actions, hasLength(219));
+    expect(expected, hasLength(211));
+    expect(hiplabCoachAuthorizedActionIds, hasLength(211));
+    expect(hiplabCoachAuthorizedActionIds, {
+      for (final entry in actions.entries)
+        if (entry.value['trainingDefinitionComplete'] == true) entry.key,
+    });
+    expect(hiplabCoachAuthorizedActionIds, contains('n-thomas-test'));
     expect(bundled, {for (final id in expected) '$id.webp'});
     for (final id in expected) {
       final action = actions[id];
