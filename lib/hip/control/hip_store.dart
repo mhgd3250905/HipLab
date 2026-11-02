@@ -70,6 +70,10 @@ class HipStore extends ChangeNotifier {
   /// 我的训练组 (custom_routines v1, stored under `customRoutines`).
   final List<CustomRoutine> customRoutines = [];
 
+  /// Highest 训练记录 streak milestone whose celebration was already shown
+  /// (UI r2 M4): a newly reached one animates once, then is marked here.
+  int celebratedMilestone = 0;
+
   Map<String, String> get coachPlanJson => {
     for (final routine in customRoutines)
       if (routine.coachPlan != null) routine.id: jsonEncode(routine.coachPlan),
@@ -228,6 +232,7 @@ class HipStore extends ChangeNotifier {
     customRoutines
       ..clear()
       ..addAll(CustomRoutinesCodec.decode(j['customRoutines'], content));
+    celebratedMilestone = (j['celebratedMilestone'] as num?)?.toInt() ?? 0;
     sessions
       ..clear()
       ..addAll([
@@ -260,6 +265,7 @@ class HipStore extends ChangeNotifier {
     'voice': voice.toJson(),
     'customRoutines': CustomRoutinesCodec.encode(customRoutines),
     'sessions': [for (final r in sessions) r.toJson()],
+    if (celebratedMilestone > 0) 'celebratedMilestone': celebratedMilestone,
   };
 
   Future<void> _stateWriteTail = Future<void>.value();
@@ -426,6 +432,13 @@ class HipStore extends ChangeNotifier {
 
   Future<void> answerNumbness({required bool stillNumb}) {
     askNumbness = stillNumb;
+    return _save();
+  }
+
+  /// 训练记录 showed the celebration for milestone [days].
+  Future<void> markCelebrated(int days) {
+    if (days <= celebratedMilestone) return Future<void>.value();
+    celebratedMilestone = days;
     return _save();
   }
 

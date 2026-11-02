@@ -85,7 +85,48 @@ class HipAssessmentIntro extends StatelessWidget {
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 14),
+              if (_last(store) case final last?) ...[
+                // UI r2 §1 / M4: the last result's radar lives here (moved
+                // off 训练记录); 重测 is the button below.
+                HipSection(
+                  '上次结果',
+                  trailing: Text(
+                    '${last.at.year}/${last.at.month}/${last.at.day}',
+                    key: const ValueKey('intro-last-date'),
+                    style: TextStyle(fontSize: 12, color: HipColors.faint),
+                  ),
+                ),
+                HipListGroup(
+                  key: const ValueKey('intro-last-result'),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+                      child: Column(
+                        children: [
+                          Text(
+                            '${last.result.level.name} · ${last.result.total}/12',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: HipColors.jadeText,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 236,
+                            child: HipRadar(
+                              values: last.result.radar,
+                              highlight: last.result.tightest.toSet(),
+                              warn: last.result.painDirections,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const HipSection('自测内容'),
+              ] else
+                const SizedBox(height: 14),
               HipFlatGroup(
                 indent: 60,
                 children: [for (final item in items) _row(item)],
@@ -114,7 +155,11 @@ class HipAssessmentIntro extends StatelessWidget {
             child: RepaintBoundary(
               child: HipPrimaryButton(
                 key: const ValueKey('assessment-start'),
-                label: store.blocked ? '先问问医生再来' : '开始自测',
+                label: store.blocked
+                    ? '先问问医生再来'
+                    : store.latestResult != null
+                    ? '重新自测'
+                    : '开始自测',
                 icon: HipGlyph.play,
                 onPressed: store.blocked ? null : onStart,
               ),
@@ -123,6 +168,12 @@ class HipAssessmentIntro extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  static ({DateTime at, AssessmentResult result})? _last(HipStore store) {
+    final result = store.latestResult;
+    if (result == null || store.assessments.isEmpty) return null;
+    return (at: store.assessments.last.at, result: result);
   }
 
   Widget _row(AssessmentItem item) {

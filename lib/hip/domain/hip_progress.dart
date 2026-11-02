@@ -129,3 +129,51 @@ class PlannedReminderScheduler implements ReminderScheduler {
     next = settings.nextAfter(now);
   }
 }
+
+// ───────────────────────── 训练记录 achievements (UI r2 M4) ─────────────────
+
+/// Consecutive-day milestones on 训练记录.
+const streakMilestones = [3, 7, 14, 30, 60, 100];
+
+DateTime? _parseDay(String k) {
+  final p = k.split('-');
+  if (p.length != 3) return null;
+  final y = int.tryParse(p[0]), m = int.tryParse(p[1]), d = int.tryParse(p[2]);
+  if (y == null || m == null || d == null) return null;
+  return DateTime(y, m, d);
+}
+
+/// Longest run of consecutive training days ever, and for each milestone the
+/// day a run first reached it (absent = not earned yet).
+({int best, Map<int, DateTime> earned}) streakHistory(Set<String> doneDays) {
+  final days = [for (final k in doneDays) ?_parseDay(k)]..sort();
+  var best = 0, run = 0;
+  DateTime? prev;
+  final earned = <int, DateTime>{};
+  for (final d in days) {
+    final consecutive =
+        prev != null &&
+        DateTime(prev.year, prev.month, prev.day + 1) == d;
+    if (prev != null && d == prev) continue;
+    run = consecutive ? run + 1 : 1;
+    prev = d;
+    if (run > best) best = run;
+    for (final m in streakMilestones) {
+      if (run == m) earned.putIfAbsent(m, () => d);
+    }
+  }
+  return (best: best, earned: earned);
+}
+
+/// Monday of the week [t] falls in.
+DateTime weekStart(DateTime t) => DateTime(t.year, t.month, t.day - (t.weekday - 1));
+
+/// Heat level 0–4 for one day: 0 not trained, then by trained minutes (a
+/// trained day without a timed record still shows the lightest level).
+int heatLevel({required bool trained, required int minutes}) {
+  if (!trained && minutes <= 0) return 0;
+  if (minutes < 5) return 1;
+  if (minutes < 10) return 2;
+  if (minutes < 20) return 3;
+  return 4;
+}

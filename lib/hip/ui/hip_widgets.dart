@@ -529,48 +529,101 @@ class HipRadar extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) {
       final size = math.min(c.maxWidth, c.maxHeight);
-      final r = size * (!labels ? .42 : (compact ? .3 : .34));
       final labelStyle = TextStyle(
         fontSize: compact ? 10 : 15,
         color: HipColors.muted,
-        height: 1,
+        height: 1.2,
       );
-      return SizedBox(
-        width: size,
-        height: size,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _RadarPainter(
-                  values,
-                  highlight,
-                  warn,
-                  r,
-                  compact,
-                  HipColors.palette,
+      final scaler = MediaQuery.textScalerOf(context);
+      final dir = Directionality.of(context);
+      // Measure every label at the current text scale (bold = widest).
+      Size measure(HipDirection d) {
+        final tp = TextPainter(
+          text: TextSpan(
+            text: d.zh,
+            style: labelStyle.copyWith(fontWeight: FontWeight.w700),
+          ),
+          textDirection: dir,
+          textScaler: scaler,
+        )..layout();
+        final s = tp.size;
+        tp.dispose();
+        return s;
+      }
+
+      final sizes = {for (final d in order) d: measure(d)};
+      final gap = compact ? 5.0 : 8.0;
+      var r = size * (!labels ? .42 : .4);
+      if (labels) {
+        // Reserve room so every label sits outside the polygon and inside
+        // the box: side axes (cos ±0.87) need the label width, top/bottom
+        // axes the label height.
+        final w = sizes.values.map((s) => s.width).reduce(math.max);
+        final h = sizes.values.map((s) => s.height).reduce(math.max);
+        r = math.min(r, (size / 2 - gap - w - 2) / math.cos(math.pi / 6));
+        r = math.min(r, size / 2 - gap - h - 2);
+        r = math.max(r, size * .2);
+      }
+      final center = size / 2;
+      return Center(
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _RadarPainter(
+                    values,
+                    highlight,
+                    warn,
+                    r,
+                    compact,
+                    HipColors.palette,
+                  ),
                 ),
               ),
-            ),
-            for (var i = 0; labels && i < order.length; i++)
-              Builder(
-                builder: (_) {
-                  final a = -math.pi / 2 + i * math.pi / 3;
-                  final lr = r + (compact ? 13 : 26);
-                  final d = order[i];
-                  final color = warn.contains(d)
-                      ? HipColors.pain
-                      : highlight.contains(d)
-                      ? HipColors.tight
-                      : HipColors.muted;
-                  return Positioned(
-                    left: size / 2 + math.cos(a) * lr - 30,
-                    top: size / 2 + math.sin(a) * lr - 10,
-                    width: 60,
-                    height: 20,
-                    child: Center(
+              for (var i = 0; labels && i < order.length; i++)
+                Builder(
+                  key: ValueKey('radar-label-${order[i].name}'),
+                  builder: (_) {
+                    final a = -math.pi / 2 + i * math.pi / 3;
+                    final d = order[i];
+                    final ls = sizes[d]!;
+                    final cx = math.cos(a), sy = math.sin(a);
+                    final ax = center + cx * (r + gap);
+                    final ay = center + sy * (r + gap);
+                    // Anchor by side: right of the chart starts at the
+                    // anchor, left ends at it, top/bottom are centred.
+                    final left = cx > .3
+                        ? ax
+                        : cx < -.3
+                        ? ax - ls.width
+                        : ax - ls.width / 2;
+                    final top = sy < -.9
+                        ? ay - ls.height
+                        : sy > .9
+                        ? ay
+                        : ay - ls.height / 2;
+                    final color = warn.contains(d)
+                        ? HipColors.pain
+                        : highlight.contains(d)
+                        ? HipColors.tight
+                        : HipColors.muted;
+                    return Positioned(
+                      left: left,
+                      top: top,
+                      width: ls.width + 1,
                       child: Text(
                         d.zh,
+                        maxLines: 1,
+                        softWrap: false,
+                        textAlign: cx > .3
+                            ? TextAlign.left
+                            : cx < -.3
+                            ? TextAlign.right
+                            : TextAlign.center,
                         style: labelStyle.copyWith(
                           color: color,
                           fontWeight: color == HipColors.muted
@@ -578,11 +631,11 @@ class HipRadar extends StatelessWidget {
                               : FontWeight.w700,
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-          ],
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       );
     },

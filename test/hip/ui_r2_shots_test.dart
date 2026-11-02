@@ -12,7 +12,9 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_public_catalog.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:hiplab/hip/domain/hip_library.dart';
+import 'package:hiplab/hip/domain/hip_assessment.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:hiplab/hip/domain/hip_progress.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 
@@ -47,7 +49,13 @@ void main() {
     bool reminder = true,
     bool groups = false,
     bool public = false,
+    bool records = false,
+    bool emptyRecords = false,
+    bool assessed = false,
+    double textScale = 1,
   }) async {
+    tester.platformDispatcher.textScaleFactorTestValue = textScale;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     tester.view.physicalSize = Size(393 * 2, height * 2);
     tester.view.devicePixelRatio = 2;
     tester.view.padding = const FakeViewPadding(top: 118, bottom: 68);
@@ -65,6 +73,49 @@ void main() {
       ..scene = HipScene.chair
       ..theme = theme
       ..doneDays.addAll(['2026-11-01', '2026-10-31', '2026-10-30']);
+    if (emptyRecords) store.doneDays.clear();
+    if (records) {
+      // M4: ~20 trained days, current streak 8 (10/26–11/02, so 3 and 7
+      // are earned), with timed sessions of varying length.
+      final days = <DateTime>[
+        for (var d = 1; d <= 5; d++) DateTime(2026, 10, d),
+        for (final d in [12, 13, 15, 18, 20, 22, 23]) DateTime(2026, 10, d),
+        for (var d = 0; d < 8; d++) DateTime(2026, 10, 26 + d),
+      ];
+      final titles = ['久坐舒展', '下班放松', '舞前开胯', '睡前十分钟'];
+      store.doneDays
+        ..clear()
+        ..addAll([for (final d in days) dayKey(d)]);
+      for (final (i, d) in days.indexed) {
+        store.sessions.add(
+          SessionRecord(
+            at: DateTime(d.year, d.month, d.day, 8 + i % 12, 10 + i % 40),
+            source: PlanSource.recommended,
+            title: titles[i % titles.length],
+            seconds: [180, 420, 600, 900, 1500][i % 5],
+            completed: true,
+          ),
+        );
+      }
+    }
+    if (assessed) {
+      ItemAnswer one(int s) => ItemAnswer.single(SideAnswer.choice(s));
+      ItemAnswer two(int l, int r) => ItemAnswer.sided(
+        left: SideAnswer.choice(l),
+        right: SideAnswer.choice(r),
+      );
+      store.assessments.add((
+        at: DateTime(2026, 10, 28, 20, 5),
+        answers: {
+          'butterfly': one(1),
+          'ninety_ninety': two(1, 1),
+          'thomas': two(0, 1),
+          'supine_cross': two(1, 1),
+          'seated_fold': one(2),
+          'deep_squat': one(2),
+        },
+      ));
+    }
     if (reminder) {
       store.reminder = store.reminder.copyWith(enabled: true);
     }
@@ -192,6 +243,34 @@ void main() {
         await _capture(tester, '$shots/m3/picker-$n.png');
       });
     }
+    // ── M4 训练记录 + 自测雷达 ──
+    for (final t in [HipThemeChoice.dark, HipThemeChoice.light]) {
+      final n = t == HipThemeChoice.dark ? 'dark' : 'light';
+      testWidgets('m4 训练记录 $n', (tester) async {
+        await pump(tester, theme: t, records: true, height: 1500);
+        await openRecords(tester);
+        await _capture(tester, '$shots/m4/records-$n.png');
+      });
+      testWidgets('m4 训练记录 empty $n', (tester) async {
+        await pump(tester, theme: t, emptyRecords: true);
+        await openRecords(tester);
+        await _capture(tester, '$shots/m4/records-empty-$n.png');
+      });
+      testWidgets('m4 自测说明 radar $n', (tester) async {
+        await pump(tester, theme: t, assessed: true, height: 1100);
+        await openMore(tester);
+        await tester.tap(find.byKey(const ValueKey('more-checkup')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$shots/m4/intro-radar-$n.png');
+      });
+    }
+    testWidgets('m4 自测说明 radar 1.5x', (tester) async {
+      await pump(tester, assessed: true, height: 1100, textScale: 1.5);
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/m4/intro-radar-dark-1.5x.png');
+    });
     testWidgets('m2 推荐套路 dark', (tester) async {
       await pump(tester);
       await openGroups(tester);

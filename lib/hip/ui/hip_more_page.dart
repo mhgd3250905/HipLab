@@ -97,6 +97,10 @@ class HipMorePage extends StatelessWidget {
               (_) => HipProgressPage(
                 store: store,
                 section: HipProgressSection.records,
+                onStartPractice: () {
+                  final plan = store.todayPlan;
+                  if (plan != null) actions.startPlan(plan);
+                },
               ),
             ),
           ),

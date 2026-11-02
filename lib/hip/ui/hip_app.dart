@@ -29,6 +29,7 @@ import 'hip_more_page.dart';
 import 'hip_page_kit.dart';
 import 'hip_player_page.dart';
 import 'hip_privacy_page.dart';
+import 'hip_records_page.dart';
 import 'hip_routes.dart';
 import 'hip_segmented.dart';
 import 'hip_theme.dart';
@@ -1198,6 +1199,7 @@ class HipProgressPage extends StatelessWidget {
     required this.store,
     this.coach,
     this.section = HipProgressSection.all,
+    this.onStartPractice,
   });
   final HipStore store;
   final HipProgressSection section;
@@ -1205,10 +1207,15 @@ class HipProgressPage extends StatelessWidget {
   /// Shows 「AI 定制用量」 in the settings when set (zh UI only).
   final HipCoachChat? coach;
 
+  /// 训练记录 empty state's action (start today's training).
+  final VoidCallback? onStartPractice;
+
   @override
   Widget build(BuildContext context) {
-    final result = store.latestResult;
     final reminder = store.reminder;
+    if (section == HipProgressSection.records) {
+      return HipRecordsView(store: store, onStartPractice: onStartPractice);
+    }
     final tileKey = GlobalObjectKey(store);
     final records = section != HipProgressSection.settings;
     final settings = section != HipProgressSection.records;
@@ -1228,67 +1235,8 @@ class HipProgressPage extends StatelessWidget {
           const SizedBox(height: 14),
         ],
         if (records) ...[
-          HipFlatGroup(
-            title: '坚持',
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 15, 4, 15),
-                child: Row(
-                  children: [
-                    HipIcon(
-                      HipGlyph.flame,
-                      size: 18,
-                      filled: true,
-                      color: HipColors.tight,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      '连续 ${store.streak} 天',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '共 ${store.doneDays.length} 天',
-                      style: TextStyle(fontSize: 13, color: HipColors.muted),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          if (result != null)
-            HipFlatGroup(
-              title: '最近一次自测',
-              trailing: Text(
-                '${result.level.name} · ${result.total}/12',
-                style: TextStyle(fontSize: 12, color: HipColors.jadeText),
-              ),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: SizedBox(
-                    height: 210,
-                    child: HipRadar(
-                      values: result.radar,
-                      highlight: result.tightest.toSet(),
-                      warn: result.painDirections,
-                    ),
-                  ),
-                ),
-              ],
-            )
-          else if (section == HipProgressSection.records)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                '还没有自测记录。在「更多 · 髋部自测」花 3 分半测一次。',
-                style: TextStyle(fontSize: 13, color: HipColors.muted),
-              ),
-            ),
+          // UI r2 M4: the achievement view; the radar moved to 自测.
+          HipRecordsView(store: store, embedded: true),
           const SizedBox(height: 24),
         ],
         if (settings) ...[
