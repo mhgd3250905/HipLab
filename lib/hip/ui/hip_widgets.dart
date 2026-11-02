@@ -1420,26 +1420,29 @@ class HipStartButton extends StatelessWidget {
             child: _GlassJadeDisc(
               enabled: enabled,
               stage: stage,
+              // m4: matches the dock's items — glyph 20, label 10.5.
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(left: size * .03),
+                    padding: EdgeInsets.only(left: size * .02),
                     child: HipIcon(
                       HipGlyph.play,
-                      size: size * .34,
+                      size: size * 20 / 54,
                       filled: true,
                       color: fg,
                     ),
                   ),
-                  SizedBox(height: size * .02),
+                  const SizedBox(height: 2),
                   Text(
                     label,
+                    maxLines: 1,
+                    softWrap: false,
                     style: TextStyle(
-                      fontSize: size * .19,
-                      height: 1.15,
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w700,
+                      fontSize: size * 10.5 / 54,
+                      height: 1.2,
+                      letterSpacing: .3,
+                      fontWeight: FontWeight.w600,
                       color: fg,
                     ),
                   ),
@@ -1508,50 +1511,33 @@ class _GlassJadeDisc extends StatelessWidget {
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final dark = HipColors.isDark;
     final jade = enabled ? stage.jade : stage.faint;
+    // m4: flat, solid-ish jade over a light blur — no glow halo, no
+    // gradient, only the shared 0.5pt hairline.
     Widget body = DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          center: const Alignment(-.35, -.55),
-          radius: 1.05,
-          colors: [
-            Color.lerp(
-              jade,
-              Colors.white,
-              .28,
-            )!.withValues(alpha: high ? 1 : .94),
-            jade.withValues(alpha: high ? 1 : .8),
-          ],
-        ),
+        color: jade.withValues(alpha: high ? 1 : .9),
       ),
       child: CustomPaint(
         foregroundPainter: HipGlassRimPainter(
           radius: 999,
           dark: true,
           high: high,
-          strength: 1.4,
+          strength: .9,
         ),
         child: Center(child: child),
       ),
     );
     if (!high) {
       body = BackdropFilter(
-        filter: HipGlassStyle.filter(18, dark: dark),
+        filter: HipGlassStyle.filter(20, dark: dark),
         child: body,
       );
     }
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        boxShadow: enabled
-            ? HipColors.shadows([
-                BoxShadow(
-                  color: stage.jade.withValues(alpha: dark ? .38 : .3),
-                  blurRadius: 26,
-                  offset: const Offset(0, 6),
-                ),
-              ])
-            : null,
+        boxShadow: enabled ? HipGlassStyle.shadow(dark: dark) : null,
       ),
       child: ClipOval(child: body),
     );

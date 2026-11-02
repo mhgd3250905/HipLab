@@ -732,7 +732,7 @@ class _HipHomeState extends State<HipHome> {
                         ],
                       ),
                     ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 20),
                   _dock(plan),
                 ],
               ),
@@ -747,7 +747,8 @@ class _HipHomeState extends State<HipHome> {
   /// a sliding inner pill, 更多) and, apart from it, the round jade glass
   /// 开始 — the only accent.
   Widget _dock(TrainingPlan? plan) {
-    const h = 72.0;
+    // m4 (开哥 19:17: "操作栏不要这么大，要精致有质感"): 54pt.
+    const h = 54.0;
     final idle = HipColors.text.withValues(alpha: .62);
     return SizedBox(
       height: h,
@@ -758,11 +759,11 @@ class _HipHomeState extends State<HipHome> {
               key: const ValueKey('home-dock'),
               shape: HipGlassShape.capsule,
               blur: true,
-              sigma: 22,
-              padding: const EdgeInsets.all(5),
+              sigma: 20,
+              padding: const EdgeInsets.all(4),
               child: Row(
                 children: [
-                  Expanded(flex: 2, child: _scenePicker(h - 10)),
+                  Expanded(flex: 2, child: _scenePicker(h - 8)),
                   Expanded(
                     child: HipPressable(
                       key: const ValueKey('home-more'),
@@ -777,7 +778,7 @@ class _HipHomeState extends State<HipHome> {
             ),
           ),
           if (plan != null) ...[
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             _startButton(plan, h),
           ],
         ],
@@ -789,17 +790,17 @@ class _HipHomeState extends State<HipHome> {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        HipIcon(glyph, size: 22, filled: t > .5, color: fg),
-        const SizedBox(height: 4),
+        HipIcon(glyph, size: 20, filled: t > .5, color: fg),
+        const SizedBox(height: 2),
         Text(
           label,
           maxLines: 1,
           softWrap: false,
           style: TextStyle(
-            fontSize: 12.5,
+            fontSize: 10.5,
             height: 1.2,
-            letterSpacing: .5,
-            fontWeight: t > .5 ? FontWeight.w700 : FontWeight.w500,
+            letterSpacing: .3,
+            fontWeight: t > .5 ? FontWeight.w600 : FontWeight.w500,
             color: fg,
           ),
         ),
@@ -807,31 +808,14 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  /// 换一套: a small round glass button beside the title.
-  Widget _rotateButton() => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      HipGlassRoundButton(
-        key: const ValueKey('home-rotate'),
-        semanticLabel: '换一套',
-        blur: true,
-        size: 50,
-        onTap: _rotate,
-        child: HipIcon(HipGlyph.shuffle, size: 22, color: HipColors.text),
-      ),
-      const SizedBox(height: 6),
-      ExcludeSemantics(
-        child: Text(
-          '换一套',
-          style: TextStyle(
-            fontSize: 11.5,
-            height: 1.2,
-            letterSpacing: .5,
-            color: HipColors.muted,
-          ),
-        ),
-      ),
-    ],
+  /// 换一套: a 32pt glass icon button beside the title (m4: no label).
+  Widget _rotateButton() => HipGlassRoundButton(
+    key: const ValueKey('home-rotate'),
+    semanticLabel: '换一套',
+    blur: true,
+    size: 32,
+    onTap: _rotate,
+    child: HipIcon(HipGlyph.shuffle, size: 16, color: HipColors.text),
   );
 
   Widget _topBar() => Row(
@@ -843,11 +827,11 @@ class _HipHomeState extends State<HipHome> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13,
             height: 1.3,
-            letterSpacing: .5,
+            letterSpacing: .3,
             fontWeight: FontWeight.w500,
-            color: HipColors.text.withValues(alpha: .78),
+            color: HipColors.text.withValues(alpha: .72),
           ),
         ),
       ),
@@ -860,35 +844,38 @@ class _HipHomeState extends State<HipHome> {
   Widget _streakChip() => Semantics(
     label: '连续打卡 ${store.streak} 天',
     child: ExcludeSemantics(
-      child: HipGlass(
-        key: const ValueKey('home-streak'),
-        shape: HipGlassShape.capsule,
-        radius: 14,
-        blur: true,
-        sigma: 14,
-        shadow: false,
-        padding: const EdgeInsets.fromLTRB(9, 5, 11, 5),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            HipIcon(
-              HipGlyph.flame,
-              size: 14,
-              filled: true,
-              color: HipColors.tight,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '${store.streak} 天',
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.2,
-                fontWeight: FontWeight.w700,
-                color: HipColors.text,
-                fontFeatures: const [FontFeature.tabularFigures()],
+      child: SizedBox(
+        height: 24,
+        child: HipGlass(
+          key: const ValueKey('home-streak'),
+          shape: HipGlassShape.capsule,
+          radius: 12,
+          blur: true,
+          sigma: 14,
+          shadow: false,
+          padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HipIcon(
+                HipGlyph.flame,
+                size: 12,
+                filled: true,
+                color: HipColors.tight,
               ),
-            ),
-          ],
+              const SizedBox(width: 4),
+              Text(
+                '${store.streak} 天',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.2,
+                  fontWeight: FontWeight.w600,
+                  color: HipColors.text,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -912,35 +899,35 @@ class _HipHomeState extends State<HipHome> {
           Text(
             kicker,
             style: TextStyle(
-              fontSize: 12.5,
+              fontSize: 11,
               height: 1.2,
-              letterSpacing: 3,
+              letterSpacing: 1.5,
               fontWeight: FontWeight.w600,
               color: HipColors.jadeText,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           Text(
             title,
             key: const ValueKey('home-title'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 42,
-              height: 1.08,
-              letterSpacing: 2.5,
-              fontWeight: FontWeight.w800,
+              fontSize: 31,
+              height: 1.12,
+              letterSpacing: 1,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           Text.rich(
             TextSpan(
               children: [
                 TextSpan(
                   text: '${plan.minutes} 分钟',
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.text,
+                    fontWeight: FontWeight.w500,
+                    color: HipColors.text.withValues(alpha: .85),
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -950,10 +937,10 @@ class _HipHomeState extends State<HipHome> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 14.5,
-              height: 1.45,
-              letterSpacing: .4,
-              color: HipColors.muted,
+              fontSize: 13,
+              height: 1.4,
+              letterSpacing: .2,
+              color: HipColors.text.withValues(alpha: .7),
             ),
           ),
         ],

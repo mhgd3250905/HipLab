@@ -1,8 +1,11 @@
 // Translucent glass (theme redesign m2, 开哥 2026-11-02: "半透明玻璃的效果"),
-// after his iOS liquid-glass reference: what is behind shows through a
-// blur, a light translucent fill, a soft bright rim (brighter top-left,
-// a fainter reflection bottom-right), a soft drop shadow; the selected
-// item is a brighter inner pill.
+// after his iOS liquid-glass reference. m4 (开哥 19:17: "玻璃材质上的组件尽量
+// 扁平有层级"): three flat levels only —
+//   1. base glass: blur + a low flat fill, a 0.5pt hairline rim, at most a
+//      tiny soft shadow;
+//   2. selected / raised: a slightly brighter flat fill (no rim, no shadow);
+//   3. content: text and glyphs.
+// No gradients, sheens, glows or inner shadows stacked on top.
 //
 // Performance rules:
 // * Blur ([HipGlass.blur]) only where something interesting is behind
@@ -127,46 +130,13 @@ class HipGlassPill extends StatelessWidget {
         return DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(r),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: dark
-                  ? [
-                      Colors.white.withValues(
-                        alpha: high ? .34 : .22 * strength,
-                      ),
-                      Colors.white.withValues(
-                        alpha: high ? .26 : .12 * strength,
-                      ),
-                    ]
-                  // Light (m3): white glass on a white dock is invisible,
-                  // so the pill is a soft grey well under the white rim.
-                  : [
-                      Colors.black.withValues(
-                        alpha: high ? .14 : .075 * strength,
-                      ),
-                      Colors.black.withValues(
-                        alpha: high ? .12 : .05 * strength,
-                      ),
-                    ],
-            ),
-            boxShadow: HipColors.shadows([
-              BoxShadow(
-                color: dark ? const Color(0x40000000) : const Color(0x1a1d2b25),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ]),
-          ),
-          child: CustomPaint(
-            foregroundPainter: HipGlassRimPainter(
-              radius: r,
+            color: HipGlassStyle.raised(
               dark: dark,
               high: high,
-              strength: 1.3 * strength,
+              strength: strength,
             ),
-            child: child,
           ),
+          child: child,
         );
       },
     );
@@ -217,34 +187,34 @@ abstract final class HipGlassStyle {
     bool blur = false,
     Color? tint,
   }) {
-    final List<double> a = high
-        ? (dark ? const [.24, .18] : const [.97, .94])
+    // Flat: one opacity, top to bottom (both stops equal).
+    final double a = high
+        ? (dark ? .22 : .96)
         : dark
-        ? (blur ? const [.15, .06] : const [.085, .04])
-        : (blur ? const [.58, .36] : const [.78, .6]);
-    Color at(double x) {
-      final base = Colors.white.withValues(alpha: x);
-      if (tint == null) return base;
-      return Color.alphaBlend(tint.withValues(alpha: dark ? .16 : .1), base);
+        ? (blur ? .10 : .06)
+        : (blur ? .55 : .72);
+    var c = Colors.white.withValues(alpha: a);
+    if (tint != null) {
+      c = Color.alphaBlend(tint.withValues(alpha: dark ? .14 : .08), c);
     }
-
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [at(a[0]), at(a[1])],
-    );
+    return LinearGradient(colors: [c, c]);
   }
 
+  /// Level 2: the selected / raised fill on a glass surface.
+  static Color raised({
+    required bool dark,
+    bool high = false,
+    double strength = 1,
+  }) => dark
+      ? Colors.white.withValues(alpha: high ? .3 : .16 * strength)
+      : Colors.black.withValues(alpha: high ? .12 : .06 * strength);
+
+  /// At most a tiny soft shadow under the base level.
   static List<BoxShadow>? shadow({required bool dark}) => HipColors.shadows([
     BoxShadow(
-      color: dark ? const Color(0x59000000) : const Color(0x161d2b25),
-      blurRadius: 28,
-      offset: const Offset(0, 10),
-    ),
-    BoxShadow(
-      color: dark ? const Color(0x33000000) : const Color(0x0a000000),
-      blurRadius: 3,
-      offset: const Offset(0, 1),
+      color: dark ? const Color(0x2e000000) : const Color(0x0f1d2b25),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
     ),
   ]);
 
@@ -270,8 +240,7 @@ abstract final class HipGlassStyle {
   }
 }
 
-/// 1px rim: bright at the top-left, fading through the middle, a fainter
-/// reflection at the bottom-right; plus a soft sheen along the top inside.
+/// The base level's 0.5pt hairline rim: one flat colour, no sheen.
 class HipGlassRimPainter extends CustomPainter {
   const HipGlassRimPainter({
     required this.radius,
@@ -289,59 +258,21 @@ class HipGlassRimPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final r = radius.clamp(0, size.shortestSide / 2).toDouble();
     final rrect = RRect.fromRectAndRadius(
-      rect.deflate(.5),
-      Radius.circular((r - .5).clamp(0, r).toDouble()),
+      rect.deflate(.25),
+      Radius.circular((r - .25).clamp(0, r).toDouble()),
     );
-    double a(double x) => (x * strength).clamp(0, 1).toDouble();
-    final top = high ? .75 : (dark ? .42 : .95);
-    final mid = high ? .4 : (dark ? .07 : .35);
-    final low = high ? .55 : (dark ? .18 : .7);
+    final a = ((high ? .6 : .18) * strength).clamp(0, 1).toDouble();
+    // Light: white glass on a light page needs a faint dark edge instead.
+    final color = dark
+        ? Colors.white.withValues(alpha: a)
+        : (high ? HipColors.line : Colors.black.withValues(alpha: a * .4));
     canvas.drawRRect(
       rrect,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: const [0, .45, 1],
-          colors: [
-            Colors.white.withValues(alpha: a(top)),
-            Colors.white.withValues(alpha: a(mid)),
-            Colors.white.withValues(alpha: a(low)),
-          ],
-        ).createShader(rect),
+        ..strokeWidth = high ? 1 : .5
+        ..color = color,
     );
-    if (high) {
-      // A dark hairline outside the white rim keeps the edge on light pages.
-      if (!dark) {
-        canvas.drawRRect(
-          rrect.inflate(.5),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1
-            ..color = HipColors.line,
-        );
-      }
-      return;
-    }
-    // Sheen: the top ~30 % catches a little light.
-    final sheen = Rect.fromLTWH(0, 0, size.width, size.height * .5);
-    canvas.save();
-    canvas.clipRRect(rrect);
-    canvas.drawRect(
-      sheen,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.white.withValues(alpha: dark ? .06 : .18),
-            Colors.white.withValues(alpha: 0),
-          ],
-        ).createShader(sheen),
-    );
-    canvas.restore();
   }
 
   @override
