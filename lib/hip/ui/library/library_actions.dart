@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import '../../control/hip_store.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
-import '../coach/ai_coach_page.dart';
+import '../../coach/hip_coach_chat.dart';
 import 'library_widgets.dart';
 
 typedef StartPlan =
@@ -26,7 +26,7 @@ class LibraryActions {
   final StartPlan startPlan;
 
   /// AI 定制 (docs/ai-coach.md); null = no entry.
-  final AiCoachSession? coach;
+  final HipCoachChat? coach;
 }
 
 /// Returned by a detail page to send 动作大全 to a pre-set filter

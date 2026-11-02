@@ -13,6 +13,7 @@ import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/drill_detail_page.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
@@ -416,6 +417,79 @@ void main() {
       );
     });
   });
+
+  testWidgets(
+    'add action protects complete coach plans while ordinary groups stay editable',
+    (tester) async {
+      final completePlan = coach.TrainingPlan(
+        id: 'complete-native-plan',
+        source: 'ai',
+        title: '完整计划',
+        goal: 'mobility',
+        scene: 'home',
+        level: 1,
+        targetMinutes: 2,
+        blocks: [
+          coach.PlanBlock(
+            id: 'circuit',
+            name: '保留两轮',
+            type: coach.BlockType.main,
+            rounds: 2,
+            items: [
+              coach.PlanItem(
+                exerciseId: 's-butterfly',
+                mode: coach.DoseMode.time,
+                sets: 1,
+                workSeconds: 30,
+                restSeconds: 7,
+                perSide: false,
+              ),
+            ],
+          ),
+        ],
+      ).toJson();
+      final store = await pumpApp(
+        tester,
+        setup: (store) {
+          store.customRoutines.addAll([
+            CustomRoutine(
+              id: 'sdk-plan',
+              name: '完整计划',
+              steps: const [CustomStep('s-butterfly', seconds: 30)],
+              restSeconds: 7,
+              coachPlan: completePlan,
+            ),
+            const CustomRoutine(
+              id: 'ordinary-plan',
+              name: '普通训练组',
+              steps: [CustomStep('s-pigeon')],
+            ),
+          ]);
+        },
+      );
+      await toPractice(tester);
+      await openDrill(tester, 'h-adductor-rock');
+      await tester.tap(find.byKey(const ValueKey('detail-add')));
+      await tester.pumpAndSettle();
+      final protected = find.byKey(const ValueKey('add-to-sdk-plan'));
+      expect(tester.widget<HipPressable>(protected).onTap, isNull);
+      expect(
+        find.descendant(of: protected, matching: find.text('请在计划详情中调整')),
+        findsOneWidget,
+      );
+      final ordinary = find.byKey(const ValueKey('add-to-ordinary-plan'));
+      expect(tester.widget<HipPressable>(ordinary).onTap, isNotNull);
+      await tester.tap(ordinary);
+      await tester.pumpAndSettle();
+      expect(
+        store.customRoutine('ordinary-plan')!.steps.map((step) => step.kitId),
+        ['s-pigeon', 'h-adductor-rock'],
+      );
+      expect(store.customRoutine('sdk-plan')!.coachPlan, completePlan);
+      expect(store.customRoutine('sdk-plan')!.steps, hasLength(1));
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   group('small screens', () {
     for (final (size, scale) in [

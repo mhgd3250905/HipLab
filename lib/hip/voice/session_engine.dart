@@ -1,4 +1,4 @@
-import 'package:ugk_trainer/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 import '../domain/hip_assessment.dart';
 import '../domain/hip_session.dart';
 import 'session_script.dart';

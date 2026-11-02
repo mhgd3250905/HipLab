@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:ugk_trainer/ugk_trainer.dart' show SessionResult;
+import 'package:ugk_trainer_runtime/engine.dart' show SessionResult;
 
 import '../../core/storage/local_state_storage.dart';
 import '../domain/hip_assessment.dart';
@@ -13,6 +13,14 @@ import '../domain/hip_progress.dart';
 import '../domain/hip_session.dart';
 import '../domain/hip_settings.dart';
 import '../voice/voice_queue.dart';
+
+enum CoachRoutineWriteStatus { saved, conflict, deleted }
+
+class CoachRoutineWriteResult {
+  const CoachRoutineWriteResult(this.status, {this.routine});
+  final CoachRoutineWriteStatus status;
+  final CustomRoutine? routine;
+}
 
 /// All HipLab state lives on the device under one key (kept distinct from
 /// FlareLab's `LearningStore` key from the time both shared one project).
@@ -56,6 +64,11 @@ class HipStore extends ChangeNotifier {
 
   /// 我的训练组 (custom_routines v1, stored under `customRoutines`).
   final List<CustomRoutine> customRoutines = [];
+
+  Map<String, String> get coachPlanJson => {
+    for (final routine in customRoutines)
+      if (routine.coachPlan != null) routine.id: jsonEncode(routine.coachPlan),
+  };
 
   /// Practice history, newest last, at most [SessionRecord.keep].
   final List<SessionRecord> sessions = [];
@@ -190,9 +203,19 @@ class HipStore extends ChangeNotifier {
     'sessions': [for (final r in sessions) r.toJson()],
   };
 
-  Future<void> _save() async {
+  Future<void> _stateWriteTail = Future<void>.value();
+
+  Future<T> _queueStateWrite<T>(Future<T> Function() operation) {
+    final result = _stateWriteTail.then((_) => operation());
+    _stateWriteTail = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
+
+  Future<void> _save() {
     notifyListeners();
-    await _storage.write(storageKey, jsonEncode(toJson()));
+    return _queueStateWrite(
+      () => _storage.write(storageKey, jsonEncode(toJson())),
+    );
   }
 
   Future<void> setSafety(Map<String, bool> answers) {
@@ -229,8 +252,6 @@ class HipStore extends ChangeNotifier {
     return _recordLadder(ladder);
   }
 
-  Future<void> _trainerSaveTail = Future<void>.value();
-
   /// SDK completion saves are keyed by the id fixed at session start.
   /// Stage the update until storage accepts it: ResultSaver may then retry
   /// a failed save without duplicate history, streak or pain-ladder events.
@@ -240,7 +261,7 @@ class HipStore extends ChangeNotifier {
     required SessionPainLadder ladder,
     Map<int, String> feedback = const {},
   }) {
-    final operation = _trainerSaveTail.then((_) async {
+    return _queueStateWrite(() async {
       final existing = sessions.indexWhere(
         (s) => s.sessionId == result.sessionId,
       );
@@ -297,10 +318,6 @@ class HipStore extends ChangeNotifier {
       askNumbness = nextNumbness;
       notifyListeners();
     });
-    // A rejected write must not poison the queue or hide the error from
-    // the caller: this tail absorbs only the error of the sequencing link.
-    _trainerSaveTail = operation.then<void>((_) {}, onError: (Object _) {});
-    return operation;
   }
 
   /// Left before finishing a drill: pain ladder kept, history marks it
@@ -389,36 +406,91 @@ class HipStore extends ChangeNotifier {
   }
 
   /// Inserts or replaces (by id); stamps updatedAt.
-  Future<CustomRoutine> saveCustomRoutine(CustomRoutine r) {
-    final at = now();
-    final saved = CustomRoutine(
-      id: r.id,
-      name: CustomRoutine.cleanName(r.name).isEmpty
-          ? nextCustomName()
-          : CustomRoutine.cleanName(r.name),
-      steps: r.steps.length > CustomRoutine.maxSteps
-          ? r.steps.sublist(0, CustomRoutine.maxSteps)
-          : r.steps,
-      restSeconds: CustomRoutine.rests.contains(r.restSeconds)
-          ? r.restSeconds
-          : CustomRoutine.defaultRest,
-      fromRoutine: r.fromRoutine,
-      createdAt: r.createdAt ?? at,
-      updatedAt: at,
-    );
-    final i = customRoutines.indexWhere((x) => x.id == r.id);
-    if (i < 0) {
-      customRoutines.add(saved);
-    } else {
-      customRoutines[i] = saved;
+  Future<CustomRoutine> saveCustomRoutine(CustomRoutine r) => _queueStateWrite(
+    () async {
+      final at = now();
+      final existing = customRoutine(r.id);
+      if (existing?.coachPlan != null) {
+        throw StateError(
+          'A complete coach plan must use the admitted SDK save path.',
+        );
+      }
+      final hasFullPlan = r.coachPlan != null;
+      final saved = CustomRoutine(
+        id: r.id,
+        name: CustomRoutine.cleanName(r.name).isEmpty
+            ? nextCustomName()
+            : CustomRoutine.cleanName(r.name),
+        steps: !hasFullPlan && r.steps.length > CustomRoutine.maxSteps
+            ? r.steps.sublist(0, CustomRoutine.maxSteps)
+            : r.steps,
+        restSeconds: hasFullPlan || CustomRoutine.rests.contains(r.restSeconds)
+            ? r.restSeconds
+            : CustomRoutine.defaultRest,
+        fromRoutine: r.fromRoutine,
+        createdAt: existing?.createdAt ?? r.createdAt ?? at,
+        updatedAt: at,
+        coachPlan: r.coachPlan,
+        coachSdkVersion: hasFullPlan ? r.coachSdkVersion : null,
+      );
+      await _persistCustomRoutines(saved);
+      return saved;
+    },
+  );
+
+  /// The chat card uses a host revision independent of the SDK plan version.
+  static String customRoutineRevision(CustomRoutine routine) =>
+      jsonEncode(routine.toJson());
+
+  Future<CoachRoutineWriteResult> writeCoachCustomRoutine(
+    CustomRoutine routine, {
+    required bool update,
+    Object? expectedStorageRevision,
+  }) => _queueStateWrite(() async {
+    final current = customRoutine(routine.id);
+    if (update && current == null) {
+      return const CoachRoutineWriteResult(CoachRoutineWriteStatus.deleted);
     }
-    return _save().then((_) => saved);
+    if ((update &&
+            customRoutineRevision(current!) != expectedStorageRevision) ||
+        (!update && current != null)) {
+      return const CoachRoutineWriteResult(CoachRoutineWriteStatus.conflict);
+    }
+    await _persistCustomRoutines(routine);
+    return CoachRoutineWriteResult(
+      CoachRoutineWriteStatus.saved,
+      routine: routine,
+    );
+  });
+
+  /// Publish only after the same durable write used by the library succeeds.
+  Future<void> _persistCustomRoutines(CustomRoutine saved) async {
+    final next = [...customRoutines];
+    final i = next.indexWhere((x) => x.id == saved.id);
+    if (i < 0) {
+      next.add(saved);
+    } else {
+      next[i] = saved;
+    }
+    final state = toJson()
+      ..['customRoutines'] = CustomRoutinesCodec.encode(next);
+    await _storage.write(storageKey, jsonEncode(state));
+    customRoutines
+      ..clear()
+      ..addAll(next);
+    notifyListeners();
   }
 
-  Future<void> deleteCustomRoutine(String id) {
-    customRoutines.removeWhere((r) => r.id == id);
-    return _save();
-  }
+  Future<void> deleteCustomRoutine(String id) => _queueStateWrite(() async {
+    final next = customRoutines.where((r) => r.id != id).toList();
+    final state = toJson()
+      ..['customRoutines'] = CustomRoutinesCodec.encode(next);
+    await _storage.write(storageKey, jsonEncode(state));
+    customRoutines
+      ..clear()
+      ..addAll(next);
+    notifyListeners();
+  });
 
   Future<void> setReminder(ReminderSettings value) async {
     reminder = value;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -188,6 +189,38 @@ class HipFocusImage extends StatelessWidget {
   );
 }
 
+/// Retires one exact preview surface before the SDK starts another surface.
+class HipDrillArtHandle {
+  final _surface = GlobalKey<_HipDrillArtState>();
+  Future<void>? _retirement;
+
+  Key get key => _surface;
+
+  /// Includes the frame that detaches the platform view, rather than merely
+  /// pausing a retained decoder behind the next preview or training route.
+  Future<void> retire() =>
+      _surface.currentState?._retire() ?? _retirement ?? Future.value();
+
+  Future<void> _track(Future<void> retiring) {
+    final pending = Future.wait<void>([
+      ?_retirement,
+      retiring,
+    ]).then<void>((_) {});
+    _retirement = pending;
+    void clear() {
+      if (identical(_retirement, pending)) _retirement = null;
+    }
+
+    unawaited(
+      pending.then<void>(
+        (_) => clear(),
+        onError: (Object _, StackTrace _) => clear(),
+      ),
+    );
+    return pending;
+  }
+}
+
 /// A drill's picture: its poster at once, the looping clip faded in over it
 /// only after the clip's first frame is on screen (#3/#12) — no black box,
 /// no native play/pause placeholder, no jump between poster and video.
@@ -201,6 +234,7 @@ class HipDrillArt extends StatefulWidget {
     this.alignment = Alignment.center,
     this.mirror = false,
     this.mediaViewBuilder,
+    this.retirementHandle,
   });
   final HipDrill drill;
 
@@ -213,6 +247,10 @@ class HipDrillArt extends StatefulWidget {
 
   /// Flip horizontally (the other side of a sided move).
   final bool mirror;
+
+  /// Optional explicit release used by SDK guide previews. Ordinary pause
+  /// keeps its existing frame; retiring also removes the native media view.
+  final HipDrillArtHandle? retirementHandle;
 
   /// Replaces the native view in widget tests, retaining the real playback
   /// controller and widget lifecycle without requiring a mobile WebView.
@@ -228,6 +266,8 @@ class _HipDrillArtState extends State<HipDrillArt> {
   DrillMediaController? _controller;
   DrillMedia? _media;
   bool _shown = false;
+  bool _retired = false;
+  Future<void>? _retiring;
 
   /// Player variant the web view was created for ('light' or null = dark).
   String? _variant;
@@ -274,8 +314,10 @@ class _HipDrillArtState extends State<HipDrillArt> {
     super.didUpdateWidget(old);
     if (old.drill.id != widget.drill.id) {
       _teardown();
+      _retired = false;
       _sync();
     } else if (old.play != widget.play) {
+      if (widget.play) _retired = false;
       _sync();
       _syncPlayback();
     }
@@ -296,6 +338,34 @@ class _HipDrillArtState extends State<HipDrillArt> {
     _controller = null;
     _media = null;
     _shown = false;
+  }
+
+  Future<void> _retire({bool repaint = true}) {
+    if (_retiring case final pending?) return pending;
+    final retiring = _releaseSurface(repaint: repaint);
+    final pending = widget.retirementHandle?._track(retiring) ?? retiring;
+    _retiring = pending;
+    unawaited(
+      pending.then<void>(
+        (_) {
+          if (identical(_retiring, pending)) _retiring = null;
+        },
+        onError: (Object _, StackTrace _) {
+          if (identical(_retiring, pending)) _retiring = null;
+        },
+      ),
+    );
+    return pending;
+  }
+
+  Future<void> _releaseSurface({required bool repaint}) async {
+    final hadSurface = _controller != null;
+    _retired = true;
+    _teardown();
+    if (repaint && mounted && hadSurface) {
+      setState(() {});
+      await WidgetsBinding.instance.endOfFrame;
+    }
   }
 
   /// Every clip (`assets/drill_media/hip-<id>.mp4`) carries its loop length in
@@ -319,7 +389,12 @@ class _HipDrillArtState extends State<HipDrillArt> {
   void _sync() {
     // The web view is created once the clip should play and then kept: a
     // pause keeps the frame, so resuming never flashes.
-    if (!widget.play || !_videoAllowed(context) || _controller != null) return;
+    if (_retired ||
+        !widget.play ||
+        !_videoAllowed(context) ||
+        _controller != null) {
+      return;
+    }
     final own = _ownMedia(widget.drill);
     if (own == null) return;
     _variant = _wantedVariant;
@@ -347,7 +422,7 @@ class _HipDrillArtState extends State<HipDrillArt> {
 
   @override
   void dispose() {
-    _teardown();
+    unawaited(_retire(repaint: false));
     super.dispose();
   }
 

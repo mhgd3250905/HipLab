@@ -1,7 +1,7 @@
 // HipLab's own platform bridge (not copied from 3D-Body).
 // 2026-10-20: delegate session ownership and the Android service to
 // ugk_trainer; keep only HipLab's notification copy for the self-check.
-import 'package:ugk_trainer/ugk_trainer.dart' as trainer;
+import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 /// Compatibility name for existing platform hooks and regression tests.
 /// The player and self-check share the package's session sequence/channel.

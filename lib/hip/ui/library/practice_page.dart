@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
-import '../coach/ai_coach_page.dart';
+import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
 import '../hip_routes.dart';
@@ -420,12 +420,9 @@ class _PracticePageState extends State<PracticePage> {
       _newGroupCard(t),
       // AI 定制 (docs/ai-coach.md): next to the custom groups, zh UI only.
       if (actions.coach != null &&
-          aiCoachAvailable(
-            context,
-            configured: actions.coach!.service.configured,
-          )) ...[
+          aiCoachAvailable(context, configured: actions.coach!.configured)) ...[
         const SizedBox(height: 10),
-        AiCoachEntryCard(actions: actions),
+        HipCoachChatEntryCard(actions: actions),
       ],
       const SizedBox(height: 16),
       if (groups.isEmpty)
@@ -587,11 +584,14 @@ class GroupCard extends StatelessWidget {
       key: ValueKey('group-card-${g.id}'),
       semanticLabel: g.name,
       scale: .98,
-      onTap: () => Navigator.of(context).push(
-        HipRoute.push<void>(
-          (_) => GroupEditorPage(actions: actions, initial: g),
-        ),
-      ),
+      onTap: () =>
+          g.coachPlan != null && actions.coach != null
+          ? openHipSavedCoachPlan(context, actions, g)
+          : Navigator.of(context).push(
+              HipRoute.push<void>(
+                (_) => GroupEditorPage(actions: actions, initial: g),
+              ),
+            ),
       child: HipPanel(
         padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
         child: Column(
@@ -679,6 +679,10 @@ Future<void> startGroup(
   CustomRoutine g, {
   BuildContext? from,
 }) async {
+  if (g.coachPlan != null && actions.coach != null) {
+    await startHipSavedCoachPlan(context, actions, g);
+    return;
+  }
   final t = LibText.of(context);
   final store = actions.store;
   final profile = store.profile;

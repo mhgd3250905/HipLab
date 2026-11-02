@@ -313,6 +313,9 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
 
   Future<void> _addToGroup(BuildContext context) async {
     final t = LibText.of(context);
+    final fullPlanHint = t.isEn
+        ? 'Adjust this plan in its details'
+        : '请在计划详情中调整';
     final store = widget.actions.store;
     final step = CustomStep(widget.drillId);
     // Many groups scroll inside a sheet capped below the screen height
@@ -350,11 +353,15 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
                       key: ValueKey('add-to-${g.id}'),
                       icon: HipGlyph.library,
                       title: g.name,
-                      subtitle: g.steps.length >= CustomRoutine.maxSteps
+                      subtitle: g.coachPlan != null
+                          ? fullPlanHint
+                          : g.steps.length >= CustomRoutine.maxSteps
                           ? t.groupFull
                           : '${t.movesCount(g.steps.length)} · '
                                 '${t.duration(g.seconds(content))}',
-                      onTap: g.steps.length >= CustomRoutine.maxSteps
+                      onTap:
+                          g.coachPlan != null ||
+                              g.steps.length >= CustomRoutine.maxSteps
                           ? null
                           : () => Navigator.of(context).pop(g.id),
                     ),
@@ -385,6 +392,12 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     }
     final g = store.customRoutine(picked);
     if (g == null) return;
+    if (g.coachPlan != null) {
+      ScaffoldMessenger.of(this.context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(fullPlanHint)));
+      return;
+    }
     await store.saveCustomRoutine(g.copyWith(steps: [...g.steps, step]));
     if (!mounted) return;
     ScaffoldMessenger.of(this.context)
