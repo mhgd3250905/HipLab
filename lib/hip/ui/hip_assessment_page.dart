@@ -112,7 +112,12 @@ class HipAssessmentIntro extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            height: 236,
+                            // Larger text needs room for the labels too.
+                            height:
+                                236 *
+                                MediaQuery.textScalerOf(
+                                  context,
+                                ).scale(1).clamp(1.0, 1.5),
                             child: HipRadar(
                               values: last.result.radar,
                               highlight: last.result.tightest.toSet(),
