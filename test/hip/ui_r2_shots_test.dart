@@ -9,6 +9,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_public_catalog.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
@@ -24,12 +26,27 @@ void main() {
   final content = loadContent();
   final shots = Platform.environment['HIPLAB_SHOTS'];
 
+  HipContent? publicCache;
+  HipContent publicContent() {
+    if (publicCache != null) return publicCache!;
+    final pack = coach.PoseHubAppTestCatalog.fromBytes(
+      File(hipPublicCatalogAsset).readAsBytesSync(),
+      semanticCatalogBytes: File(hipPublicSemanticsAsset).readAsBytesSync(),
+    );
+    final rhythms = hipPublicRhythms(pack);
+    return publicCache = content.withPublicTraining(
+      hipCoachCatalogFromPublic(pack, rhythms: rhythms),
+      rhythms,
+    );
+  }
+
   Future<HipStore> pump(
     WidgetTester tester, {
     HipThemeChoice theme = HipThemeChoice.dark,
     double height = 852,
     bool reminder = true,
     bool groups = false,
+    bool public = false,
   }) async {
     tester.view.physicalSize = Size(393 * 2, height * 2);
     tester.view.devicePixelRatio = 2;
@@ -37,7 +54,7 @@ void main() {
     addTearDown(tester.view.reset);
     final time = DateTime(2026, 11, 2, 14, 15);
     final store = HipStore(
-      content: content,
+      content: public ? publicContent() : content,
       storage: MemoryStorage(),
       clock: () => time,
     );
@@ -74,7 +91,7 @@ void main() {
         key: _shot,
         child: HipApp(
           store: store,
-          mediaPolicy: installPublicMediaFixture().policy,
+          mediaPolicy: installPublicMediaFixture(sharedLibrary: public).policy,
           videoEnabled: false,
         ),
       ),
@@ -135,6 +152,44 @@ void main() {
         await tester.tap(cards.at(1));
         await tester.pumpAndSettle();
         await _capture(tester, '$shots/m2/picker-$n.png');
+      });
+    }
+    // ── M3 动作库 + 统一筛选 ──
+    for (final t in [HipThemeChoice.dark, HipThemeChoice.light]) {
+      final n = t == HipThemeChoice.dark ? 'dark' : 'light';
+      testWidgets('m3 动作库 top $n', (tester) async {
+        await pump(tester, theme: t, public: true);
+        await openPractice(tester);
+        await _capture(tester, '$shots/m3/library-$n.png');
+      });
+      testWidgets('m3 筛选 sheet $n', (tester) async {
+        await pump(tester, theme: t, public: true);
+        await openPractice(tester);
+        await tester.tap(find.byKey(const ValueKey('action-part-大腿后侧')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('action-filter')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('filter-part-髋前侧')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$shots/m3/sheet-$n.png');
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('filter-type-拉伸放松')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('filter-type-拉伸放松')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('filter-apply')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$shots/m3/filtered-$n.png');
+      });
+      testWidgets('m3 添加动作 all $n', (tester) async {
+        await pump(tester, theme: t, groups: true, public: true);
+        await openGroups(tester);
+        await tester.tap(find.byKey(const ValueKey('new-group')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('action-part-臀部')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$shots/m3/picker-$n.png');
       });
     }
     testWidgets('m2 推荐套路 dark', (tester) async {

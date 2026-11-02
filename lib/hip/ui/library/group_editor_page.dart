@@ -745,7 +745,14 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
   Widget build(BuildContext context) {
     final t = LibText.of(context);
     final all = hipActionItems(content, t);
-    final shown = _actions.apply(all);
+    // Addable actions first; SDK-only ones follow, dimmed (solo only).
+    final match = _actions.apply(all);
+    final shown = [
+      for (final a in match)
+        if (a.canAddToGroup) a,
+      for (final a in match)
+        if (!a.canAddToGroup) a,
+    ];
     final inGroup = widget.existing.toSet();
     final after = widget.existing.length + _picked.length;
     final over = after > CustomRoutine.maxSteps;

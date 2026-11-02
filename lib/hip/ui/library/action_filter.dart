@@ -4,6 +4,7 @@
 // outside it, deduped by id. Facets come from the public definition; nothing
 // unreleased is added.
 import 'package:flutter/material.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../data/hip_action_scope.dart';
@@ -158,7 +159,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
       if (d.scenes.contains('gym')) '健身房',
     };
     final dose = d.defaultDose;
-    final reps = dose.mode.name == 'reps';
+    final reps = dose.mode == coach.DoseMode.reps;
     out.add(
       HipActionItem(
         id: d.id,
@@ -387,52 +388,60 @@ class ActionFilterBar extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           height: 30,
-          child: ShaderMask(
-            shaderCallback: (r) => const LinearGradient(
-              colors: [Colors.white, Colors.white, Colors.transparent],
-              stops: [0, .94, 1],
-            ).createShader(r),
-            blendMode: BlendMode.dstIn,
-            child: ListView(
-              key: const ValueKey('action-quick-row'),
-              scrollDirection: Axis.horizontal,
-              children: [
-                HipFilterChip(
-                  t.all,
-                  key: const ValueKey('action-part-all'),
-                  on: filter.parts.isEmpty,
-                  onTap: () => onChanged(filter.copyWith(parts: const {})),
-                ),
-                for (final p in quick) ...[
-                  const SizedBox(width: 8),
-                  HipFilterChip(
-                    p,
-                    key: ValueKey('action-part-$p'),
-                    on: filter.parts.contains(p),
-                    onTap: () => onChanged(
-                      filter.copyWith(parts: _toggle(filter.parts, p)),
-                    ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ShaderMask(
+                  shaderCallback: (r) => const LinearGradient(
+                    colors: [Colors.white, Colors.white, Colors.transparent],
+                    stops: [0, .9, 1],
+                  ).createShader(r),
+                  blendMode: BlendMode.dstIn,
+                  child: ListView(
+                    key: const ValueKey('action-quick-row'),
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      HipFilterChip(
+                        t.all,
+                        key: const ValueKey('action-part-all'),
+                        on: filter.parts.isEmpty,
+                        onTap: () =>
+                            onChanged(filter.copyWith(parts: const {})),
+                      ),
+                      for (final p in quick) ...[
+                        const SizedBox(width: 8),
+                        HipFilterChip(
+                          p,
+                          key: ValueKey('action-part-$p'),
+                          on: filter.parts.contains(p),
+                          onTap: () => onChanged(
+                            filter.copyWith(parts: _toggle(filter.parts, p)),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(width: 16),
+                    ],
                   ),
-                ],
-                const SizedBox(width: 8),
-                HipFilterChip(
-                  t.filter,
-                  key: const ValueKey('action-filter'),
-                  icon: HipGlyph.filter,
-                  badge: n,
-                  on: n > 0,
-                  onTap: () async {
-                    final f = await showActionFilterSheet(
-                      context,
-                      all: all,
-                      initial: filter,
-                    );
-                    if (f != null) onChanged(f);
-                  },
                 ),
-                const SizedBox(width: 20),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              // Pinned at the end of the row so it is always reachable.
+              HipFilterChip(
+                t.filter,
+                key: const ValueKey('action-filter'),
+                icon: HipGlyph.filter,
+                badge: n,
+                on: n > 0,
+                onTap: () async {
+                  final f = await showActionFilterSheet(
+                    context,
+                    all: all,
+                    initial: filter,
+                  );
+                  if (f != null) onChanged(f);
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -467,7 +476,6 @@ class HipFilterChip extends StatelessWidget {
       child: Container(
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: on ? tintOf(HipColors.jade) : HipColors.track,
           borderRadius: BorderRadius.circular(8),
