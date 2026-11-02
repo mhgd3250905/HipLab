@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 
 import '../control/hip_store.dart';
-import '../domain/hip_library.dart';
 import 'hip_app.dart' show HipProgressPage, HipProgressSection, HipSettingsPage;
 import 'hip_calm.dart';
 import 'hip_glass.dart';
@@ -13,6 +12,8 @@ import 'hip_page_kit.dart';
 import 'hip_routes.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+import 'library/action_filter.dart';
+import 'library/lib_text.dart';
 import 'library/library_actions.dart';
 import 'library/practice_page.dart';
 
@@ -52,9 +53,8 @@ class HipMorePage extends StatelessWidget {
 
   Widget _list(BuildContext context) {
     final groups = store.customRoutines.length;
-    final drills =
-        store.content.publicCatalog?.drills.length ??
-        libraryDrills(store.content).length;
+    // UI r2 M3: the same list 动作库 shows.
+    final drills = hipActionItems(store.content, LibText.of(context)).length;
     final items = <Widget>[
       const HipSection('训练', first: true),
       HipListGroup(

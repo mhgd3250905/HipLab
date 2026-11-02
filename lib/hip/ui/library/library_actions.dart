@@ -6,6 +6,7 @@ import '../../control/hip_store.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../../coach/hip_coach_chat.dart';
+import 'action_filter.dart';
 import 'library_widgets.dart';
 
 typedef StartPlan =
@@ -37,10 +38,16 @@ class LibraryJump {
 
   LibraryFilter get filter =>
       LibraryFilter(direction: direction, methods: const {HipMethod.relax});
+
+  /// The same jump on the r2 动作库 filter (part + 拉伸放松).
+  ActionFilter get actionFilter => ActionFilter.fromJump(direction);
 }
 
 /// What the practice tab remembers while the user moves between tabs.
 class PracticeMemory {
   int segment = 0;
   LibraryFilter filter = const LibraryFilter();
+
+  /// 动作库 (UI r2 M3) filter, kept while the user moves around.
+  ActionFilter actions = const ActionFilter();
 }

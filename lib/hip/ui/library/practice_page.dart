@@ -5,7 +5,6 @@
 // library under the HipLab bar until M3 replaces it).
 import 'package:flutter/material.dart';
 import '../../data/hip_shared_library.dart';
-import '../../data/hip_public_media.dart';
 
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
@@ -20,6 +19,7 @@ import '../hip_widgets.dart';
 import 'drill_detail_page.dart';
 import 'group_editor_page.dart';
 import 'lib_text.dart';
+import 'action_filter.dart';
 import 'library_actions.dart';
 import 'library_widgets.dart';
 import 'routine_detail_page.dart';
@@ -79,6 +79,7 @@ class _PracticePageState extends State<PracticePage> {
   @override
   void dispose() {
     _search.dispose();
+    _actionSearch.dispose();
     super.dispose();
   }
 
@@ -99,14 +100,8 @@ class _PracticePageState extends State<PracticePage> {
   Widget _build(BuildContext context) {
     final t = LibText.of(context);
     if (widget.library) {
-      if (HipSharedLibrary.current != null && HipPublicMedia.current != null) {
-        return HipSharedLibraryPage(actions: actions);
-      }
-      return ListView(
-        key: const ValueKey('practice-list'),
-        padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
-        children: _actions(t),
-      );
+      // UI r2 M3: HipLab's own 动作库 over the SDK-scoped actions.
+      return _library(t);
     }
     final seg = _segment;
     return ListView(
@@ -130,76 +125,51 @@ class _PracticePageState extends State<PracticePage> {
     );
   }
 
-  // ── ① 动作大全 ──
+  // ── ① 动作库 (UI r2 M3) ──
 
-  List<Widget> _actions(LibText t) {
-    final all = libraryDrills(content);
-    final shown = mem.filter.apply(content, all);
-    return [
-      LibSearchField(
-        controller: _search,
-        onChanged: (q) =>
-            setState(() => mem.filter = mem.filter.copyWith(query: q)),
-      ),
-      const SizedBox(height: 12),
-      LibFilterRow(
-        filter: mem.filter,
-        onDirection: (d) => setState(
-          () => mem.filter = mem.filter.copyWith(
-            direction: d,
-            clearDirection: d == null,
-          ),
+  late final _actionSearch = TextEditingController(text: mem.actions.query);
+
+  Widget _library(LibText t) {
+    final all = hipActionItems(content, t);
+    final f = mem.actions;
+    final shown = f.apply(all);
+    return ListView(
+      key: const ValueKey('practice-list'),
+      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
+      children: [
+        ActionFilterBar(
+          all: all,
+          filter: f,
+          search: _actionSearch,
+          onChanged: (v) => setState(() => mem.actions = v),
         ),
-        onSheet: () async {
-          final f = await showFilterSheet(context, content, mem.filter);
-          if (f != null && mounted) setState(() => mem.filter = f);
-        },
-      ),
-      const SizedBox(height: 14),
-      Text(
-        mem.filter.isEmpty
-            ? t.actionsCount(all.length)
-            : t.actionsCount(shown.length),
-        key: const ValueKey('actions-count'),
-        style: TextStyle(fontSize: 13, color: HipColors.muted),
-      ),
-      const SizedBox(height: 10),
-      if (shown.isEmpty)
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 32),
-          child: Column(
+        const SizedBox(height: 14),
+        Text(
+          t.lang == 'en' ? '${shown.length} moves' : '${shown.length} 个动作',
+          key: const ValueKey('actions-count'),
+          style: TextStyle(fontSize: 13, color: HipColors.muted),
+        ),
+        const SizedBox(height: 10),
+        if (shown.isEmpty)
+          ActionEmpty(
+            onReset: () => setState(() {
+              _actionSearch.clear();
+              mem.actions = const ActionFilter();
+            }),
+          )
+        else
+          LibDrillGrid(
             children: [
-              Text(t.noMatch, style: TextStyle(color: HipColors.muted)),
-              const SizedBox(height: 8),
-              LibPill(
-                label: t.clearFilters,
-                onTap: () => setState(() {
-                  _search.clear();
-                  mem.filter = const LibraryFilter();
-                }),
-              ),
+              for (final a in shown)
+                ActionCard(
+                  key: ValueKey('drill-card-${a.id}'),
+                  item: a,
+                  onTap: (from) => _openDrill(a.id, from),
+                ),
             ],
           ),
-        )
-      else
-        LibDrillGrid(
-          children: [
-            for (final d in shown)
-              LibDrillCard(
-                key: ValueKey('drill-card-${d.id}'),
-                content: content,
-                drill: d,
-                dose: doseText(
-                  content.kit(d.id)!,
-                  DoseRules.singleDefault(content.kit(d.id)!),
-                  single: true,
-                  lang: t.lang,
-                ),
-                onTap: (from) => _openDrill(d.id, from),
-              ),
-          ],
-        ),
-    ];
+      ],
+    );
   }
 
   Future<void> _openDrill(String id, BuildContext from) async {
@@ -207,6 +177,7 @@ class _PracticePageState extends State<PracticePage> {
       await HipSharedLibrary.openDetail(context, actions, id);
       return;
     }
+    if (content.drills[id] == null) return;
     final jump = await Navigator.of(context).push<Object?>(
       HipRoute.expandFrom<Object?>(
         from,
@@ -224,8 +195,8 @@ class _PracticePageState extends State<PracticePage> {
     if (jump is! LibraryJump || !mounted) return;
     if (widget.library) {
       setState(() {
-        _search.clear();
-        mem.filter = jump.filter;
+        _actionSearch.clear();
+        mem.actions = jump.actionFilter;
       });
       return;
     }
@@ -235,7 +206,9 @@ class _PracticePageState extends State<PracticePage> {
         (_) => PracticePage(
           actions: actions,
           library: true,
-          memory: PracticeMemory()..filter = jump.filter,
+          memory: PracticeMemory()
+            ..filter = jump.filter
+            ..actions = jump.actionFilter,
           onStartAssessment: widget.onStartAssessment,
         ),
       ),

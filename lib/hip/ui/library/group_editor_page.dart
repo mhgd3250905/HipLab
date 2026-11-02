@@ -15,6 +15,7 @@ import '../hip_routes.dart';
 import '../hip_segmented.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
+import 'action_filter.dart';
 import 'lib_text.dart';
 import 'library_actions.dart';
 import 'library_widgets.dart';
@@ -711,6 +712,7 @@ class DrillPickerPage extends StatefulWidget {
     required this.existing,
     this.initialPicked = const [],
     this.initialFilter = const LibraryFilter(),
+    this.initialActions = const ActionFilter(),
   });
   final LibraryActions actions;
   final String groupName;
@@ -719,14 +721,17 @@ class DrillPickerPage extends StatefulWidget {
   final List<String> existing;
   final List<String> initialPicked;
   final LibraryFilter initialFilter;
+
+  /// UI r2 M3: the shared 动作库 filter the picker opens with.
+  final ActionFilter initialActions;
   @override
   State<DrillPickerPage> createState() => _DrillPickerPageState();
 }
 
 class _DrillPickerPageState extends State<DrillPickerPage> {
   late final List<String> _picked = [...widget.initialPicked];
-  late LibraryFilter _filter = widget.initialFilter;
-  late final _search = TextEditingController(text: _filter.query);
+  late ActionFilter _actions = widget.initialActions;
+  late final _search = TextEditingController(text: _actions.query);
 
   HipContent get content => widget.actions.store.content;
 
@@ -739,8 +744,8 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
   @override
   Widget build(BuildContext context) {
     final t = LibText.of(context);
-    final all = libraryDrills(content);
-    final shown = _filter.apply(content, all);
+    final all = hipActionItems(content, t);
+    final shown = _actions.apply(all);
     final inGroup = widget.existing.toSet();
     final after = widget.existing.length + _picked.length;
     final over = after > CustomRoutine.maxSteps;
@@ -760,51 +765,62 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                 children: [
-                  LibSearchField(
-                    controller: _search,
-                    onChanged: (q) =>
-                        setState(() => _filter = _filter.copyWith(query: q)),
-                  ),
-                  const SizedBox(height: 12),
-                  LibFilterRow(
-                    filter: _filter,
-                    onDirection: (d) => setState(
-                      () => _filter = _filter.copyWith(
-                        direction: d,
-                        clearDirection: d == null,
-                      ),
-                    ),
-                    onSheet: () async {
-                      final f = await showFilterSheet(
-                        context,
-                        content,
-                        _filter,
-                      );
-                      if (f != null) setState(() => _filter = f);
-                    },
+                  ActionFilterBar(
+                    all: all,
+                    filter: _actions,
+                    search: _search,
+                    onChanged: (f) => setState(() => _actions = f),
                   ),
                   const SizedBox(height: 14),
-                  LibDrillGrid(
-                    children: [
-                      for (final d in shown)
-                        LibDrillCard(
-                          key: ValueKey('pick-${d.id}'),
-                          content: content,
-                          drill: d,
-                          dose: doseText(
-                            content.kit(d.id)!,
-                            DoseRules.kitDefault(content.kit(d.id)!),
-                            single: false,
-                            lang: t.lang,
+                  if (shown.isEmpty)
+                    ActionEmpty(
+                      onReset: () => setState(() {
+                        _search.clear();
+                        _actions = const ActionFilter();
+                      }),
+                    )
+                  else
+                    LibDrillGrid(
+                      children: [
+                        for (final a in shown)
+                          ActionCard(
+                            key: ValueKey('pick-${a.id}'),
+                            item: a,
+                            // Local groups play through HipLab action kits;
+                            // SDK-only actions are solo-only for now.
+                            disabled: !a.canAddToGroup,
+                            dose: a.canAddToGroup
+                                ? doseText(
+                                    content.kit(a.id)!,
+                                    DoseRules.kitDefault(content.kit(a.id)!),
+                                    single: false,
+                                    lang: t.lang,
+                                  )
+                                : null,
+                            check: _picked.contains(a.id),
+                            inGroup: inGroup.contains(a.id),
+                            onTap: (_) {
+                              if (!a.canAddToGroup) {
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        t.lang == 'en'
+                                            ? 'This move can be practised on its own, not in a group yet.'
+                                            : '这个动作暂时只能在动作库单独练，还不能加入训练组',
+                                      ),
+                                    ),
+                                  );
+                                return;
+                              }
+                              setState(() {
+                                if (!_picked.remove(a.id)) _picked.add(a.id);
+                              });
+                            },
                           ),
-                          check: _picked.contains(d.id),
-                          inGroup: inGroup.contains(d.id),
-                          onTap: (_) => setState(() {
-                            if (!_picked.remove(d.id)) _picked.add(d.id);
-                          }),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
