@@ -533,36 +533,41 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
 
   Widget _switchOverlay() => ColoredBox(
     color: Colors.black.withValues(alpha: .55),
+    // FittedBox: on a small demo (360pt phone, ×1.5 text) the two lines are
+    // a few px taller than the media — scale down instead of overflowing.
     child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HipIcon(
-                HipGlyph.checkCircle,
-                filled: true,
-                color: HipColors.jade,
-                size: 22,
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                '左边记好了',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '现在测右边',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                HipIcon(
+                  HipGlyph.checkCircle,
+                  filled: true,
+                  color: HipColors.jade,
+                  size: 22,
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  '左边记好了',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              '现在测右边',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
