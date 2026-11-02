@@ -1117,7 +1117,8 @@ class _HomeHeroArt extends StatelessWidget {
                   key: const ValueKey('home-hero'),
                   drill: drill,
                   showPendingLabel: false,
-                  alignment: const Alignment(0, -.1),
+                  // Lower than centre: the head clears the greeting line.
+                  alignment: const Alignment(0, .25),
                 ),
               ),
             ),

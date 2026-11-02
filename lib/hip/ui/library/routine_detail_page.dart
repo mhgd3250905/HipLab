@@ -167,9 +167,8 @@ class RoutineDetailPage extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: HipColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: HipColors.line),
+        color: HipColors.track,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [

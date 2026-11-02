@@ -299,7 +299,8 @@ class HipMorePage extends StatelessWidget {
       children: [
         line,
         for (final (i, r) in rows.indexed) ...[
-          if (i > 0) Padding(padding: const EdgeInsets.only(left: 42), child: line),
+          if (i > 0)
+            Padding(padding: const EdgeInsets.only(left: 42), child: line),
           r,
         ],
         line,

@@ -584,8 +584,7 @@ class GroupCard extends StatelessWidget {
       key: ValueKey('group-card-${g.id}'),
       semanticLabel: g.name,
       scale: .98,
-      onTap: () =>
-          g.coachPlan != null && actions.coach != null
+      onTap: () => g.coachPlan != null && actions.coach != null
           ? openHipSavedCoachPlan(context, actions, g)
           : Navigator.of(context).push(
               HipRoute.push<void>(

@@ -94,23 +94,19 @@ void main() {
       await tester.pumpAndSettle();
       final p = HipColors.palette;
 
-      // Home: exactly one accent, the 开始 disc (T2).
+      // Home m3: the one accent is the 开始 jade glass disc beside the
+      // dock (reference liquid glass), so nothing on home is tactile.
       _expectBudget(tester, p, 'home');
       final start = find.byKey(const ValueKey('start-today'));
       expect(
-        find.descendant(of: start, matching: find.byType(HipTactile)),
-        findsOneWidget,
+        tester.widget<HipStartButton>(find.byType(HipStartButton)).glass,
+        isTrue,
       );
       expect(
-        tester
-            .widget<HipTactile>(
-              find.descendant(of: start, matching: find.byType(HipTactile)),
-            )
-            .style,
-        HipTactileStyle.accent(
-          tester.widget<HipStartButton>(find.byType(HipStartButton)).stage,
-        ),
+        find.descendant(of: start, matching: find.byType(BackdropFilter)),
+        findsOneWidget,
       );
+      expect(find.byType(HipTactile), findsNothing);
 
       // Home r1: no tab bar (its filled/outline glyphs went with it).
       expect(find.byKey(const ValueKey('tab-0')), findsNothing);

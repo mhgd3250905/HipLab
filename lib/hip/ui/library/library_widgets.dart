@@ -133,11 +133,9 @@ class LibChip extends StatelessWidget {
       height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: on ? tintOf(HipColors.jade) : HipColors.surface,
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: on ? HipColors.jade.withValues(alpha: .6) : HipColors.line,
-        ),
+        // m3: fill-based selection, no outline.
+        color: on ? tintOf(HipColors.jade) : HipColors.track,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -189,7 +187,6 @@ Widget mediaPill(String text, {Color? dot, HipGlyph? icon, Color? color}) =>
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: .5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: .12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -281,9 +278,8 @@ class LibSearchField extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 44),
       padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
       decoration: BoxDecoration(
-        color: HipColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HipColors.line),
+        color: HipColors.track,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
@@ -431,18 +427,14 @@ class LibDrillCard extends StatelessWidget {
         onTap: () => onTap(cardContext),
         child: RepaintBoundary(
           child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: HipColors.cardShadow,
-            ),
+            decoration: const BoxDecoration(),
+            // m3: flat tile, small corners; an outline only marks a
+            // selected card while picking.
             child: Container(
               decoration: BoxDecoration(
                 color: HipColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: on ? HipColors.jade : HipColors.line,
-                  width: on ? 2 : 1,
-                ),
+                borderRadius: BorderRadius.circular(12),
+                border: on ? Border.all(color: HipColors.jade, width: 2) : null,
               ),
               clipBehavior: Clip.antiAlias,
               child: Column(
@@ -596,9 +588,8 @@ class LibNotice extends StatelessWidget {
   final HipGlyph icon;
   @override
   Widget build(BuildContext context) => HipPanel(
-    borderColor: color.withValues(alpha: .5),
+    borderColor: color,
     padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-    radius: 18,
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -653,10 +644,7 @@ class LibFooter extends StatelessWidget {
   final Widget? above;
   @override
   Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: HipColors.background,
-      border: Border(top: BorderSide(color: HipColors.line)),
-    ),
+    decoration: BoxDecoration(color: HipColors.background),
     child: SafeArea(
       top: false,
       child: Padding(

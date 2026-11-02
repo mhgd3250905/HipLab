@@ -1159,11 +1159,9 @@ class _HipFlatFace extends StatelessWidget {
     required this.color,
     required this.pressedColor,
     required this.child,
-    this.border,
   });
   final Color color;
   final Color pressedColor;
-  final Color? border;
   final Widget child;
 
   @override
@@ -1176,9 +1174,7 @@ class _HipFlatFace extends StatelessWidget {
       builder: (context, t, child) => DecoratedBox(
         decoration: ShapeDecoration(
           color: Color.lerp(color, pressedColor, t),
-          shape: StadiumBorder(
-            side: border == null ? BorderSide.none : BorderSide(color: border!),
-          ),
+          shape: const StadiumBorder(),
         ),
         child: child,
       ),
@@ -1273,9 +1269,9 @@ class HipSecondaryButton extends StatelessWidget {
       semanticLabel: label,
       onTap: onPressed,
       child: _HipFlatFace(
-        color: HipColors.surface,
+        // m3: fill only, no outline.
+        color: HipColors.track,
         pressedColor: HipColors.surfaceHigh,
-        border: HipColors.line,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1327,12 +1323,14 @@ class HipCircleButton extends StatelessWidget {
       decoration: size <= 48
           ? null
           : BoxDecoration(
-        color: HipColors.surfaceHigh,
-        shape: BoxShape.circle,
-        // Light: a hairline instead of the old soft shadow, so the grey disc
-        // still reads on the near-white page (R4, R6④). Dark needs none.
-        border: HipColors.isDark ? null : Border.all(color: HipColors.line),
-      ),
+              color: HipColors.surfaceHigh,
+              shape: BoxShape.circle,
+              // Light: a hairline instead of the old soft shadow, so the grey disc
+              // still reads on the near-white page (R4, R6④). Dark needs none.
+              border: HipColors.isDark
+                  ? null
+                  : Border.all(color: HipColors.line),
+            ),
       alignment: Alignment.center,
       child: AnimatedSwitcher(
         duration: HipMotion.fast,
@@ -1517,9 +1515,11 @@ class _GlassJadeDisc extends StatelessWidget {
           center: const Alignment(-.35, -.55),
           radius: 1.05,
           colors: [
-            Color.lerp(jade, Colors.white, .28)!.withValues(
-              alpha: high ? 1 : .94,
-            ),
+            Color.lerp(
+              jade,
+              Colors.white,
+              .28,
+            )!.withValues(alpha: high ? 1 : .94),
             jade.withValues(alpha: high ? 1 : .8),
           ],
         ),

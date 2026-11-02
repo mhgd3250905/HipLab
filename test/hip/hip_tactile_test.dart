@@ -143,8 +143,9 @@ void main() {
                     )
                     .decoration
                 as ShapeDecoration;
-        expect(edge.color, p.surface);
-        expect((edge.shape as StadiumBorder).side.color, p.line);
+        // m3: fill only, no outline.
+        expect(edge.color, p.track);
+        expect((edge.shape as StadiumBorder).side, BorderSide.none);
         expect(edge.shadows, anyOf(isNull, isEmpty));
 
         await show(
@@ -152,6 +153,23 @@ void main() {
           HipCircleButton(icon: HipGlyph.close, onPressed: () {}),
         );
         expect(find.byType(HipTactile), findsNothing);
+        // m3: top-bar sizes are a plain glyph, no disc.
+        expect(
+          tester
+              .widget<Container>(
+                find.descendant(
+                  of: find.byType(HipCircleButton),
+                  matching: find.byType(Container),
+                ),
+              )
+              .decoration,
+          isNull,
+        );
+        // The player's big transport keys keep the flat tonal disc.
+        await show(
+          tester,
+          HipCircleButton(icon: HipGlyph.pause, size: 64, onPressed: () {}),
+        );
         final disc = tester.widget<Container>(
           find.descendant(
             of: find.byType(HipCircleButton),
@@ -312,7 +330,7 @@ void main() {
     expect(route.transition, HipTransition.expand);
     final snap = route.originImage;
     expect(snap, isNotNull);
-    // Home r1: the wide 开始 pill (snapshot at the test's 1× ratio).
+    // Home m3: the round 开始 disc (snapshot at the test's 1× ratio).
     expect(snap!.width, closeTo(tester.getSize(start).width, 1));
     late Uint8List first;
     await tester.runAsync(() async => first = await pixels(snap));
@@ -322,7 +340,9 @@ void main() {
     for (var i = 3; i < face.length; i += 4) {
       if (face[i] > 200) opaque++;
     }
-    expect(opaque, greaterThan(104 * 104 * .7));
+    // m3: the round glass disc (area of the circle, translucent rim).
+    final w = tester.getSize(start).width;
+    expect(opaque, greaterThan(3.14159 * w * w / 4 * .7));
     var diff = 0;
     for (var i = 0; i < face.length; i++) {
       diff += (face[i] - first[i]).abs();
