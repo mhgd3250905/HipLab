@@ -786,25 +786,30 @@ class _HipHomeState extends State<HipHome> {
     );
   }
 
+  // FittedBox: at large text sizes (×2.0) the 46pt dock row would overflow by
+  // a pixel; scale the glyph + label down instead (no change at ×1).
   Widget _dockItem(HipGlyph glyph, String label, Color fg, double t) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HipIcon(glyph, size: 20, filled: t > .5, color: fg),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          maxLines: 1,
-          softWrap: false,
-          style: TextStyle(
-            fontSize: 10.5,
-            height: 1.2,
-            letterSpacing: .3,
-            fontWeight: t > .5 ? FontWeight.w600 : FontWeight.w500,
-            color: fg,
+    child: FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          HipIcon(glyph, size: 20, filled: t > .5, color: fg),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 10.5,
+              height: 1.2,
+              letterSpacing: .3,
+              fontWeight: t > .5 ? FontWeight.w600 : FontWeight.w500,
+              color: fg,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 
@@ -1345,7 +1350,11 @@ class HipProgressPage extends StatelessWidget {
           HipPanel(
             padding: EdgeInsets.zero,
             child: ListTile(
-              leading: HipIcon(HipGlyph.shield, size: 18, color: HipColors.jade),
+              leading: HipIcon(
+                HipGlyph.shield,
+                size: 18,
+                color: HipColors.jade,
+              ),
               title: const Text('重新看安全提示'),
               trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
               onTap: () => Navigator.of(context).push(
@@ -1360,7 +1369,11 @@ class HipProgressPage extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: ListTile(
               key: const ValueKey('privacy-policy'),
-              leading: HipIcon(HipGlyph.shield, size: 18, color: HipColors.jade),
+              leading: HipIcon(
+                HipGlyph.shield,
+                size: 18,
+                color: HipColors.jade,
+              ),
               title: const Text('隐私政策'),
               subtitle: const Text('离线阅读 · 数据保存在设备上'),
               trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
