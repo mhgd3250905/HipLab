@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
@@ -14,6 +15,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 import 'trainer_test_pump.dart';
 
@@ -293,7 +295,7 @@ void main() {
   ) async {
     final store = await pumpApp(tester);
     expect(HipColors.palette, HipPalette.dark);
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('theme-${HipThemeChoice.light}')),
@@ -303,15 +305,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(store.theme, HipThemeChoice.light);
     expect(HipColors.palette, HipPalette.light);
-    final scaffold = tester.widget<Material>(
+    // Glass m2: sub-pages paint the page colour in their depth backdrop
+    // (the Scaffold itself is transparent over it).
+    final page = tester.widget<ColoredBox>(
       find
           .descendant(
-            of: find.byType(Scaffold).first,
-            matching: find.byType(Material),
+            of: find.byType(HipGlassBackdrop).last,
+            matching: find.byType(ColoredBox),
           )
           .first,
     );
-    expect(scaffold.color, HipPalette.light.background);
+    expect(page.color, HipPalette.light.background);
     // The tab and scroll position survive the switch.
     expect(find.byKey(const ValueKey('appearance-settings')), findsOneWidget);
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
@@ -326,7 +330,7 @@ void main() {
     '#13 voice settings persist (voice / chimes / language / volume)',
     (tester) async {
       final store = await pumpApp(tester);
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await openSettings(tester);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('voice-preview')),

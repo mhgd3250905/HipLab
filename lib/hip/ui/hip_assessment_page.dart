@@ -77,18 +77,22 @@ class HipAssessmentIntro extends StatelessWidget {
             children: [
               const Text(
                 '开胯体检',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
               Text(
                 '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
-                style: TextStyle(color: HipColors.muted, height: 1.4),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: HipColors.muted,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 14),
-              for (final (i, item) in items.indexed) ...[
-                if (i > 0) const SizedBox(height: 8),
-                _row(item),
-              ],
+              HipFlatGroup(
+                indent: 60,
+                children: [for (final item in items) _row(item)],
+              ),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -126,19 +130,18 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
-    // One card edge only; the thumbnail is a clean rounded crop concentric
-    // with the card (20 − 7 = 13), no frame of its own (round 2 #3).
-    return HipPanel(
+    // m6: a flat row between hairlines (no card); the thumbnail is a clean
+    // rounded crop, no frame of its own (round 2 #3).
+    return Padding(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.all(7),
-      radius: 20,
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
       child: Row(
         children: [
-          HipThumb(size: 58, radius: 13, child: _thumbArt(item, still)),
+          HipThumb(size: 44, radius: 6, child: _thumbArt(item, still)),
           const SizedBox(width: 12),
           Container(
-            width: 24,
-            height: 24,
+            width: 20,
+            height: 20,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: HipColors.jade.withValues(alpha: .14),
@@ -147,7 +150,7 @@ class HipAssessmentIntro extends StatelessWidget {
             child: Text(
               '${item.order}',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: HipColors.jadeText,
               ),
@@ -163,8 +166,8 @@ class HipAssessmentIntro extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     color: HipColors.text,
                   ),
                 ),
@@ -173,7 +176,7 @@ class HipAssessmentIntro extends StatelessWidget {
                   _measureLine(item),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
+                  style: TextStyle(fontSize: 12, color: HipColors.muted),
                 ),
               ],
             ),
@@ -472,7 +475,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         HipSharedLibrary.current?.allowedActionIds.contains(demo.id) == true;
     return HipMediaFrame(
       key: const ValueKey('assessment-demo'),
-      radius: 26,
+      radius: 14,
       overlays: [
         Positioned(
           left: 14,
@@ -566,36 +569,41 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
 
   Widget _switchOverlay() => ColoredBox(
     color: Colors.black.withValues(alpha: .55),
+    // FittedBox: on a small demo (360pt phone, ×1.5 text) the two lines are
+    // a few px taller than the media — scale down instead of overflowing.
     child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HipIcon(
-                HipGlyph.checkCircle,
-                filled: true,
-                color: HipColors.jade,
-                size: 22,
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                '左边记好了',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '现在测右边',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                HipIcon(
+                  HipGlyph.checkCircle,
+                  filled: true,
+                  color: HipColors.jade,
+                  size: 22,
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  '左边记好了',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              '现在测右边',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -877,7 +885,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       child: SizedBox(
         height: height,
         child: HipMediaFrame(
-          radius: 22,
+          radius: 12,
           color: HipColors.surface,
           // A calm 2 px accent edge (no glow halo) plus the tinted footer
           // and the check badge carry the selection.
@@ -1090,26 +1098,27 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     }
   }
 
+  // m6: flat fill chip (28pt, radius 8, no outline) — matches 练习 chips.
   Widget _resultChip(Color color, String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+    constraints: const BoxConstraints(minHeight: 28),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
-      color: HipColors.surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: HipColors.line),
+      color: HipColors.track,
+      borderRadius: BorderRadius.circular(8),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: 7,
+          height: 7,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -1131,13 +1140,13 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     return DecoratedBox(
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
+        // m6: flat layered card — surface fill, radius 12, no outline.
         color: HipColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: HipColors.jade.withValues(alpha: .45)),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: HipColors.cardShadow,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1160,8 +1169,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                       Text(
                         headline,
                         style: const TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           height: 1.3,
                         ),
                       ),
@@ -1176,7 +1185,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 if (hero != null) ...[
                   const SizedBox(width: 12),
                   HipThumb(
-                    size: 96,
+                    size: 84,
                     radius: 10,
                     child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),

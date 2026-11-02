@@ -14,13 +14,13 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_progress.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 
 bool _inside<T>(Element e) {
@@ -101,42 +101,29 @@ void main() {
       await tester.pumpAndSettle();
       final p = HipColors.palette;
 
-      // Home: exactly one accent, the 开始 disc (T2).
+      // Home m3: the one accent is the 开始 jade glass disc beside the
+      // dock (reference liquid glass), so nothing on home is tactile.
       _expectBudget(tester, p, 'home');
       final start = find.byKey(const ValueKey('start-today'));
       expect(
-        find.descendant(of: start, matching: find.byType(HipTactile)),
-        findsOneWidget,
+        tester.widget<HipStartButton>(find.byType(HipStartButton)).glass,
+        isTrue,
       );
       expect(
-        tester
-            .widget<HipTactile>(
-              find.descendant(of: start, matching: find.byType(HipTactile)),
-            )
-            .style,
-        HipTactileStyle.accent(
-          tester.widget<HipStartButton>(find.byType(HipStartButton)).stage,
-        ),
+        find.descendant(of: start, matching: find.byType(BackdropFilter)),
+        findsOneWidget,
       );
+      expect(find.byType(HipTactile), findsNothing);
 
-      // Tab glyphs: filled when selected, outline otherwise (T4).
-      bool filled(int i) => tester
-          .widget<HipIcon>(
-            find.descendant(
-              of: find.byKey(ValueKey('tab-$i')),
-              matching: find.byType(HipIcon),
-            ),
-          )
-          .filled;
-      expect([filled(0), filled(1), filled(2)], [true, false, false]);
+      // Home r1: no tab bar (its filled/outline glyphs went with it).
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
 
       // 练习: only the 动作 | 套路 | 我的 thumb is tactile (T1); the check-up
       // card's 开始自测 is a flat tinted pill.
-      await tester.tap(find.byKey(const ValueKey('tab-1')));
+      await openPractice(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'practice');
       expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
-      expect([filled(0), filled(1), filled(2)], [false, true, false]);
       for (final seg in [1, 2]) {
         await tester.tap(find.byKey(ValueKey('practice-$seg')));
         await tester.pumpAndSettle();
@@ -157,7 +144,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Progress + settings (scrolled): only segmented thumbs (T1).
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await openSettings(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'progress');
       expect(

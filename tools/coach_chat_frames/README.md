@@ -8,9 +8,10 @@
 在仓库根目录运行：
 
 ```powershell
-$env:CHAT_CAPTURE_OUTPUT = 'E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/screens'
+# 默认输出到 Git 忽略目录 test/_shots/coach-chat，跨平台不依赖盘符。
+# 可选：$env:CHAT_CAPTURE_OUTPUT = 'E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/screens'
 flutter test --no-pub tools/coach_chat_frames/capture_test.dart --reporter expanded
-python tools/coach_chat_frames/contact_sheet.py --input $env:CHAT_CAPTURE_OUTPUT
+python tools/coach_chat_frames/contact_sheet.py
 ```
 
 可用 `CHAT_CAPTURE_FRAMES` 选择逗号分隔的帧名，例如

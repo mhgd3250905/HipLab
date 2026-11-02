@@ -14,6 +14,7 @@ import '../domain/hip_action_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_tactile.dart';
+import 'hip_glass.dart';
 import 'hip_theme.dart';
 
 export 'hip_tactile.dart';
@@ -431,9 +432,9 @@ class HipTopBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 17,
                           height: 1.25,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                   ],
@@ -959,11 +960,9 @@ class _HipFlatFace extends StatelessWidget {
     required this.color,
     required this.pressedColor,
     required this.child,
-    this.border,
   });
   final Color color;
   final Color pressedColor;
-  final Color? border;
   final Widget child;
 
   @override
@@ -976,9 +975,7 @@ class _HipFlatFace extends StatelessWidget {
       builder: (context, t, child) => DecoratedBox(
         decoration: ShapeDecoration(
           color: Color.lerp(color, pressedColor, t),
-          shape: StadiumBorder(
-            side: border == null ? BorderSide.none : BorderSide(color: border!),
-          ),
+          shape: const StadiumBorder(),
         ),
         child: child,
       ),
@@ -1011,7 +1008,7 @@ class HipPrimaryButton extends StatelessWidget {
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 48,
       child: HipPressable(
         semanticLabel: label,
         onTap: onPressed,
@@ -1027,21 +1024,21 @@ class HipPrimaryButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      HipIcon(icon!, size: 20, filled: true, color: fg),
+                      HipIcon(icon!, size: 17, filled: true, color: fg),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       label,
                       style: TextStyle(
                         fontFamily: hipFontFamily,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                         color: fg,
                       ),
                     ),
                     if (trailing != null) ...[
                       const SizedBox(width: 4),
-                      HipIcon(trailing!, size: 20, strokeWidth: 2.2, color: fg),
+                      HipIcon(trailing!, size: 17, strokeWidth: 2.2, color: fg),
                     ],
                   ],
                 ),
@@ -1062,20 +1059,26 @@ class HipSecondaryButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.sdkScale = false,
   });
   final String label;
   final VoidCallback? onPressed;
+
+  /// Keeps the pre-m5 56 / 18 size where the button is slotted into an
+  /// SDK-owned screen (the trainer player's 再来一组), so it matches the
+  /// SDK's own controls.
+  final bool sdkScale;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 56,
+    height: sdkScale ? 56 : 48,
     width: double.infinity,
     child: HipPressable(
       semanticLabel: label,
       onTap: onPressed,
       child: _HipFlatFace(
-        color: HipColors.surface,
+        // m3: fill only, no outline.
+        color: HipColors.track,
         pressedColor: HipColors.surfaceHigh,
-        border: HipColors.line,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1085,7 +1088,7 @@ class HipSecondaryButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontFamily: hipFontFamily,
-                  fontSize: 18,
+                  fontSize: sdkScale ? 18 : 15,
                   fontWeight: FontWeight.w500,
                   color: onPressed == null ? HipColors.faint : HipColors.text,
                 ),
@@ -1122,13 +1125,19 @@ class HipCircleButton extends StatelessWidget {
     child: Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: HipColors.surfaceHigh,
-        shape: BoxShape.circle,
-        // Light: a hairline instead of the old soft shadow, so the grey disc
-        // still reads on the near-white page (R4, R6④). Dark needs none.
-        border: HipColors.isDark ? null : Border.all(color: HipColors.line),
-      ),
+      // m3: top-bar sizes are a plain glyph (no disc); the player's big
+      // transport keys keep their flat tonal disc.
+      decoration: size <= 48
+          ? null
+          : BoxDecoration(
+              color: HipColors.surfaceHigh,
+              shape: BoxShape.circle,
+              // Light: a hairline instead of the old soft shadow, so the grey disc
+              // still reads on the near-white page (R4, R6④). Dark needs none.
+              border: HipColors.isDark
+                  ? null
+                  : Border.all(color: HipColors.line),
+            ),
       alignment: Alignment.center,
       child: AnimatedSwitcher(
         duration: HipMotion.fast,
@@ -1163,87 +1172,227 @@ class HipStartButton extends StatelessWidget {
     required this.stage,
     this.buttonKey,
     this.size = 104,
+    this.width,
     this.label = '开始',
+    this.glass = false,
   });
   final VoidCallback? onTap;
+
+  /// Jade liquid glass disc floating over imagery (首页 dock, m3): blurred
+  /// backdrop, translucent jade fill, thin bright rim.
+  final bool glass;
 
   /// Palette of what the button sits on (the dark media stage).
   final HipPalette stage;
   final Key? buttonKey;
+
+  /// Disc diameter, or the pill's height when [width] is set.
   final double size;
+
+  /// Set for the wide pill (首页 r1, 2026-11-02): icon and label side by
+  /// side; `double.infinity` fills the row.
+  final double? width;
   final String label;
 
   @override
-  Widget build(BuildContext context) => HipPressable(
-    semanticLabel: label,
-    key: buttonKey,
-    onTap: onTap,
-    // Its own layer: the player's container transform starts from a
-    // snapshot of this face (HipRoute.expandFrom).
-    child: RepaintBoundary(
-      child: SizedBox.square(
-        dimension: size,
-        child: HipTactile(
-          style: HipTactileStyle.accent(stage),
-          circle: true,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HipIcon(
-                  HipGlyph.play,
-                  size: size * .32,
-                  filled: true,
-                  color: stage.onJade,
-                ),
-                SizedBox(height: size * .015),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: size * .14,
-                    height: 1.2,
-                    letterSpacing: size * .01,
-                    fontWeight: FontWeight.w700,
-                    color: stage.onJade,
+  Widget build(BuildContext context) {
+    final pill = width != null;
+    final enabled = onTap != null;
+    final fg = enabled ? stage.onJade : stage.faint;
+    final glyph = HipIcon(
+      HipGlyph.play,
+      size: pill ? size * .32 : size * .32,
+      filled: true,
+      color: fg,
+    );
+    final text = Text(
+      label,
+      style: TextStyle(
+        fontSize: pill ? size * .3 : size * .14,
+        height: 1.2,
+        letterSpacing: pill ? 2 : size * .01,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      ),
+    );
+    if (glass && !pill) {
+      return HipPressable(
+        semanticLabel: label,
+        key: buttonKey,
+        onTap: onTap,
+        scale: HipMotion.pressScale,
+        child: RepaintBoundary(
+          child: SizedBox.square(
+            dimension: size,
+            child: _GlassJadeDisc(
+              enabled: enabled,
+              stage: stage,
+              // m4: matches the dock's items — glyph 20, label 10.5.
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: size * .02),
+                    child: HipIcon(
+                      HipGlyph.play,
+                      size: size * 20 / 54,
+                      filled: true,
+                      color: fg,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: size * 10.5 / 54,
+                      height: 1.2,
+                      letterSpacing: .3,
+                      fontWeight: FontWeight.w600,
+                      color: fg,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return HipPressable(
+      semanticLabel: label,
+      key: buttonKey,
+      onTap: onTap,
+      scale: pill ? .98 : HipMotion.pressScale,
+      // Its own layer: the player's container transform starts from a
+      // snapshot of this face (HipRoute.expandFrom).
+      child: RepaintBoundary(
+        child: SizedBox(
+          width: width ?? size,
+          height: size,
+          child: HipTactile(
+            style: enabled
+                ? HipTactileStyle.accent(stage)
+                : HipTactileStyle.neutral(stage),
+            circle: !pill,
+            radius: size / 2,
+            child: Center(
+              child: pill
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        glyph,
+                        SizedBox(width: size * .12),
+                        text,
+                      ],
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        glyph,
+                        SizedBox(height: size * .015),
+                        text,
+                      ],
+                    ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
+class _GlassJadeDisc extends StatelessWidget {
+  const _GlassJadeDisc({
+    required this.enabled,
+    required this.stage,
+    required this.child,
+  });
+  final bool enabled;
+  final HipPalette stage;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    final dark = HipColors.isDark;
+    final jade = enabled ? stage.jade : stage.faint;
+    // m4: flat, solid-ish jade over a light blur — no glow halo, no
+    // gradient, only the shared 0.5pt hairline.
+    Widget body = DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: jade.withValues(alpha: high ? 1 : .9),
+      ),
+      child: CustomPaint(
+        foregroundPainter: HipGlassRimPainter(
+          radius: 999,
+          dark: true,
+          high: high,
+          strength: .9,
+        ),
+        child: Center(child: child),
+      ),
+    );
+    if (!high) {
+      body = BackdropFilter(
+        filter: HipGlassStyle.filter(20, dark: dark),
+        child: body,
+      );
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: enabled ? HipGlassStyle.shadow(dark: dark) : null,
+      ),
+      child: ClipOval(child: body),
+    );
+  }
+}
+
+/// A flat section surface (m3, 开哥 2026-11-02: "不要搞那么多大圆角和边框"):
+/// a subtle tonal fill, small corners (≤ 12), no border, rim or shadow.
+/// [borderColor] (alerts) tints the fill instead of drawing an outline.
 class HipPanel extends StatelessWidget {
   const HipPanel({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
-    this.radius = 22,
+    this.radius = 12,
   });
   final Widget child;
   final EdgeInsets padding;
   final Color? borderColor;
   final double radius;
+
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(radius),
-      boxShadow: HipColors.cardShadow,
-    ),
-    child: Material(
-      color: HipColors.surface,
+  Widget build(BuildContext context) {
+    final dark = HipColors.isDark;
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    final rr = BorderRadius.circular(radius.clamp(0, 12).toDouble());
+    final base = dark
+        ? Colors.white.withValues(alpha: high ? .12 : .05)
+        : Colors.black.withValues(alpha: high ? .08 : .035);
+    final fill = borderColor == null
+        ? base
+        : Color.alphaBlend(
+            borderColor!.withValues(alpha: dark ? .16 : .12),
+            base,
+          );
+    return Material(
+      color: fill,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-        side: BorderSide(color: borderColor ?? HipColors.line),
+        borderRadius: rr,
+        side: high
+            ? BorderSide(color: borderColor ?? HipColors.line)
+            : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
-    ),
-  );
+    );
+  }
 }
 
 /// Signal-bar glyph from the prototype: 1 bar 紧, 2 一般, 3 松.
@@ -1272,3 +1421,68 @@ class HipLevelBars extends StatelessWidget {
 
 String mmss(int seconds) =>
     '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+/// m6: settings-style flat group — a small grey section header, then rows
+/// divided by 0.5pt hairlines (no panel, no radius), like 「更多」.
+class HipFlatGroup extends StatelessWidget {
+  const HipFlatGroup({
+    super.key,
+    this.title,
+    this.trailing,
+    required this.children,
+    this.indent = 0,
+  });
+  final String? title;
+  final Widget? trailing;
+  final List<Widget> children;
+
+  /// Left inset of the dividers between rows (to clear a leading glyph).
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) {
+    final line = Divider(
+      height: 1,
+      thickness: .5,
+      color: HipColors.text.withValues(alpha: .12),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.2,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                      color: HipColors.faint,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+          ),
+        line,
+        for (final (i, c) in children.indexed) ...[
+          if (i > 0)
+            Padding(
+              padding: EdgeInsets.only(left: indent),
+              child: line,
+            ),
+          c,
+        ],
+        line,
+      ],
+    );
+  }
+}

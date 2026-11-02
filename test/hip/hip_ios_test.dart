@@ -30,6 +30,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 import 'trainer_test_pump.dart';
 
@@ -251,13 +252,13 @@ void main() {
 
   testWidgets('iOS base release hides both AI entry points', (tester) async {
     await bootIos(tester);
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await openPractice(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.text('我的'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('new-group')), findsOneWidget);
     expect(find.text('AI 定制训练'), findsNothing);
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('这是运动练习，不能替代医生的建议。'), 300);
     expect(find.text('AI 定制用量'), findsNothing);
@@ -433,9 +434,15 @@ void main() {
 
       testWidgets('${phone.name}: home, check, progress tabs', (tester) async {
         await bootIos(tester, phone: phone);
-        for (final tab in ['tab-0', 'tab-1', 'tab-2']) {
-          await tester.tap(find.byKey(ValueKey(tab)));
-          await tester.pumpAndSettle();
+        // Home r1: 首页, then each page 「更多」 opens.
+        final pages = <String, Future<void> Function(WidgetTester)>{
+          'home': backHome,
+          'more': openMore,
+          'practice': openPractice,
+          'settings': openSettings,
+        };
+        for (final MapEntry(key: tab, value: open) in pages.entries) {
+          await open(tester);
           expect(safeAreaOffenders(tester, phone), isEmpty, reason: tab);
           expect(
             await scrolledEndOffenders(tester, phone),

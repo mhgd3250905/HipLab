@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=Path(
-        'E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/screens'))
+        'test/_shots/coach-chat'))
     parser.add_argument('--output', type=Path)
     args = parser.parse_args()
     states = ['empty', 'waiting', 'plan-card', 'recommendations', 'failure']

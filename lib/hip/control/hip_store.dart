@@ -56,6 +56,11 @@ class HipStore extends ChangeNotifier {
   int minutes = 10;
   HipScene scene = HipScene.home;
 
+  /// When the user last switched 办公/居家 by hand on 首页. A hand choice
+  /// holds for the rest of that day; otherwise the scene follows the time
+  /// of day (home redesign r1, 2026-11-02).
+  DateTime? sceneChosenAt;
+
   /// 外观: 跟随系统 / 浅色 / 深色 (#14).
   HipThemeChoice theme = HipThemeChoice.system;
 
@@ -99,6 +104,58 @@ class HipStore extends ChangeNotifier {
 
   TrainingPlan? get todayPlan =>
       planner.plan(minutes: minutes, scene: scene, profile: profile);
+
+  /// 办公 on weekday daytime (07–18), 居家 otherwise.
+  static HipScene sceneForTime(DateTime t) =>
+      t.weekday <= DateTime.friday && t.hour >= 7 && t.hour < 18
+      ? HipScene.chair
+      : HipScene.home;
+
+  bool get sceneChosenToday =>
+      sceneChosenAt != null && dayKey(sceneChosenAt!) == dayKey(now());
+
+  /// Points [scene] at the time of day unless it was chosen by hand today.
+  /// Not saved: the next launch decides again.
+  void applyTimeScene() {
+    if (!sceneChosenToday) scene = sceneForTime(now());
+  }
+
+  /// 首页 办公/居家 switch: remembered for the rest of the day.
+  Future<void> pickScene(HipScene value) {
+    scene = value;
+    sceneChosenAt = now();
+    return _save();
+  }
+
+  /// The routines 首页 recommends for [s], best first: the check-up's
+  /// recommendation, then the closest to [minutes]. 办公 also offers the
+  /// 2-minute chair routine so 「换一套」 has somewhere to go.
+  List<HipRoutine> sceneRoutines(HipScene s) {
+    final p = profile;
+    final pool =
+        content.routines
+            .where((r) => !r.micro && r.scene == s)
+            .where(
+              (r) =>
+                  r.id != 'F' ||
+                  p.identity == HipIdentity.dancer ||
+                  p.recommendedRoutine == 'F',
+            )
+            .toList()
+          ..sort((a, b) {
+            if (a.id == p.recommendedRoutine) return -1;
+            if (b.id == p.recommendedRoutine) return 1;
+            final c = (a.minutes - minutes).abs().compareTo(
+              (b.minutes - minutes).abs(),
+            );
+            return c != 0 ? c : a.minutes.compareTo(b.minutes);
+          });
+    return [...pool, ...content.routines.where((r) => r.micro && r.scene == s)];
+  }
+
+  /// One routine as a session, or null when a safety card blocks training.
+  TrainingPlan? planForRoutine(HipRoutine r) =>
+      blocked ? null : planner.planFor([r], profile);
 
   TrainingPlan? get microPlan {
     if (blocked) return null;
@@ -161,6 +218,7 @@ class HipStore extends ChangeNotifier {
         ? j['minutes'] as int
         : 10;
     scene = j['scene'] == 'chair' ? HipScene.chair : HipScene.home;
+    sceneChosenAt = DateTime.tryParse(j['sceneChosenAt'] as String? ?? '');
     theme = HipThemeChoice.byId(j['theme'] as String?);
     if (j['voice'] is Map) {
       voice = VoiceSettings.fromJson(
@@ -197,6 +255,7 @@ class HipStore extends ChangeNotifier {
     'askNumbness': askNumbness,
     'minutes': minutes,
     'scene': scene.id,
+    'sceneChosenAt': sceneChosenAt?.toIso8601String(),
     'theme': theme.id,
     'voice': voice.toJson(),
     'customRoutines': CustomRoutinesCodec.encode(customRoutines),

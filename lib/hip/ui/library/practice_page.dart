@@ -26,8 +26,12 @@ class PracticePage extends StatefulWidget {
     required this.actions,
     required this.memory,
     required this.onStartAssessment,
+    this.topPadding = 12,
   });
   final LibraryActions actions;
+
+  /// Space above the 「练习」 title (less under a short back bar, m6).
+  final double topPadding;
   final PracticeMemory memory;
 
   /// Starts the check-up straight away, growing out of [from].
@@ -91,11 +95,15 @@ class _PracticePageState extends State<PracticePage> {
     };
     return ListView(
       key: const ValueKey('practice-list'),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, widget.topPadding, 20, 20),
       children: [
         Text(
           t.practice,
-          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+          style: const TextStyle(
+            fontSize: 28,
+            letterSpacing: .5,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         const SizedBox(height: 12),
         _checkCard(t),
@@ -103,9 +111,9 @@ class _PracticePageState extends State<PracticePage> {
         HipSegmented<int>(
           keyPrefix: 'practice',
           standalone: true,
-          height: 46,
-          radius: 16,
-          inset: 4,
+          height: 34,
+          radius: 9,
+          inset: 3,
           values: const [0, 1, 2],
           selected: mem.segment,
           onChanged: (v) => setState(() => mem.segment = v),
@@ -139,15 +147,15 @@ class _PracticePageState extends State<PracticePage> {
               ? null
               : () => widget.onStartAssessment(
                   from: _checkPillKey.currentContext,
-                  radius: 17,
+                  radius: 14,
                   color: tintOf(HipColors.jade),
                 ),
         ),
       ),
     );
     final radar = SizedBox(
-      width: 64,
-      height: 64,
+      width: 48,
+      height: 48,
       child: result == null
           ? Container(
               decoration: BoxDecoration(
@@ -155,7 +163,7 @@ class _PracticePageState extends State<PracticePage> {
                 color: tintOf(HipColors.jade),
               ),
               alignment: Alignment.center,
-              child: HipIcon(HipGlyph.radar, size: 34, color: HipColors.jade),
+              child: HipIcon(HipGlyph.radar, size: 24, color: HipColors.jade),
             )
           : HipRadar(
               key: const ValueKey('check-radar'),
@@ -170,10 +178,10 @@ class _PracticePageState extends State<PracticePage> {
     final texts = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(t.myHip, style: TextStyle(fontSize: 12.5, color: HipColors.muted)),
+        Text(t.myHip, style: TextStyle(fontSize: 12, color: HipColors.muted)),
         Text(
           t.checkTitle,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 2),
         Text(
@@ -181,7 +189,7 @@ class _PracticePageState extends State<PracticePage> {
               ? t.checkUntested
               : '${t.lastChecked(last)} · ${t.levelName(result.level.level)}',
           key: const ValueKey('check-caption'),
-          style: TextStyle(fontSize: 13, color: HipColors.muted),
+          style: TextStyle(fontSize: 12, color: HipColors.muted),
         ),
       ],
     );
@@ -196,7 +204,7 @@ class _PracticePageState extends State<PracticePage> {
       child: RepaintBoundary(
         key: _cardKey,
         child: HipPanel(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: large
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,16 +362,16 @@ class _PracticePageState extends State<PracticePage> {
       const SizedBox(height: 10),
       for (final r in list) ...[
         _routineCard(t, r, r.id == rec, dancer),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
       ],
     ];
   }
 
   Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
-    const nameStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.w800);
+    const nameStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w600);
     final minutes = Text(
       t.minutes(r.minutes),
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+      style: TextStyle(fontSize: 13, color: HipColors.muted),
     );
     return HipPressable(
       key: ValueKey('routine-card-${r.id}'),
@@ -377,7 +385,7 @@ class _PracticePageState extends State<PracticePage> {
         ),
       ),
       child: HipPanel(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -408,7 +416,7 @@ class _PracticePageState extends State<PracticePage> {
               children: [
                 HipIcon(
                   r.scene == HipScene.chair ? HipGlyph.chair : HipGlyph.home,
-                  size: 15,
+                  size: 13,
                   color: HipColors.muted,
                 ),
                 const SizedBox(width: 4),
@@ -416,7 +424,7 @@ class _PracticePageState extends State<PracticePage> {
                   child: Text(
                     '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
                     '${r.audience.split('；').first}',
-                    style: TextStyle(fontSize: 13, color: HipColors.muted),
+                    style: TextStyle(fontSize: 12, color: HipColors.muted),
                   ),
                 ),
               ],
@@ -486,8 +494,8 @@ class _PracticePageState extends State<PracticePage> {
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: tintOf(HipColors.jade),
@@ -495,7 +503,7 @@ class _PracticePageState extends State<PracticePage> {
             alignment: Alignment.center,
             child: HipIcon(
               HipGlyph.plus,
-              size: 22,
+              size: 18,
               strokeWidth: 2.2,
               color: HipColors.jadeText,
             ),
@@ -508,19 +516,19 @@ class _PracticePageState extends State<PracticePage> {
                 Text(
                   t.newGroup,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     color: HipColors.jadeText,
                   ),
                 ),
                 Text(
                   t.newGroupHint,
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
+                  style: TextStyle(fontSize: 12, color: HipColors.muted),
                 ),
               ],
             ),
           ),
-          HipIcon(HipGlyph.chevronRight, size: 18, color: HipColors.jadeText),
+          HipIcon(HipGlyph.chevronRight, size: 16, color: HipColors.jadeText),
         ],
       ),
     ),
@@ -644,14 +652,14 @@ class GroupCard extends StatelessWidget {
                       Text(
                         g.name,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                        style: TextStyle(fontSize: 13, color: HipColors.muted),
+                        style: TextStyle(fontSize: 12, color: HipColors.muted),
                       ),
                       if (from != null)
                         Text(

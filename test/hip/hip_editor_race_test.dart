@@ -14,6 +14,7 @@ import 'package:hiplab/hip/ui/library/library_widgets.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
@@ -54,7 +55,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await openPractice(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('practice-2')));
     await tester.pumpAndSettle();

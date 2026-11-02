@@ -52,6 +52,10 @@ enum HipGlyph {
   filter,
   grip,
   trash,
+  // Home dock (m3, 2026-11-02): 办公 desk, 更多 grid, 换一套 shuffle.
+  desk,
+  grid,
+  shuffle,
 }
 
 /// Draws a [HipGlyph]. Size and colour default to the ambient [IconTheme],
@@ -770,6 +774,65 @@ class HipIconPainter extends CustomPainter {
           for (final y in [7.0, 12.0, 17.0]) {
             c.drawCircle(Offset(x, y), 1.3, _fill);
           }
+        }
+      case HipGlyph.desk:
+        // A monitor on a stand.
+        final screen = RRect.fromRectAndRadius(
+          const Rect.fromLTWH(3.5, 4.5, 17, 11.5),
+          const Radius.circular(3),
+        );
+        if (filled) {
+          c.drawRRect(screen.inflate(.5), _fill);
+        } else {
+          c.drawRRect(screen, _stroke);
+        }
+        c.drawLine(const Offset(12, 16.4), const Offset(12, 19.6), _stroke);
+        c.drawLine(const Offset(8, 19.6), const Offset(16, 19.6), _stroke);
+      case HipGlyph.grid:
+        for (final x in [4.0, 13.4]) {
+          for (final y in [4.0, 13.4]) {
+            final r = RRect.fromRectAndRadius(
+              Rect.fromLTWH(x, y, 6.6, 6.6),
+              const Radius.circular(2.2),
+            );
+            if (filled) {
+              c.drawRRect(r.inflate(.5), _fill);
+            } else {
+              c.drawRRect(r, _stroke);
+            }
+          }
+        }
+      case HipGlyph.shuffle:
+        c.drawPath(
+          Path()
+            ..moveTo(3.8, 7)
+            ..lineTo(7, 7)
+            ..cubicTo(11.5, 7, 12.5, 17, 17, 17)
+            ..lineTo(19.6, 17),
+          _stroke,
+        );
+        c.drawPath(
+          Path()
+            ..moveTo(3.8, 17)
+            ..lineTo(7, 17)
+            ..cubicTo(8.6, 17, 9.7, 15.8, 10.6, 14.3),
+          _stroke,
+        );
+        c.drawPath(
+          Path()
+            ..moveTo(13.4, 9.7)
+            ..cubicTo(14.3, 8.2, 15.4, 7, 17, 7)
+            ..lineTo(19.6, 7),
+          _stroke,
+        );
+        for (final y in [7.0, 17.0]) {
+          c.drawPath(
+            Path()
+              ..moveTo(17.2, y - 2.6)
+              ..lineTo(19.8, y)
+              ..lineTo(17.2, y + 2.6),
+            _stroke,
+          );
         }
       case HipGlyph.trash:
         c.drawLine(const Offset(4.5, 6.8), const Offset(19.5, 6.8), _stroke);

@@ -102,7 +102,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.byKey(const ValueKey('tab-1')), findsOneWidget);
+        expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
         expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
         expect(HipSharedLibrary.current, isNotNull);
         expect(tester.takeException(), isNull);

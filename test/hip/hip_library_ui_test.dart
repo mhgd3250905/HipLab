@@ -17,6 +17,7 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
@@ -51,7 +52,7 @@ void main() {
   }
 
   Future<void> toPractice(WidgetTester tester, {int segment = 0}) async {
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await openPractice(tester);
     await tester.pumpAndSettle();
     if (segment != 0) {
       await tester.tap(find.byKey(ValueKey('practice-$segment')));
@@ -107,18 +108,14 @@ void main() {
   }
 
   group('tabs (拍板 1)', () {
-    testWidgets('three tabs 今日 / 练习 / 进度; no 自测 tab', (tester) async {
+    // Home r1 (2026-11-02): no tab bar; 更多 holds the former tabs.
+    testWidgets('no tab bar; 更多 lists the entries; no 自测 tab', (tester) async {
       await pumpApp(tester);
-      for (final (i, label) in [(0, '今日'), (1, '练习'), (2, '进度')]) {
-        expect(
-          find.descendant(
-            of: find.byKey(ValueKey('tab-$i')),
-            matching: find.text(label),
-          ),
-          findsOneWidget,
-        );
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
+      await openMore(tester);
+      for (final label in ['我的训练组', '全部动作与套路', '髋部自测', '训练记录', '设置']) {
+        expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.byKey(const ValueKey('tab-3')), findsNothing);
       expect(find.text('自测'), findsNothing);
       await toPractice(tester);
       expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
@@ -160,9 +157,10 @@ void main() {
       expect(find.byType(HipAssessmentPage), findsOneWidget);
     });
 
-    testWidgets('home 我的髋部 tile entry is kept', (tester) async {
+    testWidgets('更多 髋部自测 entry opens the check-up', (tester) async {
       await pumpApp(tester);
-      await tester.tap(find.text('3 分半自测'));
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
       await tester.pumpAndSettle();
       expect(find.byType(HipAssessmentPage), findsOneWidget);
     });
@@ -324,14 +322,18 @@ void main() {
         'h-adductor-rock',
       ]);
       expect(find.byKey(ValueKey('group-card-${g.id}')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('tab-0')));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.byKey(ValueKey('home-group-${g.id}')),
-        300,
-        scrollable: find.byType(Scrollable).first,
+      // Home r1: groups moved from 首页 to 更多 › 我的训练组.
+      await openMore(tester);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('more-groups')),
+          matching: find.text('1 组'),
+        ),
+        findsOneWidget,
       );
-      expect(find.byKey(ValueKey('home-group-${g.id}')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('more-groups')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('group-card-${g.id}')), findsOneWidget);
     });
 
     testWidgets('editor: dose sheet within kit range; discard asks first', (

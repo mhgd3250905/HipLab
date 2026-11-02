@@ -410,6 +410,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           : HipSecondaryButton(
               key: const ValueKey('player-again'),
               label: '再来一组',
+              sdkScale: true,
               onPressed:
                   !widget.store.sessions.any(
                     (s) => s.sessionId == result.sessionId,

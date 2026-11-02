@@ -109,8 +109,7 @@ coach.TrainingPlan _plan() => const coach.TrainingPlan(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final output = Directory(
-    Platform.environment['CHAT_CAPTURE_OUTPUT'] ??
-        'E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/screens',
+    Platform.environment['CHAT_CAPTURE_OUTPUT'] ?? 'test/_shots/coach-chat',
   );
   final requested = (Platform.environment['CHAT_CAPTURE_FRAMES'] ?? '')
       .split(',')
@@ -139,7 +138,7 @@ void main() {
     await File('${output.path}/capture-manifest.json').writeAsString(
       const JsonEncoder.withIndent('  ').convert({
         'schema': 'hiplab-chat-review-frames@1',
-        'sdkCommit': '7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723',
+        'sdkCommit': 'd4502f35b1503d41cd782aa7fb3780c7f6591ad0',
         'flutter': '3.44.7 stable',
         'font': hipFontFamily,
         'iconFont': 'MaterialIcons',

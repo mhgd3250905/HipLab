@@ -29,8 +29,9 @@ void main() {
     test('neutral dark is the settings thumb it was distilled from', () {
       final s = HipTactileStyle.neutral(HipPalette.dark);
       expect(s.base, HipPalette.dark.thumb);
-      // The thumb's 8 % top light (thumbHighlight 0x14 over the fill).
-      expect(s.lighten, closeTo(HipPalette.dark.thumbHighlight.a, .01));
+      // m5: visually flat — no lit-from-above gradient.
+      expect(s.lighten, 0);
+      expect(s.darken, 0);
       expect(s.highlight.a, greaterThan(0));
       expect(s.shadows, hasLength(2));
     });
@@ -142,8 +143,9 @@ void main() {
                     )
                     .decoration
                 as ShapeDecoration;
-        expect(edge.color, p.surface);
-        expect((edge.shape as StadiumBorder).side.color, p.line);
+        // m3: fill only, no outline.
+        expect(edge.color, p.track);
+        expect((edge.shape as StadiumBorder).side, BorderSide.none);
         expect(edge.shadows, anyOf(isNull, isEmpty));
 
         await show(
@@ -151,6 +153,23 @@ void main() {
           HipCircleButton(icon: HipGlyph.close, onPressed: () {}),
         );
         expect(find.byType(HipTactile), findsNothing);
+        // m3: top-bar sizes are a plain glyph, no disc.
+        expect(
+          tester
+              .widget<Container>(
+                find.descendant(
+                  of: find.byType(HipCircleButton),
+                  matching: find.byType(Container),
+                ),
+              )
+              .decoration,
+          isNull,
+        );
+        // The player's big transport keys keep the flat tonal disc.
+        await show(
+          tester,
+          HipCircleButton(icon: HipGlyph.pause, size: 64, onPressed: () {}),
+        );
         final disc = tester.widget<Container>(
           find.descendant(
             of: find.byType(HipCircleButton),

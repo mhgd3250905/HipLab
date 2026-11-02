@@ -434,19 +434,31 @@ void main() {
                       .painter!
                   as HipTactilePainter)
               .style;
-      final idle = assessment ? null : paintedStyle();
-      final idleScreen = assessment
-          ? await _screenPixels(tester, screenKey, 'review-assessment-idle')
+      // Home m3: 开始 is a jade glass disc (no tactile face): like 开始自测,
+      // the held press is proven by changed screen pixels.
+      final flat =
+          assessment ||
+          find
+              .descendant(of: button, matching: find.byType(HipTactile))
+              .evaluate()
+              .isEmpty;
+      final idle = flat ? null : paintedStyle();
+      final idleScreen = flat
+          ? await _screenPixels(
+              tester,
+              screenKey,
+              'review-${assessment ? 'assessment' : 'start'}-idle',
+            )
           : null;
       final pointer = await tester.startGesture(tester.getCenter(button));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));
       await tester.pump(const Duration(milliseconds: 120));
-      if (assessment) {
+      if (flat) {
         expect(
           find.descendant(of: button, matching: find.byType(HipTactile)),
           findsNothing,
-          reason: '开始自测 is flat (R3)',
+          reason: 'flat / glass face',
         );
       } else {
         expect(
