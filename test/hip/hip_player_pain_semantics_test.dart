@@ -11,7 +11,6 @@ import 'trainer_test_pump.dart';
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   testWidgets('video pain action retains a named semantic button and tap', (
     tester,
   ) async {

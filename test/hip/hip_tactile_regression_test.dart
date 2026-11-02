@@ -154,7 +154,6 @@ void _expectContinuousPixels(
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   for (final reduceMotion in [false, true]) {
     testWidgets(
       'selected segment sinks while held (reduce motion: $reduceMotion)',

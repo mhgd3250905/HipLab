@@ -38,7 +38,6 @@ Future<void> expectPausedClock(WidgetTester tester) async {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(

@@ -20,7 +20,6 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   TestWidgetsFlutterBinding.ensureInitialized();
   final calls = <MethodCall>[];
   final messenger =

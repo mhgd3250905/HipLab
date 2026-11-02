@@ -62,7 +62,6 @@ class NativeLikeOutput implements VoiceOutput {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(

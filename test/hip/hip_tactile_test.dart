@@ -24,7 +24,6 @@ bool _isGlow(Color c) {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   group('tokens', () {
     test('neutral dark is the settings thumb it was distilled from', () {
       final s = HipTactileStyle.neutral(HipPalette.dark);

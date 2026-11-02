@@ -37,10 +37,19 @@ const hiplabCoachProfile = coach.CoachProfile(
 
 const hipCoachCatalogAsset = 'assets/coach/catalog.json';
 
-Future<coach.Catalog> loadHipCoachCatalog({AssetBundle? bundle}) async =>
-    coach.Catalog.fromJson(
-      jsonDecode(await (bundle ?? rootBundle).loadString(hipCoachCatalogAsset)),
-    );
+Future<coach.Catalog> loadHipCoachCatalog({AssetBundle? bundle}) async {
+  // Like loadHipActionMedia, read bytes directly. loadString sends assets at
+  // least 50 KiB to an isolate, outside widget tests' fake clock.
+  // This is bundled product configuration; SDK catalog validation stays intact.
+  final data = await (bundle ?? rootBundle).load(hipCoachCatalogAsset);
+  return coach.Catalog.fromJson(
+    jsonDecode(
+      utf8.decode(
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+      ),
+    ),
+  );
+}
 
 CoachAppProfile hiplabCoachAppProfile({
   required coach.Catalog catalog,

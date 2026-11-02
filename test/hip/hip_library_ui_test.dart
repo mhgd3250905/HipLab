@@ -22,7 +22,6 @@ import 'public_media_fixture.dart';
 final _now = DateTime(2026, 10, 19, 9, 41);
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(

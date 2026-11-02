@@ -21,7 +21,6 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 final _now = DateTime(2026, 10, 19, 9, 41);
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   void addAssessment(HipStore s) {

@@ -230,7 +230,6 @@ void expectPlayerPaused(WidgetTester tester) {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final ios = TargetPlatformVariant.only(TargetPlatform.iOS);
 
   testWidgets('iOS base release hides both AI entry points', (tester) async {

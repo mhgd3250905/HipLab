@@ -39,7 +39,6 @@ Finder get art => find.descendant(
 );
 
 void main() {
-  setUpAll(warmHipAppAssets);
   for (final size in [
     const Size(360, 740),
     const Size(390, 844),

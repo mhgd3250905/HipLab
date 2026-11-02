@@ -13,7 +13,6 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   testWidgets('light home start passes its stage to the shared route', (
     tester,
   ) async {

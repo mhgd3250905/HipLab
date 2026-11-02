@@ -21,7 +21,6 @@ int _secondsLeft(WidgetTester tester) => int.parse(
 );
 
 void main() {
-  setUpAll(warmHipAppAssets);
   testWidgets(
     'pain skips a micro rep that cannot fit, then rests and continues',
     (tester) async {

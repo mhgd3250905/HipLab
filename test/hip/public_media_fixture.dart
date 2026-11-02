@@ -1,22 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/hip/coach/hip_coach_profile.dart'
-    show hipCoachCatalogAsset;
 import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
-
-/// Decode the large catalog outside testWidgets' fake async zone. HipApp then
-/// reads the real bundle's cached string during its ordinary startup path.
-Future<void> warmHipAppAssets() async {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  await rootBundle.loadString(hipCoachCatalogAsset);
-}
 
 /// Uses the real public manifest while keeping host widget tests off disk,
 /// network and native video channels. SDK tests own decoder/cache behavior.

@@ -69,7 +69,6 @@ void _expectBudget(WidgetTester tester, HipPalette p, String where) {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   for (final theme in [HipThemeChoice.dark, HipThemeChoice.light]) {
     testWidgets('${theme.id}: tactile budget on home, check-up, progress', (
       tester,

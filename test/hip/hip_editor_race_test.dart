@@ -23,7 +23,6 @@ const _b = 'h-adductor-rock';
 const _c = 'h-band-hip-ir';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> openEditor(WidgetTester tester, List<String> ids) async {

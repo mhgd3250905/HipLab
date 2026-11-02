@@ -16,7 +16,6 @@ import 'trainer_test_pump.dart';
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
   final now = DateTime(2026, 10, 20, 16);
 

@@ -9,7 +9,6 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   testWidgets('progress keeps the published privacy policy reachable', (
     tester,
   ) async {

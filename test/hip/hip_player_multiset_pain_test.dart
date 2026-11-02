@@ -145,7 +145,6 @@ TrainingPlan _group(
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   group('F7 pain halving uses the real sets per side', () {
     for (final sets in [2, 3]) {
       testWidgets('F7 单练 h-squat 1 次 × $sets 组 (unsided): 疼 → 关节夹着疼 '

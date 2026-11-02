@@ -13,7 +13,6 @@ import 'checkup_entry.dart';
 import 'public_media_fixture.dart';
 
 void main() {
-  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(

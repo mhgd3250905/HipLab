@@ -102,7 +102,6 @@ Future<void> _expectPausedClock(WidgetTester tester) async {
 }
 
 void main() {
-  setUpAll(warmHipAppAssets);
   testWidgets(
     'zero-time tab reversals leave start hittable and open training',
     (tester) async {
