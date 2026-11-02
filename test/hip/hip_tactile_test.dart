@@ -143,8 +143,13 @@ void main() {
                     )
                     .decoration
                 as ShapeDecoration;
-        // m3: fill only, no outline.
-        expect(edge.color, p.track);
+        // m3: fill only, no outline. UI r2: dark lifts it to white α .10.
+        expect(
+          edge.color,
+          identical(p, HipPalette.dark)
+              ? Colors.white.withValues(alpha: .10)
+              : p.track,
+        );
         // UI r2 §2: 48 high, radius 12, no outline.
         expect((edge.shape as RoundedRectangleBorder).side, BorderSide.none);
         expect(
