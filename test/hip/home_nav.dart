@@ -16,7 +16,7 @@ Future<void> _openRow(WidgetTester tester, String key) async {
   await tester.pumpAndSettle();
 }
 
-/// The former 练习 tab: 更多 → 全部动作与套路.
+/// The former 练习 tab: 更多 → 动作库.
 Future<void> openPractice(WidgetTester tester) =>
     _openRow(tester, 'more-practice');
 

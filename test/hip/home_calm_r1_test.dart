@@ -141,7 +141,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('更多: rows in order; AI card only when available', (tester) async {
+  testWidgets('更多: rows in order; no AI card', (tester) async {
     await pumpHome(tester);
     await openMore(tester);
     expect(find.byKey(const ValueKey('more-ai-coach')), findsNothing);
@@ -156,7 +156,9 @@ void main() {
     expect(find.byKey(const ValueKey('reminder-switch')), findsOneWidget);
   });
 
-  testWidgets('更多: configured coach puts AI on top', (tester) async {
+  testWidgets('更多: no AI entry even with a configured coach (r2 #10)', (
+    tester,
+  ) async {
     await pumpHome(
       tester,
       coach: (s) => HipCoachChat(
@@ -165,12 +167,8 @@ void main() {
       ),
     );
     await openMore(tester);
-    final ai = find.byKey(const ValueKey('more-ai-coach'));
-    expect(ai, findsOneWidget);
-    expect(
-      tester.getTopLeft(ai).dy,
-      lessThan(tester.getTopLeft(find.byKey(const ValueKey('more-groups'))).dy),
-    );
+    expect(find.byKey(const ValueKey('more-ai-coach')), findsNothing);
+    expect(find.byKey(const ValueKey('more-groups')), findsOneWidget);
   });
 
   testWidgets('home keeps numbness and multiple lock alerts reachable', (

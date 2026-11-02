@@ -10,7 +10,7 @@ import '../../domain/hip_session.dart';
 import '../../trainer/hip_sdk_session_builder.dart';
 import '../../voice/hip_voice.dart';
 import '../../voice/session_script.dart';
-import '../hip_app.dart' show HipProgressPage, HipProgressSection;
+import '../hip_app.dart' show HipSettingsPage;
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
 import '../hip_player_page.dart';
@@ -140,21 +140,8 @@ Future<CoachChatController> loadHipChat(
           isNew: true,
         ),
       ),
-      onOpenSettings: (context) => _push(
-        context,
-        Scaffold(
-          appBar: AppBar(title: const Text('设置')),
-          // A pushed route is not rebuilt by the app root: follow the store
-          // so switches and choices show their new state (as from 更多).
-          body: ListenableBuilder(
-            listenable: store,
-            builder: (_, _) => HipProgressPage(
-              store: store,
-              section: HipProgressSection.settings,
-            ),
-          ),
-        ),
-      ),
+      onOpenSettings: (context) =>
+          _push(context, HipSettingsPage(store: store)),
     ),
   );
 }

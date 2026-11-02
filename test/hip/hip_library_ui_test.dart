@@ -113,7 +113,7 @@ void main() {
       await pumpApp(tester);
       expect(find.byKey(const ValueKey('tab-0')), findsNothing);
       await openMore(tester);
-      for (final label in ['我的训练组', '全部动作与套路', '髋部自测', '训练记录', '设置']) {
+      for (final label in ['我的训练组', '动作库', '髋部自测', '训练记录', '设置']) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
       expect(find.text('自测'), findsNothing);
