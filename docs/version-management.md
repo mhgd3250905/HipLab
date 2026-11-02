@@ -1,5 +1,9 @@
 # 版本管理说明
 
+## 2026-11-02：+28 最终候选构建完成
+
+用户16:19排除2倍字号后，删除11条相关用例，其余共享SDK测试适配完成；严格analyze0、全量428通过/1既有条件跳过。构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`，App保持1.1.0+28/arm64 versionCode2028，SDK所有实际包与coach override完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0；仍用Flutter3.44.7/Dart3.12.2。release APK45508800 bytes、0 MP4已核验，沿用连续测试证书，手机未安装。源码构建点与后续文档HEAD分开登记，不因文档补记重复构建或递增版本。[交付及删除清单](sdk-shared-experience-completion-2026-11-02.md)和[版本台账](version-ledger.md)。只推候选，不合main、不动release。
+
 ## 2026-11-02：+28 启动修复，构建门禁仍未通过
 
 启动修复源`1f76e74`保持版本1.1.0+28/versionCode2028、SDK完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0、Flutter3.44.7/Dart3.12.2；最小/断网测试通过，严格analyze0。全量385通过/19失败时遇已确认的SDK动作库布局溢出，按用户边界停止，未重建APK，不沿用旧包作为新交付。SDK验证用3.47.8/Dart3.13.7，两者均满足SDK声明，asset解码机制相同；本轮没有升级Flutter或重锁依赖。[根因及版本差异](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。

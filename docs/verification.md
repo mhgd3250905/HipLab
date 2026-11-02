@@ -1,5 +1,13 @@
 # 验证台账
 
+## 2026-11-02：16:19 范围调整后全量通过
+
+用户确认2倍字号超出支持范围，授权删除11条，具体用例列于[最终报告](sdk-shared-experience-completion-2026-11-02.md)，不是新增skip。验证/构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`；Flutter3.44.7/Dart3.12.2、SDK d4502f3与依赖锁不变。图片解码用真实async等待，训练断言等待SDK实际可点且播放状态已更新；safe-area辅助逐个选择纵向viewport并滚底，g12卡滚动后完成布局，图标检查仅限制App自己的控件。业务、音频、剂量与安全断言保留，App/SDK生产代码本轮未变。
+
+定向集合：library19/19、iOS24/24、launcher44/44、正常键盘3/3均首轮通过。首轮全量在391通过/1失败时停止：ui_round1尚有一个同类入场等待遗漏，补齐后单文件13/13；同时补齐flow两处同类入口。随后严格`flutter analyze --no-pub --fatal-infos`为**0问题**，第二轮`flutter test --no-pub --concurrency=1 --reporter expanded`完整**428通过/1既有条件跳过**（6分21秒，可选VOICE_TIMELINE_OUT导出），无第三轮。Python相关代码未变，沿用前轮25/25，本轮未重复。
+
+门禁通过后release构建56.4秒成功；交付APK45508800 bytes，身份com.ugk.hiplab/1.1.0/2028/release/arm64正确，**0 MP4、46公共poster**、CRC与签名通过，设备连续证书与原上传签名包运行负载一致。未进行安装/真机/视觉验收，不重写以前的失败记录。日志在`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/completion-1619/`，包括`analyze.log`、未完成的`all-tests-pass1.log`、成功的`all-tests.log`、各定向日志和`build-release.log`；父目录`release-apk.json`保存制品回执。此后仅补文档，不重跑测试或构建。
+
 ## 2026-11-02：启动最小/断网通过，全量遇 SDK 布局问题停止
 
 修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`，Flutter3.44.7/Dart3.12.2、SDK d4502f3不变。先只跑`hip_flow_test.dart`的`a no-key build hides AI training and usage entries`并给`_load`逐步临时日志，定位大型内置catalog的`loadString` isolate完成晚于断言；无网络等待或异常。改bytes解码后该条1通过，日志已移除。新增`hip_offline_startup_test.dart`：真实SDK媒体仓库、冷coach catalog、HTTP连接全部失败、prefetch开启且coach已配置，仍有tab-1/start-today，内置公共poster可解码，初始化/进首页0 HTTP client与0连接；1通过。

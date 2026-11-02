@@ -1,5 +1,7 @@
 # HipLab · 开胯训练助手
 
+**2026-11-02 共享体验 +28 候选完成：** 用户16:19确认2倍字号不在支持范围，已删除11条相关用例并修复SDK入场/图片/滚动测试适配。严格analyze0、全量428通过/1既有条件跳过；release APK 43.40MiB、0 MP4已备好。SDK固定d4502f3，不合main、不动release；用户自行安装和真机验收。[交付与删除清单](docs/sdk-shared-experience-completion-2026-11-02.md)。以下暂停记录保留历史。
+
 **2026-11-02 启动定位更新：** App 大型内置 catalog 的 isolate 解码与测试假时钟竞争已修复，冷启动最小用例和断网启动均通过，严格 analyze 0。全量在385通过/19失败时因确认 SDK 动作库键盘布局溢出而停止；未绕过 SDK、未重建 APK。[根因与 SDK 交接](docs/sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。以下暂缓记录保留历史。
 
 **2026-11-02 共享体验接入暂缓：** `codex/sdk-shared-experience` 从 main `0f507a3` 接入 SDK `d4502f3` 三批共享能力，版本 +28。严格 analyze 0、Python25/25、首次构建包内0 MP4；Flutter 两轮仍卡在主界面加载相关测试，按用户要求停止，不交付最终 APK。[当前结果与日志](docs/sdk-shared-experience-2026-11-02.md)。

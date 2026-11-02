@@ -1,5 +1,7 @@
 # HipLab 文档与开发台账
 
+**2026-11-02 共享体验 +28 候选完成：** 用户16:19授权删除2倍字号用例，共11条；其余失败按真实SDK入场/图片/滚动契约适配，严格analyze0、全量428通过/1既有条件跳过。43.40MiB release APK、0 MP4、连续测试签名已备好，待用户安装自测。[最终交付与删除清单](sdk-shared-experience-completion-2026-11-02.md)。不合main、不动release、托管或Flare；下方为历史。
+
 **2026-11-02 启动定位更新：** App 大型 catalog 读取已修复，最小/断网启动各1通过，严格analyze0；全量385通过/19失败时确认SDK动作库键盘布局溢出，按边界停止，不绕过SDK、不重建APK。[根因与后续交接](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。以下为前轮历史。
 
 **2026-11-02 共享体验接入暂缓：** `codex/sdk-shared-experience` 基于 main `0f507a3`，统一 pin SDK `d4502f3`、Launcher / public mediaPolicy / SDK library 已接线，移除94内置MP4，版本+28。严格analyze0、Python25/25、首次构建0 MP4；Flutter两轮仍失败，按约停止，无最终交付APK。[本轮报告](sdk-shared-experience-2026-11-02.md)。

@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-11-02：1.1.0+28 共享体验最终候选 APK（未安装）
+
+构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`、分支codex/sdk-shared-experience，SDK完整固定d4502f35b1503d41cd782aa7fb3780c7f6591ad0；Flutter3.44.7/Dart3.12.2、com.ugk.hiplab、release arm64 split、versionName1.1.0/versionCode2028。在日常目录使用原签名配置和Worker外部defines构建，未复制密钥；原上传签名包另存，同运行负载重签为此前手机连续测试证书。
+
+交用户包：`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/hiplab-1.1.0+28-shared-experience-arm64-device-release.apk`，**45508800 bytes（43.40MiB）**，SHA256`d0ee06277e37753d00020de937ad8706bc2ea21d122c5411df9a7f7d4ab061e0`。证书SHA256`3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，可连续保留数据覆盖升级；不得卸载/清数据。验包确认0 MP4、46公共poster、CRC/签名/身份正确，重签前后运行负载一致。
+
+用户16:19授权删除11条2倍字号用例后，严格analyze0、全量428通过/1既有条件跳过；门禁通过后才构建本包。手机已拔线，本轮未安装，视觉/旧数据界面/真实操作待用户自行验证；不把静态验包记为真机通过。不合main、不动release、不tag、不上传商店。[报告与删除清单](sdk-shared-experience-completion-2026-11-02.md)。下方首次诊断包仍为NOT-ACCEPTED历史。
+
 ## 2026-11-02：+28 启动修复，未重建 APK
 
 `codex/sdk-shared-experience`启动修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`，共用版本仍1.1.0+28，arm64 versionCode仍2028，SDK仍完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0。最小/断网启动通过、analyze0；全量385通过/19失败时确认SDK动作库键盘布局问题，按边界停止，**没有重建或交付新APK，包体无新值**。下方46604271 bytes的0 MP4诊断包仍不是交付包，不将旧包改记为新修复包。手机未安装，main/release/商店不操作。[启动诊断](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。

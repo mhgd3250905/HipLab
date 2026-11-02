@@ -1,5 +1,11 @@
 # 当前状态
 
+## 2026-11-02：共享体验 +28 候选通过门禁，APK 待用户安装
+
+用户16:19明确超大字号不在支持范围，授权删除2倍字号用例，先前SDK溢出不再阻塞。`codex/sdk-shared-experience`验证/构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`，SDK仍完整固定d4502f35b1503d41cd782aa7fb3780c7f6591ad0。App启动bytes读取修复保持，本轮仅适配测试的真实图片解码、Launcher可操作门禁、纵向viewport和SDK图标归属；删除11条2倍字号用例，未新增skip。严格analyze0、全量428通过/1既有条件跳过。
+
+1.1.0+28/versionCode2028 release arm64 APK为45508800 bytes（43.40MiB），包内0 MP4、46公共海报，签名/CRC/身份和连续测试证书核验通过。原上传签名包与同负载设备测试包均保存，路径、SHA和删除清单见[本轮交付](sdk-shared-experience-completion-2026-11-02.md)。原日常WIP单独保存，按字节哈希恢复；用户自测安装和视觉/真实操作，本轮未执行ADB。只普通推送候选分支，不合main、不打tag、不动release、托管或Flare、不提交商店。下方暂停记录均保留历史。
+
 ## 2026-11-02：启动根因已修，SDK 动作库布局问题待确认
 
 继续`codex/sdk-shared-experience@1b2399e`，启动修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`。临时逐步日志确认`HipApp._load`没有等待网络或抛错，而是276253字节的内置coach catalog经`loadString`触发isolate，主界面断言先于其完成。App改用bytes/UTF-8解码，仍由SDK`Catalog.fromJson`校验，删除测试预热；最小失败用例与新增断网冷启动各1通过，严格analyze0。
