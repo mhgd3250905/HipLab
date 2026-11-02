@@ -39,7 +39,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       await tester.tap(find.byKey(const ValueKey('skip')));
       await tester.pumpAndSettle();
 

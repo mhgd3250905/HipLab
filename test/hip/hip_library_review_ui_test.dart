@@ -126,6 +126,14 @@ void main() {
     await tester.pumpAndSettle();
     final card = find.byKey(ValueKey('posehub-action-$id'));
     await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    final prepared = await tester.runAsync(
+      () => trainer.TrainingPosterImages.prepareAsset(
+        tester.element(card),
+        page.mediaPolicy.posterAssetFor(id)!,
+      ),
+    );
+    expect(prepared, isTrue);
     await tester.tap(card);
     await tester.pumpAndSettle();
     expect(find.byType(trainer.TrainingLibraryDetail), findsOneWidget);
@@ -268,6 +276,10 @@ void main() {
           )
           .first,
     );
+    await tester.pumpAndSettle();
+    await Scrollable.ensureVisible(tester.element(group), alignment: .5);
+    await tester.pumpAndSettle();
+    expect(group.hitTestable(), findsOneWidget);
     await tester.tap(group);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('editor-add')));

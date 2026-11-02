@@ -15,6 +15,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -267,7 +268,7 @@ void main() {
     store.choose(scene: HipScene.chair, minutes: 5);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pump(const Duration(seconds: 1));
     final first = store.todayPlan!.steps.first;

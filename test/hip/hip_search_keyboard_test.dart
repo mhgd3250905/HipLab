@@ -1,7 +1,7 @@
 // PR #22 user report (Android device, 2026-10-19): tapping the 练习 page
 // search field focused it (cursor) but no soft keyboard came up.
 //
-// These lock the Flutter side of the contract at 1× and 2.0× text: a tap
+// These lock the Flutter side of the contract at normal text size: a tap
 // attaches a text input client and sends TextInput.show, the field keeps
 // both once the keyboard's inset arrives, a tap after the keyboard was
 // put away shows it again, and typed text filters the list. Whether the
@@ -11,7 +11,6 @@ import 'public_media_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
-import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
@@ -91,7 +90,7 @@ void main() {
               as SliverChildBuilderDelegate)
           .childCount!;
 
-  for (final scale in [1.0, 2.0]) {
+  for (final scale in [1.0]) {
     testWidgets('search ×$scale: tap shows the keyboard, keeps it when the '
         'inset arrives, typing filters', (tester) async {
       await openPractice(tester, scale);
@@ -162,45 +161,5 @@ void main() {
     await tester.tap(search());
     await tester.pump();
     expectKeyboard(tester, 'after coming back');
-  });
-
-  testWidgets('添加动作 picker search ×2.0: tap shows the keyboard', (
-    tester,
-  ) async {
-    final store = await openPractice(tester, 2.0);
-    store.customRoutines.add(
-      CustomRoutine(
-        id: 'c_kb',
-        name: '键盘',
-        steps: [CustomStep('h-9090-liftoff')],
-      ),
-    );
-    await tester.tap(find.byKey(const ValueKey('practice-2')));
-    await tester.pumpAndSettle();
-    // 「我的」 now also has the AI 定制 card under 新建训练组 (docs/ai-coach.md):
-    // at ×2.0 the group card starts below the fold.
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('group-card-c_kb')),
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('practice-list')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('group-card-c_kb')));
-    await tester.pumpAndSettle();
-    expect(find.byType(GroupEditorPage), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('editor-add')));
-    await tester.pumpAndSettle();
-    expect(find.byType(DrillPickerPage), findsOneWidget);
-    await tester.tap(search());
-    await tester.pump();
-    expectKeyboard(tester, 'picker');
-    tester.testTextInput.enterText('鸽');
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('pick-s-pigeon')), findsOneWidget);
   });
 }

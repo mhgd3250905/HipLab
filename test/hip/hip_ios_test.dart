@@ -31,6 +31,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 /// Records what the player asks of the audio layer and lets the test fire
 /// OS interruptions.
@@ -179,30 +180,46 @@ List<String> safeAreaOffenders(WidgetTester tester, IPhone phone) {
   return bad;
 }
 
-/// After scrolling the main list to its end, its last control must clear
-/// the Home indicator (the list's bottom padding includes the inset).
+/// Every vertical list must bring its last control inside its viewport and
+/// above the Home indicator. Horizontal filter rows are separate scrollables.
 Future<List<String>> scrolledEndOffenders(
   WidgetTester tester,
   IPhone phone,
 ) async {
-  final lists = find.byType(Scrollable);
-  if (lists.evaluate().isEmpty) return const [];
-  final scrollable = tester.state<ScrollableState>(lists.first);
-  scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
-  await tester.pumpAndSettle();
-  double lastBottom = 0;
-  for (final e in find.byWidgetPredicate(_isControl).evaluate()) {
-    if (!_inScrollable(e)) continue;
-    final ro = e.renderObject;
-    if (ro is! RenderBox || !ro.hasSize) continue;
-    final r = ro.localToGlobal(Offset.zero) & ro.size;
-    if (r.top >= phone.size.height) continue;
-    if (r.bottom > lastBottom) lastBottom = r.bottom;
+  final lists = find.byWidgetPredicate(
+    (widget) =>
+        widget is Scrollable &&
+        axisDirectionToAxis(widget.axisDirection) == Axis.vertical,
+  );
+  final bad = <String>[];
+  for (final list in lists.evaluate().toList()) {
+    final finder = find.byElementPredicate(
+      (element) => identical(element, list),
+    );
+    final scrollable = tester.state<ScrollableState>(finder);
+    scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    final viewport = tester.getRect(finder);
+    final safeBottom = phone.size.height - phone.bottom;
+    final limit =
+        (viewport.bottom < safeBottom ? viewport.bottom : safeBottom) + .5;
+    double lastBottom = 0;
+    final controls = find.descendant(
+      of: finder,
+      matching: find.byWidgetPredicate(_isControl),
+    );
+    for (final control in controls.evaluate()) {
+      final ro = control.renderObject;
+      if (ro is! RenderBox || !ro.hasSize) continue;
+      final r = ro.localToGlobal(Offset.zero) & ro.size;
+      if (r.top >= viewport.bottom || r.bottom <= viewport.top) continue;
+      if (r.bottom > lastBottom) lastBottom = r.bottom;
+    }
+    if (lastBottom > limit) {
+      bad.add('last scrolled control ends at $lastBottom > $limit');
+    }
   }
-  final limit = phone.size.height - phone.bottom + .5;
-  return lastBottom > limit
-      ? ['last scrolled control ends at $lastBottom > $limit']
-      : const [];
+  return bad;
 }
 
 // Trainer now communicates pause through its play/resume control and dimmed
@@ -286,8 +303,7 @@ void main() {
       ) async {
         await bootIos(tester, voice: voice);
         await tester.tap(find.byKey(const ValueKey('start-today')));
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 2));
+        await pumpTrainerReady(tester);
         expect(output.begins, 1);
         expect(playerIsRunning(tester), isTrue);
         final spokenBefore = output.spoken.length;
@@ -351,8 +367,7 @@ void main() {
     ) async {
       await bootIos(tester, voice: voice);
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pump(const Duration(seconds: 1));
+      await pumpTrainerReady(tester);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump(const Duration(milliseconds: 200));
       expectPlayerPaused(tester);
@@ -457,8 +472,7 @@ void main() {
       testWidgets('${phone.name}: player', (tester) async {
         await bootIos(tester, phone: phone);
         await tester.tap(find.byKey(const ValueKey('start-today')));
-        await tester.pump(const Duration(seconds: 2));
-        await tester.pump(const Duration(milliseconds: 600));
+        await pumpTrainerReady(tester);
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'prep');
         await tester.tap(find.byKey(const ValueKey('skip')));
         await tester.pump(const Duration(seconds: 2));
@@ -497,7 +511,7 @@ void main() {
   ) async {
     await bootIos(tester);
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pump(const Duration(seconds: 2));
+    await pumpTrainerReady(tester);
     // Edge swipe from the left like the iOS back gesture.
     final g = await tester.startGesture(const Offset(2, 400));
     await g.moveBy(const Offset(300, 0));

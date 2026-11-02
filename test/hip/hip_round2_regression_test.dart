@@ -11,7 +11,6 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
-import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
@@ -22,6 +21,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 class _HandoffOutput implements VoiceOutput {
   final events = <String>[];
@@ -117,10 +117,7 @@ void main() {
       final start = find.byKey(const ValueKey('start-today'));
       expect(start.hitTestable(), findsOneWidget);
       await tester.tap(start);
-      // Wait for the finite App route transition. The training itself
-      // keeps animating as its seconds/reps change, so it is not an idle UI.
-      await tester.pump();
-      await tester.pump(HipMotion.expand + const Duration(milliseconds: 100));
+      await pumpTrainerReady(tester);
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('finish')), findsNothing);
       // The shared stage pins the counter and transport in the viewport.

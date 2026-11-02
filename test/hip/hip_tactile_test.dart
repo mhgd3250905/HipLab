@@ -15,6 +15,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 bool _isGlow(Color c) {
   // A shadow is "coloured" when its hue channel stands out: green clearly
@@ -290,7 +291,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     final route = ModalRoute.of(
       tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
     );

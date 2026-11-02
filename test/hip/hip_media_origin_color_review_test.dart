@@ -11,6 +11,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 void main() {
   testWidgets('light home start passes its stage to the shared route', (
@@ -50,7 +51,7 @@ void main() {
       reason: 'the fixture must load the actual bundled light media stage',
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pump();
+    await pumpTrainerReady(tester);
     final route =
         ModalRoute.of(
               tester.element(find.byType(HipPlayerPage, skipOffstage: false)),

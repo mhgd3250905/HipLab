@@ -71,6 +71,13 @@ void main() {
     final card = find.byKey(ValueKey('posehub-action-$id'));
     await tester.ensureVisible(card);
     await tester.pumpAndSettle();
+    final prepared = await tester.runAsync(
+      () => trainer.TrainingPosterImages.prepareAsset(
+        tester.element(card),
+        page.mediaPolicy.posterAssetFor(id)!,
+      ),
+    );
+    expect(prepared, isTrue);
     await tester.tap(card);
     await tester.pumpAndSettle();
     expect(find.byType(trainer.TrainingLibraryDetail), findsOneWidget);

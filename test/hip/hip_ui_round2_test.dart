@@ -19,6 +19,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -202,12 +203,23 @@ void main() {
       for (final tab in [1, 2]) {
         await tester.tap(find.byKey(ValueKey('tab-$tab')));
         await tester.pumpAndSettle();
-        expect(find.byType(Icon), findsNothing, reason: 'tab $tab');
+        final hostIcons = find
+            .byType(Icon)
+            .evaluate()
+            .where(
+              (element) =>
+                  element
+                      .findAncestorWidgetOfExactType<
+                        trainer.TrainingLibraryPage
+                      >() ==
+                  null,
+            );
+        expect(hostIcons, isEmpty, reason: 'host-owned icons in tab $tab');
       }
       await tester.tap(find.byKey(const ValueKey('tab-0')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       // The training package owns the playback controls and its icon set.
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
@@ -281,7 +293,7 @@ void main() {
     testWidgets('开始 opens the shared training slide route', (tester) async {
       await pumpApp(tester);
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       final route = ModalRoute.of(
         tester.element(find.byType(trainer.TrainerPlayer)),
       );
@@ -382,7 +394,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));

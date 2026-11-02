@@ -178,7 +178,7 @@ void main() {
       },
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     final plan = store.todayPlan!;
     // The package preparation label precedes the first drill.
     expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
@@ -238,7 +238,7 @@ void main() {
       },
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('discomfort')));
