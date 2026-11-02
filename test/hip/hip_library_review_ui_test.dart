@@ -327,6 +327,16 @@ void main() {
         200,
         scrollable: find.byType(Scrollable).last,
       );
+      // The SDK detail waits for its poster before the sheet opens; warm it
+      // outside fake async like openDrill does.
+      final policy = HipPublicMedia.current!;
+      final prepared = await tester.runAsync(
+        () => trainer.TrainingPosterImages.prepareAsset(
+          tester.element(step),
+          policy.posterAssetFor('o-stand-lunge')!,
+        ),
+      );
+      expect(prepared, isTrue);
       await tester.tap(step);
       await tester.pumpAndSettle();
       final detail = tester.widget<trainer.TrainingLibraryDetail>(

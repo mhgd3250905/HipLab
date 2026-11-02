@@ -198,8 +198,14 @@ Future<List<String>> scrolledEndOffenders(
       (element) => identical(element, list),
     );
     final scrollable = tester.state<ScrollableState>(finder);
-    scrollable.position.jumpTo(scrollable.position.maxScrollExtent);
-    await tester.pumpAndSettle();
+    // Lazy lists (ListView.builder, 动作库 UI r2 M3) only estimate their
+    // extent until the tail is laid out: jump until the end stops moving.
+    for (var i = 0; i < 40; i++) {
+      final end = scrollable.position.maxScrollExtent;
+      scrollable.position.jumpTo(end);
+      await tester.pumpAndSettle();
+      if (scrollable.position.maxScrollExtent == end) break;
+    }
     final viewport = tester.getRect(finder);
     final safeBottom = phone.size.height - phone.bottom;
     final limit =
