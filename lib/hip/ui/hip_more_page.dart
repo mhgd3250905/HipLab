@@ -302,16 +302,11 @@ class HipMorePage extends StatelessWidget {
             child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
           ),
           const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          if (meta.isNotEmpty)
-            Flexible(
+          Text(title, maxLines: 1, style: const TextStyle(fontSize: 16)),
+          if (meta.isEmpty)
+            const Spacer()
+          else
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 8, right: 6),
                 child: Text(
