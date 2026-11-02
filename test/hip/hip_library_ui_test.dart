@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_pain.dart';
@@ -65,21 +67,20 @@ void main() {
   }
 
   Future<void> openDrill(WidgetTester tester, String id) async {
-    final page = tester.widget<trainer.TrainingLibraryPage>(
-      find.byType(trainer.TrainingLibraryPage),
-    );
+    // UI r2 M3: HipLab 动作库 → the SDK detail.
+    final policy = HipPublicMedia.current!;
     await tester.enterText(
-      find.byKey(const ValueKey('posehub-search')),
-      page.mediaPolicy.actionFor(id)!.nameZh,
+      find.byKey(const ValueKey('lib-search')),
+      policy.actionFor(id)!.nameZh,
     );
     await tester.pumpAndSettle();
-    final card = find.byKey(ValueKey('posehub-action-$id'));
+    final card = find.byKey(ValueKey('drill-card-$id'));
     await tester.ensureVisible(card);
     await tester.pumpAndSettle();
     final prepared = await tester.runAsync(
       () => trainer.TrainingPosterImages.prepareAsset(
         tester.element(card),
-        page.mediaPolicy.posterAssetFor(id)!,
+        policy.posterAssetFor(id)!,
       ),
     );
     expect(prepared, isTrue);
@@ -133,51 +134,53 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
-    testWidgets(
-      '211 scoped actions; SDK Chinese search and category filtering',
-      (tester) async {
-        await pumpApp(tester);
-        await toPractice(tester);
-        final page = tester.widget<trainer.TrainingLibraryPage>(
-          find.byType(trainer.TrainingLibraryPage),
-        );
-        expect(page.config.allowedActionIds, hiplabCoachAuthorizedActionIds);
-        expect(find.byKey(const ValueKey('lib-search')), findsNothing);
-        int visibleCount() =>
-            (tester
-                        .widget<GridView>(
-                          find.byKey(const ValueKey('posehub-action-list')),
-                        )
-                        .childrenDelegate
-                    as SliverChildBuilderDelegate)
-                .childCount!;
-        expect(visibleCount(), 211);
-        await tester.enterText(
-          find.byKey(const ValueKey('posehub-search')),
-          page.mediaPolicy.actionFor('s-pigeon')!.nameZh,
-        );
-        await tester.pumpAndSettle();
-        expect(visibleCount(), 1);
-        expect(
-          find.byKey(const ValueKey('posehub-action-s-pigeon')),
-          findsOneWidget,
-        );
-        await tester.enterText(
-          find.byKey(const ValueKey('posehub-search')),
-          '',
-        );
-        await tester.tap(find.byKey(const ValueKey('posehub-类型-拉伸放松')));
-        await tester.pumpAndSettle();
-        final expected = page.config
-            .actions(page.mediaPolicy.catalog)
-            .where(
-              (action) => trainer.PoseHubActionFacets.type(action) == '拉伸放松',
-            )
-            .length;
-        expect(visibleCount(), expected);
-        expect(expected, greaterThan(0));
-      },
-    );
+    testWidgets('210 scoped actions (测试演示 excluded); search and 怎么练 filter', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await toPractice(tester);
+      expect(find.byType(trainer.TrainingLibraryPage), findsNothing);
+      String count() => tester
+          .widget<Text>(find.byKey(const ValueKey('actions-count')))
+          .data!;
+      final config = HipSharedLibrary.current!;
+      expect(config.allowedActionIds, hiplabCoachAuthorizedActionIds);
+      expect(count(), '210 个动作');
+      expect(
+        find.byKey(const ValueKey('drill-card-n-thomas-test')),
+        findsNothing,
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('lib-search')),
+        HipPublicMedia.current!.actionFor('s-pigeon')!.nameZh,
+      );
+      await tester.pumpAndSettle();
+      expect(count(), '1 个动作');
+      expect(find.byKey(const ValueKey('drill-card-s-pigeon')), findsOneWidget);
+      await tester.enterText(find.byKey(const ValueKey('lib-search')), '');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('action-filter')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('filter-group-part')), findsOneWidget);
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('filter-type-拉伸放松')),
+      );
+      await tester.tap(find.byKey(const ValueKey('filter-type-拉伸放松')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('filter-apply')));
+      await tester.pumpAndSettle();
+      final expected = config
+          .actions(HipPublicMedia.current!.catalog)
+          .where(
+            (action) =>
+                action.id != 'n-thomas-test' &&
+                trainer.PoseHubActionFacets.type(action) == '拉伸放松',
+          )
+          .length;
+      expect(expected, greaterThan(0));
+      expect(count(), '$expected 个动作');
+      expect(find.byKey(const ValueKey('action-filter-badge')), findsOneWidget);
+    });
 
     testWidgets(
       'SDK detail starts host default dose; exit logs single without streak',
@@ -266,7 +269,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(DrillPickerPage), findsOneWidget);
       for (final id in ['h-9090-liftoff', 'h-adductor-rock']) {
-        await tester.tap(find.byKey(ValueKey('pick-$id')));
+        await tapCard(tester, ValueKey('pick-$id'));
         await tester.pump();
       }
       expect(
@@ -454,7 +457,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('editor-add')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('pick-h-adductor-rock')));
+      await tapCard(tester, const ValueKey('pick-h-adductor-rock'));
       await tester.pump();
       await tester.tap(find.byKey(const ValueKey('picker-add')));
       await tester.pumpAndSettle();

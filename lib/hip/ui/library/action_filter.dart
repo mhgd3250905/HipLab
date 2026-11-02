@@ -127,10 +127,11 @@ String _sdkDose(LibText t, int sets, bool reps, int? n, bool side) {
 
 /// The single list both pages use. Cached per content + language.
 List<HipActionItem> hipActionItems(HipContent c, LibText t) {
-  final key = (c, t.lang, HipSharedLibrary.current);
+  final key = (c, t.lang, HipSharedLibrary.current, HipPublicMedia.current);
   if (identical(_cacheKey?.$1, key.$1) &&
       _cacheKey?.$2 == key.$2 &&
-      identical(_cacheKey?.$3, key.$3)) {
+      identical(_cacheKey?.$3, key.$3) &&
+      identical(_cacheKey?.$4, key.$4)) {
     return _cache;
   }
   final scope =
@@ -139,52 +140,85 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
   final out = <HipActionItem>[];
   final seen = <String>{};
   final posterRoot = HipPublicMedia.posterRoot;
-  for (final d in c.publicCatalog?.drills ?? const []) {
-    if (!scope.contains(d.id) || assessmentOnlyDrills.contains(d.id)) {
+  // The SDK library's own browse list when it is installed (what the SDK
+  // view listed), else the public definitions on the content.
+  final List<Map<String, dynamic>> rows;
+  final config = HipSharedLibrary.current;
+  final policy = HipPublicMedia.current;
+  if (config != null && policy != null) {
+    rows = [
+      for (final a in config.actions(policy.catalog))
+        Map<String, dynamic>.from(a.raw),
+    ];
+  } else {
+    rows = [
+      for (final d in c.publicCatalog?.drills ?? const <coach.Drill>[])
+        Map<String, dynamic>.from(d.raw),
+    ];
+  }
+  List<String> strings(Object? v) =>
+      v is List ? v.whereType<String>().toList() : const [];
+  for (final raw in rows) {
+    final id = raw['id'];
+    if (id is! String ||
+        !scope.contains(id) ||
+        assessmentOnlyDrills.contains(id) ||
+        !seen.add(id)) {
       continue;
     }
-    if (!seen.add(d.id)) continue;
+    final names = raw['name'];
+    final zh =
+        raw['nameZh'] as String? ??
+        (names is Map ? names['zh'] as String? : null) ??
+        id;
+    final en = names is Map ? names['en'] as String? : null;
+    final muscles = strings(raw['muscleGroups']);
+    final tools = strings(raw['equipment']);
+    final scenes = strings(raw['scenes']);
+    final local = c.drills[id];
     final parts = {
-      for (final m in d.muscleGroups) ?hipPartOf[m],
-      if (c.drills[d.id] case final local?)
+      for (final m in muscles) ?hipPartOf[m],
+      if (local != null)
         for (final dir in local.directions) ?hipPartForDirection(dir),
     };
-    final equipment = [
-      for (final e in d.equipment) trainer.poseHubEquipmentLabels[e] ?? '其他器械',
-    ];
     final places = <String>{
-      if (d.equipment.contains('chair') || d.scenes.contains('office')) '椅子可做',
-      if (d.scenes.contains('home')) '居家',
-      if (d.scenes.contains('office')) '办公室',
-      if (d.scenes.contains('gym')) '健身房',
+      if (tools.contains('chair') || scenes.contains('office')) '椅子可做',
+      if (scenes.contains('home')) '居家',
+      if (scenes.contains('office')) '办公室',
+      if (scenes.contains('gym')) '健身房',
     };
-    final dose = d.defaultDose;
-    final reps = dose.mode == coach.DoseMode.reps;
+    final dose = raw['defaultDose'] is Map
+        ? Map<String, dynamic>.from(raw['defaultDose'] as Map)
+        : const <String, dynamic>{};
+    final reps = dose['mode'] == 'reps';
+    final level = raw['level'];
     out.add(
       HipActionItem(
-        id: d.id,
-        name: t.lang == 'en' ? d.name.of('en') : d.name.of('zh'),
-        aliases: [d.name.of('zh'), d.name.of('en')],
+        id: id,
+        name: t.lang == 'en' && en != null && en.isNotEmpty ? en : zh,
+        aliases: [zh, ?en, ...strings(raw['aliasesZh'])],
         parts: [
           for (final p in hipPartOrder)
             if (parts.contains(p)) p,
         ],
-        equipment: equipment.toSet().toList(),
-        type: switch (d.category) {
+        equipment: {
+          for (final e in tools) trainer.poseHubEquipmentLabels[e] ?? '其他器械',
+        }.toList(),
+        type: switch (raw['category']) {
           'stretch' || 'mobility' => hipTypeRelax,
           _ => hipTypeStrength,
         },
         places: places,
-        level: d.level >= 1 && d.level <= 3 ? d.level : null,
+        level: level is int && level >= 1 && level <= 3 ? level : null,
         dose: _sdkDose(
           t,
-          dose.sets,
+          (dose['sets'] as num?)?.toInt() ?? 1,
           reps,
-          reps ? dose.reps : dose.seconds,
-          d.unilateral,
+          ((reps ? dose['reps'] : dose['seconds']) as num?)?.toInt(),
+          raw['unilateral'] == true,
         ),
-        drill: inLibrary(c, d.id) ? c.drills[d.id] : null,
-        poster: '$posterRoot${d.id}.webp',
+        drill: inLibrary(c, id) ? local : null,
+        poster: '$posterRoot$id.webp',
       ),
     );
   }
@@ -225,7 +259,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
   return _cache;
 }
 
-(HipContent, String, Object?)? _cacheKey;
+(HipContent, String, Object?, Object?)? _cacheKey;
 List<HipActionItem> _cache = const [];
 
 // ───────────────────────── filter ─────────────────────────
@@ -902,6 +936,35 @@ class ActionEmpty extends StatelessWidget {
             radius: 8,
             onTap: onReset,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lazy two-column card rows (one per row under very large text) for a
+/// ListView.builder: 210 posters are never built at once.
+class ActionRows {
+  ActionRows(BuildContext context, this.cards)
+    : perRow = libLargeText(context) ? 1 : 2;
+  final List<Widget> cards;
+  final int perRow;
+  int get length => (cards.length + perRow - 1) ~/ perRow;
+  Widget row(int i) {
+    final start = i * perRow;
+    return Padding(
+      padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var k = 0; k < perRow; k++) ...[
+            if (k > 0) const SizedBox(width: 12),
+            Expanded(
+              child: start + k < cards.length
+                  ? cards[start + k]
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ],
       ),
     );

@@ -46,3 +46,20 @@ Future<void> backHome(WidgetTester tester) async {
     await tester.pumpAndSettle();
   }
 }
+
+/// UI r2 M3: action cards are built lazily; scroll [key] in, then tap it.
+Future<void> tapCard(WidgetTester tester, Key key) async {
+  final card = find.byKey(key);
+  for (final list in ['picker-list', 'practice-list']) {
+    final scroll = find.descendant(
+      of: find.byKey(ValueKey(list)),
+      matching: find.byType(Scrollable),
+    );
+    if (card.evaluate().isEmpty && scroll.evaluate().isNotEmpty) {
+      await tester.scrollUntilVisible(card, 300, scrollable: scroll.first);
+    }
+  }
+  await tester.ensureVisible(card);
+  await tester.pumpAndSettle();
+  await tester.tap(card);
+}

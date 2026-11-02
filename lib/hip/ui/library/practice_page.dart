@@ -133,42 +133,42 @@ class _PracticePageState extends State<PracticePage> {
     final all = hipActionItems(content, t);
     final f = mem.actions;
     final shown = f.apply(all);
-    return ListView(
+    final header = <Widget>[
+      ActionFilterBar(
+        all: all,
+        filter: f,
+        search: _actionSearch,
+        onChanged: (v) => setState(() => mem.actions = v),
+      ),
+      const SizedBox(height: 14),
+      Text(
+        t.lang == 'en' ? '${shown.length} moves' : '${shown.length} 个动作',
+        key: const ValueKey('actions-count'),
+        style: TextStyle(fontSize: 13, color: HipColors.muted),
+      ),
+      const SizedBox(height: 10),
+      if (shown.isEmpty)
+        ActionEmpty(
+          onReset: () => setState(() {
+            _actionSearch.clear();
+            mem.actions = const ActionFilter();
+          }),
+        ),
+    ];
+    final rows = ActionRows(context, [
+      for (final a in shown)
+        ActionCard(
+          key: ValueKey('drill-card-${a.id}'),
+          item: a,
+          onTap: (from) => _openDrill(a.id, from),
+        ),
+    ]);
+    return ListView.builder(
       key: const ValueKey('practice-list'),
       padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
-      children: [
-        ActionFilterBar(
-          all: all,
-          filter: f,
-          search: _actionSearch,
-          onChanged: (v) => setState(() => mem.actions = v),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          t.lang == 'en' ? '${shown.length} moves' : '${shown.length} 个动作',
-          key: const ValueKey('actions-count'),
-          style: TextStyle(fontSize: 13, color: HipColors.muted),
-        ),
-        const SizedBox(height: 10),
-        if (shown.isEmpty)
-          ActionEmpty(
-            onReset: () => setState(() {
-              _actionSearch.clear();
-              mem.actions = const ActionFilter();
-            }),
-          )
-        else
-          LibDrillGrid(
-            children: [
-              for (final a in shown)
-                ActionCard(
-                  key: ValueKey('drill-card-${a.id}'),
-                  item: a,
-                  onTap: (from) => _openDrill(a.id, from),
-                ),
-            ],
-          ),
-      ],
+      itemCount: header.length + rows.length,
+      itemBuilder: (context, i) =>
+          i < header.length ? header[i] : rows.row(i - header.length),
     );
   }
 

@@ -769,66 +769,72 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
               subtitle: t.addTo(widget.groupName),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                children: [
-                  ActionFilterBar(
-                    all: all,
-                    filter: _actions,
-                    search: _search,
-                    onChanged: (f) => setState(() => _actions = f),
-                  ),
-                  const SizedBox(height: 14),
-                  if (shown.isEmpty)
-                    ActionEmpty(
-                      onReset: () => setState(() {
-                        _search.clear();
-                        _actions = const ActionFilter();
-                      }),
-                    )
-                  else
-                    LibDrillGrid(
-                      children: [
-                        for (final a in shown)
-                          ActionCard(
-                            key: ValueKey('pick-${a.id}'),
-                            item: a,
-                            // Local groups play through HipLab action kits;
-                            // SDK-only actions are solo-only for now.
-                            disabled: !a.canAddToGroup,
-                            dose: a.canAddToGroup
-                                ? doseText(
-                                    content.kit(a.id)!,
-                                    DoseRules.kitDefault(content.kit(a.id)!),
-                                    single: false,
-                                    lang: t.lang,
-                                  )
-                                : null,
-                            check: _picked.contains(a.id),
-                            inGroup: inGroup.contains(a.id),
-                            onTap: (_) {
-                              if (!a.canAddToGroup) {
-                                ScaffoldMessenger.of(context)
-                                  ..hideCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        t.lang == 'en'
-                                            ? 'This move can be practised on its own, not in a group yet.'
-                                            : '这个动作暂时只能在动作库单独练，还不能加入训练组',
-                                      ),
-                                    ),
-                                  );
-                                return;
-                              }
-                              setState(() {
-                                if (!_picked.remove(a.id)) _picked.add(a.id);
-                              });
-                            },
-                          ),
-                      ],
+              child: Builder(
+                builder: (context) {
+                  final header = <Widget>[
+                    ActionFilterBar(
+                      all: all,
+                      filter: _actions,
+                      search: _search,
+                      onChanged: (f) => setState(() => _actions = f),
                     ),
-                ],
+                    const SizedBox(height: 14),
+                    if (shown.isEmpty)
+                      ActionEmpty(
+                        onReset: () => setState(() {
+                          _search.clear();
+                          _actions = const ActionFilter();
+                        }),
+                      ),
+                  ];
+                  final rows = ActionRows(context, [
+                    for (final a in shown)
+                      ActionCard(
+                        key: ValueKey('pick-${a.id}'),
+                        item: a,
+                        // Local groups play through HipLab action kits;
+                        // SDK-only actions are solo-only for now.
+                        disabled: !a.canAddToGroup,
+                        dose: a.canAddToGroup
+                            ? doseText(
+                                content.kit(a.id)!,
+                                DoseRules.kitDefault(content.kit(a.id)!),
+                                single: false,
+                                lang: t.lang,
+                              )
+                            : null,
+                        check: _picked.contains(a.id),
+                        inGroup: inGroup.contains(a.id),
+                        onTap: (_) {
+                          if (!a.canAddToGroup) {
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    t.lang == 'en'
+                                        ? 'This move can be practised on its own, not in a group yet.'
+                                        : '这个动作暂时只能在动作库单独练，还不能加入训练组',
+                                  ),
+                                ),
+                              );
+                            return;
+                          }
+                          setState(() {
+                            if (!_picked.remove(a.id)) _picked.add(a.id);
+                          });
+                        },
+                      ),
+                  ]);
+                  return ListView.builder(
+                    key: const ValueKey('picker-list'),
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+                    itemCount: header.length + rows.length,
+                    itemBuilder: (context, i) => i < header.length
+                        ? header[i]
+                        : rows.row(i - header.length),
+                  );
+                },
               ),
             ),
           ],

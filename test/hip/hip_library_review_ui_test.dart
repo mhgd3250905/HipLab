@@ -290,7 +290,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('editor-add')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('pick-h-9090-liftoff')));
+    await tapCard(tester, const ValueKey('pick-h-9090-liftoff'));
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('picker-add')));
     await tester.pumpAndSettle();
