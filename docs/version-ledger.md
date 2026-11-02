@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-02：1.1.0+29 全动作候选 APK（未安装）
+
+分支codex/full-action-scope，构建/验证源`5072cbb291fe099fbbbd8e673a326e47e21808e8`；SDK四实际包/coach override完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0，Flutter3.44.7/Dart3.12.2。1.1.0+29，com.ugk.hiplab，release arm64 split，versionCode2029，浏览/计划均211。严格analyze0、437通过/1既有条件跳过、Python25/25。日常原签名配置构建后连续测试重签，40个WIP逐字节恢复；未复制密钥、未安装或提交商店。
+
+交用户APK：`E:/AII-3D/hiplab-releases/full-action-scope-20261102/completion-1714/hiplab-1.1.0+29-full-action-scope-arm64-device-release.apk`，**49,954,831 bytes（47.64MiB）**；SHA256`186a2c1ff2bb1ffa4dff41d75ec26671a13e02cf892be5080969cfe032f584a0`。证书SHA256`3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与既有测试安装连续。211公共封面、0 MP4、CRC/身份/签名及重签前后运行负载一致性通过；原上传签名包同目录另存。只推分支、不合main、不打tag、不动release。[完整交付](full-action-scope-completion-2026-11-02.md)。
+
 ## 2026-11-02：+28 用户真机通过并合入 main（无新制品）
 
 用户确认已交付的1.1.0+28/2028真机测试通过并批准集成，main快进并普通推送到 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，远端回读一致。沿用下方43.40MiB原APK，不重建、不重新安装、不提交商店。后续 `codex/full-action-scope` 受SDK8项训练元数据缺失阻塞；版本尚未递增到+29，未产生+29 APK。[回执与缺项](full-action-scope-2026-11-02.md)。

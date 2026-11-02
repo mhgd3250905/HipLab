@@ -1,5 +1,9 @@
 # 版本管理说明
 
+## 2026-11-02：+29 全动作候选
+
+用户17:14改为211浏览/211规划、8partial排除，版本递增到1.1.0+29，arm64 split为2029；SDK保持完整pin d4502f3，依赖与Flutter3.44.7不升级。测试/构建源5072cbb，analyze0、437通过/1既有条件跳过；47.64MiB release APK/211封面/0 MP4已核验，未安装。后续文档提交不改变APK源码身份或重复构建；只推codex/full-action-scope、不合main、不打tag，release不动。[APK身份与恢复回执](full-action-scope-completion-2026-11-02.md)。
+
 ## 2026-11-02：+28 最终候选构建完成
 
 用户16:19排除2倍字号后，删除11条相关用例，其余共享SDK测试适配完成；严格analyze0、全量428通过/1既有条件跳过。构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`，App保持1.1.0+28/arm64 versionCode2028，SDK所有实际包与coach override完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0；仍用Flutter3.44.7/Dart3.12.2。release APK45508800 bytes、0 MP4已核验，沿用连续测试证书，手机未安装。源码构建点与后续文档HEAD分开登记，不因文档补记重复构建或递增版本。[交付及删除清单](sdk-shared-experience-completion-2026-11-02.md)和[版本台账](version-ledger.md)。只推候选，不合main、不动release。
