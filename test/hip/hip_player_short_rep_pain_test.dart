@@ -10,6 +10,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
+import 'public_media_fixture.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
@@ -20,6 +21,7 @@ int _secondsLeft(WidgetTester tester) => int.parse(
 );
 
 void main() {
+  setUpAll(warmHipAppAssets);
   testWidgets(
     'pain skips a micro rep that cannot fit, then rests and continues',
     (tester) async {
@@ -50,7 +52,13 @@ void main() {
         transitionSeconds: micro.transitionSeconds,
       );
       final next = plan.steps[1];
-      await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+      await tester.pumpWidget(
+        HipApp(
+          mediaPolicy: installPublicMediaFixture().policy,
+          store: store,
+          videoEnabled: false,
+        ),
+      );
       await tester.pumpAndSettle();
       tester
           .state<NavigatorState>(find.byType(Navigator))

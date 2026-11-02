@@ -17,6 +17,7 @@ import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -25,6 +26,7 @@ const _b = 'h-adductor-rock';
 const _c = 'h-band-hip-ir';
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   late MemoryStorage storage;
@@ -63,7 +65,13 @@ void main() {
         steps: [for (final id in ids) CustomStep(id)],
       ),
     );
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('tab-1')));
     await tester.pumpAndSettle();

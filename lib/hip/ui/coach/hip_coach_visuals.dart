@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_coach_ui/ugk_coach_ui.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../coach/hip_coach_profile.dart' show hiplabCoachAuthorizedActionIds;
 import '../../domain/hip_models.dart';
+import '../../data/hip_public_media.dart';
 import '../hip_icons.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
@@ -24,14 +26,14 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
     iconBuilder: _hipChatIcon,
     exerciseFor: (id, brightness) {
       final drill = content.drills[id];
+      final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (!hiplabCoachAuthorizedActionIds.contains(id) ||
           drill == null ||
-          drill.poster == null) {
+          poster == null) {
         return null;
       }
       final dark = brightness == Brightness.dark;
       final p = dark ? HipPalette.dark : HipPalette.light;
-      final poster = HipMediaVariants.themed(drill.poster!, dark: dark);
       return CoachExercise(
         id: id,
         name: drill.name,
@@ -42,9 +44,7 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
         levelLabel: drill.advanced ? '进阶' : '基础',
         cues: [if (drill.note.isNotEmpty) drill.note],
         stage: CoachMediaPalette(
-          mediaStage: !dark && HipMediaVariants.media.hasLight(drill.poster)
-              ? HipPalette.light.mediaBackdrop
-              : HipPalette.dark.mediaBackdrop,
+          mediaStage: p.mediaBackdrop,
           onStage: p.text,
           onStageMuted: p.muted,
         ),
@@ -54,13 +54,9 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
         ? AssetImage(hipCoachStandingAsset(id))
         : null,
     preloadPoster: (context, id) async {
-      final poster = content.drills[id]?.poster;
+      final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (poster != null) {
-        final dark = Theme.of(context).brightness == Brightness.dark;
-        await precacheImage(
-          AssetImage(HipMediaVariants.themed(poster, dark: dark)),
-          context,
-        );
+        await trainer.TrainingPosterImages.prepareAsset(context, poster);
       }
     },
     previewBuilder: (context, id, playing) {
@@ -81,7 +77,7 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
   );
 }
 
-String hipCoachStandingAsset(String id) => 'assets/coach/standing/$id.webp';
+String hipCoachStandingAsset(String id) => 'assets/public_posters/$id.webp';
 
 CoachChatPalette hipCoachChatPalette(HipPalette p) => CoachChatPalette(
   brightness: p.brightness,

@@ -8,8 +8,10 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
+import 'public_media_fixture.dart';
 
 void main() {
+  setUpAll(warmHipAppAssets);
   testWidgets('video pain action retains a named semantic button and tap', (
     tester,
   ) async {
@@ -29,7 +31,13 @@ void main() {
         ..identity = HipIdentity.office
         ..scene = HipScene.chair
         ..minutes = 5;
-      await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+      await tester.pumpWidget(
+        HipApp(
+          mediaPolicy: installPublicMediaFixture().policy,
+          store: store,
+          videoEnabled: false,
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pumpAndSettle();

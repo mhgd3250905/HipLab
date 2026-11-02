@@ -14,6 +14,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'public_media_fixture.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -33,6 +34,7 @@ Future<void> expectPausedClock(WidgetTester tester) async {
 }
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(
@@ -56,7 +58,13 @@ void main() {
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
       ..theme = theme;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     return store;
   }

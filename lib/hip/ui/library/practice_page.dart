@@ -1,6 +1,8 @@
 // 练习 tab (拍板 1, 2026-10-19 13:08): big title, the 「我的髋部 · 3 分半自测」
 // card (the former 自测 tab), then 动作 | 套路 | 我的.
 import 'package:flutter/material.dart';
+import '../../data/hip_shared_library.dart';
+import '../../data/hip_public_media.dart';
 
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
@@ -58,6 +60,30 @@ class _PracticePageState extends State<PracticePage> {
 
   Widget _build(BuildContext context) {
     final t = LibText.of(context);
+    if (mem.segment == 0 &&
+        HipSharedLibrary.current != null &&
+        HipPublicMedia.current != null) {
+      return HipSharedLibraryPage(
+        actions: actions,
+        header: Column(
+          children: [
+            _checkCard(t),
+            const SizedBox(height: 12),
+            HipSegmented<int>(
+              keyPrefix: 'practice',
+              standalone: true,
+              height: 46,
+              radius: 16,
+              inset: 4,
+              values: const [0, 1, 2],
+              selected: mem.segment,
+              onChanged: (v) => setState(() => mem.segment = v),
+              label: (v) => [t.segActions, t.segRoutines, t.segMine][v],
+            ),
+          ],
+        ),
+      );
+    }
     final body = switch (mem.segment) {
       1 => _routines(t),
       2 => _mine(t),
@@ -285,6 +311,10 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   Future<void> _openDrill(String id, BuildContext from) async {
+    if (HipSharedLibrary.current != null) {
+      await HipSharedLibrary.openDetail(context, actions, id);
+      return;
+    }
     final jump = await Navigator.of(context).push<Object?>(
       HipRoute.expandFrom<Object?>(
         from,
@@ -584,8 +614,7 @@ class GroupCard extends StatelessWidget {
       key: ValueKey('group-card-${g.id}'),
       semanticLabel: g.name,
       scale: .98,
-      onTap: () =>
-          g.coachPlan != null && actions.coach != null
+      onTap: () => g.coachPlan != null && actions.coach != null
           ? openHipSavedCoachPlan(context, actions, g)
           : Navigator.of(context).push(
               HipRoute.push<void>(

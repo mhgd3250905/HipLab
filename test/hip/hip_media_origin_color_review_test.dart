@@ -1,20 +1,23 @@
-// PR #20: the expand fill must start with the actual themed button colour.
+// HipLab passes its actual theme to the shared training launcher.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
-import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
 
 void main() {
-  testWidgets('light home start expand fill matches its actual button stage', (
+  setUpAll(warmHipAppAssets);
+  testWidgets('light home start passes its stage to the shared route', (
     tester,
   ) async {
+    final fixture = installPublicMediaFixture();
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -36,24 +39,32 @@ void main() {
       ..minutes = 10
       ..scene = HipScene.home
       ..theme = HipThemeChoice.light;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(store: store, videoEnabled: false, mediaPolicy: fixture.policy),
+    );
     await tester.pumpAndSettle();
     final start = find.byType(HipStartButton);
     final button = tester.widget<HipStartButton>(start);
-    expect(button.stage.isDark, isFalse,
-        reason: 'the fixture must load the actual bundled light media stage');
-    final sourceColor = button.stage.jade;
+    expect(
+      button.stage.isDark,
+      isFalse,
+      reason: 'the fixture must load the actual bundled light media stage',
+    );
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pump();
-    final route = ModalRoute.of(
+    final route =
+        ModalRoute.of(
+              tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
+            )!
+            as trainer.TrainerSlideRoute;
+    expect(route.trainerTheme!.brightness, Brightness.light);
+    expect(route.trainerTheme!.mediaStage, HipPalette.light.mediaBackdrop);
+    expect(route.trainerTheme!.accent, button.stage.jade);
+    final experience = trainer.TrainerExperienceScope.maybeOf(
       tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
-    )! as HipRoute;
-    expect(route.transition, HipTransition.expand);
-    final transitionColor = route.originColor;
-    await tester.pumpAndSettle();
+    )!;
+    expect(experience.firstPosterAsset, startsWith('assets/public_posters/'));
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpWidget(const SizedBox());
-    expect(transitionColor, sourceColor,
-        reason: 'after the origin snapshot fades away, the expand fill must '
-            'continue from the light button jade rather than dark-theme jade');
   });
 }

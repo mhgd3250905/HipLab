@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/coach/hip_coach_profile.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/ui/coach/hip_coach_visuals.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
@@ -29,6 +30,15 @@ HipContent _content() {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    HipPublicMedia.current = await HipPublicMedia.load(
+      rootDirectory:
+          'F:/codex-worktrees/trainer-no-flash/3D-Pose-SDK/build/library-shared/hip/profile-cache',
+      prefetchBeforeTraining: false,
+    );
+  });
+  tearDownAll(() => HipPublicMedia.current?.repository.dispose());
   final content = _content();
   final catalog = coach.Catalog.fromJson(
     jsonDecode(File(hipCoachCatalogAsset).readAsStringSync()),

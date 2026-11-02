@@ -1,5 +1,11 @@
 # 验证台账
 
+## 2026-11-02：共享体验接入两轮未通过，停止重试
+
+固定Flutter3.44.7/Dart3.12.2、SDK d4502f35b1503d41cd782aa7fb3780c7f6591ad0，分支codex/sdk-shared-experience，基于main0f507a3。严格`flutter analyze --no-pub --fatal-infos`为0，Python全量25/25。`flutter test --no-pub --concurrency=1 --reporter expanded`首轮310通过/128失败/1条件跳过（4分29秒）；修复测试夹具、旧视频存在断言和主题插值后，第二轮仍有主界面finder为空，在234通过/116失败时依用户“两次仍卡住就停止”结束该测试进程。第二轮未全量完成，不再修复或第三次重试，最终门禁未通过。
+
+首次release构建成功，46604271 bytes、ZIP内0 MP4；此包早于单练按钮/自测点击层修复及旧剪影退包，只有诊断用途。未构建最终APK、未重签/安装、未作真机或视觉验收。记录、失败表象、APK身份和日志见[本轮报告](sdk-shared-experience-2026-11-02.md)，不得用此前446/1的旧pin结果替代本轮。
+
 ## 2026-11-02：第 5 批 SDK 对话模块
 
 **main合并后复核（2026-11-02）：** 用户批准后，本机main快进至`1b94fc3`并以`--no-ff`合入固定候选`c8cf82f`，合并点`9054932a982a9b41eaf540a4281af1e069c2f456`。两处文档冲突保留全部章节，按11月2日、10月27日、10月24日排序，iOS章节文字未改；冲突标记已去除，`git diff --check`干净。固定Flutter3.44.7运行合并后`flutter analyze --no-pub --fatal-infos`为**0问题**，`flutter test --no-pub --concurrency=1`为**446通过/1条件跳过**（可选VOICE_TIMELINE_OUT导出，5分25秒），与候选一致。日志在`E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/main-9054932/`。运行代码、测试及依赖锁与候选一致；后续只补文档回执，不重跑App测试或构建。release/1.0保留`1f9a172`，不tag、不商店、不重打APK。

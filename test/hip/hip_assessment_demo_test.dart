@@ -4,10 +4,11 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
-import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'public_media_fixture.dart';
 
 Future<void> openDemo(WidgetTester tester, Size size) async {
   tester.view.physicalSize = size;
@@ -17,7 +18,13 @@ Future<void> openDemo(WidgetTester tester, Size size) async {
   await store.initialize();
   store.safety = {'pregnancy': false, 'surgery': false, 'acute': false};
   store.identity = HipIdentity.office;
-  await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+  await tester.pumpWidget(
+    HipApp(
+      mediaPolicy: installPublicMediaFixture().policy,
+      store: store,
+      videoEnabled: false,
+    ),
+  );
   await tester.pumpAndSettle();
   await openCheckupIntro(tester);
   await tester.tap(find.byKey(const ValueKey('assessment-start')));
@@ -26,22 +33,33 @@ Future<void> openDemo(WidgetTester tester, Size size) async {
 
 Finder get demo => find.byKey(const ValueKey('assessment-demo'));
 Finder get toggle => find.byKey(const ValueKey('assessment-demo-toggle'));
-Finder get art => find.descendant(of: demo, matching: find.byType(HipDrillArt));
+Finder get art => find.descendant(
+  of: demo,
+  matching: find.byType(trainer.TrainingActionMedia),
+);
 
 void main() {
+  setUpAll(warmHipAppAssets);
   for (final size in [
     const Size(360, 740),
     const Size(390, 844),
     const Size(768, 1024),
   ]) {
-    testWidgets('demo stays square and uncropped at $size', (tester) async {
+    testWidgets('demo stays square and delegates public artwork at $size', (
+      tester,
+    ) async {
       await openDemo(tester, size);
       final bounds = tester.getRect(demo);
       expect(bounds.width, closeTo(bounds.height, .01));
       expect(bounds.width, lessThanOrEqualTo(520));
       expect(bounds.left, greaterThanOrEqualTo(20));
       expect(bounds.right, lessThanOrEqualTo(size.width - 20));
-      expect(tester.widget<HipDrillArt>(art).fit, BoxFit.contain);
+      final media = tester.widget<trainer.TrainingActionMedia>(art);
+      final poster = tester.widget<trainer.TrainerPoster>(
+        find.descendant(of: art, matching: find.byType(trainer.TrainerPoster)),
+      );
+      expect(poster.asset, 'assets/public_posters/${media.actionId}.webp');
+      expect(media.playing, isFalse, reason: 'videoEnabled is false');
       expect(
         find.descendant(
           of: find.byType(HipAssessmentPage),
@@ -81,6 +99,15 @@ void main() {
       await openDemo(tester, size);
       for (var i = 0; i < 6; i++) {
         final box = tester.getRect(demo);
+        for (final media in tester.widgetList<trainer.TrainingActionMedia>(
+          art,
+        )) {
+          expect(
+            media.playing,
+            isFalse,
+            reason: 'item ${i + 1} respects videoEnabled',
+          );
+        }
         expect(box.width, closeTo(box.height, .01));
         final pain = tester.getRect(
           find.byKey(const ValueKey('assessment-pain')),
@@ -99,19 +126,19 @@ void main() {
     });
   }
 
-  testWidgets('tap pauses, tap resumes, next demonstration starts playing', (
+  testWidgets('tap toggles intent while the host video guard stays disabled', (
     tester,
   ) async {
     await openDemo(tester, const Size(390, 844));
-    final initial = tester.widget<HipDrillArt>(art).drill.id;
-    expect(tester.widget<HipDrillArt>(art).play, isTrue);
+    final initial = tester.widget<trainer.TrainingActionMedia>(art).actionId;
+    expect(tester.widget<trainer.TrainingActionMedia>(art).playing, isFalse);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    expect(tester.widget<HipDrillArt>(art).play, isFalse);
+    expect(tester.widget<trainer.TrainingActionMedia>(art).playing, isFalse);
     expect(find.text('点击播放'), findsOneWidget);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
-    expect(tester.widget<HipDrillArt>(art).play, isTrue);
+    expect(tester.widget<trainer.TrainingActionMedia>(art).playing, isFalse);
     expect(find.text('点击暂停'), findsOneWidget);
     await tester.tap(toggle);
     await tester.pumpAndSettle();
@@ -122,7 +149,11 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('assessment-next')));
     await tester.pumpAndSettle();
-    expect(tester.widget<HipDrillArt>(art).drill.id, isNot(initial));
-    expect(tester.widget<HipDrillArt>(art).play, isTrue);
+    expect(
+      tester.widget<trainer.TrainingActionMedia>(art).actionId,
+      isNot(initial),
+    );
+    expect(tester.widget<trainer.TrainingActionMedia>(art).playing, isFalse);
+    expect(find.text('点击暂停'), findsOneWidget);
   });
 }

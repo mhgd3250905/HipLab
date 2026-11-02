@@ -8,14 +8,15 @@ import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
-import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
+import 'public_media_fixture.dart';
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> start(
@@ -39,7 +40,13 @@ void main() {
       ..identity = HipIdentity.office
       ..scene = HipScene.chair
       ..minutes = 5;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('start-today')));
     await tester.pumpAndSettle();
@@ -50,7 +57,12 @@ void main() {
   // actual media bounds so an external overlay is covered by this guard too.
   Finder onMedia(Finder f) => find.byElementPredicate((element) {
     if (!f.evaluate().contains(element)) return false;
-    final art = find.byType(HipDrillArt).first.evaluate().single.renderObject;
+    final art = find
+        .byType(trainer.TrainingActionMedia)
+        .first
+        .evaluate()
+        .single
+        .renderObject;
     final target = element.renderObject;
     if (art is! RenderBox ||
         target is! RenderBox ||
@@ -165,7 +177,10 @@ void main() {
     final ok = find.byKey(const ValueKey('feel-ok'));
     expect(ok, findsOneWidget);
     expect(
-      find.descendant(of: find.byType(HipDrillArt), matching: ok),
+      find.descendant(
+        of: find.byType(trainer.TrainingActionMedia),
+        matching: ok,
+      ),
       findsNothing,
     );
     // The SDK places this HUD tag on the stage edge; the App does not own

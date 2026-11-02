@@ -3,6 +3,8 @@
 // cut its key text with an ellipsis — the 自测 card title / caption, the
 // segment labels, the drill cards' names, routine and group cards. Long
 // copy wraps instead.
+import 'public_media_fixture.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +21,7 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 final _now = DateTime(2026, 10, 19, 9, 41);
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   void addAssessment(HipStore s) {
@@ -75,7 +78,13 @@ void main() {
         at: _now,
       ),
     );
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('tab-1')));
     await tester.pumpAndSettle();
@@ -161,6 +170,15 @@ void main() {
           await tester.tap(find.byKey(ValueKey('practice-$seg')));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: 'segment $seg');
+          if (seg == 0) {
+            // SDK owns its action-card typography. Host checks its scoped
+            // component and keeps readability assertions for host-owned tabs.
+            final library = tester.widget<trainer.TrainingLibraryPage>(
+              find.byType(trainer.TrainingLibraryPage),
+            );
+            expect(library.config.allowedActionIds, hasLength(45));
+            continue;
+          }
           final c = await scanList(tester);
           expect(tester.takeException(), isNull, reason: 'segment $seg scroll');
           if (c.isNotEmpty) cut['$seg'] = c;

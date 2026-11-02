@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-02：共享体验接线与两轮门禁暂停
+
+核对SDK远端main d4502f3，从HipLab main0f507a3建立codex/sdk-shared-experience，在保留日常液态玻璃WIP及原位置签名配置后接入SDK Launcher、public mediaPolicy和library，移除94个内置视频，统一45动作配置，修复SDK单练按钮开关及自测详情点击层。关闭Kotlin跨盘增量缓存，pub get重生成插件注册后日常目录release构建成功。analyze0、Python25/25；Flutter两轮仍有启动加载相关失败，按约停止，不再构建最终包或继续验证。[实际结果与日志](sdk-shared-experience-2026-11-02.md)。
+
 ## 2026-11-02：第 5 批获准合入 main
 
 用户明确批准后，fetch并确认远端main `1b94fc3`新增四个纯iOS审核文档提交，本机main快进后以`--no-ff`合入固定候选`c8cf82f`。两处文档冲突先按要求暂停，获用户明确处理方案后保留两边全部章节，按11月2日、10月27日、10月24日排序，iOS章节原文不改。合并提交`9054932a982a9b41eaf540a4281af1e069c2f456`；运行代码、测试、工具和依赖锁与候选一致。合并后严格analyze0、全量446通过/1条件跳过；后续仅文档回执。复核记录见[验证台账](verification.md)及[本轮报告](coach-chat-sdk-2026-11-02.md)。release/1.0保留`1f9a172`，无新tag、APK或商店操作；下方候选阶段记录保留历史。

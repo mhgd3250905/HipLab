@@ -1,16 +1,13 @@
-// PR #22 review (2026-10-19) UI regressions: F1 再来一组 keeps the shared
-// audio output open (real route + a fake with JustAudioVoiceOutput's state
-// semantics), F2 the editor shows a copied hold, F3 加入训练组 scrolls with
-// many groups, F4 看放松 travels back through a routine / an easier move.
+// Host regressions retained after SDK library adoption: replay audio, copied
+// doses, exact group editing, and scoped detail callbacks with host safety.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
-import 'package:hiplab/hip/domain/hip_pain.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
-import 'package:hiplab/hip/ui/library/drill_detail_page.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:hiplab/hip/ui/library/routine_detail_page.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
@@ -18,6 +15,7 @@ import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'hip_voice_test.dart' show loadVoiceLibrary;
+import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -64,6 +62,7 @@ class NativeLikeOutput implements VoiceOutput {
 }
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(
@@ -78,6 +77,7 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = textScale;
     addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final fixture = installPublicMediaFixture(sharedLibrary: true);
     final store = HipStore(
       content: content,
       storage: MemoryStorage(),
@@ -93,6 +93,7 @@ void main() {
       HipApp(
         store: store,
         videoEnabled: false,
+        mediaPolicy: fixture.policy,
         voice: output == null
             ? null
             : HipVoice(
@@ -115,30 +116,21 @@ void main() {
     }
   }
 
-  Finder practiceScrollable() => find
-      .descendant(
-        of: find.byKey(const ValueKey('practice-list')),
-        matching: find.byType(Scrollable),
-      )
-      .first;
-
   Future<void> openDrill(WidgetTester tester, String id) async {
-    final card = find.byKey(ValueKey('drill-card-$id'));
-    await tester.scrollUntilVisible(
-      card,
-      400,
-      scrollable: practiceScrollable(),
+    final page = tester.widget<trainer.TrainingLibraryPage>(
+      find.byType(trainer.TrainingLibraryPage),
     );
-    await tester.ensureVisible(card);
+    await tester.enterText(
+      find.byKey(const ValueKey('posehub-search')),
+      page.mediaPolicy.actionFor(id)!.nameZh,
+    );
     await tester.pumpAndSettle();
+    final card = find.byKey(ValueKey('posehub-action-$id'));
+    await tester.ensureVisible(card);
     await tester.tap(card);
     await tester.pumpAndSettle();
-    expect(find.byType(DrillDetailPage), findsOneWidget);
+    expect(find.byType(trainer.TrainingLibraryDetail), findsOneWidget);
   }
-
-  int relaxCount(HipDirection dir) => libraryDrills(
-    content,
-  ).where((d) => d.directions.contains(dir) && d.isRelax).length;
 
   group('F1 再来一组 audio', () {
     testWidgets('F1 再来一组 restarts in the same player; output stays active '
@@ -147,7 +139,9 @@ void main() {
       final store = await pumpApp(tester, output: out);
       await toPractice(tester);
       await openDrill(tester, 's-figure4');
-      await tester.tap(find.byKey(const ValueKey('detail-start')));
+      final start = find.byKey(const ValueKey('library-detail-start'));
+      await tester.ensureVisible(start);
+      await tester.tap(start);
       await tester.pumpAndSettle(const Duration(milliseconds: 100));
       expect(find.byType(HipPlayerPage), findsOneWidget);
       expect(out.began, isTrue);
@@ -205,7 +199,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('finish')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
-      expect(find.byType(DrillDetailPage), findsOneWidget);
+      expect(find.byType(trainer.TrainingLibraryPage), findsOneWidget);
       expect(out.events.where((e) => e == 'end').length, 1);
       expect(out.began, isFalse);
     });
@@ -246,68 +240,65 @@ void main() {
     });
   });
 
-  group('F3 加入训练组 with many groups', () {
-    for (final (size, scale) in [
-      (const Size(390, 844), 1.0),
-      (const Size(390, 844), 1.5),
-      (const Size(320, 568), 1.3),
-    ]) {
-      testWidgets('F3 12 groups at $size ×$scale: no overflow, the last group '
-          'scrolls into reach and takes the move', (tester) async {
-        final store = await pumpApp(
-          tester,
-          size: size,
-          textScale: scale,
-          setup: (s) {
-            for (var i = 1; i <= 12; i++) {
-              s.customRoutines.add(
-                CustomRoutine(
-                  id: 'g$i',
-                  name: '训练组 $i',
-                  steps: const [CustomStep('h-squat')],
-                ),
-              );
-            }
-          },
-        );
-        await toPractice(tester);
-        await openDrill(tester, 's-figure4');
-        final add = find.byKey(const ValueKey('detail-add'));
-        await tester.ensureVisible(add);
-        await tester.pumpAndSettle();
-        await tester.tap(add);
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        final list = find.byKey(const ValueKey('add-group-list'));
-        expect(list, findsOneWidget);
-        final last = find.byKey(const ValueKey('add-to-g12'));
-        await tester.scrollUntilVisible(
-          last,
-          120,
-          scrollable: find
-              .descendant(of: list, matching: find.byType(Scrollable))
-              .first,
-        );
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        await tester.tap(last);
-        await tester.pumpAndSettle();
-        expect(store.customRoutine('g12')!.steps.map((s) => s.kitId), [
-          'h-squat',
-          's-figure4',
-        ]);
-      });
-    }
+  testWidgets('ordinary group editing targets the chosen group among twelve', (
+    tester,
+  ) async {
+    final store = await pumpApp(
+      tester,
+      setup: (store) {
+        for (var index = 1; index <= 12; index++) {
+          store.customRoutines.add(
+            CustomRoutine(
+              id: 'g$index',
+              name: '训练组 $index',
+              steps: const [CustomStep('h-squat')],
+            ),
+          );
+        }
+      },
+    );
+    await toPractice(tester, segment: 2);
+    final group = find.byKey(const ValueKey('group-card-g12'));
+    await tester.scrollUntilVisible(
+      group,
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const ValueKey('practice-list')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(group);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('editor-add')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('pick-h-9090-liftoff')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('picker-add')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('editor-save')));
+    await tester.pumpAndSettle();
+    expect(store.customRoutine('g12')!.steps.map((step) => step.kitId), [
+      'h-squat',
+      'h-9090-liftoff',
+    ]);
+    expect(store.customRoutine('g11')!.steps.map((step) => step.kitId), [
+      'h-squat',
+    ]);
+    expect(tester.takeException(), isNull);
   });
 
-  group('F4 看放松 result reaches 动作大全', () {
-    testWidgets('F4 recent extension pain → 套路 A → 站姿弓步 → 看放松: back on '
-        '动作 filtered to extension relax', (tester) async {
+  testWidgets(
+    'routine step opens scoped SDK detail and keeps host safety gate',
+    (tester) async {
       await pumpApp(
         tester,
-        setup: (s) => s.painEvents.add(
-          PainEvent(DateTime(2026, 10, 17), HipDirection.extension, 'pain'),
-        ),
+        setup: (store) => store.safety = {
+          'pregnancy': true,
+          'surgery': false,
+          'acute': false,
+        },
       );
       await toPractice(tester, segment: 1);
       await tester.tap(find.byKey(const ValueKey('routine-card-A')));
@@ -321,55 +312,24 @@ void main() {
       );
       await tester.tap(step);
       await tester.pumpAndSettle();
-      expect(find.byType(DrillDetailPage), findsOneWidget);
-      expect(find.byKey(const ValueKey('notice-pain')), findsOneWidget);
-      await tester.tap(find.text('看放松'));
+      final detail = tester.widget<trainer.TrainingLibraryDetail>(
+        find.byType(trainer.TrainingLibraryDetail),
+      );
+      expect(detail.action.id, 'o-stand-lunge');
+      expect(detail.canStart, isFalse);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('library-detail-start')),
+            )
+            .onPressed,
+        isNull,
+      );
+      Navigator.of(
+        tester.element(find.byType(trainer.TrainingLibraryDetail)),
+      ).pop();
       await tester.pumpAndSettle();
-      expect(find.byType(DrillDetailPage), findsNothing);
-      expect(find.byType(RoutineDetailPage), findsNothing);
-      expect(
-        find.textContaining('${relaxCount(HipDirection.extension)} 个动作'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('drill-card-o-stand-lunge')),
-        findsNothing,
-      );
-    });
-
-    testWidgets('F4 recent internalRotation pain → h-9090-liftoff → 侧卧反向蚌式 '
-        '→ 看放松: direction = internalRotation', (tester) async {
-      await pumpApp(
-        tester,
-        setup: (s) => s.painEvents.add(
-          PainEvent(
-            DateTime(2026, 10, 17),
-            HipDirection.internalRotation,
-            'pain',
-          ),
-        ),
-      );
-      await toPractice(tester);
-      await openDrill(tester, 'h-9090-liftoff');
-      expect(find.byKey(const ValueKey('notice-advanced')), findsOneWidget);
-      await tester.tap(find.textContaining('侧卧反向蚌式').last);
-      await tester.pumpAndSettle();
-      expect(find.byType(DrillDetailPage), findsOneWidget);
-      expect(
-        tester.widget<DrillDetailPage>(find.byType(DrillDetailPage)).drillId,
-        'h-reverse-clam',
-      );
-      await tester.tap(find.text('看放松'));
-      await tester.pumpAndSettle();
-      expect(find.byType(DrillDetailPage), findsNothing);
-      expect(
-        find.textContaining('${relaxCount(HipDirection.internalRotation)} 个动作'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('drill-card-h-9090-liftoff')),
-        findsNothing,
-      );
-    });
-  });
+      expect(find.byType(RoutineDetailPage), findsOneWidget);
+    },
+  );
 }

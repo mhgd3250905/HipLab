@@ -1,5 +1,7 @@
 # HipLab 文档与开发台账
 
+**2026-11-02 共享体验接入暂缓：** `codex/sdk-shared-experience` 基于 main `0f507a3`，统一 pin SDK `d4502f3`、Launcher / public mediaPolicy / SDK library 已接线，移除94内置MP4，版本+28。严格analyze0、Python25/25、首次构建0 MP4；Flutter两轮仍失败，按约停止，无最终交付APK。[本轮报告](sdk-shared-experience-2026-11-02.md)。
+
 **2026-11-02 第5批主线集成：** 用户已批准将固定候选`c8cf82f`非快进合入main，合并点`9054932`；main的10月27日iOS审核文档原文保留。合并复核见[验证台账](verification.md)，下方“不合main”等为候选阶段历史约束。release不动、不tag、不重打APK、不提交商店。
 
 **2026-11-02 第 5 批对话模块候选：** `codex/coach-chat-sdk` 基于本机 main，固定用户确认的 SDK `7d9be56`，旧对话实现已删除，App 仅保留 profile 和宿主端口。APK、门禁、删除清单、pin 与用户安装验收边界见[一页报告](coach-chat-sdk-2026-11-02.md)。不合 main、不动 release、不打 tag、不提交商店。以下为历史状态。

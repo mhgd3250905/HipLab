@@ -13,8 +13,10 @@ import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
 
 void main() {
+  setUpAll(warmHipAppAssets);
   TestWidgetsFlutterBinding.ensureInitialized();
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
@@ -92,7 +94,13 @@ void main() {
         const LibraryDose(reps: 1),
         const TrainingProfile(),
       )!;
-      await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+      await tester.pumpWidget(
+        HipApp(
+          mediaPolicy: installPublicMediaFixture().policy,
+          store: store,
+          videoEnabled: false,
+        ),
+      );
       await tester.pumpAndSettle();
       tester
           .state<NavigatorState>(find.byType(Navigator))

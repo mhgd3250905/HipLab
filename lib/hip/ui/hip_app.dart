@@ -4,12 +4,17 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
 import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
+import '../data/hip_public_media.dart';
+import '../data/hip_shared_library.dart';
+import '../data/hip_action_scope.dart';
+import '../coach/hip_coach_profile.dart' show loadHipCoachCatalog;
 import '../domain/hip_models.dart';
 import '../domain/hip_progress.dart';
 import '../domain/hip_session.dart';
@@ -40,6 +45,7 @@ class HipApp extends StatefulWidget {
     this.videoEnabled = true,
     this.voice,
     this.coach,
+    this.mediaPolicy,
   });
 
   /// Injected in tests; otherwise loaded from assets + SharedPreferences.
@@ -53,6 +59,7 @@ class HipApp extends StatefulWidget {
   /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
   /// otherwise built from external configuration (unconfigured → hidden).
   final HipCoachChat? coach;
+  final trainer.TrainingMediaPolicy? mediaPolicy;
 
   @override
   State<HipApp> createState() => _HipAppState();
@@ -65,6 +72,10 @@ class _HipAppState extends State<HipApp> {
     final store = widget.store ?? HipStore(content: await loadHipContent());
     if (widget.store == null) await store.initialize();
     HipMediaVariants.media = await loadHipActionMedia();
+    HipPublicMedia.current = widget.mediaPolicy ?? await HipPublicMedia.load();
+    HipSharedLibrary.current = hipSharedLibraryConfig(
+      hipActionScope(await loadHipCoachCatalog()),
+    );
     HipVoice voice;
     if (widget.voice != null) {
       voice = widget.voice!;
@@ -136,9 +147,19 @@ class _HipAppState extends State<HipApp> {
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    builder: (context, child) => _PaletteScope(
-      child: HipMediaPolicy(videoEnabled: widget.videoEnabled, child: child!),
-    ),
+    builder: (context, child) {
+      Widget content = HipMediaPolicy(
+        videoEnabled: widget.videoEnabled,
+        child: child!,
+      );
+      if (HipPublicMedia.current case final policy?) {
+        content = trainer.TrainingMediaPolicyScope(
+          policy: policy,
+          child: content,
+        );
+      }
+      return _PaletteScope(child: content);
+    },
     home: home,
   );
 }
@@ -566,24 +587,22 @@ class _HipHomeState extends State<HipHome> {
     });
   }
 
-  /// The player grows out of the 开始 button (container transform); from
-  /// the assessment result, which has already closed, it rises.
+  /// Content and business policy stay with HipLab; the SDK owns entry/media.
   Future<void> _startPlan(
     TrainingPlan plan, {
     BuildContext? from,
     double radius = 52,
     Color? originColor,
   }) async {
-    Widget page(BuildContext _) => HipPlayerPage(store: store, plan: plan);
-    await Navigator.of(context).push(
-      from == null
-          ? HipRoute.rise<void>(page)
-          : HipRoute.expandFrom<void>(
-              from,
-              page,
-              radius: radius,
-              color: originColor ?? HipColors.jade,
-            ),
+    final policy = HipPublicMedia.current;
+    final first = plan.steps.firstOrNull?.drill.id;
+    await trainer.TrainerLauncher.open<void>(
+      context,
+      builder: (_) => HipPlayerPage(store: store, plan: plan),
+      firstPosterAsset: first == null ? null : policy?.posterAssetFor(first),
+      mediaPolicy: policy,
+      theme: HipSharedLibrary.theme(context),
+      planActionIds: plan.steps.map((step) => step.drill.id),
     );
   }
 
@@ -995,13 +1014,8 @@ class _HipHomeState extends State<HipHome> {
     final hero =
         plan.steps.where((s) => s.drill.poster != null).firstOrNull?.drill ??
         first;
-    // The hero is the media stage of the theme in effect (2026-10-19): with
-    // light-stage renders bundled the light theme no longer carries a dark
-    // block; the card takes the exact colour the light clip is baked on, so
-    // clip, fade and card read as one surface. A drill without a light render
-    // keeps the dark stage (HipMediaVariants.stageFor).
-    final lightStage =
-        !HipColors.isDark && HipMediaVariants.hasLightVideo(hero?.video);
+    // Public v3 posters are transparent and use the product's current stage.
+    final lightStage = !HipColors.isDark;
     final stage = lightStage ? HipPalette.light : HipPalette.dark;
     final surface = lightStage ? stage.mediaBackdrop : stage.surface;
     return SizedBox(
@@ -1464,15 +1478,17 @@ class HipProgressPage extends StatelessWidget {
                   onTap: () {
                     final plan = store.microPlan;
                     if (plan == null) return;
-                    Navigator.of(context).push(
-                      HipRoute.expandFrom<void>(
-                        tileKey.currentContext,
-                        (_) => HipPlayerPage(store: store, plan: plan),
-                        radius: 12,
-                        // The row sits on its panel: grow from the panel's
-                        // colour, not a lighter one (a frame-1 flash).
-                        color: HipColors.surface,
-                      ),
+                    final policy = HipPublicMedia.current;
+                    final first = plan.steps.firstOrNull?.drill.id;
+                    trainer.TrainerLauncher.open<void>(
+                      context,
+                      builder: (_) => HipPlayerPage(store: store, plan: plan),
+                      firstPosterAsset: first == null
+                          ? null
+                          : policy?.posterAssetFor(first),
+                      mediaPolicy: policy,
+                      theme: HipSharedLibrary.theme(context),
+                      planActionIds: plan.steps.map((step) => step.drill.id),
                     );
                   },
                 ),

@@ -5,6 +5,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import '../control/hip_store.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_session.dart';
+import '../data/hip_public_media.dart';
 import '../trainer/hip_trainer_plan.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
@@ -370,21 +371,16 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           id: id,
           name: drill.name,
           cue: _ladderCue ?? step?.tip,
+          media: trainer.DrillMedia(
+            id: id,
+            actionId: id,
+            videoAsset: '',
+            posterAsset: HipPublicMedia.current?.posterAssetFor(id) ?? '',
+            duration: 0,
+            videoAvailable: HipMediaPolicy.of(context),
+          ),
         );
       },
-      mediaBuilder: (context, request) => AspectRatio(
-        aspectRatio: 1,
-        child: HipMediaFrame(
-          // The shared stage supplies its own edge treatment. Follow the
-          // player request so App thumbnails do not round the stage again.
-          radius: request.theme.radius,
-          child: HipDrillArt(
-            drill: widget.store.content.drill(request.drill.id),
-            play: !request.paused,
-            mirror: request.mirrored,
-          ),
-        ),
-      ),
       doseLabel: widget.plan.sdkPlan != null
           ? null
           : (phase) => phase.itemIndex >= 0 && phase.itemIndex < _steps.length

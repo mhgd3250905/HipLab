@@ -18,6 +18,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'public_media_fixture.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -37,6 +38,7 @@ Future<void> expectPausedClock(WidgetTester tester) async {
 }
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final content = loadContent();
 
   Future<HipStore> pumpApp(
@@ -59,7 +61,13 @@ void main() {
       ..minutes = 5
       ..scene = HipScene.chair
       ..theme = theme;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     return store;
   }
@@ -271,30 +279,16 @@ void main() {
   });
 
   group('page transitions', () {
-    HipRoute<dynamic> topRoute(WidgetTester tester) {
-      HipRoute<dynamic>? top;
-      Navigator.of(tester.element(find.byType(Scaffold).last)).popUntil((r) {
-        top ??= r is HipRoute ? r : null;
-        return true;
-      });
-      return top!;
-    }
-
-    testWidgets('开始 grows the player out of the button; home sinks back', (
-      tester,
-    ) async {
+    testWidgets('开始 opens the shared training slide route', (tester) async {
       await pumpApp(tester);
-      final button = tester.getRect(find.byKey(const ValueKey('start-today')));
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pump();
-      await tester.pump(HipMotion.expand ~/ 4);
-      final route = topRoute(tester);
-      expect(route.transition, HipTransition.expand);
-      expect(route.origin!.center.dx, closeTo(button.center.dx, 2));
-      expect(route.transitionDuration, HipMotion.expand);
-      // The covered home answers (a dim), not a plain fade.
-      expect(find.byType(HipCoveredTransition), findsOneWidget);
       await tester.pumpAndSettle();
+      final route = ModalRoute.of(
+        tester.element(find.byType(trainer.TrainerPlayer)),
+      );
+      expect(route, isA<trainer.TrainerSlideRoute>());
+      expect(route!.transitionDuration, const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('training-slide')), findsOneWidget);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);

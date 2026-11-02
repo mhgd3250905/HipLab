@@ -16,6 +16,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
+import 'public_media_fixture.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
@@ -48,7 +49,13 @@ Future<void> _open(
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+  await tester.pumpWidget(
+    HipApp(
+      mediaPolicy: installPublicMediaFixture().policy,
+      store: store,
+      videoEnabled: false,
+    ),
+  );
   await tester.pumpAndSettle();
   tester
       .state<NavigatorState>(find.byType(Navigator))
@@ -138,6 +145,7 @@ TrainingPlan _group(
 }
 
 void main() {
+  setUpAll(warmHipAppAssets);
   group('F7 pain halving uses the real sets per side', () {
     for (final sets in [2, 3]) {
       testWidgets('F7 单练 h-squat 1 次 × $sets 组 (unsided): 疼 → 关节夹着疼 '

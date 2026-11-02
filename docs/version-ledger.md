@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-02：1.1.0+28 首次诊断构建（未验收、非交付包）
+
+codex/sdk-shared-experience基于main0f507a3，SDK统一d4502f3，固定Flutter3.44.7，在日常目录复用原签名配置构建release arm64 split（共用+28，对应versionCode2028）。首次APK为46604271 bytes（44.45MiB），包内0 MP4，保存为`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/hiplab-1.1.0+28-pass1-upload-signed-NOT-ACCEPTED.apk`。
+
+首次包早于单练按钮/自测点击层修复及旧剪影退包；两轮Flutter门禁仍失败，按用户要求停止，没有最终候选APK、设备签名重签或安装。不用此包代表最终分支验证，不更新手机安装身份；main/release/商店均未操作。[本轮报告](sdk-shared-experience-2026-11-02.md)。
+
 ## 2026-11-02：1.1.0+27 SDK 对话模块候选 APK（未安装）
 
 分支 `codex/coach-chat-sdk`，运行源 `60d3c372e853aada88eb8d441f04e733860dfca2`，SDK 统一固定 `7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723`。Flutter 3.44.7 / Dart 3.12.2 release arm64，versionName1.1.0 / versionCode2027（split ABI偏移2000+27），包名com.ugk.hiplab。原上传签名 APK 与同运行负载的手机测试证书重签 APK 均保存于非C盘证据目录。

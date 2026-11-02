@@ -17,8 +17,10 @@ import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
 
 void main() {
+  setUpAll(warmHipAppAssets);
   TestWidgetsFlutterBinding.ensureInitialized();
   final calls = <MethodCall>[];
   final messenger =
@@ -161,7 +163,13 @@ void main() {
       steps: [micro.steps.first],
       transitionSeconds: micro.transitionSeconds,
     );
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     tester
         .state<NavigatorState>(find.byType(Navigator))

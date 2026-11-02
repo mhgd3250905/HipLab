@@ -30,6 +30,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'public_media_fixture.dart';
 
 /// Records what the player asks of the audio layer and lets the test fire
 /// OS interruptions.
@@ -120,7 +121,12 @@ Future<HipStore> bootIos(
     ));
   }
   await tester.pumpWidget(
-    HipApp(store: store, videoEnabled: false, voice: voice),
+    HipApp(
+      mediaPolicy: installPublicMediaFixture().policy,
+      store: store,
+      videoEnabled: false,
+      voice: voice,
+    ),
   );
   await tester.pumpAndSettle();
   return store;
@@ -224,6 +230,7 @@ void expectPlayerPaused(WidgetTester tester) {
 }
 
 void main() {
+  setUpAll(warmHipAppAssets);
   final ios = TargetPlatformVariant.only(TargetPlatform.iOS);
 
   testWidgets('iOS base release hides both AI entry points', (tester) async {
