@@ -321,30 +321,40 @@ class HipMorePage extends StatelessWidget {
             child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
           ),
           const SizedBox(width: 16),
-          Text(
-            title,
-            maxLines: 1,
-            style: const TextStyle(
-              fontSize: 16,
-              letterSpacing: .3,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          if (meta.isEmpty)
-            const Spacer()
-          else
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8, right: 6),
-                child: Text(
-                  meta,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(fontSize: 13, color: HipColors.faint),
-                ),
+          // Title at its natural width (up to 3/4 of the room, so very large
+          // text ellipsizes instead of overflowing), meta takes the rest.
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, c) => Row(
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: c.maxWidth * .75),
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 6),
+                      child: Text(
+                        meta,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(fontSize: 13, color: HipColors.faint),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
           HipIcon(HipGlyph.chevronRight, size: 18, color: HipColors.faint),
         ],
       ),

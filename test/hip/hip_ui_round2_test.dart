@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
@@ -82,10 +83,10 @@ void main() {
           expect(seg.thumbRadius, seg.radius - seg.inset);
           final thumb = find.byKey(const ValueKey('scene-thumb'));
           expect(thumb, findsOneWidget);
-          final face = tester.widget<HipTactile>(
-            find.descendant(of: thumb, matching: find.byType(HipTactile)),
+          // Glass m2: the selected item is the brighter inner glass pill.
+          final face = tester.widget<HipGlassPill>(
+            find.descendant(of: thumb, matching: find.byType(HipGlassPill)),
           );
-          expect(face.style, HipTactileStyle.neutral());
           expect(face.radius, seg.thumbRadius);
 
           final x0 = tester.getRect(thumb).left;

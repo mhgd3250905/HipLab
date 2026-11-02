@@ -152,16 +152,6 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
         ? HipColors.text.withValues(alpha: .62)
         : HipColors.muted;
     final on = _selectedFg;
-    final track = widget.glass
-        ? null
-        : CustomPaint(
-            foregroundPainter: HipGlassRimPainter(
-              radius: widget.radius,
-              dark: HipColors.isDark,
-              high: MediaQuery.maybeHighContrastOf(context) ?? false,
-              strength: .45,
-            ),
-          );
     final content = Padding(
       padding: EdgeInsets.all(widget.inset),
       child: LayoutBuilder(
@@ -247,11 +237,14 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
     return Container(
       height: widget.height,
       decoration: _trackDecoration,
-      child: Stack(
-        children: [
-          Positioned.fill(child: track!),
-          content,
-        ],
+      child: CustomPaint(
+        foregroundPainter: HipGlassRimPainter(
+          radius: widget.radius,
+          dark: HipColors.isDark,
+          high: MediaQuery.maybeHighContrastOf(context) ?? false,
+          strength: .45,
+        ),
+        child: content,
       ),
     );
   }

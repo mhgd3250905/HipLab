@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
@@ -296,15 +297,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(store.theme, HipThemeChoice.light);
     expect(HipColors.palette, HipPalette.light);
-    final scaffold = tester.widget<Material>(
+    // Glass m2: sub-pages paint the page colour in their depth backdrop
+    // (the Scaffold itself is transparent over it).
+    final page = tester.widget<ColoredBox>(
       find
           .descendant(
-            of: find.byType(Scaffold).first,
-            matching: find.byType(Material),
+            of: find.byType(HipGlassBackdrop).last,
+            matching: find.byType(ColoredBox),
           )
           .first,
     );
-    expect(scaffold.color, HipPalette.light.background);
+    expect(page.color, HipPalette.light.background);
     // The tab and scroll position survive the switch.
     expect(find.byKey(const ValueKey('appearance-settings')), findsOneWidget);
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
