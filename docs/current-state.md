@@ -1,5 +1,11 @@
 # 当前状态
 
+## 2026-11-02：启动根因已修，SDK 动作库布局问题待确认
+
+继续`codex/sdk-shared-experience@1b2399e`，启动修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`。临时逐步日志确认`HipApp._load`没有等待网络或抛错，而是276253字节的内置coach catalog经`loadString`触发isolate，主界面断言先于其完成。App改用bytes/UTF-8解码，仍由SDK`Catalog.fromJson`校验，删除测试预热；最小失败用例与新增断网冷启动各1通过，严格analyze0。
+
+全量执行到385通过/19失败时停止：单条诊断确认SDK`training_library_browser.dart:221`在2倍字号/320px键盘inset下溢出20px（可用高度301px）。极大字号原不列日常验收门槛，但本任务要求全量通过，不能把失败记为通过或在App绕过。其余入场/图片解码/滚动辅助失配尚未逐条复验。保持SDK d4502f3、1.1.0+28/2028，不重建APK；手机、main、release、托管与Flare均未操作。详见[诊断报告](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。下方前轮未定位记录保留历史。
+
 ## 2026-11-02：共享体验接线已保存，门禁未通过
 
 `codex/sdk-shared-experience` 从 main `0f507a3` 开发，四个实际 SDK 包及 coach override 均固定 `d4502f35b1503d41cd782aa7fb3780c7f6591ad0`。Launcher、公用媒体、SDK动作库/详情/自测接线及94内置MP4移除已实现，版本1.1.0+28。严格analyze0、Python25/25；Flutter首轮310通过/128失败/1条件跳过，第二轮同类加载失败，234通过/116失败时按用户“两次卡住停止”结束。首次构建44.45MiB、0 MP4仅诊断用，早于两处入口修复，不是最终交付包。完整[结果和后续定位点](sdk-shared-experience-2026-11-02.md)。main/release不合不动，不tag、不商店、不操作托管或Flare；手机未操作，原日常WIP保留。

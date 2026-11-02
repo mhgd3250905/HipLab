@@ -1,5 +1,11 @@
 # 开发日志
 
+## 2026-11-02：启动逐步定位与断网回归
+
+在候选1b2399e上只跑一条失败用例，临时日志定位到coach catalog读取，未见网络或异常；原276253字节内置asset由Flutter compute解码，完成发生在主界面断言之后。App改为原始bytes解码并保留SDK校验，移除24处无效预热，最小及新增真实SDK仓库断网启动均通过，严格analyze0。修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`。
+
+全量在385通过/19失败时，另一次单条诊断确认SDK动作库Column在2倍字号键盘下溢出20px，按“SDK问题先停下报告”停止测试及后续适配，不构建新APK。两版Flutter的loadString机制与SDK声明版本范围已只读核对，不升级工具链。[根因、失败分类和证据](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。
+
 ## 2026-11-02：共享体验接线与两轮门禁暂停
 
 核对SDK远端main d4502f3，从HipLab main0f507a3建立codex/sdk-shared-experience，在保留日常液态玻璃WIP及原位置签名配置后接入SDK Launcher、public mediaPolicy和library，移除94个内置视频，统一45动作配置，修复SDK单练按钮开关及自测详情点击层。关闭Kotlin跨盘增量缓存，pub get重生成插件注册后日常目录release构建成功。analyze0、Python25/25；Flutter两轮仍有启动加载相关失败，按约停止，不再构建最终包或继续验证。[实际结果与日志](sdk-shared-experience-2026-11-02.md)。

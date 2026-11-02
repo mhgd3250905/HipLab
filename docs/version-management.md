@@ -1,5 +1,9 @@
 # 版本管理说明
 
+## 2026-11-02：+28 启动修复，构建门禁仍未通过
+
+启动修复源`1f76e74`保持版本1.1.0+28/versionCode2028、SDK完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0、Flutter3.44.7/Dart3.12.2；最小/断网测试通过，严格analyze0。全量385通过/19失败时遇已确认的SDK动作库布局溢出，按用户边界停止，未重建APK，不沿用旧包作为新交付。SDK验证用3.47.8/Dart3.13.7，两者均满足SDK声明，asset解码机制相同；本轮没有升级Flutter或重锁依赖。[根因及版本差异](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。
+
 ## 2026-11-02：共享体验 +28 工作分支，尚无最终交付
 
 codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split规则对应versionCode2028；四个实际SDK运行包及coach override固定d4502f35b1503d41cd782aa7fb3780c7f6591ad0。首次诊断构建0 MP4，但Flutter两轮门禁未通过后已按用户要求停止，不构建最终包、不安装。[报告](sdk-shared-experience-2026-11-02.md)与[版本台账](version-ledger.md)区分诊断产物、候选分支和手机身份；main与release版本不变。

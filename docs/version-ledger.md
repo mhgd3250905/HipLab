@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-02：+28 启动修复，未重建 APK
+
+`codex/sdk-shared-experience`启动修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`，共用版本仍1.1.0+28，arm64 versionCode仍2028，SDK仍完整pin d4502f35b1503d41cd782aa7fb3780c7f6591ad0。最小/断网启动通过、analyze0；全量385通过/19失败时确认SDK动作库键盘布局问题，按边界停止，**没有重建或交付新APK，包体无新值**。下方46604271 bytes的0 MP4诊断包仍不是交付包，不将旧包改记为新修复包。手机未安装，main/release/商店不操作。[启动诊断](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。
+
 ## 2026-11-02：1.1.0+28 首次诊断构建（未验收、非交付包）
 
 codex/sdk-shared-experience基于main0f507a3，SDK统一d4502f3，固定Flutter3.44.7，在日常目录复用原签名配置构建release arm64 split（共用+28，对应versionCode2028）。首次APK为46604271 bytes（44.45MiB），包内0 MP4，保存为`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/hiplab-1.1.0+28-pass1-upload-signed-NOT-ACCEPTED.apk`。

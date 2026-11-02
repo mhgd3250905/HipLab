@@ -1,5 +1,9 @@
 # 开发事项台账
 
+## D-39 更新：启动修复完成，SDK 问题交接（2026-11-02，进行中）
+
+启动卡点已定位到App大型内置catalog的isolate解码与widget假时钟，bytes解码修复源`1f76e74`；原最小用例及断网冷启动通过，analyze0。全量385通过/19失败时，确认SDK动作库2倍字号键盘布局溢出，依用户边界停止；未做App绕过、未重打+28APK。其余旧测试入场/图片/滚动适配待下一步；SDK位置与复现命令见[报告](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。不合main、不动release、托管或Flare。以下两轮失败为前轮历史。
+
 ## D-39：共享训练、媒体和动作库（2026-11-02，进行中，已停止重试）
 
 分支codex/sdk-shared-experience基于main0f507a3，固定SDK d4502f3，三批正式接线、94MP4移除、45动作统一配置和+28已实现。analyze0、Python25/25、首次构建0 MP4；Flutter两轮仍未过主界面加载相关断言，按用户上限停止，没有最终交付APK。下一步需先定位HipApp._load实际状态再决定修复；本轮未验收、不合main，详见[报告](sdk-shared-experience-2026-11-02.md)。

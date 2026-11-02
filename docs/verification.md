@@ -1,5 +1,13 @@
 # 验证台账
 
+## 2026-11-02：启动最小/断网通过，全量遇 SDK 布局问题停止
+
+修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`，Flutter3.44.7/Dart3.12.2、SDK d4502f3不变。先只跑`hip_flow_test.dart`的`a no-key build hides AI training and usage entries`并给`_load`逐步临时日志，定位大型内置catalog的`loadString` isolate完成晚于断言；无网络等待或异常。改bytes解码后该条1通过，日志已移除。新增`hip_offline_startup_test.dart`：真实SDK媒体仓库、冷coach catalog、HTTP连接全部失败、prefetch开启且coach已配置，仍有tab-1/start-today，内置公共poster可解码，初始化/进首页0 HTTP client与0连接；1通过。
+
+`flutter analyze --no-pub --fatal-infos`为0问题。随后`flutter test --no-pub --concurrency=1 --reporter expanded`执行到385通过/19失败；确认SDK问题后停止进程，**未全量完成、门禁未通过**。其中搜索2倍字号/320px键盘inset的单条诊断再次失败，完整FlutterError定位SDK`packages/ugk_trainer_runtime/lib/src/library/training_library_browser.dart:221`的Column，390×301约束下底部溢出20px。其余失败仍有launcher/图片解码等待和旧滚动容器辅助问题，未进一步修复或重复全量。未对2倍字号放宽断言/新增skip，未在App绕过SDK。
+
+证据在`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/startup-fix/`：`minimal-trace.log`、`minimal-fixed.log`、`offline-startup.log`、`analyze.log`、未完成的`all-tests.log`、`sdk-layout-trace.log`。临时错误日志与测试诊断注入均已移除。Flutter3.47.8/Dart3.13.7仅只读对比源码，没有另跑一套测试；两者asset阈值和机制一致，详见[版本结论](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。Python沿用前轮25/25，本轮未重复；没有新APK、安装或视觉验收。
+
 ## 2026-11-02：共享体验接入两轮未通过，停止重试
 
 固定Flutter3.44.7/Dart3.12.2、SDK d4502f35b1503d41cd782aa7fb3780c7f6591ad0，分支codex/sdk-shared-experience，基于main0f507a3。严格`flutter analyze --no-pub --fatal-infos`为0，Python全量25/25。`flutter test --no-pub --concurrency=1 --reporter expanded`首轮310通过/128失败/1条件跳过（4分29秒）；修复测试夹具、旧视频存在断言和主题插值后，第二轮仍有主界面finder为空，在234通过/116失败时依用户“两次仍卡住就停止”结束该测试进程。第二轮未全量完成，不再修复或第三次重试，最终门禁未通过。
