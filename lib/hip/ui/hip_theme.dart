@@ -309,7 +309,23 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
     ),
-    listTileTheme: ListTileThemeData(textColor: p.text, iconColor: p.muted),
+    listTileTheme: ListTileThemeData(
+      textColor: p.text,
+      iconColor: p.muted,
+      // m5: rows ~52 with 15 titles, 12.5 meta.
+      minTileHeight: 48,
+      minLeadingWidth: 20,
+      titleTextStyle: TextStyle(
+        fontFamily: hipFontFamily,
+        fontSize: 15,
+        color: p.text,
+      ),
+      subtitleTextStyle: TextStyle(
+        fontFamily: hipFontFamily,
+        fontSize: 12.5,
+        color: p.muted,
+      ),
+    ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: p.isDark ? p.jade : p.jadeDeep,

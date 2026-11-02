@@ -74,16 +74,16 @@ class HipMorePage extends StatelessWidget {
           const Text(
             '更多',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               height: 1.2,
-              letterSpacing: 1.5,
-              fontWeight: FontWeight.w800,
+              letterSpacing: .5,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
       ),
-      if (showAi) ...[const SizedBox(height: 26), _aiCard(context)],
-      const SizedBox(height: 30),
+      if (showAi) ...[const SizedBox(height: 22), _aiCard(context)],
+      const SizedBox(height: 26),
       _header('练习'),
       _group([
         _row(
@@ -132,7 +132,7 @@ class HipMorePage extends StatelessWidget {
           ),
         ),
       ]),
-      const SizedBox(height: 30),
+      const SizedBox(height: 26),
       _header('偏好'),
       _group([
         _row(
@@ -187,9 +187,9 @@ class HipMorePage extends StatelessWidget {
             Text(
               'AI 定制',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 height: 1.2,
-                letterSpacing: 2.5,
+                letterSpacing: 1.5,
                 fontWeight: FontWeight.w600,
                 color: HipColors.jadeText,
               ),
@@ -198,21 +198,21 @@ class HipMorePage extends StatelessWidget {
             const Text(
               '让 AI 帮你排一套',
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 19,
                 height: 1.25,
-                letterSpacing: 1,
-                fontWeight: FontWeight.w800,
+                letterSpacing: .5,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               '说说哪里紧、有多少时间，直接给你一套能练的',
-              style: TextStyle(fontSize: 13.5, color: HipColors.muted),
+              style: TextStyle(fontSize: 13, color: HipColors.muted),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Container(
-              height: 48,
-              padding: const EdgeInsets.fromLTRB(16, 0, 7, 0),
+              height: 40,
+              padding: const EdgeInsets.fromLTRB(14, 0, 6, 0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: soft,
@@ -224,20 +224,20 @@ class HipMorePage extends StatelessWidget {
                       '比如：下午腰胯很僵，10 分钟',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, color: HipColors.faint),
+                      style: TextStyle(fontSize: 13.5, color: HipColors.faint),
                     ),
                   ),
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 28,
+                    height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(8),
                       color: jade,
                     ),
                     child: HipIcon(
                       HipGlyph.play,
-                      size: 14,
+                      size: 12,
                       filled: true,
                       color: HipColors.onJade,
                     ),
@@ -253,8 +253,8 @@ class HipMorePage extends StatelessWidget {
                 for (final c in const ['久坐腰胯僵', '想练劈叉', '跑步后放松'])
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 6,
+                      horizontal: 10,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
@@ -262,7 +262,7 @@ class HipMorePage extends StatelessWidget {
                     ),
                     child: Text(
                       c,
-                      style: TextStyle(fontSize: 12.5, color: HipColors.muted),
+                      style: TextStyle(fontSize: 12, color: HipColors.muted),
                     ),
                   ),
               ],
@@ -279,9 +279,9 @@ class HipMorePage extends StatelessWidget {
     child: Text(
       text,
       style: TextStyle(
-        fontSize: 12.5,
+        fontSize: 12,
         height: 1.2,
-        letterSpacing: 2,
+        letterSpacing: 1,
         fontWeight: FontWeight.w600,
         color: HipColors.faint,
       ),
@@ -300,7 +300,7 @@ class HipMorePage extends StatelessWidget {
         line,
         for (final (i, r) in rows.indexed) ...[
           if (i > 0)
-            Padding(padding: const EdgeInsets.only(left: 42), child: line),
+            Padding(padding: const EdgeInsets.only(left: 38), child: line),
           r,
         ],
         line,
@@ -321,11 +321,11 @@ class HipMorePage extends StatelessWidget {
     scale: .99,
     onTap: onTap,
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(4, 16, 2, 16),
+      padding: const EdgeInsets.fromLTRB(4, 15, 2, 15),
       child: Row(
         children: [
-          HipIcon(glyph, size: 22, color: HipColors.jadeText),
-          const SizedBox(width: 16),
+          HipIcon(glyph, size: 20, color: HipColors.jadeText),
+          const SizedBox(width: 14),
           // Title at its natural width (up to 3/4 of the room, so very large
           // text ellipsizes instead of overflowing), meta takes the rest.
           Expanded(
@@ -339,7 +339,7 @@ class HipMorePage extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -360,7 +360,7 @@ class HipMorePage extends StatelessWidget {
               ),
             ),
           ),
-          HipIcon(HipGlyph.chevronRight, size: 18, color: HipColors.faint),
+          HipIcon(HipGlyph.chevronRight, size: 16, color: HipColors.faint),
         ],
       ),
     ),
@@ -410,7 +410,21 @@ class HipMorePage extends StatelessWidget {
               ),
             ),
             leadingWidth: 64,
-            title: title == null ? null : Text(title),
+            // m5: the same large left title as 更多 (28 w700).
+            centerTitle: false,
+            titleSpacing: 0,
+            title: title == null
+                ? null
+                : Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 28,
+                      height: 1.2,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                    ),
+                  ),
           ),
           // A pushed route is not rebuilt by the app root: follow the store
           // here so switches and choices show their new state.

@@ -130,12 +130,12 @@ class LibChip extends StatelessWidget {
     onTap: onTap,
     scale: .96,
     child: Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      height: 28,
+      padding: const EdgeInsets.symmetric(horizontal: 11),
       decoration: BoxDecoration(
         // m3: fill-based selection, no outline.
         color: on ? tintOf(HipColors.jade) : HipColors.track,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -143,7 +143,7 @@ class LibChip extends StatelessWidget {
           if (icon != null) ...[
             HipIcon(
               icon!,
-              size: 16,
+              size: 14,
               color: on ? HipColors.jadeText : HipColors.text,
             ),
             const SizedBox(width: 4),
@@ -151,7 +151,7 @@ class LibChip extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12.5,
               height: 1.2,
               fontWeight: on ? FontWeight.w600 : FontWeight.w400,
               color: on ? HipColors.jadeText : HipColors.text,
@@ -170,7 +170,7 @@ Widget tintTag(String text, {Color? color}) {
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
       color: tintOf(color ?? HipColors.jade),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(6),
     ),
     child: Text(
       text,
@@ -233,24 +233,24 @@ class LibPill extends StatelessWidget {
       onTap: onTap,
       scale: .95,
       child: Container(
-        height: 34,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: on ? tintOf(HipColors.jade) : HipColors.surfaceHigh,
-          borderRadius: BorderRadius.circular(17),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              HipIcon(icon!, size: 14, filled: true, color: fg),
+              HipIcon(icon!, size: 12, filled: true, color: fg),
               const SizedBox(width: 4),
             ],
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
                 color: fg,
               ),
             ),
@@ -275,15 +275,15 @@ class LibSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = LibText.of(context);
     return Container(
-      constraints: const BoxConstraints(minHeight: 44),
-      padding: const EdgeInsets.fromLTRB(14, 6, 4, 6),
+      constraints: const BoxConstraints(minHeight: 36),
+      padding: const EdgeInsets.fromLTRB(12, 4, 2, 4),
       decoration: BoxDecoration(
         color: HipColors.track,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          HipIcon(HipGlyph.search, size: 18, color: HipColors.muted),
+          HipIcon(HipGlyph.search, size: 16, color: HipColors.muted),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -291,14 +291,14 @@ class LibSearchField extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               textInputAction: TextInputAction.search,
-              style: TextStyle(fontSize: 15, color: HipColors.text),
+              style: TextStyle(fontSize: 14, color: HipColors.text),
               decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
                 hintText: libLargeText(context)
                     ? t.searchHintShort
                     : t.searchHint,
-                hintStyle: TextStyle(fontSize: 15, color: HipColors.faint),
+                hintStyle: TextStyle(fontSize: 14, color: HipColors.faint),
               ),
             ),
           ),
@@ -340,7 +340,7 @@ class LibFilterRow extends StatelessWidget {
     final t = LibText.of(context);
     final n = filter.sheetCount;
     return SizedBox(
-      height: 34,
+      height: 28,
       child: Row(
         children: [
           Expanded(
@@ -415,9 +415,9 @@ class LibDrillCard extends StatelessWidget {
     final name = drillName(content, drill, t.lang);
     final large = libLargeText(context);
     const nameStyle = TextStyle(
-      fontSize: 15,
+      fontSize: 14,
       height: 1.33,
-      fontWeight: FontWeight.w700,
+      fontWeight: FontWeight.w600,
     );
     return Builder(
       builder: (cardContext) => HipPressable(
@@ -488,7 +488,7 @@ class LibDrillCard extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 9, 12, 11),
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -496,7 +496,7 @@ class LibDrillCard extends StatelessWidget {
                           Text(name, style: nameStyle)
                         else
                           SizedBox(
-                            height: MediaQuery.textScalerOf(context).scale(40),
+                            height: MediaQuery.textScalerOf(context).scale(38),
                             child: Text(
                               name,
                               maxLines: 2,
@@ -510,7 +510,7 @@ class LibDrillCard extends StatelessWidget {
                           maxLines: large ? null : 1,
                           overflow: large ? null : TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 12,
                             height: 1.3,
                             color: inGroup ? HipColors.faint : HipColors.muted,
                           ),
@@ -760,8 +760,8 @@ class LibDosePanel extends StatelessWidget {
               Text(
                 t.dose,
                 style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 8),
@@ -854,8 +854,8 @@ class LibDosePanel extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 1,
             style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
@@ -885,6 +885,11 @@ Future<T?> showLibSheet<T>(
   context: context,
   isScrollControlled: true,
   sheetAnimationStyle: HipMotion.sheet,
+  // m5: smaller top corners on HipLab's own sheets (the theme's 28 stays
+  // for SDK-owned sheets, which inherit it).
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  ),
   builder: (context) => SafeArea(
     child: Padding(
       padding: EdgeInsets.fromLTRB(
@@ -903,7 +908,7 @@ Widget sheetTitle(String title, {Widget? trailing}) => Row(
     Expanded(
       child: Text(
         title,
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
       ),
     ),
     ?trailing,

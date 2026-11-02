@@ -30,8 +30,9 @@ void main() {
     test('neutral dark is the settings thumb it was distilled from', () {
       final s = HipTactileStyle.neutral(HipPalette.dark);
       expect(s.base, HipPalette.dark.thumb);
-      // The thumb's 8 % top light (thumbHighlight 0x14 over the fill).
-      expect(s.lighten, closeTo(HipPalette.dark.thumbHighlight.a, .01));
+      // m5: visually flat — no lit-from-above gradient.
+      expect(s.lighten, 0);
+      expect(s.darken, 0);
       expect(s.highlight.a, greaterThan(0));
       expect(s.shadows, hasLength(2));
     });

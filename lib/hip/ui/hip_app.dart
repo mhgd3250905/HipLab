@@ -1176,7 +1176,7 @@ class HipProgressPage extends StatelessWidget {
         if (section == HipProgressSection.all) ...[
           const Text(
             '进度',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 14),
         ],
@@ -1184,19 +1184,24 @@ class HipProgressPage extends StatelessWidget {
           HipPanel(
             child: Row(
               children: [
-                HipIcon(HipGlyph.flame, filled: true, color: HipColors.tight),
+                HipIcon(
+                  HipGlyph.flame,
+                  size: 18,
+                  filled: true,
+                  color: HipColors.tight,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   '连续 ${store.streak} 天',
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '共 ${store.doneDays.length} 天',
-                  style: TextStyle(color: HipColors.muted),
+                  style: TextStyle(fontSize: 13, color: HipColors.muted),
                 ),
               ],
             ),
@@ -1208,16 +1213,22 @@ class HipProgressPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text('最近一次自测', style: TextStyle(color: HipColors.muted)),
+                      Text(
+                        '最近一次自测',
+                        style: TextStyle(fontSize: 13, color: HipColors.muted),
+                      ),
                       const Spacer(),
                       Text(
                         '${result.level.name} · ${result.total}/12',
-                        style: TextStyle(color: HipColors.jadeText),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: HipColors.jadeText,
+                        ),
                       ),
                     ],
                   ),
                   SizedBox(
-                    height: 240,
+                    height: 210,
                     child: HipRadar(
                       values: result.radar,
                       highlight: result.tightest.toSet(),
@@ -1245,22 +1256,24 @@ class HipProgressPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    HipIcon(HipGlyph.bell, color: HipColors.jade),
+                    HipIcon(HipGlyph.bell, size: 18, color: HipColors.jade),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
                         '久坐提醒',
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    Switch(
-                      key: const ValueKey('reminder-switch'),
-                      value: reminder.enabled,
-                      onChanged: (v) =>
-                          store.setReminder(reminder.copyWith(enabled: v)),
+                    _HipSmallSwitch(
+                      child: Switch(
+                        key: const ValueKey('reminder-switch'),
+                        value: reminder.enabled,
+                        onChanged: (v) =>
+                            store.setReminder(reminder.copyWith(enabled: v)),
+                      ),
                     ),
                   ],
                 ),
@@ -1273,8 +1286,8 @@ class HipProgressPage extends StatelessWidget {
                       // choice (button audit 2026-10-18), not a Material chip.
                       child: HipSegmented<int>(
                         keyPrefix: 'reminder-interval',
-                        height: 40,
-                        radius: 12,
+                        height: 32,
+                        radius: 8,
                         inset: 3,
                         values: const [45, 60],
                         selected: reminder.intervalMinutes,
@@ -1304,7 +1317,7 @@ class HipProgressPage extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.only(left: 34, right: 8),
                     title: const Text('2 分钟椅边放松'),
-                    trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
+                    trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
                     onTap: () {
                       final plan = store.microPlan;
                       if (plan == null) return;
@@ -1332,9 +1345,9 @@ class HipProgressPage extends StatelessWidget {
           HipPanel(
             padding: EdgeInsets.zero,
             child: ListTile(
-              leading: HipIcon(HipGlyph.shield, color: HipColors.jade),
+              leading: HipIcon(HipGlyph.shield, size: 18, color: HipColors.jade),
               title: const Text('重新看安全提示'),
-              trailing: const HipIcon(HipGlyph.chevronRight, size: 20),
+              trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
               onTap: () => Navigator.of(context).push(
                 HipRoute.push<void>(
                   (_) => HipOnboarding(store: store, review: true),
@@ -1347,10 +1360,10 @@ class HipProgressPage extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: ListTile(
               key: const ValueKey('privacy-policy'),
-              leading: HipIcon(HipGlyph.shield, color: HipColors.jade),
+              leading: HipIcon(HipGlyph.shield, size: 18, color: HipColors.jade),
               title: const Text('隐私政策'),
               subtitle: const Text('离线阅读 · 数据保存在设备上'),
-              trailing: const HipIcon(HipGlyph.chevronRight),
+              trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
               onTap: () => Navigator.of(
                 context,
               ).push(HipRoute.push<void>((_) => const HipPrivacyPage())),
@@ -1409,12 +1422,12 @@ Widget _settingsHeader(HipGlyph icon, String title, {String? hint}) => Padding(
   padding: const EdgeInsets.only(bottom: 10),
   child: Row(
     children: [
-      HipIcon(icon, color: HipColors.jade),
+      HipIcon(icon, size: 18, color: HipColors.jade),
       const SizedBox(width: 10),
       Expanded(
         child: Text(
           title,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
       if (hint != null)
@@ -1541,7 +1554,9 @@ class HipVoiceSettingsPanel extends StatelessWidget {
             ],
           ),
         ),
-        Switch(key: key, value: value, onChanged: onChanged),
+        _HipSmallSwitch(
+          child: Switch(key: key, value: value, onChanged: onChanged),
+        ),
       ],
     ),
   );
@@ -1568,5 +1583,17 @@ class HipAppearancePanel extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+/// m5: Material's switch at ~80 % — proportionate to 15 pt rows.
+class _HipSmallSwitch extends StatelessWidget {
+  const _HipSmallSwitch({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 44,
+    height: 28,
+    child: FittedBox(fit: BoxFit.contain, child: child),
   );
 }

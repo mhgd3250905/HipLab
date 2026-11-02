@@ -64,7 +64,7 @@ class RoutineDetailPage extends StatelessWidget {
                   Text(
                     r.audience,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       height: 1.45,
                       color: HipColors.muted,
                     ),
@@ -98,7 +98,7 @@ class RoutineDetailPage extends StatelessWidget {
                   for (final (i, s) in plan.steps.indexed) ...[
                     _row(context, t, content, i, s),
                     if (i < plan.steps.length - 1)
-                      Divider(height: 1, indent: 72, color: HipColors.line),
+                      Divider(height: 1, indent: 64, color: HipColors.line),
                   ],
                 ],
               ),
@@ -134,7 +134,7 @@ class RoutineDetailPage extends StatelessWidget {
                           actions.startPlan(
                             p,
                             from: _startKey.currentContext,
-                            radius: 28,
+                            radius: 24,
                             originColor: HipColors.jade,
                           );
                         },
@@ -165,22 +165,22 @@ class RoutineDetailPage extends StatelessWidget {
 
   Widget _stat(String v, String unit) => Expanded(
     child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: HipColors.track,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         children: [
           Text(
             v,
             style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
               height: 1.15,
             ),
           ),
-          Text(unit, style: TextStyle(fontSize: 12, color: HipColors.muted)),
+          Text(unit, style: TextStyle(fontSize: 11, color: HipColors.muted)),
         ],
       ),
     ),
@@ -226,8 +226,8 @@ class RoutineDetailPage extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           HipThumb(
-            size: 52,
-            radius: 12,
+            size: 44,
+            radius: 10,
             child: HipDrillArt(drill: s.drill, showPendingLabel: false),
           ),
           const SizedBox(width: 12),
@@ -258,7 +258,7 @@ class RoutineDetailPage extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: s.replaced != null
                         ? HipColors.jadeText
                         : HipColors.muted,
@@ -271,7 +271,7 @@ class RoutineDetailPage extends StatelessWidget {
           Text(
             clockText(s.seconds),
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: HipColors.muted,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),

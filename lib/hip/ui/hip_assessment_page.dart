@@ -73,12 +73,16 @@ class HipAssessmentIntro extends StatelessWidget {
             children: [
               const Text(
                 '开胯体检',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
               Text(
                 '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
-                style: TextStyle(color: HipColors.muted, height: 1.4),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: HipColors.muted,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 14),
               for (final (i, item) in items.indexed) ...[
@@ -126,15 +130,15 @@ class HipAssessmentIntro extends StatelessWidget {
     // with the card (20 − 7 = 13), no frame of its own (round 2 #3).
     return HipPanel(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.all(7),
-      radius: 20,
+      padding: const EdgeInsets.all(6),
+      radius: 12,
       child: Row(
         children: [
-          HipThumb(size: 58, radius: 13, child: _thumbArt(item, still)),
+          HipThumb(size: 44, radius: 6, child: _thumbArt(item, still)),
           const SizedBox(width: 12),
           Container(
-            width: 24,
-            height: 24,
+            width: 20,
+            height: 20,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: HipColors.jade.withValues(alpha: .14),
@@ -143,7 +147,7 @@ class HipAssessmentIntro extends StatelessWidget {
             child: Text(
               '${item.order}',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: HipColors.jadeText,
               ),
@@ -159,8 +163,8 @@ class HipAssessmentIntro extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     color: HipColors.text,
                   ),
                 ),
@@ -169,7 +173,7 @@ class HipAssessmentIntro extends StatelessWidget {
                   _measureLine(item),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
+                  style: TextStyle(fontSize: 12, color: HipColors.muted),
                 ),
               ],
             ),
@@ -465,7 +469,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     final fallback = item.options.length > 1 ? item.options[1].image : null;
     return HipMediaFrame(
       key: const ValueKey('assessment-demo'),
-      radius: 26,
+      radius: 14,
       overlays: [
         Positioned(
           left: 14,
@@ -841,7 +845,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       child: SizedBox(
         height: height,
         child: HipMediaFrame(
-          radius: 22,
+          radius: 12,
           color: HipColors.surface,
           // A calm 2 px accent edge (no glow halo) plus the tinted footer
           // and the check badge carry the selection.
@@ -1096,7 +1100,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
         color: HipColors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: HipColors.jade.withValues(alpha: .45)),
         boxShadow: HipColors.cardShadow,
       ),

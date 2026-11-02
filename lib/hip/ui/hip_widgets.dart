@@ -631,9 +631,9 @@ class HipTopBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 17,
                           height: 1.25,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                   ],
@@ -1207,7 +1207,7 @@ class HipPrimaryButton extends StatelessWidget {
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 48,
       child: HipPressable(
         semanticLabel: label,
         onTap: onPressed,
@@ -1223,21 +1223,21 @@ class HipPrimaryButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      HipIcon(icon!, size: 20, filled: true, color: fg),
+                      HipIcon(icon!, size: 17, filled: true, color: fg),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       label,
                       style: TextStyle(
                         fontFamily: hipFontFamily,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                         color: fg,
                       ),
                     ),
                     if (trailing != null) ...[
                       const SizedBox(width: 4),
-                      HipIcon(trailing!, size: 20, strokeWidth: 2.2, color: fg),
+                      HipIcon(trailing!, size: 17, strokeWidth: 2.2, color: fg),
                     ],
                   ],
                 ),
@@ -1258,12 +1258,18 @@ class HipSecondaryButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onPressed,
+    this.sdkScale = false,
   });
   final String label;
   final VoidCallback? onPressed;
+
+  /// Keeps the pre-m5 56 / 18 size where the button is slotted into an
+  /// SDK-owned screen (the trainer player's 再来一组), so it matches the
+  /// SDK's own controls.
+  final bool sdkScale;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 56,
+    height: sdkScale ? 56 : 48,
     width: double.infinity,
     child: HipPressable(
       semanticLabel: label,
@@ -1281,7 +1287,7 @@ class HipSecondaryButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontFamily: hipFontFamily,
-                  fontSize: 18,
+                  fontSize: sdkScale ? 18 : 15,
                   fontWeight: FontWeight.w500,
                   color: onPressed == null ? HipColors.faint : HipColors.text,
                 ),

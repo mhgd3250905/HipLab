@@ -118,28 +118,25 @@ class HipTactileStyle {
   /// hairline edge and an ink (never coloured) shadow.
   factory HipTactileStyle.neutral([HipPalette? palette]) {
     final p = palette ?? HipColors.palette;
+    // m5 (开哥 2026-11-02 "扁平有层级"): visually flat — one solid fill, no
+    // lit-from-above gradient, a barely-there contact shadow. The thumb is
+    // just the brighter "selected" level.
     return p.isDark
         ? HipTactileStyle(
             base: p.thumb,
-            lighten: .08,
-            darken: .10,
-            highlight: const Color(0x24ffffff),
-            stroke: const Color(0x0fffffff),
-            strokeBottom: const Color(0x05ffffff),
+            highlight: const Color(0x0affffff),
             shadows: const [
-              HipTactileShadow(Color(0x73000000), blur: 2, dy: 1),
-              HipTactileShadow(Color(0x40000000), blur: 6, dy: 3),
+              HipTactileShadow(Color(0x1f000000), blur: 1, dy: .5),
+              HipTactileShadow(Color(0x00000000), blur: 2, dy: 1),
             ],
           )
         : const HipTactileStyle(
             base: Color(0xffffffff),
-            darken: .035,
-            highlight: Color(0xffffffff),
-            stroke: Color(0x120d2a20),
-            strokeBottom: Color(0x240d2a20),
+            highlight: Color(0x0affffff),
+            stroke: Color(0x0f0d2a20),
             shadows: [
-              HipTactileShadow(Color(0x240d2a20), blur: 2, dy: 1),
-              HipTactileShadow(Color(0x140d2a20), blur: 7, dy: 3),
+              HipTactileShadow(Color(0x140d2a20), blur: 1, dy: .5),
+              HipTactileShadow(Color(0x000d2a20), blur: 2, dy: 1),
             ],
           );
   }

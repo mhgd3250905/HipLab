@@ -234,6 +234,23 @@ void main() {
       await tester.pumpAndSettle();
       await _capture(tester, '$shots/routine-dark.png');
     });
+    testWidgets('7 设置 dark', (tester) async {
+      await pumpHome(tester);
+      await openSettings(tester);
+      await _capture(tester, '$shots/settings-dark.png');
+    });
+    testWidgets('8 训练记录 dark', (tester) async {
+      await pumpHome(tester);
+      await openRecords(tester);
+      await _capture(tester, '$shots/records-dark.png');
+    });
+    testWidgets('9 自测 start dark', (tester) async {
+      await pumpHome(tester);
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/checkup-dark.png');
+    });
   }, skip: shots == null);
 }
 
