@@ -4,10 +4,12 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../core/media/drill_media.dart';
 import '../../core/media/media_controller.dart';
-import '../../core/media/media_view.dart';
+import '../data/hip_public_media.dart';
+import '../data/hip_shared_library.dart';
 import '../domain/hip_action_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
@@ -264,250 +266,49 @@ class HipDrillArt extends StatefulWidget {
 }
 
 class _HipDrillArtState extends State<HipDrillArt> {
-  DrillMediaController? _controller;
-  DrillMedia? _media;
-  bool _shown = false;
   bool _retired = false;
-  Future<void>? _retiring;
-
-  /// Player variant the web view was created for ('light' or null = dark).
-  String? _variant;
-
-  /// 'light' when the light theme is in effect and this clip has a light
-  /// render bundled; null plays the default (dark-stage) clip.
-  String? get _wantedVariant =>
-      !HipColors.isDark && HipMediaVariants.hasLightVideo(widget.drill.video)
-      ? 'light'
-      : null;
-
-  /// Theme switched while the clip is up: the web view loaded the other
-  /// stage's file, so build a fresh one. The new theme's poster covers the
-  /// box (opacity 1) until the new clip reports its first frame, so the
-  /// switch never shows an empty or wrong-colour stage.
-  void _followTheme() {
-    final wanted = _wantedVariant;
-    if (wanted == _variant) return;
-    _variant = wanted;
-    final old = _controller;
-    if (old == null) return;
-    old.removeListener(_onMedia);
-    // The old platform view detaches from it while unmounting this frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
-    _controller = null;
-    _media = null;
-    _shown = false;
-    _sync();
-  }
-
-  bool _videoAllowed(BuildContext context) =>
-      widget.drill.mediaStatus == HipMediaStatus.video &&
-      HipMediaPolicy.of(context);
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-    _syncPlayback();
-  }
-
-  @override
-  void didUpdateWidget(HipDrillArt old) {
-    super.didUpdateWidget(old);
-    if (old.drill.id != widget.drill.id) {
-      _teardown();
+  void didUpdateWidget(HipDrillArt oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.drill.id != widget.drill.id ||
+        (!oldWidget.play && widget.play)) {
       _retired = false;
-      _sync();
-    } else if (old.play != widget.play) {
-      if (widget.play) _retired = false;
-      _sync();
-      _syncPlayback();
     }
   }
 
-  void _syncPlayback() {
-    final c = _controller;
-    if (c == null) return;
-    final allowed = _videoAllowed(context);
-    c.setActive(allowed);
-    if (allowed && widget.play && !c.wantsPlay) c.toggle();
-    if ((!allowed || !widget.play) && c.wantsPlay) c.pause();
-  }
-
-  void _teardown() {
-    _controller?.removeListener(_onMedia);
-    _controller?.dispose();
-    _controller = null;
-    _media = null;
-    _shown = false;
-  }
-
-  Future<void> _retire({bool repaint = true}) {
-    if (_retiring case final pending?) return pending;
-    final retiring = _releaseSurface(repaint: repaint);
-    final pending = widget.retirementHandle?._track(retiring) ?? retiring;
-    _retiring = pending;
-    unawaited(
-      pending.then<void>(
-        (_) {
-          if (identical(_retiring, pending)) _retiring = null;
-        },
-        onError: (Object _, StackTrace _) {
-          if (identical(_retiring, pending)) _retiring = null;
-        },
-      ),
-    );
-    return pending;
-  }
-
-  Future<void> _releaseSurface({required bool repaint}) async {
-    final hadSurface = _controller != null;
+  Future<void> _retire() {
+    if (_retired) return Future.value();
     _retired = true;
-    _teardown();
-    if (repaint && mounted && hadSurface) {
-      setState(() {});
-      await WidgetsBinding.instance.endOfFrame;
-    }
-  }
-
-  /// Every clip (`assets/drill_media/hip-<id>.mp4`) carries its loop length in
-  /// the content pack; drills without one show their poster only.
-  static DrillMedia? _ownMedia(HipDrill d) {
-    final video = d.video, poster = d.poster, seconds = d.duration;
-    if (video == null || poster == null || seconds == null) return null;
-    final m = RegExp(
-      r'^assets/drill_media/(hip-[a-z0-9]+(?:-[a-z0-9]+)*)\.mp4$',
-    ).firstMatch(video);
-    if (m == null || poster != 'assets/drill_media/${m[1]}.jpg') return null;
-    return DrillMedia(
-      id: m[1]!,
-      videoAsset: video,
-      posterAsset: poster,
-      duration: seconds,
-      posterTime: d.posterTime,
-    );
-  }
-
-  void _sync() {
-    // The web view is created once the clip should play and then kept: a
-    // pause keeps the frame, so resuming never flashes.
-    if (_retired ||
-        !widget.play ||
-        !_videoAllowed(context) ||
-        _controller != null) {
-      return;
-    }
-    final own = _ownMedia(widget.drill);
-    if (own == null) return;
-    _variant = _wantedVariant;
-    final controller = _controller = DrillMediaController()
-      ..addListener(_onMedia);
-    _media = own;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // didUpdateWidget may already have requested playback this frame.
-      // Starting the same controller twice must not toggle it back to pause.
-      if (mounted &&
-          _controller == controller &&
-          widget.play &&
-          !controller.wantsPlay) {
-        controller.toggle();
-      }
-    });
-  }
-
-  void _onMedia() {
-    final c = _controller;
-    if (c == null || !mounted) return;
-    final shown = c.hasFrame && !c.failed;
-    if (shown != _shown) setState(() => _shown = shown);
-  }
-
-  @override
-  void dispose() {
-    unawaited(_retire(repaint: false));
-    super.dispose();
-  }
-
-  String? get _poster {
-    final p = widget.drill.poster;
-    return p == null ? null : HipMediaVariants.themed(p);
+    if (mounted) setState(() {});
+    final detached = WidgetsBinding.instance.endOfFrame;
+    return widget.retirementHandle?._track(detached) ?? detached;
   }
 
   @override
   Widget build(BuildContext context) {
-    _followTheme();
-    final poster = _poster;
-    Widget still = poster == null
-        ? HipPendingArt(label: widget.showPendingLabel ? '动画待渲染' : null)
-        : Image.asset(
-            poster,
-            fit: widget.fit,
-            alignment: widget.alignment,
-            gaplessPlayback: true,
-            frameBuilder: (context, child, frame, sync) => sync
-                ? child
-                : AnimatedOpacity(
-                    opacity: frame == null ? 0 : 1,
-                    duration: HipMotion.fast,
-                    child: child,
-                  ),
-            errorBuilder: (_, _, _) => const HipPendingArt(label: '动画待渲染'),
-          );
-    if (poster != null) {
-      // Theme switch: cross-fade the two stages' posters instead of showing
-      // the old one on the new backdrop until the new one has decoded.
-      still = AnimatedSwitcher(
-        duration: HipMotion.fast,
-        layoutBuilder: (current, previous) =>
-            Stack(fit: StackFit.expand, children: [...previous, ?current]),
-        child: KeyedSubtree(key: ValueKey(poster), child: still),
+    final policy = HipPublicMedia.current;
+    if (policy == null || policy.actionFor(widget.drill.id) == null) {
+      return HipPendingArt(label: widget.showPendingLabel ? '暂无公共动作示范' : null);
+    }
+    if (HipSharedLibrary.current case final config?) {
+      return trainer.TrainingLibraryActionArt(
+        actionId: widget.drill.id,
+        mirrored: widget.mirror,
+        config: config,
+        mediaPolicy: policy,
+        theme: HipSharedLibrary.theme(context),
+        playing: widget.play && !_retired && HipMediaPolicy.of(context),
       );
     }
-    final media = _media;
-    final controller = _controller;
-    Widget out;
-    if (media == null || controller == null) {
-      out = still;
-    } else {
-      out = Stack(
-        fit: StackFit.expand,
-        children: [
-          widget.mediaViewBuilder?.call(media, controller) ??
-              DrillMediaPlatformView(
-                key: ValueKey('${widget.drill.id}/${_variant ?? 'dark'}'),
-                media: media,
-                controller: controller,
-                fit: widget.fit == BoxFit.contain ? 'contain' : 'cover',
-                align: widget.alignment,
-                variant: _variant,
-                labels: const {
-                  'title': '动作示范',
-                  'play': '播放',
-                  'pause': '暂停',
-                  'error': '示范加载失败',
-                  'disabled': '示范已暂停',
-                },
-              ),
-          // The poster stays on top until the clip has a frame, then fades.
-          IgnorePointer(
-            child: AnimatedOpacity(
-              // A new platform surface must start fully covered. Reusing the
-              // old fade would animate from zero while the new clip is blank.
-              key: ObjectKey(controller),
-              opacity: _shown ? 0 : 1,
-              duration: HipMotion.medium,
-              curve: Curves.easeOut,
-              child: still,
-            ),
-          ),
-        ],
-      );
-    }
-    if (widget.mirror) {
-      out = Transform.flip(flipX: true, child: out);
-    }
-    return ColoredBox(
-      color: HipMediaVariants.stageFor(widget.drill.poster),
-      child: out,
+    return trainer.TrainingActionMedia(
+      actionId: widget.drill.id,
+      policy: policy,
+      playing: widget.play && !_retired && HipMediaPolicy.of(context),
+      paused: !widget.play,
+      mirrored: widget.mirror,
+      radius: 0,
+      stage: HipColors.mediaBackdrop,
     );
   }
 }
@@ -517,7 +318,7 @@ class _HipDrillArtState extends State<HipDrillArt> {
 /// in the variant of the theme in effect.
 void hipPrecache(BuildContext context, Iterable<String?> assets) {
   for (final a in assets) {
-    if (a != null) {
+    if (a != null && !a.startsWith('assets/drill_media/')) {
       precacheImage(AssetImage(HipMediaVariants.themed(a)), context).ignore();
     }
   }

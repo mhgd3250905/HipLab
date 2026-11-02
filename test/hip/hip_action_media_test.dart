@@ -1,265 +1,93 @@
-// Theme-matched action media (2026-10-19): every picture the app shows has a
-// dark and a light asset, the manifest written by
-// tools/media/build_themed_media.py matches the bundle byte for byte, and
-// HipDrillArt follows the theme (poster, stage, clip variant) without
-// showing the other stage's picture.
+// Assessment stills retain their two theme variants. Public transparent posters
+// replace the old theme-specific action clips and are checked against catalog.
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/core/media/media_controller.dart';
+import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/domain/hip_action_media.dart';
-import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
-import 'package:hiplab/hip/ui/hip_widgets.dart';
-
-import 'hip_domain_test.dart' show loadContent;
-
-final _manifestJson =
-    jsonDecode(File(HipActionMedia.assetPath).readAsStringSync())
-        as Map<String, dynamic>;
-
-/// Every media path the content pack names (clips, posters, stills).
-Set<String> _contentMedia() {
-  final content =
-      jsonDecode(File('assets/hip/hip-content.json').readAsStringSync())
-          as Map<String, dynamic>;
-  final out = <String>{};
-  void walk(Object? n) {
-    if (n is String &&
-        (n.startsWith('assets/drill_media/') ||
-            n.startsWith('assets/hip/assessment/'))) {
-      out.add(n);
-    } else if (n is Map) {
-      n.values.forEach(walk);
-    } else if (n is List) {
-      n.forEach(walk);
-    }
-  }
-
-  walk(content);
-  return out;
-}
 
 void main() {
-  final media = HipActionMedia.fromJson(_manifestJson);
+  final manifest =
+      jsonDecode(File(HipActionMedia.assetPath).readAsStringSync())
+          as Map<String, dynamic>;
+  final variants = HipActionMedia.fromJson(manifest);
 
-  test(
-    'every clip, poster and still used by the app exists in both themes',
-    () {
-      final used = _contentMedia();
-      expect(used, isNotEmpty);
-      final missing = [
-        for (final dark in used)
-          if (!media.hasLight(dark)) dark,
-      ];
-      expect(missing, isEmpty, reason: 'no light counterpart');
-      for (final dark in used) {
-        final light = media.lightOf(dark)!;
-        expect(File(dark).existsSync(), isTrue, reason: dark);
-        expect(File(light).existsSync(), isTrue, reason: light);
-        expect(light, isNot(dark));
-        expect(light.contains('/light/'), isTrue, reason: light);
-        expect(media.resolve(dark, dark: true), dark);
-        expect(media.resolve(dark, dark: false), light);
-      }
-      // 46 drills + the supine-cross demo cut; 20 self-test stills.
-      final clips = used.where((p) => p.endsWith('.mp4')).length;
-      expect(clips, 47);
-      expect(used.where((p) => p.endsWith('.webp')).length, 20);
-    },
-  );
-
-  test('manifest: SHA-256, bytes and clip geometry match the bundle', () {
-    final entries = <String, Map>{};
-    final actions = _manifestJson['actions'] as Map;
-    for (final MapEntry(:key, :value) in actions.entries) {
-      for (final theme in ['dark', 'light']) {
-        for (final role in ['video', 'poster']) {
-          entries['$key.$theme.$role'] = (value as Map)[theme][role] as Map;
+  test('assessment still variants retain exact bytes and hashes', () {
+    final listed = <String>{};
+    var count = 0;
+    for (final set in (manifest['stills'] as Map).values) {
+      for (final item in (set['items'] as Map).values) {
+        final dark = item['dark'] as Map;
+        final light = item['light'] as Map;
+        expect(light['width'], dark['width']);
+        expect(variants.lightOf(dark['asset'] as String), light['asset']);
+        for (final entry in [dark, light]) {
+          final path = entry['asset'] as String;
+          listed.add(path);
+          final bytes = File(path).readAsBytesSync();
+          expect(bytes.length, entry['bytes'], reason: path);
+          expect(_sha256Hex(bytes), entry['sha256'], reason: path);
         }
-      }
-      final dark = value['dark']['video'] as Map;
-      final light = value['light']['video'] as Map;
-      for (final k in ['width', 'height', 'frames', 'durationSec', 'fps']) {
-        expect(light[k], dark[k], reason: '$key $k');
-      }
-      expect(
-        (value['light']['poster'] as Map)['width'],
-        (value['dark']['poster'] as Map)['width'],
-        reason: '$key poster size',
-      );
-    }
-    final stills = _manifestJson['stills'] as Map;
-    for (final MapEntry(key: set, :value) in stills.entries) {
-      for (final MapEntry(:key, value: it) in (value['items'] as Map).entries) {
-        for (final theme in ['dark', 'light']) {
-          entries['$set/$key.$theme'] = (it as Map)[theme] as Map;
-        }
-        expect(it['light']['width'], it['dark']['width'], reason: key);
+        count++;
       }
     }
-    expect(entries.length, 47 * 4 + 20 * 2);
-    for (final MapEntry(key: label, value: e) in entries.entries) {
-      final f = File(e['asset'] as String);
-      expect(f.existsSync(), isTrue, reason: label);
-      final bytes = f.readAsBytesSync();
-      expect(bytes.length, e['bytes'], reason: label);
-      expect(_sha256Hex(bytes), e['sha256'], reason: label);
-    }
-  });
-
-  test('bundle carries no light asset the manifest does not list', () {
-    final listed = media.darkAssets.map(media.lightOf).toSet();
-    for (final dir in [
-      'assets/drill_media/light',
+    expect(count, 20);
+    for (final file in Directory(
       'assets/hip/assessment/light',
-    ]) {
-      for (final f in Directory(dir).listSync().whereType<File>()) {
-        final path = f.path.replaceAll(r'\', '/');
-        expect(listed, contains(path), reason: '$path is not in the manifest');
-      }
+    ).listSync().whereType<File>()) {
+      expect(listed, contains(file.path.replaceAll(r'\', '/')));
     }
   });
 
-  test('light stage colour matches the palette the app paints', () {
-    final stage = (_manifestJson['stage'] as Map)['light'] as String;
-    final c = HipPalette.light.mediaBackdrop.toARGB32() & 0xffffff;
+  test('public transparent posters match the pinned SDK frame-zero index', () {
+    final config = File('.dart_tool/package_config.json');
+    final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
+    final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
+    final sdkRoot = config.uri.resolve(sdk['rootUri'] as String);
+    final catalog =
+        jsonDecode(
+              File.fromUri(
+                sdkRoot.resolve(
+                  'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json',
+                ),
+              ).readAsStringSync(),
+            )
+            as Map<String, dynamic>;
+    final wanted = {...hiplabCoachAuthorizedActionIds, 'n-thomas-test'};
+    final covers = {
+      for (final action in catalog['actions'] as List)
+        if (wanted.contains(action['id']))
+          action['id'] as String: action as Map,
+    };
+    expect(covers.keys.toSet(), wanted);
+    for (final entry in covers.entries) {
+      final path = 'assets/public_posters/${entry.key}.webp';
+      final bytes = File(path).readAsBytesSync();
+      expect(bytes.length, entry.value['bytes'], reason: path);
+      expect(_sha256Hex(bytes), entry.value['sha256'], reason: path);
+      expect(entry.value['alpha'], isTrue, reason: path);
+      expect(entry.value['sourceVideo']['frameIndex'], 0, reason: path);
+    }
+  });
+
+  test('retained assessment stage matches the App palette', () {
+    final stage = (manifest['stage'] as Map)['light'] as String;
+    final color = HipPalette.light.mediaBackdrop.toARGB32() & 0xffffff;
     expect(
       stage.toUpperCase(),
-      '#${c.toRadixString(16).padLeft(6, '0').toUpperCase()}',
+      '#${color.toRadixString(16).padLeft(6, '0').toUpperCase()}',
     );
-    // Neutral on purpose: decodes the same under BT.601 and BT.709.
-    expect((c >> 16) & 0xff, c & 0xff);
-    expect((c >> 8) & 0xff, c & 0xff);
-    expect(
-      ((_manifestJson['stage'] as Map)['dark'] as String).toUpperCase(),
-      '#101013',
-    );
+    expect((color >> 16) & 0xff, color & 0xff);
+    expect((color >> 8) & 0xff, color & 0xff);
   });
 
   test('sha256 helper matches the FIPS 180-2 vector', () {
     expect(
       _sha256Hex(Uint8List.fromList(utf8.encode('abc'))),
       'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
-    );
-  });
-
-  group('HipDrillArt follows the theme', () {
-    late HipDrill drill;
-    setUp(() {
-      HipMediaVariants.media = media;
-      drill = loadContent().drill('s-kneel-hipflex');
-    });
-    tearDown(() {
-      HipMediaVariants.media = HipActionMedia.empty;
-      HipColors.palette = HipPalette.dark;
-    });
-
-    Future<void> show(
-      WidgetTester tester, {
-      required HipPalette palette,
-      required void Function(DrillMediaController) onView,
-      bool play = true,
-    }) {
-      HipColors.palette = palette;
-      return tester.pumpWidget(
-        MaterialApp(
-          // A new theme each time rebuilds the subtree like _PaletteScope.
-          theme: ThemeData(brightness: palette.brightness),
-          home: Center(
-            child: SizedBox.square(
-              dimension: 240,
-              child: HipDrillArt(
-                key: const ValueKey('art'),
-                drill: drill,
-                play: play,
-                mediaViewBuilder: (_, c) {
-                  onView(c);
-                  return const SizedBox.expand();
-                },
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    String shownPoster(WidgetTester tester) {
-      final images = tester
-          .widgetList<Image>(find.byType(Image))
-          .map((i) => (i.image as AssetImage).assetName)
-          .toList();
-      return images.last;
-    }
-
-    Color stage(WidgetTester tester) => tester
-        .widget<ColoredBox>(
-          find
-              .descendant(
-                of: find.byKey(const ValueKey('art')),
-                matching: find.byType(ColoredBox),
-              )
-              .first,
-        )
-        .color;
-
-    testWidgets('poster and stage per theme', (tester) async {
-      await show(tester, palette: HipPalette.dark, onView: (_) {}, play: false);
-      expect(shownPoster(tester), drill.poster);
-      expect(stage(tester), HipPalette.dark.mediaBackdrop);
-
-      await show(
-        tester,
-        palette: HipPalette.light,
-        onView: (_) {},
-        play: false,
-      );
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(shownPoster(tester), media.lightOf(drill.poster));
-      expect(stage(tester), HipPalette.light.mediaBackdrop);
-    });
-
-    testWidgets(
-      'switching theme mid-clip rebuilds the clip, poster covers it',
-      (tester) async {
-        final views = <DrillMediaController>[];
-        await show(tester, palette: HipPalette.dark, onView: views.add);
-        await tester.pump();
-        final first = views.last;
-        // The dark clip reports its first frame: the poster fades away.
-        first.receive({'source': 'drill-media', 'type': 'ready'});
-        first.receive({'source': 'drill-media', 'type': 'first-frame'});
-        await tester.pump(const Duration(milliseconds: 500));
-
-        await show(tester, palette: HipPalette.light, onView: views.add);
-        await tester.pump();
-        final second = views.last;
-        expect(
-          second,
-          isNot(same(first)),
-          reason: 'light clip needs a new view',
-        );
-        expect(second.wantsPlay, isTrue, reason: 'keeps playing after switch');
-        // Until the light clip has a frame, the light poster is fully opaque.
-        final cover = tester.widget<AnimatedOpacity>(
-          find
-              .ancestor(
-                of: find.byWidgetPredicate(
-                  (w) =>
-                      w is Image &&
-                      (w.image as AssetImage).assetName ==
-                          media.lightOf(drill.poster),
-                ),
-                matching: find.byType(AnimatedOpacity),
-              )
-              .last,
-        );
-        expect(cover.opacity, 1);
-        await tester.pumpWidget(const SizedBox());
-      },
     );
   });
 }

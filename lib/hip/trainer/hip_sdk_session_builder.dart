@@ -8,10 +8,15 @@ trainer.SessionBuilder hipSdkSessionBuilder(
   HipContent content, {
   trainer.SwitchSeconds? switchSecondsFor,
 }) => trainer.SessionBuilder(
-  rhythms: {
-    for (final kit in content.kits.values)
-      kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
-  },
+  // Production SDK plans use the public catalog's execution semantics. The
+  // local action kits only belong to HipLab's earlier, authored routines.
+  rhythms: content.publicCatalog != null
+      ? content.publicRhythms
+      : {
+          for (final kit in content.kits.values)
+            kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
+        },
+  known: content.publicCatalog?.contains,
   prepSeconds: 15,
   transitionSeconds: 15,
   switchSecondsFor: switchSecondsFor,

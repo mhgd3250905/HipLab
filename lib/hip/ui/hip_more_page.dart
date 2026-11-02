@@ -99,7 +99,8 @@ class HipMorePage extends StatelessWidget {
           key: 'more-practice',
           glyph: HipGlyph.library,
           title: '全部动作与套路',
-          meta: '${libraryDrills(store.content).length} 个动作',
+          meta:
+              '${store.content.publicCatalog?.drills.length ?? libraryDrills(store.content).length} 个动作',
           onTap: () => _practice(context, 0),
         ),
         Builder(

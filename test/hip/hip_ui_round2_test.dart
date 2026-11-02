@@ -20,6 +20,8 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -61,7 +63,13 @@ void main() {
       ..minutes = 5
       ..scene = HipScene.chair
       ..theme = theme;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     return store;
   }
@@ -190,7 +198,8 @@ void main() {
       await pumpApp(tester);
       expect(find.byType(Icon), findsNothing);
       expect(find.byType(HipIcon), findsWidgets);
-      // Home r1: the former tabs are pages 「更多」 opens.
+      // Home r1: former tabs open from 更多; the public SDK library owns
+      // its own Material icons and must not be mistaken for host styling.
       for (final (name, open) in [
         ('more', openMore),
         ('practice', openPractice),
@@ -198,12 +207,23 @@ void main() {
         ('records', openRecords),
       ]) {
         await open(tester);
-        expect(find.byType(Icon), findsNothing, reason: name);
+        final hostIcons = find
+            .byType(Icon)
+            .evaluate()
+            .where(
+              (element) =>
+                  element
+                      .findAncestorWidgetOfExactType<
+                        trainer.TrainingLibraryPage
+                      >() ==
+                  null,
+            );
+        expect(hostIcons, isEmpty, reason: 'host-owned icons in $name');
       }
       await backHome(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       // The training package owns the playback controls and its icon set.
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
@@ -278,30 +298,16 @@ void main() {
   });
 
   group('page transitions', () {
-    HipRoute<dynamic> topRoute(WidgetTester tester) {
-      HipRoute<dynamic>? top;
-      Navigator.of(tester.element(find.byType(Scaffold).last)).popUntil((r) {
-        top ??= r is HipRoute ? r : null;
-        return true;
-      });
-      return top!;
-    }
-
-    testWidgets('开始 grows the player out of the button; home sinks back', (
-      tester,
-    ) async {
+    testWidgets('开始 opens the shared training slide route', (tester) async {
       await pumpApp(tester);
-      final button = tester.getRect(find.byKey(const ValueKey('start-today')));
       await tester.tap(find.byKey(const ValueKey('start-today')));
-      await tester.pump();
-      await tester.pump(HipMotion.expand ~/ 4);
-      final route = topRoute(tester);
-      expect(route.transition, HipTransition.expand);
-      expect(route.origin!.center.dx, closeTo(button.center.dx, 2));
-      expect(route.transitionDuration, HipMotion.expand);
-      // The covered home answers (a dim), not a plain fade.
-      expect(find.byType(HipCoveredTransition), findsOneWidget);
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
+      final route = ModalRoute.of(
+        tester.element(find.byType(trainer.TrainerPlayer)),
+      );
+      expect(route, isA<trainer.TrainerSlideRoute>());
+      expect(route!.transitionDuration, const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('training-slide')), findsOneWidget);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);
@@ -380,7 +386,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
-      await tester.pumpAndSettle();
+      await pumpTrainerReady(tester);
       expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));

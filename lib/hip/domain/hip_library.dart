@@ -6,8 +6,10 @@ library;
 import 'dart:math' as math;
 
 import 'package:ugk_coach/ugk_coach.dart' as coach;
-import 'package:ugk_trainer_runtime/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/engine.dart'
+    show SessionBuilderPlanExecutionTiming;
 
+import '../trainer/hip_sdk_session_builder.dart';
 import 'hip_models.dart';
 
 // ───────────────────────── 动作大全 ─────────────────────────
@@ -36,6 +38,42 @@ bool inLibrary(HipContent c, String id) {
       d.video != null &&
       c.kit(id) != null &&
       !assessmentOnlyDrills.contains(id);
+}
+
+/// SDK plans and the SDK library share the complete public training catalog.
+/// Older pure-data fixtures can still exercise the original local kit path.
+bool inSdkLibrary(HipContent c, String id) =>
+    c.publicCatalog?.contains(id) ?? inLibrary(c, id);
+
+/// Display/safety DTO for an admitted SDK action, without inventing HipLab
+/// direction, method or scene metadata for public actions outside the old pack.
+/// Training doses, rhythm and the complete plan remain SDK-owned.
+HipDrill? hipSdkDrill(HipContent c, String id) {
+  if (!inSdkLibrary(c, id)) return null;
+  if (c.drills[id] case final local?) return local;
+  final source = c.publicCatalog?[id];
+  if (source == null) return null;
+  final video = source.assets.videos.firstOrNull;
+  final poster = source.assets.covers.firstOrNull;
+  return HipDrill(
+    id: source.id,
+    name: source.name.of('zh'),
+    directions: const [],
+    methods: const [],
+    scenes: const [],
+    advanced: source.level == 3,
+    mvp: false,
+    cautions: source.cautions,
+    mediaStatus: video != null
+        ? HipMediaStatus.video
+        : poster != null
+        ? HipMediaStatus.poster
+        : HipMediaStatus.pending,
+    video: video?.path,
+    poster: poster?.path,
+    duration: video?.loopSeconds,
+    alternative: source.alternative,
+  );
 }
 
 // ───────────────────────── doses ─────────────────────────
@@ -432,19 +470,14 @@ class CustomRoutine {
     coachSdkVersion: coachSdkVersion,
   );
 
-  /// Same as TrainingPlan.seconds: work plus rests between drills (no
-  /// prep, no side switch).
+  /// SDK plans use the same execution timing as their player. Local custom
+  /// groups retain their existing work-plus-rest estimate.
   int seconds(HipContent c) {
     if (coachPlan != null) {
       final plan = const coach.PlanCodec().decodeStrict(coachPlan).plan;
       if (plan == null) return 0;
-      return trainer.SessionBuilder(
-        rhythms: {
-          for (final kit in c.kits.values)
-            kit.id: trainer.Rhythm.fromActionKitJson(kit.raw),
-        },
-        prepSeconds: 15,
-      ).planSeconds(plan).ceil();
+      if (plan.exerciseIds.any((id) => !inSdkLibrary(c, id))) return 0;
+      return hipSdkSessionBuilder(c).executionTiming(plan).totalSeconds.ceil();
     }
     var s = 0;
     var n = 0;
@@ -495,11 +528,11 @@ class CustomRoutine {
         continue;
       }
       final kitId = s['kitId'];
-      if (kitId is! String || !inLibrary(c, kitId)) {
+      if (kitId is! String ||
+          !(coachPlan == null ? inLibrary(c, kitId) : inSdkLibrary(c, kitId))) {
         removed++;
         continue;
       }
-      final k = c.kit(kitId)!;
       int? asInt(Object? v) => v is num ? v.round() : null;
       final stored = CustomStep(
         kitId,
@@ -509,9 +542,13 @@ class CustomRoutine {
         holdSeconds: asInt(s['holdSeconds']),
         paceSeconds: asInt(s['paceSeconds']),
       );
-      steps.add(
-        coachPlan == null ? CustomStep.fromDose(k, stored.dose(k)) : stored,
-      );
+      if (coachPlan != null) {
+        // The preview is not redosed through a legacy kit during migration.
+        steps.add(stored);
+      } else {
+        final k = c.kit(kitId)!;
+        steps.add(CustomStep.fromDose(k, stored.dose(k)));
+      }
     }
     final rest = j['restSeconds'];
     DateTime? at(Object? v) => v is String ? DateTime.tryParse(v) : null;

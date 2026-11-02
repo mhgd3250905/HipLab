@@ -1,22 +1,21 @@
 // Tactile material (button audit 2026-10-18, curated 2026-10-19): tokens,
 // which buttons are (not) tactile, press feedback, reduce motion and the 开始
-// container transform's first frame.
-import 'dart:typed_data';
-import 'dart:ui' as ui;
+// shared training entry.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
-import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart';
 
 bool _isGlow(Color c) {
   // A shadow is "coloured" when its hue channel stands out: green clearly
@@ -285,7 +284,7 @@ void main() {
     });
   });
 
-  testWidgets('开始 container transform: frame 0 is the new button face', (
+  testWidgets('开始 delegates the complete training page to the shared route', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -302,54 +301,22 @@ void main() {
       ..identity = HipIdentity.dancer
       ..minutes = 10
       ..scene = HipScene.home;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
-    await tester.pumpAndSettle();
-
-    final start = find.byKey(const ValueKey('start-today'));
-    final boundary = tester.renderObject<RenderRepaintBoundary>(
-      find.descendant(of: start, matching: find.byType(RepaintBoundary)).first,
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
     );
-    Future<Uint8List> pixels(ui.Image image) async {
-      final data = await image.toByteData();
-      return data!.buffer.asUint8List();
-    }
-
-    late Uint8List face;
-    await tester.runAsync(() async {
-      final img = await boundary.toImage(pixelRatio: 1);
-      face = await pixels(img);
-      img.dispose();
-    });
-
-    await tester.tap(start);
-    await tester.pump();
-    final route =
-        ModalRoute.of(
-              tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
-            )
-            as HipRoute;
-    expect(route.transition, HipTransition.expand);
-    final snap = route.originImage;
-    expect(snap, isNotNull);
-    // Home m3: the round 开始 disc (snapshot at the test's 1× ratio).
-    expect(snap!.width, closeTo(tester.getSize(start).width, 1));
-    late Uint8List first;
-    await tester.runAsync(() async => first = await pixels(snap));
-    expect(first.length, face.length);
-    // The face is really drawn (opaque jade disc, not an empty layer).
-    var opaque = 0;
-    for (var i = 3; i < face.length; i += 4) {
-      if (face[i] > 200) opaque++;
-    }
-    // m3: the round glass disc (area of the circle, translucent rim).
-    final w = tester.getSize(start).width;
-    expect(opaque, greaterThan(3.14159 * w * w / 4 * .7));
-    var diff = 0;
-    for (var i = 0; i < face.length; i++) {
-      diff += (face[i] - first[i]).abs();
-    }
-    // The snapshot is the button exactly as it was drawn (idle face).
-    expect(diff / face.length, lessThan(1));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('start-today')));
+    await pumpTrainerReady(tester);
+    final route = ModalRoute.of(
+      tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
+    );
+    expect(route, isA<trainer.TrainerSlideRoute>());
+    expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
+    expect(find.byKey(const ValueKey('training-slide')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
   });
 }

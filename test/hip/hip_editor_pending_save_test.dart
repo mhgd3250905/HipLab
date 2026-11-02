@@ -18,6 +18,7 @@ import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -64,7 +65,13 @@ void main() {
         steps: [for (final id in ids) CustomStep(id)],
       ),
     );
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await openPractice(tester);
     await tester.pumpAndSettle();

@@ -5,6 +5,8 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import '../control/hip_store.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_session.dart';
+import '../domain/hip_library.dart' show hipSdkDrill;
+import '../data/hip_public_media.dart';
 import '../trainer/hip_trainer_plan.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
@@ -363,34 +365,41 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         scriptBuilder: (_, _) => script,
       ),
       drillOf: (id) {
-        final drill = widget.store.content.drills[id];
+        final drill =
+            hipSdkDrill(widget.store.content, id) ??
+            widget.store.content.drills[id];
         if (drill == null) return null;
+        final definition = widget.store.content.publicCatalog?[id];
         final step = _steps.where((s) => s.drill.id == id).firstOrNull;
         return trainer.TrainerDrill(
           id: id,
           name: drill.name,
           cue: _ladderCue ?? step?.tip,
+          cues: definition?.cues['zh'] ?? const [],
+          precautions: [
+            ...?definition?.cautions,
+            ...?definition?.contraindications,
+          ],
+          media: trainer.DrillMedia(
+            id: id,
+            actionId: id,
+            videoAsset: '',
+            posterAsset: HipPublicMedia.current?.posterAssetFor(id) ?? '',
+            duration: 0,
+            videoAvailable: HipMediaPolicy.of(context),
+          ),
         );
       },
-      mediaBuilder: (context, request) => AspectRatio(
-        aspectRatio: 1,
-        child: HipMediaFrame(
-          // The shared stage supplies its own edge treatment. Follow the
-          // player request so App thumbnails do not round the stage again.
-          radius: request.theme.radius,
-          child: HipDrillArt(
-            drill: widget.store.content.drill(request.drill.id),
-            play: !request.paused,
-            mirror: request.mirrored,
-          ),
-        ),
-      ),
       doseLabel: widget.plan.sdkPlan != null
           ? null
           : (phase) => phase.itemIndex >= 0 && phase.itemIndex < _steps.length
                 ? _steps[phase.itemIndex].dose
                 : null,
-      onDiscomfort: _pain,
+      // Public actions without HipLab direction metadata use the SDK's own
+      // discomfort flow. Never invent hip directions for a full-body plan.
+      onDiscomfort: _steps.any((step) => step.drill.directions.isEmpty)
+          ? null
+          : _pain,
       announceDiscomfortPause: false,
       restFeedbackBuilder: _restFeedback,
       replayBuilder: (context, result, replay) =>

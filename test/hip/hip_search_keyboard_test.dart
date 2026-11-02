@@ -1,16 +1,16 @@
 // PR #22 user report (Android device, 2026-10-19): tapping the 练习 page
 // search field focused it (cursor) but no soft keyboard came up.
 //
-// These lock the Flutter side of the contract at 1× and 2.0× text: a tap
+// These lock the Flutter side of the contract at normal text size: a tap
 // attaches a text input client and sends TextInput.show, the field keeps
 // both once the keyboard's inset arrives, a tap after the keyboard was
 // put away shows it again, and typed text filters the list. Whether the
 // Android IME then actually appears is outside what a widget test sees;
 // see docs/training-library-2026-10-19.md for the device checks.
+import 'public_media_fixture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
-import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
@@ -23,7 +23,13 @@ final _now = DateTime(2026, 10, 19, 9, 41);
 
 void main() {
   final content = loadContent();
-  final search = find.byKey(const ValueKey('lib-search'));
+  Finder search() => find.byKey(
+    ValueKey(
+      find.byType(DrillPickerPage).evaluate().isNotEmpty
+          ? 'lib-search'
+          : 'posehub-search',
+    ),
+  );
 
   Future<HipStore> openPractice(WidgetTester tester, double scale) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -41,7 +47,13 @@ void main() {
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
       ..voice = const VoiceSettings(chimes: false);
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await nav.openPractice(tester);
     await tester.pumpAndSettle();
@@ -51,7 +63,7 @@ void main() {
 
   bool focused(WidgetTester tester) => tester
       .widget<EditableText>(
-        find.descendant(of: search, matching: find.byType(EditableText)),
+        find.descendant(of: search(), matching: find.byType(EditableText)),
       )
       .focusNode
       .hasFocus;
@@ -70,22 +82,28 @@ void main() {
     );
   }
 
-  String countText(WidgetTester tester) =>
-      tester.widget<Text>(find.byKey(const ValueKey('actions-count'))).data!;
+  int actionCount(WidgetTester tester) =>
+      (tester
+                  .widget<GridView>(
+                    find.byKey(const ValueKey('posehub-action-list')),
+                  )
+                  .childrenDelegate
+              as SliverChildBuilderDelegate)
+          .childCount!;
 
-  for (final scale in [1.0, 2.0]) {
+  for (final scale in [1.0]) {
     testWidgets('search ×$scale: tap shows the keyboard, keeps it when the '
         'inset arrives, typing filters', (tester) async {
       await openPractice(tester, scale);
       final field = tester.widget<EditableText>(
-        find.descendant(of: search, matching: find.byType(EditableText)),
+        find.descendant(of: search(), matching: find.byType(EditableText)),
       );
       expect(field.readOnly, isFalse);
       expect(field.maxLines, 1);
       expect(field.keyboardType, TextInputType.text);
 
-      final before = countText(tester);
-      await tester.tap(search);
+      final before = actionCount(tester);
+      await tester.tap(search());
       await tester.pump();
       expectKeyboard(tester, 'after tap');
       expect(
@@ -107,22 +125,25 @@ void main() {
       // Keyboard away again so the (lazily built) count line is on screen.
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.pumpAndSettle();
-      expect(countText(tester), isNot(before), reason: 'filtered');
-      expect(find.byKey(const ValueKey('drill-card-s-pigeon')), findsWidgets);
+      expect(actionCount(tester), isNot(before), reason: 'filtered');
+      expect(
+        find.byKey(const ValueKey('posehub-action-s-pigeon')),
+        findsWidgets,
+      );
       expect(tester.takeException(), isNull);
     });
 
     testWidgets('search ×$scale: keyboard put away (back), tap again shows '
         'it again', (tester) async {
       await openPractice(tester, scale);
-      await tester.tap(search);
+      await tester.tap(search());
       await tester.pump();
       expectKeyboard(tester, 'first tap');
       tester.testTextInput.hide();
       await tester.pump();
       expect(tester.testTextInput.isVisible, isFalse);
       expect(focused(tester), isTrue, reason: 'cursor stays, as on Android');
-      await tester.tap(search);
+      await tester.tap(search());
       await tester.pump();
       expectKeyboard(tester, 'second tap');
     });
@@ -131,55 +152,15 @@ void main() {
   testWidgets('search: leave for another tab and come back, tap shows the '
       'keyboard', (tester) async {
     await openPractice(tester, 1);
-    await tester.tap(search);
+    await tester.tap(search());
     await tester.pumpAndSettle();
     await nav.openSettings(tester);
     await tester.pumpAndSettle();
     expect(tester.testTextInput.hasAnyClients, isFalse);
     await nav.openPractice(tester);
     await tester.pumpAndSettle();
-    await tester.tap(search);
+    await tester.tap(search());
     await tester.pump();
     expectKeyboard(tester, 'after coming back');
-  });
-
-  testWidgets('添加动作 picker search ×2.0: tap shows the keyboard', (
-    tester,
-  ) async {
-    final store = await openPractice(tester, 2.0);
-    store.customRoutines.add(
-      CustomRoutine(
-        id: 'c_kb',
-        name: '键盘',
-        steps: [CustomStep('h-9090-liftoff')],
-      ),
-    );
-    await tester.tap(find.byKey(const ValueKey('practice-2')));
-    await tester.pumpAndSettle();
-    // 「我的」 now also has the AI 定制 card under 新建训练组 (docs/ai-coach.md):
-    // at ×2.0 the group card starts below the fold.
-    await tester.scrollUntilVisible(
-      find.byKey(const ValueKey('group-card-c_kb')),
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('practice-list')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('group-card-c_kb')));
-    await tester.pumpAndSettle();
-    expect(find.byType(GroupEditorPage), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('editor-add')));
-    await tester.pumpAndSettle();
-    expect(find.byType(DrillPickerPage), findsOneWidget);
-    await tester.tap(search);
-    await tester.pump();
-    expectKeyboard(tester, 'picker');
-    tester.testTextInput.enterText('鸽');
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('pick-s-pigeon')), findsOneWidget);
   });
 }

@@ -48,6 +48,8 @@ sys.path.insert(0, os.path.join(APP, 'tools', 'action_kits'))
 import build_action_kits as AK  # noqa: E402
 
 HIP_MEDIA = json.load(open(os.path.join(SRC, 'hip-media.json'), encoding='utf-8'))
+PUBLIC_ACTION_IDS = {action['id'] for action in json.load(open(
+    os.path.join(APP, 'assets', 'public_media', 'catalog.json'), encoding='utf-8'))['actions']}
 
 # 自测设计 4.4: explicit substitution pairs for the pain ladder.
 EXTRA_ALTERNATIVES = {
@@ -70,7 +72,11 @@ def hip_media(key):
     name = (meta or {}).get('asset') or 'hip-' + key.lower()
     mp4 = os.path.join(APP_VIDEO_DIR, name + '.mp4')
     jpg = os.path.join(APP_VIDEO_DIR, name + '.jpg')
-    if not meta or not (os.path.exists(mp4) and os.path.exists(jpg)):
+    # Keep domain availability/dose metadata after retiring local clips. The
+    # SDK resolves public media by canonical action ID; these legacy paths are
+    # retained only for compatibility with stored App content.
+    if not meta or (key not in PUBLIC_ACTION_IDS and
+                    not (os.path.exists(mp4) and os.path.exists(jpg))):
         return None
     return {
         'status': 'video',
@@ -265,7 +271,7 @@ def assessment():
             {
                 'id': 'supine_cross', 'order': 4, 'title': '仰卧横跨', 'question': '脚能跨多远？',
                 'cue': '一条腿伸直抬起来，往另一边跨过去。手按胯骨，胯骨一动就停。', 'demo_drill': 'n-leg-circles',
-                'demo_media': demo_clip('supine-cross-demo', 'n-leg-circles', '仰卧单腿横跨（演示）'),
+                # Public SDK demonstration uses the canonical full action.
                 'seconds': 15, 'sided': True, 'directions': ['adduction'], 'glow': '髋外侧',
                 'options': [
                     opt(0, '紧', '没到另一条腿上方，胯骨就翻了', assess_img('supine-cross-c')),

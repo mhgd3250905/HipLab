@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 import 'hip_domain_test.dart' show loadContent;
 import 'hip_voice_test.dart' show loadVoiceLibrary;
@@ -19,6 +20,12 @@ void main() {
   final content = loadContent();
   final lib = loadVoiceLibrary();
   final raw = readJson('assets/hip/hip-content.json');
+  final publicCatalog = coach.PoseHubAppTestCatalog.fromBytes(
+    File('assets/public_media/catalog.json').readAsBytesSync(),
+    semanticCatalogBytes: File(
+      'assets/public_media/catalog/catalog.json',
+    ).readAsBytesSync(),
+  );
 
   Set<String> playable() {
     final out = <String>{};
@@ -71,9 +78,16 @@ void main() {
       expect(d['sided'], k.sided);
       final video = (j['media'] as Map)['video'] as Map;
       expect((video['dark'] as Map)['asset'], isNotNull, reason: k.id);
+      // Retained kit media slots are compatibility metadata. The SDK resolves
+      // actual public media by canonical action ID after legacy MP4 retirement.
+      final action = publicCatalog.tryGet(k.id);
+      expect(action, isNotNull, reason: '${k.id}: no public SDK media');
+      expect(action!.video.path, endsWith('.mp4'), reason: k.id);
+      expect(action.video.bytes, greaterThan(0), reason: k.id);
       expect(
-        File((video['dark'] as Map)['asset'] as String).existsSync(),
-        isTrue,
+        action.video.sha256,
+        matches(RegExp(r'^[0-9a-f]{64}$')),
+        reason: k.id,
       );
       expect(video.containsKey('light'), isTrue, reason: 'light slot');
       if (k.kind.counted) {

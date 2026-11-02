@@ -59,7 +59,9 @@ class HipCoachChat {
   ) async {
     try {
       if (_closed) throw StateError('Coach host is closed');
-      final catalog = await loadHipCoachCatalog(bundle: bundle);
+      final catalog = bundle == null
+          ? store.content.publicCatalog ?? await loadHipCoachCatalog()
+          : await loadHipCoachCatalog(bundle: bundle);
       final profile = hiplabCoachAppProfile(
         catalog: catalog,
         coachProfile: hiplabCoachProfile,

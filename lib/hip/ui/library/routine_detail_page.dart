@@ -1,6 +1,7 @@
 // ④ 套路详情: who it is for, minutes / moves / rest, the level adaptation
 // note and the steps as the real planner will play them.
 import 'package:flutter/material.dart';
+import '../../data/hip_shared_library.dart';
 
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
@@ -198,6 +199,10 @@ class RoutineDetailPage extends StatelessWidget {
     scale: .98,
     onTap: inLibrary(content, s.drill.id)
         ? () async {
+            if (HipSharedLibrary.current != null) {
+              await HipSharedLibrary.openDetail(context, actions, s.drill.id);
+              return;
+            }
             // 看放松 inside the move: hand the jump back to 动作大全 (F4).
             final jump = await Navigator.of(context).push<Object?>(
               HipRoute.push<Object?>(

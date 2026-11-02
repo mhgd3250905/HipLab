@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
@@ -19,6 +20,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'public_media_fixture.dart';
 
 double _paintedScale(WidgetTester tester, String key) =>
     tester.widget<Transform>(find.byKey(ValueKey(key))).transform.storage[0];
@@ -375,9 +377,7 @@ void main() {
 
   for (final assessment in [false, true]) {
     final label = assessment ? '开始自测' : '开始';
-    testWidgets('$label held release preserves the painted route frame 0', (
-      tester,
-    ) async {
+    testWidgets('$label held release opens its assigned route', (tester) async {
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
@@ -398,7 +398,11 @@ void main() {
       await tester.pumpWidget(
         RepaintBoundary(
           key: screenKey,
-          child: HipApp(store: store, videoEnabled: false),
+          child: HipApp(
+            mediaPolicy: installPublicMediaFixture().policy,
+            store: store,
+            videoEnabled: false,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -481,8 +485,19 @@ void main() {
         );
       }
       await pointer.up();
-      // No elapsed time: this is the first route paint, before expansion.
       await tester.pump();
+      if (!assessment) {
+        await tester.pumpAndSettle();
+        final page = find.byType(HipPlayerPage, skipOffstage: false);
+        expect(
+          ModalRoute.of(tester.element(page)),
+          isA<trainer.TrainerSlideRoute>(),
+        );
+        expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
+        await tester.pumpWidget(const SizedBox());
+        return;
+      }
+      // The App assessment retains its own button expansion.
       final page = assessment
           ? find.byType(HipAssessmentPage, skipOffstage: false)
           : find.byType(HipPlayerPage, skipOffstage: false);

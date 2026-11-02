@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_coach_ui/ugk_coach_ui.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../coach/hip_coach_profile.dart' show hiplabCoachAuthorizedActionIds;
 import '../../domain/hip_models.dart';
+import '../../domain/hip_library.dart';
+import '../../data/hip_public_media.dart';
 import '../hip_icons.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 
 /// Only brand roles, local artwork and the existing native preview are bound
 /// here. The SDK owns chat layout, states, controls and animation.
-CoachChatVisuals hipCoachChatVisuals(HipContent content) {
+CoachChatVisuals hipCoachChatVisuals(
+  HipContent content, {
+  coach.Catalog? catalog,
+}) {
   final previews = Expando<Map<String, HipDrillArtHandle>>();
   HipDrillArtHandle surface(BuildContext context, String id) {
     final handles = previews[context] ??= {};
@@ -24,27 +31,35 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
     iconBuilder: _hipChatIcon,
     exerciseFor: (id, brightness) {
       final drill = content.drills[id];
+      final public = (content.publicCatalog ?? catalog)?[id];
+      final action = HipPublicMedia.current?.actionFor(id);
+      final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (!hiplabCoachAuthorizedActionIds.contains(id) ||
-          drill == null ||
-          drill.poster == null) {
+          (drill == null && public == null) ||
+          poster == null) {
         return null;
       }
       final dark = brightness == Brightness.dark;
       final p = dark ? HipPalette.dark : HipPalette.light;
-      final poster = HipMediaVariants.themed(drill.poster!, dark: dark);
       return CoachExercise(
         id: id,
-        name: drill.name,
+        name: public?.name.of('zh') ?? drill!.name,
         poster: poster,
         cutout: hipCoachStandingAsset(id),
         stillCutout: hipCoachStandingAsset(id),
-        categoryLabel: drill.methods.map((value) => value.zh).join(' · '),
-        levelLabel: drill.advanced ? '进阶' : '基础',
-        cues: [if (drill.note.isNotEmpty) drill.note],
+        categoryLabel: action != null
+            ? trainer.PoseHubActionFacets.type(action)
+            : drill?.methods.map((value) => value.zh).join(' · ') ?? '',
+        levelLabel: public == null
+            ? (drill!.advanced ? '进阶' : '基础')
+            : switch (public.level) {
+                1 => '入门',
+                2 => '基础',
+                _ => '进阶',
+              },
+        cues: public?.cues['zh'] ?? [if (drill!.note.isNotEmpty) drill.note],
         stage: CoachMediaPalette(
-          mediaStage: !dark && HipMediaVariants.media.hasLight(drill.poster)
-              ? HipPalette.light.mediaBackdrop
-              : HipPalette.dark.mediaBackdrop,
+          mediaStage: p.mediaBackdrop,
           onStage: p.text,
           onStageMuted: p.muted,
         ),
@@ -54,17 +69,13 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
         ? AssetImage(hipCoachStandingAsset(id))
         : null,
     preloadPoster: (context, id) async {
-      final poster = content.drills[id]?.poster;
+      final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (poster != null) {
-        final dark = Theme.of(context).brightness == Brightness.dark;
-        await precacheImage(
-          AssetImage(HipMediaVariants.themed(poster, dark: dark)),
-          context,
-        );
+        await trainer.TrainingPosterImages.prepareAsset(context, poster);
       }
     },
     previewBuilder: (context, id, playing) {
-      final drill = content.drills[id];
+      final drill = hipSdkDrill(content, id);
       if (drill == null) return const SizedBox.expand();
       final handle = surface(context, id);
       return HipDrillArt(
@@ -81,7 +92,7 @@ CoachChatVisuals hipCoachChatVisuals(HipContent content) {
   );
 }
 
-String hipCoachStandingAsset(String id) => 'assets/coach/standing/$id.webp';
+String hipCoachStandingAsset(String id) => 'assets/public_posters/$id.webp';
 
 CoachChatPalette hipCoachChatPalette(HipPalette p) => CoachChatPalette(
   brightness: p.brightness,

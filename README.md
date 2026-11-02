@@ -1,5 +1,13 @@
 # HipLab · 开胯训练助手
 
+**2026-11-02 全动作 +29 已交付：** 按17:14最终口径，SDK完整211动作统一用于浏览和Coach计划，8个不完整动作排除；严格analyze0、全量437通过/1既有条件跳过、Python25/25。47.64MiB release APK（2029）、211封面、0 MP4已备好，日常WIP逐字节恢复。只推codex/full-action-scope，不合main、不打tag。[交付与APK身份](docs/full-action-scope-completion-2026-11-02.md)。下方为历史阶段。
+
+**2026-11-02 共享体验 +28 候选完成：** 用户16:19确认2倍字号不在支持范围，已删除11条相关用例并修复SDK入场/图片/滚动测试适配。严格analyze0、全量428通过/1既有条件跳过；release APK 43.40MiB、0 MP4已备好。SDK固定d4502f3，不合main、不动release；用户自行安装和真机验收。[交付与删除清单](docs/sdk-shared-experience-completion-2026-11-02.md)。以下暂停记录保留历史。
+
+**2026-11-02 启动定位更新：** App 大型内置 catalog 的 isolate 解码与测试假时钟竞争已修复，冷启动最小用例和断网启动均通过，严格 analyze 0。全量在385通过/19失败时因确认 SDK 动作库键盘布局溢出而停止；未绕过 SDK、未重建 APK。[根因与 SDK 交接](docs/sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。以下暂缓记录保留历史。
+
+**2026-11-02 共享体验接入暂缓：** `codex/sdk-shared-experience` 从 main `0f507a3` 接入 SDK `d4502f3` 三批共享能力，版本 +28。严格 analyze 0、Python25/25、首次构建包内0 MP4；Flutter 两轮仍卡在主界面加载相关测试，按用户要求停止，不交付最终 APK。[当前结果与日志](docs/sdk-shared-experience-2026-11-02.md)。
+
 **2026-10-24 Controller 已合入 main：** 开哥明确同意后，固定候选448f109已快进合入并普通推送，远端回读一致。分析0、全量454通过/1条件跳过、专项44通过保持；release/1.0不动。以下候选待审描述为批准前历史。[集成回执](docs/sdk-conversation-controller-2026-10-24.md#主线集成回执)。
 
 **2026-10-24 对话 controller 候选：** 从 main64daf6a 建 `codex/coach-conversation-050-20261024`，锁 coach0.5.0 / trainer0.2.3@d7e0b8f，UI0.1.1保持。自有会话/问题状态已交给 SDK，界面与业务边界保持；严格锁解析完成，分析0、全量454通过/1条件跳过、AI专项44通过，候选已完成待审，等待本轮同意后合 main。release/1.0不动。[接入与删除范围](docs/sdk-conversation-controller-2026-10-24.md)。

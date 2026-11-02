@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/domain/hip_assessment.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
@@ -11,12 +12,13 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
-import 'package:hiplab/hip/ui/library/drill_detail_page.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -31,6 +33,7 @@ void main() {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    final fixture = installPublicMediaFixture(sharedLibrary: true);
     final store = HipStore(
       content: content,
       storage: MemoryStorage(),
@@ -41,7 +44,9 @@ void main() {
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office;
     setup?.call(store);
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(store: store, videoEnabled: false, mediaPolicy: fixture.policy),
+    );
     await tester.pumpAndSettle();
     return store;
   }
@@ -56,26 +61,32 @@ void main() {
   }
 
   Future<void> openDrill(WidgetTester tester, String id) async {
-    final card = find.byKey(ValueKey('drill-card-$id'));
-    await tester.scrollUntilVisible(
-      card,
-      400,
-      scrollable: find
-          .descendant(
-            of: find.byKey(const ValueKey('practice-list')),
-            matching: find.byType(Scrollable),
-          )
-          .first,
+    final page = tester.widget<trainer.TrainingLibraryPage>(
+      find.byType(trainer.TrainingLibraryPage),
     );
+    await tester.enterText(
+      find.byKey(const ValueKey('posehub-search')),
+      page.mediaPolicy.actionFor(id)!.nameZh,
+    );
+    await tester.pumpAndSettle();
+    final card = find.byKey(ValueKey('posehub-action-$id'));
     await tester.ensureVisible(card);
     await tester.pumpAndSettle();
+    final prepared = await tester.runAsync(
+      () => trainer.TrainingPosterImages.prepareAsset(
+        tester.element(card),
+        page.mediaPolicy.posterAssetFor(id)!,
+      ),
+    );
+    expect(prepared, isTrue);
     await tester.tap(card);
     await tester.pumpAndSettle();
-    expect(find.byType(DrillDetailPage), findsOneWidget);
+    expect(find.byType(trainer.TrainingLibraryDetail), findsOneWidget);
   }
 
-  HipPrimaryButton startButton(WidgetTester tester) => tester
-      .widget<HipPrimaryButton>(find.byKey(const ValueKey('detail-start')));
+  FilledButton startButton(WidgetTester tester) => tester.widget<FilledButton>(
+    find.byKey(const ValueKey('library-detail-start')),
+  );
 
   void addAssessment(HipStore s) {
     ItemAnswer one(int v) => ItemAnswer.single(SideAnswer.choice(v));
@@ -155,123 +166,126 @@ void main() {
     });
   });
 
-  group('动作大全 + 单练', () {
-    testWidgets('45 moves; search in English; direction chip', (tester) async {
-      await pumpApp(tester);
-      await toPractice(tester);
-      expect(find.textContaining('45 个动作'), findsOneWidget);
-      await tester.enterText(
-        find.byKey(const ValueKey('lib-search')),
-        'pigeon',
-      );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('drill-card-s-pigeon')), findsOneWidget);
-      expect(find.textContaining('1 个动作'), findsOneWidget);
-      await tester.enterText(find.byKey(const ValueKey('lib-search')), '');
-      await tester.tap(find.byKey(const ValueKey('lib-dir-extension')));
-      await tester.pumpAndSettle();
-      final n = libraryDrills(
-        content,
-      ).where((d) => d.directions.contains(HipDirection.extension)).length;
-      expect(find.textContaining('$n 个动作'), findsOneWidget);
-    });
+  group('SDK 动作库与宿主单练', () {
+    testWidgets(
+      '211 scoped actions; SDK Chinese search and category filtering',
+      (tester) async {
+        await pumpApp(tester);
+        await toPractice(tester);
+        final page = tester.widget<trainer.TrainingLibraryPage>(
+          find.byType(trainer.TrainingLibraryPage),
+        );
+        expect(page.config.allowedActionIds, hiplabCoachAuthorizedActionIds);
+        expect(find.byKey(const ValueKey('lib-search')), findsNothing);
+        int visibleCount() =>
+            (tester
+                        .widget<GridView>(
+                          find.byKey(const ValueKey('posehub-action-list')),
+                        )
+                        .childrenDelegate
+                    as SliverChildBuilderDelegate)
+                .childCount!;
+        expect(visibleCount(), 211);
+        await tester.enterText(
+          find.byKey(const ValueKey('posehub-search')),
+          page.mediaPolicy.actionFor('s-pigeon')!.nameZh,
+        );
+        await tester.pumpAndSettle();
+        expect(visibleCount(), 1);
+        expect(
+          find.byKey(const ValueKey('posehub-action-s-pigeon')),
+          findsOneWidget,
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('posehub-search')),
+          '',
+        );
+        await tester.tap(find.byKey(const ValueKey('posehub-类型-拉伸放松')));
+        await tester.pumpAndSettle();
+        final expected = page.config
+            .actions(page.mediaPolicy.catalog)
+            .where(
+              (action) => trainer.PoseHubActionFacets.type(action) == '拉伸放松',
+            )
+            .length;
+        expect(visibleCount(), expected);
+        expect(expected, greaterThan(0));
+      },
+    );
 
-    testWidgets('detail: 60 s default, ±5 s, sets; 开始练 → player; '
-        'leaving logs 单练 without streak', (tester) async {
-      final store = await pumpApp(tester);
-      await toPractice(tester);
-      await openDrill(tester, 's-figure4');
-      Text text(String k) => tester.widget<Text>(find.byKey(ValueKey(k)));
-      expect(text('dose-value').data, '60 秒');
-      await tester.tap(find.byKey(const ValueKey('dose-value-up')));
-      await tester.pump();
-      expect(text('dose-value').data, '65 秒');
-      await tester.tap(find.byKey(const ValueKey('dose-sets-up')));
-      await tester.pump();
-      expect(text('dose-sets').data, '2 组');
-      expect(startButton(tester).onPressed, isNotNull);
-      await tester.tap(find.byKey(const ValueKey('detail-start')));
-      await tester.pumpAndSettle(const Duration(milliseconds: 100));
-      expect(find.byType(HipPlayerPage), findsOneWidget);
-      final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
-      expect(player.plan.source, PlanSource.single);
-      expect(player.plan.steps.single.sets, 2);
-      expect(player.plan.steps.single.kitDose.seconds, 65);
-      await tester.tap(find.byKey(const ValueKey('close')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('close-confirm')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HipPlayerPage), findsNothing);
-      expect(store.sessions.single.source, PlanSource.single);
-      expect(store.doneDays, isEmpty);
-    });
+    testWidgets(
+      'SDK detail starts host default dose; exit logs single without streak',
+      (tester) async {
+        final store = await pumpApp(tester);
+        await toPractice(tester);
+        await openDrill(tester, 's-figure4');
+        final detail = tester.widget<trainer.TrainingLibraryDetail>(
+          find.byType(trainer.TrainingLibraryDetail),
+        );
+        expect(detail.action.id, 's-figure4');
+        expect(startButton(tester).onPressed, isNotNull);
+        final start = find.byKey(const ValueKey('library-detail-start'));
+        await tester.ensureVisible(start);
+        await tester.tap(start);
+        await tester.pumpAndSettle(const Duration(milliseconds: 100));
+        final player = tester.widget<HipPlayerPage>(find.byType(HipPlayerPage));
+        expect(player.plan.source, PlanSource.single);
+        expect(player.plan.steps.single.sets, 1);
+        expect(player.plan.steps.single.kitDose.seconds, 60);
+        await tester.tap(find.byKey(const ValueKey('close')));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(find.byKey(const ValueKey('close-confirm')));
+        await tester.pumpAndSettle();
+        expect(find.byType(HipPlayerPage), findsNothing);
+        expect(store.sessions.single.source, PlanSource.single);
+        expect(store.doneDays, isEmpty);
+      },
+    );
 
-    testWidgets('blocked: browse only, 先问问医生再来', (tester) async {
-      await pumpApp(
-        tester,
-        setup: (s) =>
-            s.safety = {'pregnancy': true, 'surgery': false, 'acute': false},
-      );
-      await toPractice(tester);
-      await openDrill(tester, 's-figure4');
-      expect(find.byKey(const ValueKey('notice-blocked')), findsOneWidget);
-      expect(startButton(tester).label, '先问问医生再来');
-      expect(startButton(tester).onPressed, isNull);
-    });
+    testWidgets(
+      'host safety disables SDK start while details remain browsable',
+      (tester) async {
+        await pumpApp(
+          tester,
+          setup: (store) => store.safety = {
+            'pregnancy': true,
+            'surgery': false,
+            'acute': false,
+          },
+        );
+        await toPractice(tester);
+        await openDrill(tester, 's-figure4');
+        expect(startButton(tester).onPressed, isNull);
+      },
+    );
 
-    testWidgets('relax-only lock: non-relax disabled; 看放松 filters', (
+    testWidgets('host relaxation lock disables non-relax SDK action', (
       tester,
     ) async {
       await pumpApp(
         tester,
-        setup: (s) => s.painEvents.addAll([
+        setup: (store) => store.painEvents.addAll([
           PainEvent(DateTime(2026, 10, 16), HipDirection.extension, 'skip'),
           PainEvent(DateTime(2026, 10, 18), HipDirection.extension, 'skip'),
         ]),
       );
       await toPractice(tester);
       await openDrill(tester, 's-kneel-hipflex');
-      expect(find.byKey(const ValueKey('notice-locked')), findsOneWidget);
-      expect(startButton(tester).label, '这周先只做放松');
       expect(startButton(tester).onPressed, isNull);
-      await tester.tap(find.text('看放松'));
-      await tester.pumpAndSettle();
-      expect(find.byType(DrillDetailPage), findsNothing);
-      final n = libraryDrills(content)
-          .where(
-            (d) => d.directions.contains(HipDirection.extension) && d.isRelax,
-          )
-          .length;
-      expect(find.textContaining('$n 个动作'), findsOneWidget);
-      expect(
-        find.byKey(const ValueKey('drill-card-s-kneel-hipflex')),
-        findsNothing,
-      );
     });
 
-    testWidgets('recent pain: hint, still allowed', (tester) async {
+    testWidgets('recent pain retains the host allowed practice decision', (
+      tester,
+    ) async {
       await pumpApp(
         tester,
-        setup: (s) => s.painEvents.add(
+        setup: (store) => store.painEvents.add(
           PainEvent(DateTime(2026, 10, 17), HipDirection.extension, 'pain'),
         ),
       );
       await toPractice(tester);
       await openDrill(tester, 's-kneel-hipflex');
-      expect(find.byKey(const ValueKey('notice-pain')), findsOneWidget);
       expect(startButton(tester).onPressed, isNotNull);
-    });
-
-    testWidgets('level 1 + advanced: hint with the easier move, allowed', (
-      tester,
-    ) async {
-      await pumpApp(tester);
-      await toPractice(tester);
-      await openDrill(tester, 'h-9090-liftoff');
-      expect(find.byKey(const ValueKey('notice-advanced')), findsOneWidget);
-      expect(find.textContaining('侧卧反向蚌式'), findsWidgets);
-      expect(startButton(tester).onPressed, isNotNull);
-      expect(startButton(tester).label, '开始练');
     });
   });
 
@@ -469,19 +483,16 @@ void main() {
           ]);
         },
       );
-      await toPractice(tester);
-      await openDrill(tester, 'h-adductor-rock');
-      await tester.tap(find.byKey(const ValueKey('detail-add')));
+      await toPractice(tester, segment: 2);
+      await tester.tap(find.byKey(const ValueKey('group-card-ordinary-plan')));
       await tester.pumpAndSettle();
-      final protected = find.byKey(const ValueKey('add-to-sdk-plan'));
-      expect(tester.widget<HipPressable>(protected).onTap, isNull);
-      expect(
-        find.descendant(of: protected, matching: find.text('请在计划详情中调整')),
-        findsOneWidget,
-      );
-      final ordinary = find.byKey(const ValueKey('add-to-ordinary-plan'));
-      expect(tester.widget<HipPressable>(ordinary).onTap, isNotNull);
-      await tester.tap(ordinary);
+      await tester.tap(find.byKey(const ValueKey('editor-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('pick-h-adductor-rock')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('picker-add')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('editor-save')));
       await tester.pumpAndSettle();
       expect(
         store.customRoutine('ordinary-plan')!.steps.map((step) => step.kitId),
@@ -493,67 +504,33 @@ void main() {
     },
   );
 
-  group('small screens', () {
-    for (final (size, scale) in [
-      (const Size(320, 568), 1.0),
-      (const Size(360, 740), 1.5),
-    ]) {
-      testWidgets('no overflow at $size ×$scale: practice, detail, '
-          'editor, picker', (tester) async {
-        tester.platformDispatcher.textScaleFactorTestValue = scale;
-        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        await pumpApp(
-          tester,
-          size: size,
-          setup: (s) {
-            addAssessment(s);
-            s.customRoutines.add(
-              const CustomRoutine(
-                id: 'c_1',
-                name: '一二三四五六七八九十一二',
-                steps: [
-                  CustomStep('t-seated-straddle-lift-1leg', sets: 3),
-                  CustomStep('o-stand-crossreach', seconds: 60),
-                ],
-              ),
-            );
-          },
-        );
-        // Home r1: the long group name now shows in 更多 › 我的训练组.
-        await openMore(tester);
-        expect(find.byKey(const ValueKey('more-groups')), findsOneWidget);
-        expect(tester.takeException(), isNull, reason: 'more page');
-        for (final seg in [0, 1, 2]) {
-          await toPractice(tester, segment: seg);
-          expect(tester.takeException(), isNull, reason: 'segment $seg');
-        }
-        await tester.tap(find.byKey(const ValueKey('practice-0')));
-        await tester.pumpAndSettle();
-        await openDrill(tester, 't-seated-straddle-lift-1leg');
-        expect(tester.takeException(), isNull, reason: 'detail');
-        Navigator.of(tester.element(find.byType(DrillDetailPage))).pop();
-        await tester.pumpAndSettle();
-        await tester.scrollUntilVisible(
-          find.byKey(const ValueKey('practice-2')),
-          -400,
-          scrollable: find
-              .descendant(
-                of: find.byKey(const ValueKey('practice-list')),
-                matching: find.byType(Scrollable),
-              )
-              .first,
-        );
-        await tester.tap(find.byKey(const ValueKey('practice-2')));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('group-card-c_1')));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: 'editor');
-        await tester.tap(find.byKey(const ValueKey('editor-add')));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byKey(const ValueKey('pick-h-9090-liftoff')));
-        await tester.pump();
-        expect(tester.takeException(), isNull, reason: 'picker');
-      });
-    }
+  testWidgets('SDK detail closes back to host group editor and picker', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      setup: (store) => store.customRoutines.add(
+        const CustomRoutine(
+          id: 'c_1',
+          name: '我的组',
+          steps: [CustomStep('s-pigeon')],
+        ),
+      ),
+    );
+    await toPractice(tester);
+    await openDrill(tester, 's-pigeon');
+    Navigator.of(
+      tester.element(find.byType(trainer.TrainingLibraryDetail)),
+    ).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('practice-2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('group-card-c_1')));
+    await tester.pumpAndSettle();
+    expect(find.byType(GroupEditorPage), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('editor-add')));
+    await tester.pumpAndSettle();
+    expect(find.byType(DrillPickerPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

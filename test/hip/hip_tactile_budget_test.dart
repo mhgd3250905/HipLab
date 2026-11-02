@@ -21,6 +21,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 bool _inside<T>(Element e) {
   var found = false;
@@ -90,7 +91,13 @@ void main() {
         ..minutes = 10
         ..scene = HipScene.home
         ..reminder = const ReminderSettings(enabled: true);
-      await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+      await tester.pumpWidget(
+        HipApp(
+          mediaPolicy: installPublicMediaFixture().policy,
+          store: store,
+          videoEnabled: false,
+        ),
+      );
       await tester.pumpAndSettle();
       final p = HipColors.palette;
 

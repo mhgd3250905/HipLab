@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../data/hip_shared_library.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
-import 'package:ugk_trainer_runtime/engine.dart' as trainer;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../coach/coach_config.dart';
 import '../../coach/hip_coach_chat_storage.dart';
@@ -88,44 +89,43 @@ Future<CoachChatController> loadHipChat(
     builder: builder,
     actions: CoachChatHostActions(
       onStartTraining: (context, request) async {
-        final release = request.holdTransition();
-        Animation<double>? animation;
-        void releaseEntry(AnimationStatus status) {
-          if (status == AnimationStatus.completed) release();
+        final plan = TrainingPlanner(store.content, sdkBuilder: builder)
+            .customPlan(
+              CustomRoutine(
+                id: 'coach-playback',
+                name: request.plan.plan.title,
+                steps: const [],
+                coachPlan: request.plan.plan.toJson(),
+              ),
+              store.profile,
+            );
+        if (plan == null || plan.sdkPlan == null) {
+          throw StateError('The complete SDK plan cannot be played safely');
         }
-
-        try {
-          final plan = TrainingPlanner(store.content, sdkBuilder: builder)
-              .customPlan(
-                CustomRoutine(
-                  id: 'coach-playback',
-                  name: request.plan.plan.title,
-                  steps: const [],
-                  coachPlan: request.plan.plan.toJson(),
-                ),
-                store.profile,
-              );
-          if (plan == null || plan.sdkPlan == null) {
-            throw StateError('The complete SDK plan cannot be played safely');
-          }
-          if (!await request.onStarting() || !context.mounted) return null;
-          final route = HipRoute.push<trainer.SessionResult>(
-            (_) => HipPlayerPage(store: store, plan: plan, sdkBuilder: builder),
-          );
-          final receipt = Navigator.of(context).push(route);
-          animation = route.animation;
-          animation?.addStatusListener(releaseEntry);
-          if (animation?.status == AnimationStatus.completed) release();
-          return await receipt;
-        } finally {
-          animation?.removeStatusListener(releaseEntry);
-          release();
-        }
+        final profile = actions.coach!.controller.profile;
+        final policy = profile.mediaPolicy;
+        final first = plan.steps.firstOrNull?.drill.id;
+        return trainer.TrainerLauncher.open<trainer.SessionResult>(
+          context,
+          builder: (_) =>
+              HipPlayerPage(store: store, plan: plan, sdkBuilder: builder),
+          firstPosterAsset: first == null
+              ? null
+              : policy?.posterAssetFor(first),
+          mediaPolicy: policy,
+          theme: HipSharedLibrary.theme(context),
+          planActionIds: plan.steps.map((step) => step.drill.id),
+          experience: profile.trainingExperience,
+          onStarting: request.onStarting,
+          holdTransition: request.holdTransition,
+        );
       },
-      onOpenAction: (context, request) => _push(
-        context,
-        DrillDetailPage(actions: actions, drillId: request.actionId),
-      ),
+      onOpenAction: (context, request) => HipSharedLibrary.current != null
+          ? HipSharedLibrary.openDetail(context, actions, request.actionId)
+          : _push(
+              context,
+              DrillDetailPage(actions: actions, drillId: request.actionId),
+            ),
       onOpenLibrary: (context, request) => _pushPractice(context, actions, 0),
       onOpenSavedPlans: (context) => _pushPractice(context, actions, 2),
       onOpenCustomPlan: (context) => _push(

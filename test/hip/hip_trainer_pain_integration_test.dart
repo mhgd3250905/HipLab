@@ -13,6 +13,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
+import 'public_media_fixture.dart';
 
 void main() {
   final content = loadContent();
@@ -50,7 +51,13 @@ void main() {
     store
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     final navigator = tester.state<NavigatorState>(
       find.byType(Navigator).first,

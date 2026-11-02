@@ -135,23 +135,6 @@
    {
     "cue": "一条腿伸直抬起来，往另一边跨过去。手按胯骨，胯骨一动就停。",
     "demo_drill": "n-leg-circles",
-    "demo_media": {
-     "cautions": [],
-     "directions": [],
-     "id": "n-leg-circles#supine-cross-demo",
-     "level": "beginner",
-     "media": {
-      "duration_seconds": 4.8,
-      "poster": "assets/drill_media/hip-supine-cross-demo.jpg",
-      "poster_time_seconds": 2.6,
-      "status": "video",
-      "video": "assets/drill_media/hip-supine-cross-demo.mp4"
-     },
-     "methods": [],
-     "mvp": false,
-     "name": "仰卧单腿横跨（演示）",
-     "scenes": []
-    },
     "directions": [
      "adduction"
     ],

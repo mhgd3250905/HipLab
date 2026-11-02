@@ -1,5 +1,17 @@
 # HipLab 文档与开发台账
 
+**2026-11-02 17:14 更正后的 +29 完成：** 浏览/Coach同一211动作集合，8partial及未用封面排除；analyze0、全量437通过/1既有条件跳过、Python25/25，47.64MiB release APK/2029、211封面/0 MP4。日常40个WIP逐字节恢复，普通推送分支、不合main。[最终交付](full-action-scope-completion-2026-11-02.md)。以下219方案与SDK等待条件保留历史，已由211决定替代。
+
+**2026-11-02 全动作继续核查：** 用户已确认219浏览/211规划，但固定SDK共享动作库列表、筛选和详情均拒绝8个partial，没有公开开关。此前将SF219授权等同实际浏览的结论已更正。219张封面准备完成，按SDK问题边界停止，尚未改scope/运行接线或出+29。[SDK阻塞与准备成果](full-action-scope-2026-11-02.md#用户明确-219-浏览--211-规划后的-sdk-界面阻塞)。
+
+**2026-11-02 主线合入与全动作预检：** 用户确认 +28 真机通过，main 已快进并普通推送到 `d0c28c5`。新分支 `codex/full-action-scope` 预检发现 SDK 8 条训练元数据缺项，依授权边界停止；SF 实际为219可浏览/211可组计划，媒体缺失0。本轮仅记录文档，未改功能、未生成+29。[合入回执与8项清单](full-action-scope-2026-11-02.md)。以下待用户验收等为历史状态。
+
+**2026-11-02 共享体验 +28 候选完成：** 用户16:19授权删除2倍字号用例，共11条；其余失败按真实SDK入场/图片/滚动契约适配，严格analyze0、全量428通过/1既有条件跳过。43.40MiB release APK、0 MP4、连续测试签名已备好，待用户安装自测。[最终交付与删除清单](sdk-shared-experience-completion-2026-11-02.md)。不合main、不动release、托管或Flare；下方为历史。
+
+**2026-11-02 启动定位更新：** App 大型 catalog 读取已修复，最小/断网启动各1通过，严格analyze0；全量385通过/19失败时确认SDK动作库键盘布局溢出，按边界停止，不绕过SDK、不重建APK。[根因与后续交接](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。以下为前轮历史。
+
+**2026-11-02 共享体验接入暂缓：** `codex/sdk-shared-experience` 基于 main `0f507a3`，统一 pin SDK `d4502f3`、Launcher / public mediaPolicy / SDK library 已接线，移除94内置MP4，版本+28。严格analyze0、Python25/25、首次构建0 MP4；Flutter两轮仍失败，按约停止，无最终交付APK。[本轮报告](sdk-shared-experience-2026-11-02.md)。
+
 **2026-11-02 第5批主线集成：** 用户已批准将固定候选`c8cf82f`非快进合入main，合并点`9054932`；main的10月27日iOS审核文档原文保留。合并复核见[验证台账](verification.md)，下方“不合main”等为候选阶段历史约束。release不动、不tag、不重打APK、不提交商店。
 
 **2026-11-02 第 5 批对话模块候选：** `codex/coach-chat-sdk` 基于本机 main，固定用户确认的 SDK `7d9be56`，旧对话实现已删除，App 仅保留 profile 和宿主端口。APK、门禁、删除清单、pin 与用户安装验收边界见[一页报告](coach-chat-sdk-2026-11-02.md)。不合 main、不动 release、不打 tag、不提交商店。以下为历史状态。

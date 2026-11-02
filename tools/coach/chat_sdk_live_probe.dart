@@ -466,7 +466,7 @@ void main() {
       final watchAll = Stopwatch()..start();
       try {
         expect(observed.calls, isEmpty);
-        expect(controller.profile.allowedActionIds, hasLength(45));
+        expect(controller.profile.allowedActionIds, hasLength(211));
         evidence.write(
           'initial-snapshot.json',
           controller.exportSnapshot().toJson(),
@@ -542,21 +542,15 @@ void main() {
               problems.add('recommendation_card_missing');
             }
           } else {
-            // A wholly chest-focused request is outside HipLab's documented
-            // specialty. Inspect the SDK's disclosure; do not synthesize a fix.
-            final text = messages
-                .where((m) => !m.isUser)
-                .map((m) => m.text)
-                .join('\n');
-            if (plan != null) {
-              problems.add('whole_out_of_scope_request_delivered_plan');
-            }
-            if (text.trim().isEmpty || !RegExp('髋|开胯|HipLab').hasMatch(text)) {
-              problems.add('scope_explanation_missing');
-            }
-            if (controller.suggestions.isEmpty &&
-                messages.every((m) => m.options.isEmpty)) {
-              problems.add('scope_suggestion_missing');
+            // Chest actions are inside the expanded complete-action scope.
+            // Let the SDK deliver a plan, recommendations or clarification;
+            // any returned plan still passes the common scope/timing checks.
+            if (plan == null &&
+                actions.isEmpty &&
+                messages
+                    .where((m) => !m.isUser)
+                    .every((m) => m.text.trim().isEmpty && m.options.isEmpty)) {
+              problems.add('response_missing');
             }
           }
           final events = runtimeEvents.skip(firstEvent).toList();

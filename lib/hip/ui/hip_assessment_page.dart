@@ -4,6 +4,10 @@ import 'package:clock/clock.dart';
 import '../../core/platform/screen_awake.dart';
 import '../../core/platform/training_service.dart';
 import 'package:flutter/material.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
+import '../data/hip_public_media.dart';
+import '../data/hip_shared_library.dart';
+import 'library/library_actions.dart';
 
 import '../control/hip_store.dart';
 import '../domain/hip_assessment.dart';
@@ -466,6 +470,9 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   Widget _demo(AssessmentItem item) {
     final demo = item.demoArt(widget.store.content.drills);
     final fallback = item.options.length > 1 ? item.options[1].image : null;
+    final scoped =
+        demo != null &&
+        HipSharedLibrary.current?.allowedActionIds.contains(demo.id) == true;
     return HipMediaFrame(
       key: const ValueKey('assessment-demo'),
       radius: 14,
@@ -495,6 +502,25 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
             ),
           ),
         ),
+        if (scoped)
+          Positioned(
+            right: 14,
+            top: 14,
+            child: TextButton(
+              key: const ValueKey('assessment-shared-detail'),
+              onPressed: () => HipSharedLibrary.openDetail(
+                context,
+                LibraryActions(
+                  store: widget.store,
+                  startPlan: (plan, {from, radius = 52, originColor}) async {
+                    await widget.onStartPlan(plan);
+                  },
+                ),
+                demo.id,
+              ),
+              child: const Text('动作详情'),
+            ),
+          ),
         Positioned.fill(
           child: IgnorePointer(
             child: AnimatedOpacity(
@@ -511,7 +537,17 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         expand: true,
         child: KeyedSubtree(
           key: ValueKey('demo-${item.id}'),
-          child: demo != null && demo.mediaStatus != HipMediaStatus.pending
+          child: demo?.id == 'n-thomas-test' && HipPublicMedia.current != null
+              ? trainer.TrainingActionMedia(
+                  actionId: 'n-thomas-test',
+                  policy: HipPublicMedia.current,
+                  playing: _demoPlaying && HipMediaPolicy.of(context),
+                  mirrored: _side == HipSide.right,
+                  stage: HipColors.mediaBackdrop,
+                )
+              : !scoped
+              ? const Center(child: Text('此动作暂无公共示范'))
+              : demo.mediaStatus != HipMediaStatus.pending
               ? HipDrillArt(
                   drill: demo,
                   play: _demoPlaying,

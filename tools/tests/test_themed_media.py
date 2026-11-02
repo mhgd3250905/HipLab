@@ -4,8 +4,9 @@ import contextlib
 import copy
 import io
 from pathlib import Path
-import subprocess
-import sys
+import hashlib
+import json
+from urllib.parse import unquote, urlparse
 import unittest
 from unittest import mock
 
@@ -36,10 +37,40 @@ class ThemedMediaTest(unittest.TestCase):
         self.assertIn('format=rgb', g)
         self.assertIn(f'color=0x{tm.STAGE["light"]}', g)
 
-    def test_bundle_matches_manifest(self):
-        out = subprocess.run([sys.executable, str(ROOT / 'tools/media/build_themed_media.py'),
-                              'check'], capture_output=True, text=True)
-        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+    def test_public_posters_and_retained_stills_match_their_manifests(self):
+        packages = json.loads((ROOT / '.dart_tool/package_config.json').read_text(encoding='utf-8'))['packages']
+        sdk = next(package for package in packages if package['name'] == 'ugk_coach')
+        uri = urlparse(sdk['rootUri'])
+        sdk_root = Path(unquote(uri.path).lstrip('/') if uri.scheme == 'file' else ROOT / '.dart_tool' / sdk['rootUri'])
+        index = sdk_root / 'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json'
+        catalog = json.loads(index.read_text(encoding='utf-8'))
+        covers = {action['id']: action for action in catalog['actions']}
+        delivery = json.loads((ROOT / 'assets/public_media/catalog.json').read_text(encoding='utf-8'))
+        complete_ids = {action['id'] for action in delivery['actions']
+                        if action['trainingDefinitionComplete'] is True}
+        self.assertEqual(len(complete_ids), 211)
+        self.assertTrue(complete_ids.issubset(covers))
+        posters = list((ROOT / 'assets/public_posters').glob('*.webp'))
+        self.assertEqual({poster.stem for poster in posters}, complete_ids)
+        for poster in posters:
+            cover = covers[poster.stem]
+            data = poster.read_bytes()
+            self.assertEqual(len(data), cover['bytes'], poster.name)
+            self.assertEqual(hashlib.sha256(data).hexdigest(), cover['sha256'], poster.name)
+            self.assertTrue(cover['alpha'], poster.name)
+            self.assertEqual(cover['sourceVideo']['frameIndex'], 0, poster.name)
+        manifest = tm.load_json(tm.MANIFEST)
+        still_count = 0
+        for still_set in manifest['stills'].values():
+            for item in still_set['items'].values():
+                still_count += 1
+                for theme in ('dark', 'light'):
+                    entry = item[theme]
+                    data = (ROOT / entry['asset']).read_bytes()
+                    self.assertEqual(len(data), entry['bytes'], entry['asset'])
+                    self.assertEqual(hashlib.sha256(data).hexdigest(), entry['sha256'], entry['asset'])
+        self.assertEqual(still_count, 20)
+        self.assertEqual(list((ROOT / 'assets/drill_media').rglob('*.mp4')), [])
 
     def test_changed_poster_time_requires_rebuilding_the_poster(self):
         load = tm.load_json

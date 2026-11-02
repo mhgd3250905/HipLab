@@ -7,6 +7,7 @@ import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 void main() {
   testWidgets('progress keeps the published privacy policy reachable', (
@@ -19,7 +20,13 @@ void main() {
     await store.initialize();
     store.safety = {'pregnancy': false, 'surgery': false, 'acute': false};
     store.identity = HipIdentity.office;
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     await openSettings(tester);
     await tester.pumpAndSettle();

@@ -11,11 +11,13 @@ import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/coach/hip_coach_chat.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:hiplab/hip/domain/hip_pain.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 void main() {
   final content = loadContent();
@@ -81,6 +83,7 @@ void main() {
     HipScene scene = HipScene.chair,
     DateTime? at,
     HipCoachChat? Function(HipStore)? coach,
+    void Function(HipStore)? setup,
   }) async {
     tester.view.physicalSize = const Size(780, 1688);
     tester.view.devicePixelRatio = 2;
@@ -99,11 +102,13 @@ void main() {
       ..scene = scene
       ..theme = theme
       ..doneDays.addAll(['2026-11-01', '2026-10-31', '2026-10-30']);
+    setup?.call(store);
     await tester.pumpWidget(
       RepaintBoundary(
         key: _shot,
         child: HipApp(
           store: store,
+          mediaPolicy: installPublicMediaFixture().policy,
           videoEnabled: false,
           coach: coach?.call(store),
         ),
@@ -165,6 +170,39 @@ void main() {
     expect(
       tester.getTopLeft(ai).dy,
       lessThan(tester.getTopLeft(find.byKey(const ValueKey('more-groups'))).dy),
+    );
+  });
+
+  testWidgets('home keeps numbness and multiple lock alerts reachable', (
+    tester,
+  ) async {
+    final store = await pumpHome(
+      tester,
+      setup: (store) {
+        store.askNumbness = true;
+        for (final direction in HipDirection.values) {
+          store.painEvents.addAll([
+            PainEvent(
+              store.now().subtract(const Duration(days: 1)),
+              direction,
+              'skip',
+            ),
+            PainEvent(store.now(), direction, 'skip'),
+          ]);
+        }
+      },
+    );
+    expect(store.lockedDirections, hasLength(6));
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.text('现在还麻吗？'));
+    await tester.pumpAndSettle();
+    expect(find.text('现在还麻吗？').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.byKey(const ValueKey('home-more')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('home-more')).hitTestable(),
+      findsOneWidget,
     );
   });
 

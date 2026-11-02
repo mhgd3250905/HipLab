@@ -1,5 +1,39 @@
 # 验证台账
 
+## 2026-11-02：211 动作 +29 门禁通过
+
+验证/构建源`5072cbb291fe099fbbbd8e673a326e47e21808e8`；Flutter3.44.7/Dart3.12.2、SDK d4502f3。严格analyze0，全量Flutter437通过/1既有条件跳过（5分51秒），Python25/25。211浏览=211Coach准入、全部完整动作剂量/保存恢复/执行、8partial拒绝、新胸部动作SDK播放和已存计划封面均有回归；自测与原课程保持。release APK身份2029、签名/CRC/重签前后运行负载一致、211封面及0 MP4通过；WIP40文件哈希/状态与原生成依赖配置恢复通过。未执行ADB或新增真机/视觉验收。[门禁与制品](full-action-scope-completion-2026-11-02.md)。
+
+## 2026-11-02：全量封面准备与 SDK 浏览门禁核查
+
+219公共封面与固定SDK索引大小/SHA256逐项一致，共5,813,392 bytes，缺媒体描述0、未加入MP4；资源测试已改为核对完整集合，Flutter资产专项3/3、Python themed_media 5/5及diff检查通过。SDK Library列表/筛选/详情均拒partial，无公开开关，按边界停止；未运行本轮严格analyze、全量Flutter测试或APK构建。此前SF219是授权/目录数量，不代表实际UI浏览219；更正与源码位置见[报告](full-action-scope-2026-11-02.md#用户明确-219-浏览--211-规划后的-sdk-界面阻塞)。
+
+## 2026-11-02：主线快进回读与全动作只读预检
+
+用户反馈 +28 真机通过；本轮未新增设备验证。远端候选精确核对为 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，main由 `0f507a3` ff-only到该提交并普通push，远端回读一致。SDK公共目录219、完整训练定义211、partial8；视频/封面描述缺失0，standing219张大小/哈希/首帧绑定通过。SF main亦219浏览/211规划，没有补齐8项。命中用户SDK缺项即停边界，仅文档检查，不重复analyze/全量测试或构建；+29验收未进行。见[完整预检与字段清单](full-action-scope-2026-11-02.md)。
+
+## 2026-11-02：16:19 范围调整后全量通过
+
+用户确认2倍字号超出支持范围，授权删除11条，具体用例列于[最终报告](sdk-shared-experience-completion-2026-11-02.md)，不是新增skip。验证/构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`；Flutter3.44.7/Dart3.12.2、SDK d4502f3与依赖锁不变。图片解码用真实async等待，训练断言等待SDK实际可点且播放状态已更新；safe-area辅助逐个选择纵向viewport并滚底，g12卡滚动后完成布局，图标检查仅限制App自己的控件。业务、音频、剂量与安全断言保留，App/SDK生产代码本轮未变。
+
+定向集合：library19/19、iOS24/24、launcher44/44、正常键盘3/3均首轮通过。首轮全量在391通过/1失败时停止：ui_round1尚有一个同类入场等待遗漏，补齐后单文件13/13；同时补齐flow两处同类入口。随后严格`flutter analyze --no-pub --fatal-infos`为**0问题**，第二轮`flutter test --no-pub --concurrency=1 --reporter expanded`完整**428通过/1既有条件跳过**（6分21秒，可选VOICE_TIMELINE_OUT导出），无第三轮。Python相关代码未变，沿用前轮25/25，本轮未重复。
+
+门禁通过后release构建56.4秒成功；交付APK45508800 bytes，身份com.ugk.hiplab/1.1.0/2028/release/arm64正确，**0 MP4、46公共poster**、CRC与签名通过，设备连续证书与原上传签名包运行负载一致。未进行安装/真机/视觉验收，不重写以前的失败记录。日志在`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/completion-1619/`，包括`analyze.log`、未完成的`all-tests-pass1.log`、成功的`all-tests.log`、各定向日志和`build-release.log`；父目录`release-apk.json`保存制品回执。此后仅补文档，不重跑测试或构建。
+
+## 2026-11-02：启动最小/断网通过，全量遇 SDK 布局问题停止
+
+修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`，Flutter3.44.7/Dart3.12.2、SDK d4502f3不变。先只跑`hip_flow_test.dart`的`a no-key build hides AI training and usage entries`并给`_load`逐步临时日志，定位大型内置catalog的`loadString` isolate完成晚于断言；无网络等待或异常。改bytes解码后该条1通过，日志已移除。新增`hip_offline_startup_test.dart`：真实SDK媒体仓库、冷coach catalog、HTTP连接全部失败、prefetch开启且coach已配置，仍有tab-1/start-today，内置公共poster可解码，初始化/进首页0 HTTP client与0连接；1通过。
+
+`flutter analyze --no-pub --fatal-infos`为0问题。随后`flutter test --no-pub --concurrency=1 --reporter expanded`执行到385通过/19失败；确认SDK问题后停止进程，**未全量完成、门禁未通过**。其中搜索2倍字号/320px键盘inset的单条诊断再次失败，完整FlutterError定位SDK`packages/ugk_trainer_runtime/lib/src/library/training_library_browser.dart:221`的Column，390×301约束下底部溢出20px。其余失败仍有launcher/图片解码等待和旧滚动容器辅助问题，未进一步修复或重复全量。未对2倍字号放宽断言/新增skip，未在App绕过SDK。
+
+证据在`E:/AII-3D/hiplab-releases/sdk-shared-experience-20261102/startup-fix/`：`minimal-trace.log`、`minimal-fixed.log`、`offline-startup.log`、`analyze.log`、未完成的`all-tests.log`、`sdk-layout-trace.log`。临时错误日志与测试诊断注入均已移除。Flutter3.47.8/Dart3.13.7仅只读对比源码，没有另跑一套测试；两者asset阈值和机制一致，详见[版本结论](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。Python沿用前轮25/25，本轮未重复；没有新APK、安装或视觉验收。
+
+## 2026-11-02：共享体验接入两轮未通过，停止重试
+
+固定Flutter3.44.7/Dart3.12.2、SDK d4502f35b1503d41cd782aa7fb3780c7f6591ad0，分支codex/sdk-shared-experience，基于main0f507a3。严格`flutter analyze --no-pub --fatal-infos`为0，Python全量25/25。`flutter test --no-pub --concurrency=1 --reporter expanded`首轮310通过/128失败/1条件跳过（4分29秒）；修复测试夹具、旧视频存在断言和主题插值后，第二轮仍有主界面finder为空，在234通过/116失败时依用户“两次仍卡住就停止”结束该测试进程。第二轮未全量完成，不再修复或第三次重试，最终门禁未通过。
+
+首次release构建成功，46604271 bytes、ZIP内0 MP4；此包早于单练按钮/自测点击层修复及旧剪影退包，只有诊断用途。未构建最终APK、未重签/安装、未作真机或视觉验收。记录、失败表象、APK身份和日志见[本轮报告](sdk-shared-experience-2026-11-02.md)，不得用此前446/1的旧pin结果替代本轮。
+
 ## 2026-11-02：第 5 批 SDK 对话模块
 
 **main合并后复核（2026-11-02）：** 用户批准后，本机main快进至`1b94fc3`并以`--no-ff`合入固定候选`c8cf82f`，合并点`9054932a982a9b41eaf540a4281af1e069c2f456`。两处文档冲突保留全部章节，按11月2日、10月27日、10月24日排序，iOS章节文字未改；冲突标记已去除，`git diff --check`干净。固定Flutter3.44.7运行合并后`flutter analyze --no-pub --fatal-infos`为**0问题**，`flutter test --no-pub --concurrency=1`为**446通过/1条件跳过**（可选VOICE_TIMELINE_OUT导出，5分25秒），与候选一致。日志在`E:/AII-3D/hiplab-releases/coach-chat-sdk-20261102/main-9054932/`。运行代码、测试及依赖锁与候选一致；后续只补文档回执，不重跑App测试或构建。release/1.0保留`1f9a172`，不tag、不商店、不重打APK。

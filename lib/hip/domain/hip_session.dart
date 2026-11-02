@@ -257,6 +257,7 @@ class TrainingPlanner {
       (p.level == 1 && d.advanced) || _gated(d, p);
 
   bool _gated(HipDrill d, TrainingProfile p) {
+    if (d.directions.isEmpty) return false;
     final dir = d.directions.first;
     if (d.id.startsWith('t-')) return !p.dancerUnlocked;
     if (d.id == 'n-slider-lateral' || d.id == 'n-supported-front-split') {
@@ -345,7 +346,9 @@ class TrainingPlanner {
   /// Relax-only this week (pain in the assessment or a 7-day lock): only
   /// relax drills of that direction may run.
   static bool lockedOut(HipDrill d, TrainingProfile p) =>
-      p.lockedDirections.contains(d.directions.first) && !d.isRelax;
+      d.directions.isNotEmpty &&
+      p.lockedDirections.contains(d.directions.first) &&
+      !d.isRelax;
 
   /// 单练: one step at the user's dose. Null when a safety card blocks
   /// training or the drill's direction is relax-only this week. Advanced /
@@ -387,10 +390,14 @@ class TrainingPlanner {
     if (r.coachPlan case final json?) {
       final plan = const coach.PlanCodec().decodeStrict(json).plan;
       if (plan == null) return r.steps;
+      bool skipped(String id) {
+        final drill = hipSdkDrill(content, id);
+        return drill == null || lockedOut(drill, profile);
+      }
+
       return [
         for (final id in plan.exerciseIds)
-          if (!inLibrary(content, id) || lockedOut(content.drill(id), profile))
-            CustomStep(id),
+          if (skipped(id)) CustomStep(id),
       ];
     }
     return [
@@ -453,10 +460,10 @@ class TrainingPlanner {
         [
           item.exerciseId,
           for (final segment in item.segments) segment.exerciseId,
-        ].every(
-          (id) =>
-              inLibrary(content, id) && !lockedOut(content.drill(id), profile),
-        );
+        ].every((id) {
+          final drill = hipSdkDrill(content, id);
+          return drill != null && !lockedOut(drill, profile);
+        });
     // Reject an incompatible stored plan in full. The host never filters,
     // redoses or fills time in an SDK plan to get it through the play boundary.
     if (original.blocks.any((b) => b.items.any((i) => !playable(i)))) {
@@ -473,18 +480,15 @@ class TrainingPlanner {
       final first = work.first;
       final item = first.item!;
       final effective = first.segment?.toPlanItem(item) ?? item;
-      final drill = content.drill(first.exerciseId!);
-      final kit = content.kit(drill.id)!;
-      final dose = LibraryDose(
-        reps: effective.reps,
-        seconds: effective.workSeconds,
-        sets: first.sets,
-        holdSeconds: first.holdSeconds,
-      );
+      final drill = hipSdkDrill(content, first.exerciseId!)!;
       steps.add(
         PlanStep(
           drill: drill,
-          dose: doseText(kit, dose, single: false),
+          dose: _sdkDoseText(
+            effective,
+            sets: first.sets,
+            holdSeconds: first.holdSeconds,
+          ),
           seconds: work.fold<double>(0, (sum, p) => sum + p.seconds).ceil(),
           sided: item.perSide,
           sets: first.sets,
@@ -509,4 +513,17 @@ class TrainingPlanner {
       sdkSeconds: builder.executionTiming(original).totalSeconds.ceil(),
     );
   }
+}
+
+/// A display of the effective SDK dose only; no local kit default or clamp.
+String _sdkDoseText(
+  coach.PlanItem item, {
+  required int sets,
+  int? holdSeconds,
+}) {
+  final side = item.perSide ? '每侧 ' : '';
+  final amount = item.mode == coach.DoseMode.time
+      ? '${item.workSeconds} 秒'
+      : '${item.reps} 次${holdSeconds == null ? '' : ' × 停 $holdSeconds 秒'}';
+  return '$side$amount${sets > 1 ? ' × $sets 组' : ''}';
 }

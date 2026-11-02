@@ -11,6 +11,7 @@ import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
 import 'checkup_entry.dart';
 import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 void main() {
   final content = loadContent();
@@ -29,7 +30,13 @@ void main() {
     );
     await store.initialize();
     seed?.call(store);
-    await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
+    await tester.pumpWidget(
+      HipApp(
+        mediaPolicy: installPublicMediaFixture().policy,
+        store: store,
+        videoEnabled: false,
+      ),
+    );
     await tester.pumpAndSettle();
     return store;
   }
@@ -175,7 +182,7 @@ void main() {
       },
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     final plan = store.todayPlan!;
     // The package preparation label precedes the first drill.
     expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
@@ -235,7 +242,7 @@ void main() {
       },
     );
     await tester.tap(find.byKey(const ValueKey('start-today')));
-    await tester.pumpAndSettle();
+    await pumpTrainerReady(tester);
     await tester.tap(find.byKey(const ValueKey('skip'))); // lead-in
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('discomfort')));

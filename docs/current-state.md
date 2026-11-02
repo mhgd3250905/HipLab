@@ -1,5 +1,33 @@
 # 当前状态
 
+## 2026-11-02：211 全动作 +29 完成，APK 待用户安装
+
+用户17:14改为SDK当前完整211动作，浏览/Coach共用同一集合，8partial不开、不改SDK。分支codex/full-action-scope，测试/构建源`5072cbb291fe099fbbbd8e673a326e47e21808e8`，SDK仍完整pin d4502f3。公共元数据、单练/保存恢复/SDK执行和新动作封面已接通，自测与原课程保持。严格analyze0、全量437通过/1既有条件跳过、Python25/25；+29/2029 arm64 release APK49,954,831 bytes（47.64MiB），211封面、0 MP4。日常40个WIP及生成依赖配置逐字节恢复；只推本分支，不合main、不打tag、不动release/托管/Flare/商店。未安装，真机/视觉交用户自测。[报告与路径](full-action-scope-completion-2026-11-02.md)。下方219范围等待记录为已替代历史。
+
+## 2026-11-02：219 浏览已获同意，共享动作库仍需 SDK 支持
+
+用户明确219浏览/211规划、8partial只浏览后继续核查；SDK d4502f3的Library列表、facets筛选和详情均硬性排除partial，无公开浏览开关。此前SF219授权等同219实际可浏览的表述已更正。已补173张封面，总219张逐项哈希通过；scope/profile/运行/存储尚未改，版本仍+28，未构建+29。按SDK问题先报告边界停止，仅推送准备资源与记录，日常WIP未动。[具体SDK位置与后续条件](full-action-scope-2026-11-02.md#用户明确-219-浏览--211-规划后的-sdk-界面阻塞)。
+
+## 2026-11-02：+28 已合 main；全动作范围预检受阻
+
+用户确认 +28 真机测试通过并批准合入。main 以 ff-only 从 `0f507a3` 到 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，普通 push 后远端一致；未重建 APK。随后从新 main 建立 `codex/full-action-scope`，发现固定 SDK 219 个动作中8条缺训练元数据，依“若 SDK 缺，停下报告”停止。SF同样为219可浏览/211可组计划，媒体缺失0；本轮未改动作范围、版本或自测，未出+29。仅预检文档推送分支，日常目录原40个WIP保持不动。[详细缺项与证据](full-action-scope-2026-11-02.md)。以下为历史快照。
+
+## 2026-11-02：共享体验 +28 候选通过门禁，APK 待用户安装
+
+用户16:19明确超大字号不在支持范围，授权删除2倍字号用例，先前SDK溢出不再阻塞。`codex/sdk-shared-experience`验证/构建源`2d3070d375b546bad0dcc453b548ecb0ace818d9`，SDK仍完整固定d4502f35b1503d41cd782aa7fb3780c7f6591ad0。App启动bytes读取修复保持，本轮仅适配测试的真实图片解码、Launcher可操作门禁、纵向viewport和SDK图标归属；删除11条2倍字号用例，未新增skip。严格analyze0、全量428通过/1既有条件跳过。
+
+1.1.0+28/versionCode2028 release arm64 APK为45508800 bytes（43.40MiB），包内0 MP4、46公共海报，签名/CRC/身份和连续测试证书核验通过。原上传签名包与同负载设备测试包均保存，路径、SHA和删除清单见[本轮交付](sdk-shared-experience-completion-2026-11-02.md)。原日常WIP单独保存，按字节哈希恢复；用户自测安装和视觉/真实操作，本轮未执行ADB。只普通推送候选分支，不合main、不打tag、不动release、托管或Flare、不提交商店。下方暂停记录均保留历史。
+
+## 2026-11-02：启动根因已修，SDK 动作库布局问题待确认
+
+继续`codex/sdk-shared-experience@1b2399e`，启动修复源`1f76e745da30133b8b38986d27c2f1b9e5df7791`。临时逐步日志确认`HipApp._load`没有等待网络或抛错，而是276253字节的内置coach catalog经`loadString`触发isolate，主界面断言先于其完成。App改用bytes/UTF-8解码，仍由SDK`Catalog.fromJson`校验，删除测试预热；最小失败用例与新增断网冷启动各1通过，严格analyze0。
+
+全量执行到385通过/19失败时停止：单条诊断确认SDK`training_library_browser.dart:221`在2倍字号/320px键盘inset下溢出20px（可用高度301px）。极大字号原不列日常验收门槛，但本任务要求全量通过，不能把失败记为通过或在App绕过。其余入场/图片解码/滚动辅助失配尚未逐条复验。保持SDK d4502f3、1.1.0+28/2028，不重建APK；手机、main、release、托管与Flare均未操作。详见[诊断报告](sdk-shared-experience-2026-11-02.md#启动定位更新2026-11-02)。下方前轮未定位记录保留历史。
+
+## 2026-11-02：共享体验接线已保存，门禁未通过
+
+`codex/sdk-shared-experience` 从 main `0f507a3` 开发，四个实际 SDK 包及 coach override 均固定 `d4502f35b1503d41cd782aa7fb3780c7f6591ad0`。Launcher、公用媒体、SDK动作库/详情/自测接线及94内置MP4移除已实现，版本1.1.0+28。严格analyze0、Python25/25；Flutter首轮310通过/128失败/1条件跳过，第二轮同类加载失败，234通过/116失败时按用户“两次卡住停止”结束。首次构建44.45MiB、0 MP4仅诊断用，早于两处入口修复，不是最终交付包。完整[结果和后续定位点](sdk-shared-experience-2026-11-02.md)。main/release不合不动，不tag、不商店、不操作托管或Flare；手机未操作，原日常WIP保留。
+
 ## 2026-11-02：第 5 批 SDK 对话模块候选
 
 **主线集成确认（2026-11-02）：** 用户已批准第 5 批合入 main。本机 main 从 `1083b49` 快进至 `origin/main@1b94fc3`，再以 `--no-ff` 合入固定候选 `c8cf82f`，合并点 `9054932a982a9b41eaf540a4281af1e069c2f456`。合并后严格analyze为0问题、全量446通过/1条件跳过，与候选一致。下方候选状态为批准前快照；10月27日 iOS 章节原文保留。合并复核见[验证台账](verification.md)。release/1.0仍为`1f9a172`，既有APK不重打，不tag、不提交商店。
