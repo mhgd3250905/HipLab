@@ -41,6 +41,7 @@ class HipSegmented<T> extends StatefulWidget {
     this.standalone = false,
     this.glass = false,
     this.blur = false,
+    this.bare = false,
     this.duration,
     this.curve,
   }) : assert(label != null || itemBuilder != null);
@@ -64,6 +65,10 @@ class HipSegmented<T> extends StatefulWidget {
   /// [blur] when it floats over content) and a brighter inner glass pill.
   final bool glass;
   final bool blur;
+
+  /// With [glass]: no track surface of its own — it sits inside a glass
+  /// capsule that also holds other items (首页 dock, m3).
+  final bool bare;
 
   /// Thumb slide; defaults to [HipMotion.segment] on [HipMotion.spring].
   final Duration? duration;
@@ -109,15 +114,11 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
       ? HipColors.jadeText
       : HipColors.text;
 
+  /// m3: a flat recessed fill — no outline, rim or shadow; the raised
+  /// thumb alone marks the selection.
   BoxDecoration get _trackDecoration => BoxDecoration(
-    color: widget.standalone && HipColors.isDark
-        ? HipColors.surface
-        : HipColors.track,
+    color: HipColors.track,
     borderRadius: BorderRadius.circular(widget.radius),
-    border: widget.standalone && HipColors.isDark
-        ? Border.all(color: HipColors.line)
-        : null,
-    boxShadow: widget.standalone ? HipColors.cardShadow : null,
   );
 
   /// The selection thumb is the reference tactile tile the app's buttons
@@ -222,6 +223,9 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
         },
       ),
     );
+    if (widget.glass && widget.bare) {
+      return SizedBox(height: widget.height, child: content);
+    }
     if (widget.glass) {
       return SizedBox(
         height: widget.height,
@@ -237,15 +241,7 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
     return Container(
       height: widget.height,
       decoration: _trackDecoration,
-      child: CustomPaint(
-        foregroundPainter: HipGlassRimPainter(
-          radius: widget.radius,
-          dark: HipColors.isDark,
-          high: MediaQuery.maybeHighContrastOf(context) ?? false,
-          strength: .45,
-        ),
-        child: content,
-      ),
+      child: content,
     );
   }
 

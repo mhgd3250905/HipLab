@@ -686,169 +686,205 @@ class _HipHomeState extends State<HipHome> {
     ];
     final canRotate = store.sceneRoutines(store.scene).length > 1;
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, c) {
-          final top = MediaQuery.paddingOf(context).top;
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Full-bleed cover from the very top (status bar included),
-              // so the floating glass controls have content to blur.
-              if (hero != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: top + c.maxHeight * .7,
-                  child: _HomeHeroArt(
-                    drill: hero,
-                    id: '${store.scene.id}-${routine!.id}',
-                  ),
-                ),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _topBar(),
-                      const SizedBox(height: 14),
-                      Center(child: _scenePicker()),
-                      const Spacer(),
-                      for (final a in alerts) ...[
-                        a,
-                        const SizedBox(height: 10),
-                      ],
-                      if (plan == null)
-                        _blockedHero()
-                      else
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: _headline(routine!, plan),
-                        ),
-                      if (plan != null) ...[
-                        const SizedBox(height: 24),
-                        _dock(plan, canRotate: canRotate),
-                      ],
-                    ],
-                  ),
-                ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Full-bleed cover, edge to edge and under the status bar: the
+          // text sits straight on it and the dock has something to blur.
+          if (hero != null)
+            Positioned.fill(
+              child: _HomeHeroArt(
+                drill: hero,
+                id: '${store.scene.id}-${routine!.id}',
               ),
-            ],
-          );
-        },
+            ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: _topBar(),
+                  ),
+                  const Spacer(),
+                  for (final a in alerts) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: a,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  if (plan == null)
+                    _blockedHero()
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(child: _headline(routine!, plan)),
+                          if (canRotate) ...[
+                            const SizedBox(width: 12),
+                            _rotateButton(),
+                          ],
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 26),
+                  _dock(plan),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  /// The floating glass dock: jade 开始 (the one accent) and 换一套, the
-  /// way 开哥's reference floats a capsule over content.
-  Widget _dock(TrainingPlan plan, {required bool canRotate}) => HipGlass(
-    key: const ValueKey('home-dock'),
-    shape: HipGlassShape.capsule,
-    blur: true,
-    sigma: 22,
-    padding: const EdgeInsets.all(6),
-    child: SizedBox(
-      height: 60,
+  /// The reference dock: one floating liquid-glass capsule (办公 / 居家 with
+  /// a sliding inner pill, 更多) and, apart from it, the round jade glass
+  /// 开始 — the only accent.
+  Widget _dock(TrainingPlan? plan) {
+    const h = 72.0;
+    final idle = HipColors.text.withValues(alpha: .62);
+    return SizedBox(
+      height: h,
       child: Row(
         children: [
-          Expanded(child: _startButton(plan)),
-          if (canRotate) ...[
-            const SizedBox(width: 6),
-            HipPressable(
-              key: const ValueKey('home-rotate'),
-              semanticLabel: '换一套',
-              onTap: _rotate,
-              scale: .96,
-              child: SizedBox(
-                width: 96,
-                height: 60,
-                child: HipGlassPill(
-                  strength: .55,
-                  child: Center(
-                    child: Text(
-                      '换一套',
-                      style: TextStyle(
-                        fontSize: 15,
-                        height: 1.2,
-                        letterSpacing: 1.5,
-                        fontWeight: FontWeight.w600,
-                        color: HipColors.text,
-                      ),
+          Expanded(
+            child: HipGlass(
+              key: const ValueKey('home-dock'),
+              shape: HipGlassShape.capsule,
+              blur: true,
+              sigma: 22,
+              padding: const EdgeInsets.all(5),
+              child: Row(
+                children: [
+                  Expanded(flex: 2, child: _scenePicker(h - 10)),
+                  Expanded(
+                    child: HipPressable(
+                      key: const ValueKey('home-more'),
+                      semanticLabel: '更多',
+                      onTap: _openMore,
+                      scale: .94,
+                      child: _dockItem(HipGlyph.grid, '更多', idle, 0),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
+          ),
+          if (plan != null) ...[
+            const SizedBox(width: 10),
+            _startButton(plan, h),
           ],
         ],
       ),
+    );
+  }
+
+  Widget _dockItem(HipGlyph glyph, String label, Color fg, double t) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        HipIcon(glyph, size: 22, filled: t > .5, color: fg),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          maxLines: 1,
+          softWrap: false,
+          style: TextStyle(
+            fontSize: 12.5,
+            height: 1.2,
+            letterSpacing: .5,
+            fontWeight: t > .5 ? FontWeight.w700 : FontWeight.w500,
+            color: fg,
+          ),
+        ),
+      ],
     ),
+  );
+
+  /// 换一套: a small round glass button beside the title.
+  Widget _rotateButton() => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      HipGlassRoundButton(
+        key: const ValueKey('home-rotate'),
+        semanticLabel: '换一套',
+        blur: true,
+        size: 50,
+        onTap: _rotate,
+        child: HipIcon(HipGlyph.shuffle, size: 22, color: HipColors.text),
+      ),
+      const SizedBox(height: 6),
+      ExcludeSemantics(
+        child: Text(
+          '换一套',
+          style: TextStyle(
+            fontSize: 11.5,
+            height: 1.2,
+            letterSpacing: .5,
+            color: HipColors.muted,
+          ),
+        ),
+      ),
+    ],
   );
 
   Widget _topBar() => Row(
     children: [
       Expanded(
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                _greeting(store.now()),
-                key: const ValueKey('home-greeting'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  letterSpacing: .5,
-                  color: HipColors.muted,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            _streakChip(),
-          ],
+        child: Text(
+          _greeting(store.now()),
+          key: const ValueKey('home-greeting'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.3,
+            letterSpacing: .5,
+            fontWeight: FontWeight.w500,
+            color: HipColors.text.withValues(alpha: .78),
+          ),
         ),
       ),
       const SizedBox(width: 12),
-      HipCalmRoundButton(
-        key: const ValueKey('home-more'),
-        semanticLabel: '更多',
-        blur: true,
-        size: 42,
-        onTap: _openMore,
-        child: const HipMoreDots(),
-      ),
+      _streakChip(),
     ],
   );
 
-  /// 打卡: a tiny chip, not a panel.
+  /// 打卡: a tiny glass chip, not a panel.
   Widget _streakChip() => Semantics(
     label: '连续打卡 ${store.streak} 天',
     child: ExcludeSemantics(
       child: HipGlass(
         key: const ValueKey('home-streak'),
         shape: HipGlassShape.capsule,
-        radius: 12,
+        radius: 14,
+        blur: true,
+        sigma: 14,
         shadow: false,
-        padding: const EdgeInsets.fromLTRB(8, 4, 10, 4),
+        padding: const EdgeInsets.fromLTRB(9, 5, 11, 5),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             HipIcon(
               HipGlyph.flame,
-              size: 13,
+              size: 14,
               filled: true,
               color: HipColors.tight,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Text(
               '${store.streak} 天',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 height: 1.2,
-                fontWeight: FontWeight.w600,
-                color: HipColors.tight,
+                fontWeight: FontWeight.w700,
+                color: HipColors.text,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
@@ -925,18 +961,19 @@ class _HipHomeState extends State<HipHome> {
     );
   }
 
-  /// One big 开始: the shared tactile accent, as a wide pill.
-  Widget _startButton(TrainingPlan plan) => HipStartButton(
+  /// 开始: the round jade glass button beside the dock.
+  Widget _startButton(TrainingPlan plan, double size) => HipStartButton(
     key: _startKey,
     buttonKey: const ValueKey('start-today'),
     stage: HipColors.palette,
-    size: 60,
-    width: double.infinity,
+    size: size,
+    glass: true,
     onTap: plan.steps.isEmpty
         ? null
         : () => _startPlan(
             plan,
             from: _startKey.currentContext,
+            radius: size / 2,
             originColor: HipColors.jade,
           ),
   );
@@ -1006,23 +1043,27 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  /// 办公 | 居家, small and centred under the greeting.
-  Widget _scenePicker() => SizedBox(
-    width: 180,
-    child: HipSegmented<HipScene>(
-      keyPrefix: 'scene',
-      glass: true,
-      blur: true,
-      duration: HipCalmMotion.swap,
-      curve: HipCalmMotion.curve,
-      height: 42,
-      radius: 21,
-      inset: 4,
-      values: const [HipScene.chair, HipScene.home],
-      selected: store.scene,
-      label: (v) => v == HipScene.chair ? '办公' : '居家',
-      onChanged: store.pickScene,
+  /// 办公 | 居家 inside the dock: icon + label, the brighter inner pill
+  /// slides between them.
+  Widget _scenePicker(double height) => HipSegmented<HipScene>(
+    keyPrefix: 'scene',
+    glass: true,
+    bare: true,
+    duration: HipCalmMotion.swap,
+    curve: HipCalmMotion.curve,
+    height: height,
+    radius: height / 2,
+    inset: 0,
+    values: const [HipScene.chair, HipScene.home],
+    selected: store.scene,
+    label: (v) => v == HipScene.chair ? '办公' : '居家',
+    itemBuilder: (v, fg, t) => _dockItem(
+      v == HipScene.chair ? HipGlyph.desk : HipGlyph.home,
+      v == HipScene.chair ? '办公' : '居家',
+      fg,
+      t,
     ),
+    onChanged: store.pickScene,
   );
 }
 
@@ -1042,17 +1083,18 @@ class _HomeHeroArt extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // Faint jade glow low behind the figure (and the dock).
             Align(
-              alignment: const Alignment(0, .1),
+              alignment: const Alignment(0, .62),
               child: FractionallySizedBox(
-                widthFactor: .75,
-                heightFactor: .6,
+                widthFactor: 1,
+                heightFactor: .5,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       colors: [
                         HipColors.jade.withValues(
-                          alpha: HipColors.isDark ? .16 : .1,
+                          alpha: HipColors.isDark ? .2 : .12,
                         ),
                         HipColors.jade.withValues(alpha: 0),
                       ],
@@ -1082,9 +1124,9 @@ class _HomeHeroArt extends StatelessWidget {
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: const Alignment(0, -.1),
-                  radius: .9,
-                  stops: const [.45, .95],
+                  center: const Alignment(0, -.05),
+                  radius: 1.1,
+                  stops: const [.5, 1],
                   colors: [bg.withValues(alpha: 0), bg],
                 ),
               ),
@@ -1094,12 +1136,15 @@ class _HomeHeroArt extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0, .17, .52, .9],
+                  // Top: a scrim so the greeting reads over the head.
+                  // Bottom: the title and how-to sit on a soft fade.
+                  stops: const [0, .16, .5, .78, 1],
                   colors: [
-                    bg.withValues(alpha: .82),
+                    bg.withValues(alpha: .9),
                     bg.withValues(alpha: 0),
                     bg.withValues(alpha: 0),
-                    bg,
+                    bg.withValues(alpha: .6),
+                    bg.withValues(alpha: .8),
                   ],
                 ),
               ),

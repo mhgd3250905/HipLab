@@ -1,5 +1,5 @@
 // Home redesign r1 (开哥 2026-11-02): scene by time of day, one routine with
-// 「换一套」, a small 打卡 chip, ⋯ → 「更多」 with AI first (gated).
+// 「换一套」, a small 打卡 chip, the dock's 更多 → 「更多」 with AI first (gated).
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -224,6 +224,15 @@ void main() {
       await pumpHome(tester);
       await openPractice(tester);
       await _capture(tester, '$shots/practice-dark.png');
+    });
+    testWidgets('6 套路详情 dark', (tester) async {
+      await pumpHome(tester);
+      await openPractice(tester);
+      await tester.tap(find.byKey(const ValueKey('practice-1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('routine-card-A')));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/routine-dark.png');
     });
   }, skip: shots == null);
 }

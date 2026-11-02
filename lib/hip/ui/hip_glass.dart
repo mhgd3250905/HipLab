@@ -139,12 +139,14 @@ class HipGlassPill extends StatelessWidget {
                         alpha: high ? .26 : .12 * strength,
                       ),
                     ]
+                  // Light (m3): white glass on a white dock is invisible,
+                  // so the pill is a soft grey well under the white rim.
                   : [
-                      Colors.white.withValues(
-                        alpha: high ? .98 : (.98 * strength).clamp(.5, 1),
+                      Colors.black.withValues(
+                        alpha: high ? .14 : .075 * strength,
                       ),
-                      Colors.white.withValues(
-                        alpha: high ? .98 : (.82 * strength).clamp(.4, 1),
+                      Colors.black.withValues(
+                        alpha: high ? .12 : .05 * strength,
                       ),
                     ],
             ),

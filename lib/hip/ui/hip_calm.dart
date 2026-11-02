@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'hip_glass.dart';
 import 'hip_theme.dart';
+import 'hip_widgets.dart' show HipPressable;
 
 abstract final class HipCalmMotion {
   static const expand = Duration(milliseconds: 260);
@@ -66,14 +67,26 @@ class HipCalmRoundButton extends StatelessWidget {
   final double size;
   final bool blur;
 
+  /// m3: over imagery ([blur]) a small glass disc; on a page a plain
+  /// glyph with the same hit target (no circle, no rim).
   @override
-  Widget build(BuildContext context) => HipGlassRoundButton(
-    semanticLabel: semanticLabel,
-    onTap: onTap,
-    size: size,
-    blur: blur,
-    child: child,
-  );
+  Widget build(BuildContext context) => blur
+      ? HipGlassRoundButton(
+          semanticLabel: semanticLabel,
+          onTap: onTap,
+          size: size,
+          blur: blur,
+          child: child,
+        )
+      : HipPressable(
+          semanticLabel: semanticLabel,
+          onTap: onTap,
+          scale: .9,
+          child: SizedBox.square(
+            dimension: size < 44 ? 44 : size,
+            child: Center(child: child),
+          ),
+        );
 }
 
 /// Three dots (⋯) drawn as circles, as in the approved mockup.

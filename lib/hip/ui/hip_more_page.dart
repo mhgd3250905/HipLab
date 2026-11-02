@@ -67,11 +67,10 @@ class HipMorePage extends StatelessWidget {
           HipCalmRoundButton(
             key: const ValueKey('more-back'),
             semanticLabel: '返回',
-            blur: true,
             onTap: () => Navigator.of(context).maybePop(),
             child: HipIcon(HipGlyph.back, size: 20, color: HipColors.text),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 6),
           const Text(
             '更多',
             style: TextStyle(
@@ -83,8 +82,9 @@ class HipMorePage extends StatelessWidget {
           ),
         ],
       ),
-      if (showAi) ...[const SizedBox(height: 22), _aiCard(context)],
-      const SizedBox(height: 18),
+      if (showAi) ...[const SizedBox(height: 26), _aiCard(context)],
+      const SizedBox(height: 30),
+      _header('练习'),
       _group([
         _row(
           context,
@@ -132,7 +132,8 @@ class HipMorePage extends StatelessWidget {
           ),
         ),
       ]),
-      const SizedBox(height: 14),
+      const SizedBox(height: 30),
+      _header('偏好'),
       _group([
         _row(
           context,
@@ -166,131 +167,145 @@ class HipMorePage extends StatelessWidget {
     );
   }
 
+  /// AI 定制 as the page's lead section: flat, no card — a title, one line,
+  /// an input-like bar and a few prompts, all fill-based.
   Widget _aiCard(BuildContext context) {
     final jade = HipColors.jade;
+    final soft = HipColors.isDark
+        ? Colors.white.withValues(alpha: .07)
+        : Colors.black.withValues(alpha: .045);
     return HipPressable(
       key: const ValueKey('more-ai-coach'),
       semanticLabel: '让 AI 帮你排一套',
-      scale: .98,
+      scale: .99,
       onTap: () => _push(context, HipCoachChatPage(actions: actions)),
-      child: HipGlass(
-        blur: true,
-        radius: 26,
-        tint: jade,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '让 AI 帮你排一套',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'AI 定制',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.2,
+                letterSpacing: 2.5,
+                fontWeight: FontWeight.w600,
+                color: HipColors.jadeText,
               ),
-              const SizedBox(height: 4),
-              Text(
-                '说说哪里紧、有多少时间，直接给你一套能练的',
-                style: TextStyle(fontSize: 13, color: HipColors.muted),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '让 AI 帮你排一套',
+              style: TextStyle(
+                fontSize: 22,
+                height: 1.25,
+                letterSpacing: 1,
+                fontWeight: FontWeight.w800,
               ),
-              const SizedBox(height: 14),
-              Container(
-                height: 46,
-                padding: const EdgeInsets.fromLTRB(18, 0, 6, 0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(23),
-                  color: HipColors.isDark
-                      ? Colors.black.withValues(alpha: .28)
-                      : Colors.white.withValues(alpha: .72),
-                  border: Border.all(
-                    color: Colors.white.withValues(
-                      alpha: HipColors.isDark ? .08 : .9,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '说说哪里紧、有多少时间，直接给你一套能练的',
+              style: TextStyle(fontSize: 13.5, color: HipColors.muted),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 48,
+              padding: const EdgeInsets.fromLTRB(16, 0, 7, 0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: soft,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '比如：下午腰胯很僵，10 分钟',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 14, color: HipColors.faint),
                     ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '比如：下午腰胯很僵，10 分钟',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14, color: HipColors.faint),
-                      ),
+                  Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(9),
+                      color: jade,
                     ),
-                    Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: jade,
-                      ),
-                      child: HipIcon(
-                        HipGlyph.play,
-                        size: 14,
-                        filled: true,
-                        color: HipColors.onJade,
-                      ),
+                    child: HipIcon(
+                      HipGlyph.play,
+                      size: 14,
+                      filled: true,
+                      color: HipColors.onJade,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final c in const ['久坐腰胯僵', '想练劈叉', '跑步后放松'])
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: HipColors.isDark
-                            ? Colors.white.withValues(alpha: .08)
-                            : Colors.white.withValues(alpha: .66),
-                        border: Border.all(
-                          color: Colors.white.withValues(
-                            alpha: HipColors.isDark ? .1 : .9,
-                          ),
-                        ),
-                      ),
-                      child: Text(
-                        c,
-                        style: TextStyle(fontSize: 12, color: HipColors.muted),
-                      ),
-                    ),
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final c in const ['久坐腰胯僵', '想练劈叉', '跑步后放松'])
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: soft,
+                    ),
+                    child: Text(
+                      c,
+                      style: TextStyle(fontSize: 12.5, color: HipColors.muted),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// One glass panel per group (never one per row).
-  Widget _group(List<Widget> rows) => HipCalmSurface(
-    radius: 24,
-    blur: true,
-    child: Column(
-      children: [
-        for (final (i, r) in rows.indexed) ...[
-          if (i > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 66),
-              child: Divider(
-                height: 1,
-                thickness: .5,
-                color: HipColors.text.withValues(alpha: .1),
-              ),
-            ),
-          r,
-        ],
-      ],
+  /// Small grey section header (settings-style), on the page itself.
+  Widget _header(String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 12.5,
+        height: 1.2,
+        letterSpacing: 2,
+        fontWeight: FontWeight.w600,
+        color: HipColors.faint,
+      ),
     ),
   );
+
+  /// Flat rows with hairline dividers — no panel around the group.
+  Widget _group(List<Widget> rows) {
+    final line = Divider(
+      height: 1,
+      thickness: .5,
+      color: HipColors.text.withValues(alpha: .12),
+    );
+    return Column(
+      children: [
+        line,
+        for (final (i, r) in rows.indexed) ...[
+          if (i > 0) Padding(padding: const EdgeInsets.only(left: 42), child: line),
+          r,
+        ],
+        line,
+      ],
+    );
+  }
 
   Widget _row(
     BuildContext context, {
@@ -305,21 +320,10 @@ class HipMorePage extends StatelessWidget {
     scale: .99,
     onTap: onTap,
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
+      padding: const EdgeInsets.fromLTRB(4, 16, 2, 16),
       child: Row(
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(11),
-              color: Colors.white.withValues(
-                alpha: HipColors.isDark ? .07 : .8,
-              ),
-            ),
-            child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
-          ),
+          HipIcon(glyph, size: 22, color: HipColors.jadeText),
           const SizedBox(width: 16),
           // Title at its natural width (up to 3/4 of the room, so very large
           // text ellipsizes instead of overflowing), meta takes the rest.
@@ -393,7 +397,7 @@ class HipMorePage extends StatelessWidget {
                   message: '返回',
                   child: HipCalmRoundButton(
                     semanticLabel: '返回',
-                    size: 38,
+                    size: 44,
                     onTap: () => Navigator.of(c).maybePop(),
                     child: HipIcon(
                       HipGlyph.back,

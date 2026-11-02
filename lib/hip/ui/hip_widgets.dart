@@ -1322,7 +1322,11 @@ class HipCircleButton extends StatelessWidget {
     child: Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
+      // m3: top-bar sizes are a plain glyph (no disc); the player's big
+      // transport keys keep their flat tonal disc.
+      decoration: size <= 48
+          ? null
+          : BoxDecoration(
         color: HipColors.surfaceHigh,
         shape: BoxShape.circle,
         // Light: a hairline instead of the old soft shadow, so the grey disc
@@ -1365,8 +1369,13 @@ class HipStartButton extends StatelessWidget {
     this.size = 104,
     this.width,
     this.label = '开始',
+    this.glass = false,
   });
   final VoidCallback? onTap;
+
+  /// Jade liquid glass disc floating over imagery (首页 dock, m3): blurred
+  /// backdrop, translucent jade fill, thin bright rim.
+  final bool glass;
 
   /// Palette of what the button sits on (the dark media stage).
   final HipPalette stage;
@@ -1401,6 +1410,48 @@ class HipStartButton extends StatelessWidget {
         color: fg,
       ),
     );
+    if (glass && !pill) {
+      return HipPressable(
+        semanticLabel: label,
+        key: buttonKey,
+        onTap: onTap,
+        scale: HipMotion.pressScale,
+        child: RepaintBoundary(
+          child: SizedBox.square(
+            dimension: size,
+            child: _GlassJadeDisc(
+              enabled: enabled,
+              stage: stage,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: size * .03),
+                    child: HipIcon(
+                      HipGlyph.play,
+                      size: size * .34,
+                      filled: true,
+                      color: fg,
+                    ),
+                  ),
+                  SizedBox(height: size * .02),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: size * .19,
+                      height: 1.15,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w700,
+                      color: fg,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return HipPressable(
       semanticLabel: label,
       key: buttonKey,
@@ -1444,49 +1495,109 @@ class HipStartButton extends StatelessWidget {
   }
 }
 
+class _GlassJadeDisc extends StatelessWidget {
+  const _GlassJadeDisc({
+    required this.enabled,
+    required this.stage,
+    required this.child,
+  });
+  final bool enabled;
+  final HipPalette stage;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    final dark = HipColors.isDark;
+    final jade = enabled ? stage.jade : stage.faint;
+    Widget body = DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          center: const Alignment(-.35, -.55),
+          radius: 1.05,
+          colors: [
+            Color.lerp(jade, Colors.white, .28)!.withValues(
+              alpha: high ? 1 : .94,
+            ),
+            jade.withValues(alpha: high ? 1 : .8),
+          ],
+        ),
+      ),
+      child: CustomPaint(
+        foregroundPainter: HipGlassRimPainter(
+          radius: 999,
+          dark: true,
+          high: high,
+          strength: 1.4,
+        ),
+        child: Center(child: child),
+      ),
+    );
+    if (!high) {
+      body = BackdropFilter(
+        filter: HipGlassStyle.filter(18, dark: dark),
+        child: body,
+      );
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: enabled
+            ? HipColors.shadows([
+                BoxShadow(
+                  color: stage.jade.withValues(alpha: dark ? .38 : .3),
+                  blurRadius: 26,
+                  offset: const Offset(0, 6),
+                ),
+              ])
+            : null,
+      ),
+      child: ClipOval(child: body),
+    );
+  }
+}
+
+/// A flat section surface (m3, 开哥 2026-11-02: "不要搞那么多大圆角和边框"):
+/// a subtle tonal fill, small corners (≤ 12), no border, rim or shadow.
+/// [borderColor] (alerts) tints the fill instead of drawing an outline.
 class HipPanel extends StatelessWidget {
   const HipPanel({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
-    this.radius = 22,
+    this.radius = 12,
   });
   final Widget child;
   final EdgeInsets padding;
   final Color? borderColor;
   final double radius;
 
-  /// Glass without blur (m2): translucent fill + light rim; the page
-  /// behind is plain here, so nothing is sampled. [borderColor] (alerts)
-  /// replaces the rim with its own colour.
   @override
   Widget build(BuildContext context) {
     final dark = HipColors.isDark;
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
-    final rr = BorderRadius.circular(radius);
-    return DecoratedBox(
-      decoration: BoxDecoration(
+    final rr = BorderRadius.circular(radius.clamp(0, 12).toDouble());
+    final base = dark
+        ? Colors.white.withValues(alpha: high ? .12 : .05)
+        : Colors.black.withValues(alpha: high ? .08 : .035);
+    final fill = borderColor == null
+        ? base
+        : Color.alphaBlend(
+            borderColor!.withValues(alpha: dark ? .16 : .12),
+            base,
+          );
+    return Material(
+      color: fill,
+      shape: RoundedRectangleBorder(
         borderRadius: rr,
-        boxShadow: dark ? null : HipColors.cardShadow,
-        gradient: HipGlassStyle.fill(dark: dark, high: high),
+        side: high
+            ? BorderSide(color: borderColor ?? HipColors.line)
+            : BorderSide.none,
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        shape: RoundedRectangleBorder(
-          borderRadius: rr,
-          side: borderColor == null
-              ? BorderSide.none
-              : BorderSide(color: borderColor!),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: CustomPaint(
-          foregroundPainter: borderColor != null
-              ? null
-              : HipGlassRimPainter(radius: radius, dark: dark, high: high),
-          child: Padding(padding: padding, child: child),
-        ),
-      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(padding: padding, child: child),
     );
   }
 }
