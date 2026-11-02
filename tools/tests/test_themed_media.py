@@ -46,7 +46,7 @@ class ThemedMediaTest(unittest.TestCase):
         catalog = json.loads(index.read_text(encoding='utf-8'))
         covers = {action['id']: action for action in catalog['actions']}
         posters = list((ROOT / 'assets/public_posters').glob('*.webp'))
-        self.assertEqual(len(posters), 46)
+        self.assertEqual({poster.stem for poster in posters}, set(covers))
         for poster in posters:
             cover = covers[poster.stem]
             data = poster.read_bytes()

@@ -1,5 +1,22 @@
 # 全动作范围预检与主线合入回执（2026-11-02）
 
+## 用户明确 219 浏览 / 211 规划后的 SDK 界面阻塞
+
+用户已明确继续：219 个动作可浏览，211 个可由 Coach 组计划，8 个 partial 只浏览、不补元数据。继续核查共享组件后，确认固定 SDK `d4502f3` **还不支持在公共动作库展示 partial**，并非扩大 App 授权列表即可完成：
+
+- `packages/ugk_trainer_runtime/lib/src/library/training_library_config.dart:26`：`actions()` 只遍历 `catalog.semanticCompleteActions`。
+- 同包 `lib/src/library/training_library_page.dart:41`：页面只把 `semanticCompleteActions` 传给浏览器。
+- 同包 `lib/src/library/training_library_browser.dart:86`：`PoseHubActionFacets.matches` 对 `!action.trainingDefinitionComplete` 直接返回 false。
+- 同包 `lib/src/library/training_library_page.dart:131` 起：详情也从 `config.actions(...)` 查找动作，partial 无法打开详情。
+
+以上均无公开的浏览范围选项。需要 SDK 提供“浏览可含 partial，开练和规划仍限完整定义”的配置或等价支持，并在缺器械等字段时显示未知状态，不能把未知字段解释成徒手或无风险。App 不通过伪造 complete 状态、复制组件或重写筛选绕过。
+
+**更正此前结论：** 前一轮把 SF 的 219 个授权/原始目录 ID 表述成了 219 个实际可浏览动作，核查不充分。SF main `52d30ae` 的 `lib/ui/posehub_library_page.dart:51` 使用 `PoseHubActionBrowser`；其当前解析的 SDK `7d9be56` 在 `packages/ugk_trainer_runtime/lib/src/pose_hub/pose_hub_action_browser.dart:215,220` 同样只读取 `semanticCompleteActions`。219 授权目录 / 211 完整训练定义不能证明 UI 可浏览 219 个。
+
+本轮已保存独立的资源准备成果：新增 173 张公共封面，共 219 张、5,813,392 bytes；与固定 SDK standing 索引逐项大小和 SHA256 一致，缺媒体描述 0，无新增 MP4。资源测试改为核对完整公共目录/standing 集合，自测题目、图片映射与计分断言保留。**scope、profile、运行和存储接线尚未修改，仍是 +28；不代表已开放全动作。**
+
+按既有“SDK 问题先报告、不在 App 绕过”边界停止；未递增 +29/2029，未构建 APK，未新增真机或视觉验收。资源专项 `flutter test --no-pub --concurrency=1 test/hip/hip_assets_test.dart` **3/3通过**，`python -m unittest tools.tests.test_themed_media` **5/5通过**，`git diff --check`通过；未运行本轮严格 analyze 或全量 Flutter 测试。此次只推送资源准备、相关测试及阻塞记录；main 仍为 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，日常 40 个 WIP 未动。以下是前一轮预检快照。
+
 ## 结论
 
 用户确认 +28 真机测试通过并批准合入。远端 main 已从 `0f507a3124436d29e8e3fbb7e2769a1d7d3c9018` 以 `--ff-only` 快进到 `d0c28c59976e32d58e4999b524bb40c60ee3672a`，普通 push 后远端回读一致。没有重建 +28 APK；此处真机结论来自用户反馈。

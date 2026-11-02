@@ -55,14 +55,15 @@ void main() {
     expect(pubspec, contains('- assets/public_posters/'));
   });
 
-  test('public poster bundle exactly covers HipLab scope plus Thomas demo', () {
-    final expected = {...hiplabCoachAuthorizedActionIds, 'n-thomas-test'};
+  test('public poster bundle exactly covers the full shared catalog', () {
+    final expected = actions.keys.toSet();
     final bundled = Directory('assets/public_posters')
         .listSync()
         .whereType<File>()
         .map((file) => file.uri.pathSegments.last)
         .toSet();
-    expect(hiplabCoachAuthorizedActionIds, hasLength(45));
+    expect(expected, hasLength(219));
+    expect(expected, containsAll(hiplabCoachAuthorizedActionIds));
     expect(bundled, {for (final id in expected) '$id.webp'});
     for (final id in expected) {
       final action = actions[id];
