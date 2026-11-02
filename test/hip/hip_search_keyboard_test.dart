@@ -13,7 +13,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -23,13 +22,8 @@ final _now = DateTime(2026, 10, 19, 9, 41);
 
 void main() {
   final content = loadContent();
-  Finder search() => find.byKey(
-    ValueKey(
-      find.byType(DrillPickerPage).evaluate().isNotEmpty
-          ? 'lib-search'
-          : 'posehub-search',
-    ),
-  );
+  // UI r2 M3: 动作库 and 添加动作 share the HipLab search field.
+  Finder search() => find.byKey(const ValueKey('lib-search'));
 
   Future<HipStore> openPractice(WidgetTester tester, double scale) async {
     tester.view.physicalSize = const Size(390, 844);
@@ -82,14 +76,8 @@ void main() {
     );
   }
 
-  int actionCount(WidgetTester tester) =>
-      (tester
-                  .widget<GridView>(
-                    find.byKey(const ValueKey('posehub-action-list')),
-                  )
-                  .childrenDelegate
-              as SliverChildBuilderDelegate)
-          .childCount!;
+  String actionCount(WidgetTester tester) =>
+      tester.widget<Text>(find.byKey(const ValueKey('actions-count'))).data!;
 
   for (final scale in [1.0]) {
     testWidgets('search ×$scale: tap shows the keyboard, keeps it when the '
@@ -127,7 +115,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(actionCount(tester), isNot(before), reason: 'filtered');
       expect(
-        find.byKey(const ValueKey('posehub-action-s-pigeon')),
+        find.byKey(const ValueKey('drill-card-s-pigeon')),
         findsWidgets,
       );
       expect(tester.takeException(), isNull);
