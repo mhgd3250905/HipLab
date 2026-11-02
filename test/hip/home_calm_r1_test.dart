@@ -177,7 +177,10 @@ void main() {
       final font = FontLoader(hipFontFamily)
         ..addFont(rootBundle.load('assets/fonts/NotoSansSC.ttf'));
       await font.load();
+      // flutter_tester draws BoxShadow without blur (hard shelves).
+      HipColors.flatShadows = true;
     });
+    tearDownAll(() => HipColors.flatShadows = false);
 
     testWidgets('1 home office dark', (tester) async {
       await pumpHome(tester);
@@ -202,6 +205,25 @@ void main() {
       );
       await openMore(tester);
       await _capture(tester, '$shots/more-dark.png');
+    });
+    testWidgets('4 更多 light', (tester) async {
+      await pumpHome(
+        tester,
+        theme: HipThemeChoice.light,
+        scene: HipScene.home,
+        at: DateTime(2026, 11, 2, 21, 40),
+        coach: (s) => HipCoachChat(
+          store: s,
+          config: const CoachConfig(appKey: 'test'),
+        ),
+      );
+      await openMore(tester);
+      await _capture(tester, '$shots/more-light.png');
+    });
+    testWidgets('5 练习 dark', (tester) async {
+      await pumpHome(tester);
+      await openPractice(tester);
+      await _capture(tester, '$shots/practice-dark.png');
     });
   }, skip: shots == null);
 }

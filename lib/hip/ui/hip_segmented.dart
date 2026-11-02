@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'hip_glass.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipPressable, HipTactile, HipTactileStyle;
 
@@ -38,6 +39,10 @@ class HipSegmented<T> extends StatefulWidget {
     this.radius = 14,
     this.inset = 4,
     this.standalone = false,
+    this.glass = false,
+    this.blur = false,
+    this.duration,
+    this.curve,
   }) : assert(label != null || itemBuilder != null);
 
   final List<T> values;
@@ -54,6 +59,15 @@ class HipSegmented<T> extends StatefulWidget {
   final double radius;
   final double inset;
   final bool standalone;
+
+  /// Floating glass capsule (首页 scene switch, m2): a glass track (with
+  /// [blur] when it floats over content) and a brighter inner glass pill.
+  final bool glass;
+  final bool blur;
+
+  /// Thumb slide; defaults to [HipMotion.segment] on [HipMotion.spring].
+  final Duration? duration;
+  final Curve? curve;
 
   /// Thumb corner radius: concentric with the track.
   double get thumbRadius => (radius - inset).clamp(0, radius).toDouble();
@@ -89,8 +103,11 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
     if (inside != _pointerInside) setState(() => _pointerInside = inside);
   }
 
-  Color get _selectedFg =>
-      widget.standalone ? HipColors.jadeText : HipColors.text;
+  Color get _selectedFg => widget.glass
+      ? HipColors.text
+      : widget.standalone
+      ? HipColors.jadeText
+      : HipColors.text;
 
   BoxDecoration get _trackDecoration => BoxDecoration(
     color: widget.standalone && HipColors.isDark
@@ -106,11 +123,13 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
   /// The selection thumb is the reference tactile tile the app's buttons
   /// were distilled from (button audit 2026-10-18): lit from above, a 1px
   /// top light, a hairline edge and a tight contact shadow.
-  Widget _thumb(bool pressed) => HipTactile(
-    style: HipTactileStyle.neutral(),
-    radius: widget.thumbRadius,
-    pressed: pressed,
-  );
+  Widget _thumb(bool pressed) => widget.glass
+      ? HipGlassPill(radius: widget.thumbRadius)
+      : HipTactile(
+          style: HipTactileStyle.neutral(),
+          radius: widget.thumbRadius,
+          pressed: pressed,
+        );
 
   void _select(int i) {
     if (i < 0 ||
@@ -129,11 +148,21 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
         .clamp(0, widget.values.length - 1);
     final pressed = _pointerInside && (_dragging || _pressedIndex == index);
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final idle = HipColors.muted;
+    final idle = widget.glass
+        ? HipColors.text.withValues(alpha: .62)
+        : HipColors.muted;
     final on = _selectedFg;
-    return Container(
-      height: widget.height,
-      decoration: _trackDecoration,
+    final track = widget.glass
+        ? null
+        : CustomPaint(
+            foregroundPainter: HipGlassRimPainter(
+              radius: widget.radius,
+              dark: HipColors.isDark,
+              high: MediaQuery.maybeHighContrastOf(context) ?? false,
+              strength: .45,
+            ),
+          );
+    final content = Padding(
       padding: EdgeInsets.all(widget.inset),
       child: LayoutBuilder(
         builder: (context, c) {
@@ -161,8 +190,8 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
                 curve: pressed ? Curves.easeOut : Curves.easeOutCubic,
                 builder: (context, press, _) => TweenAnimationBuilder<double>(
                   tween: Tween(end: index.toDouble()),
-                  duration: HipMotion.segment,
-                  curve: HipMotion.spring,
+                  duration: widget.duration ?? HipMotion.segment,
+                  curve: widget.curve ?? HipMotion.spring,
                   builder: (context, pos, _) => Stack(
                     children: [
                       Positioned(
@@ -201,6 +230,28 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
             ),
           );
         },
+      ),
+    );
+    if (widget.glass) {
+      return SizedBox(
+        height: widget.height,
+        child: HipGlass(
+          shape: HipGlassShape.capsule,
+          radius: widget.radius,
+          blur: widget.blur,
+          sigma: 18,
+          child: content,
+        ),
+      );
+    }
+    return Container(
+      height: widget.height,
+      decoration: _trackDecoration,
+      child: Stack(
+        children: [
+          Positioned.fill(child: track!),
+          content,
+        ],
       ),
     );
   }

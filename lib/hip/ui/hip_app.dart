@@ -18,6 +18,7 @@ import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
 import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
+import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_more_page.dart';
 import 'hip_player_page.dart';
@@ -618,6 +619,7 @@ class _HipHomeState extends State<HipHome> {
     HipRoute.push<void>(
       (_) => HipMorePage(
         store: store,
+        cover: _heroDrill?.poster,
         actions: _library,
         practice: _practice,
         onStartAssessment: _startAssessment,
@@ -629,6 +631,16 @@ class _HipHomeState extends State<HipHome> {
     final list = store.sceneRoutines(store.scene);
     if (list.isEmpty) return null;
     return list[(_pick[store.scene] ?? 0) % list.length];
+  }
+
+  HipDrill? get _heroDrill {
+    final r = _routine;
+    if (r == null) return null;
+    final plan = store.planForRoutine(r);
+    if (plan == null) return null;
+    return (plan.steps.where((s) => s.drill.poster != null).firstOrNull ??
+            plan.steps.firstOrNull)
+        ?.drill;
   }
 
   void _rotate() =>
@@ -672,6 +684,7 @@ class _HipHomeState extends State<HipHome> {
       if (store.askNumbness) _numbnessCard(),
       for (final d in store.lockedDirections.keys) _lockCard(d),
     ];
+    final canRotate = store.sceneRoutines(store.scene).length > 1;
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, c) {
@@ -679,12 +692,14 @@ class _HipHomeState extends State<HipHome> {
           return Stack(
             fit: StackFit.expand,
             children: [
+              // Full-bleed cover from the very top (status bar included),
+              // so the floating glass controls have content to blur.
               if (hero != null)
                 Positioned(
                   left: 0,
                   right: 0,
-                  top: top + 70,
-                  height: c.maxHeight * .6,
+                  top: 0,
+                  height: top + c.maxHeight * .7,
                   child: _HomeHeroArt(
                     drill: hero,
                     id: '${store.scene.id}-${routine!.id}',
@@ -692,12 +707,12 @@ class _HipHomeState extends State<HipHome> {
                 ),
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 10, 24, 12),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _topBar(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Center(child: _scenePicker()),
                       const Spacer(),
                       for (final a in alerts) ...[
@@ -707,34 +722,14 @@ class _HipHomeState extends State<HipHome> {
                       if (plan == null)
                         _blockedHero()
                       else
-                        _headline(routine!, plan),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: _headline(routine!, plan),
+                        ),
                       if (plan != null) ...[
-                        const SizedBox(height: 26),
-                        _startButton(plan),
+                        const SizedBox(height: 24),
+                        _dock(plan, canRotate: canRotate),
                       ],
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        height: 40,
-                        child:
-                            store.sceneRoutines(store.scene).length > 1 &&
-                                plan != null
-                            ? Center(
-                                child: TextButton(
-                                  key: const ValueKey('home-rotate'),
-                                  onPressed: _rotate,
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: HipColors.muted,
-                                    textStyle: const TextStyle(
-                                      fontFamily: hipFontFamily,
-                                      fontSize: 14,
-                                      letterSpacing: 1,
-                                    ),
-                                  ),
-                                  child: const Text('换一套'),
-                                ),
-                              )
-                            : null,
-                      ),
                     ],
                   ),
                 ),
@@ -745,6 +740,52 @@ class _HipHomeState extends State<HipHome> {
       ),
     );
   }
+
+  /// The floating glass dock: jade 开始 (the one accent) and 换一套, the
+  /// way 开哥's reference floats a capsule over content.
+  Widget _dock(TrainingPlan plan, {required bool canRotate}) => HipGlass(
+    key: const ValueKey('home-dock'),
+    shape: HipGlassShape.capsule,
+    blur: true,
+    sigma: 22,
+    padding: const EdgeInsets.all(6),
+    child: SizedBox(
+      height: 60,
+      child: Row(
+        children: [
+          Expanded(child: _startButton(plan)),
+          if (canRotate) ...[
+            const SizedBox(width: 6),
+            HipPressable(
+              key: const ValueKey('home-rotate'),
+              semanticLabel: '换一套',
+              onTap: _rotate,
+              scale: .96,
+              child: SizedBox(
+                width: 96,
+                height: 60,
+                child: HipGlassPill(
+                  strength: .55,
+                  child: Center(
+                    child: Text(
+                      '换一套',
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.2,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w600,
+                        color: HipColors.text,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 
   Widget _topBar() => Row(
     children: [
@@ -773,6 +814,8 @@ class _HipHomeState extends State<HipHome> {
       HipCalmRoundButton(
         key: const ValueKey('home-more'),
         semanticLabel: '更多',
+        blur: true,
+        size: 42,
         onTap: _openMore,
         child: const HipMoreDots(),
       ),
@@ -783,13 +826,12 @@ class _HipHomeState extends State<HipHome> {
   Widget _streakChip() => Semantics(
     label: '连续打卡 ${store.streak} 天',
     child: ExcludeSemantics(
-      child: Container(
+      child: HipGlass(
         key: const ValueKey('home-streak'),
-        padding: const EdgeInsets.fromLTRB(7, 3, 9, 3),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: HipColors.tight.withValues(alpha: HipColors.isDark ? .12 : .1),
-        ),
+        shape: HipGlassShape.capsule,
+        radius: 12,
+        shadow: false,
+        padding: const EdgeInsets.fromLTRB(8, 4, 10, 4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -834,30 +876,49 @@ class _HipHomeState extends State<HipHome> {
           Text(
             kicker,
             style: TextStyle(
-              fontSize: 13,
-              letterSpacing: 2,
+              fontSize: 12.5,
+              height: 1.2,
+              letterSpacing: 3,
+              fontWeight: FontWeight.w600,
               color: HipColors.jadeText,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           Text(
             title,
             key: const ValueKey('home-title'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 34,
-              height: 1.2,
-              letterSpacing: 1,
-              fontWeight: FontWeight.w700,
+              fontSize: 42,
+              height: 1.08,
+              letterSpacing: 2.5,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${plan.minutes} 分钟 · $how',
+          const SizedBox(height: 12),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '${plan.minutes} 分钟',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: HipColors.text,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                TextSpan(text: '  ·  $how'),
+              ],
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 15, height: 1.4, color: HipColors.muted),
+            style: TextStyle(
+              fontSize: 14.5,
+              height: 1.45,
+              letterSpacing: .4,
+              color: HipColors.muted,
+            ),
           ),
         ],
       ),
@@ -869,7 +930,7 @@ class _HipHomeState extends State<HipHome> {
     key: _startKey,
     buttonKey: const ValueKey('start-today'),
     stage: HipColors.palette,
-    size: 62,
+    size: 60,
     width: double.infinity,
     onTap: plan.steps.isEmpty
         ? null
@@ -947,12 +1008,16 @@ class _HipHomeState extends State<HipHome> {
 
   /// 办公 | 居家, small and centred under the greeting.
   Widget _scenePicker() => SizedBox(
-    width: 168,
+    width: 180,
     child: HipSegmented<HipScene>(
       keyPrefix: 'scene',
-      height: 38,
-      radius: 19,
-      inset: 3,
+      glass: true,
+      blur: true,
+      duration: HipCalmMotion.swap,
+      curve: HipCalmMotion.curve,
+      height: 42,
+      radius: 21,
+      inset: 4,
       values: const [HipScene.chair, HipScene.home],
       selected: store.scene,
       label: (v) => v == HipScene.chair ? '办公' : '居家',
@@ -1029,9 +1094,9 @@ class _HomeHeroArt extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0, .14, .5, .88],
+                  stops: const [0, .17, .52, .9],
                   colors: [
-                    bg,
+                    bg.withValues(alpha: .82),
                     bg.withValues(alpha: 0),
                     bg.withValues(alpha: 0),
                     bg,

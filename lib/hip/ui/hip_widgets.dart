@@ -12,6 +12,7 @@ import '../domain/hip_action_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_tactile.dart';
+import 'hip_glass.dart';
 import 'hip_theme.dart';
 
 export 'hip_tactile.dart';
@@ -1455,22 +1456,39 @@ class HipPanel extends StatelessWidget {
   final EdgeInsets padding;
   final Color? borderColor;
   final double radius;
+
+  /// Glass without blur (m2): translucent fill + light rim; the page
+  /// behind is plain here, so nothing is sampled. [borderColor] (alerts)
+  /// replaces the rim with its own colour.
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(radius),
-      boxShadow: HipColors.cardShadow,
-    ),
-    child: Material(
-      color: HipColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-        side: BorderSide(color: borderColor ?? HipColors.line),
+  Widget build(BuildContext context) {
+    final dark = HipColors.isDark;
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    final rr = BorderRadius.circular(radius);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: rr,
+        boxShadow: dark ? null : HipColors.cardShadow,
+        gradient: HipGlassStyle.fill(dark: dark, high: high),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(padding: padding, child: child),
-    ),
-  );
+      child: Material(
+        type: MaterialType.transparency,
+        shape: RoundedRectangleBorder(
+          borderRadius: rr,
+          side: borderColor == null
+              ? BorderSide.none
+              : BorderSide(color: borderColor!),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: CustomPaint(
+          foregroundPainter: borderColor != null
+              ? null
+              : HipGlassRimPainter(radius: radius, dark: dark, high: high),
+          child: Padding(padding: padding, child: child),
+        ),
+      ),
+    );
+  }
 }
 
 /// Signal-bar glyph from the prototype: 1 bar 紧, 2 一般, 3 松.

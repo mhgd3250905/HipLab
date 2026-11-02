@@ -1,12 +1,11 @@
-// Calm surfaces and motion for 首页 / 更多 (home redesign r1, 2026-11-02),
-// after the water-cup R29 spec (ui-theme-and-motion.md): restrained
-// translucent surfaces painted locally — gradient + light shadow, never a
-// BackdropFilter — one accent (jade), one motion rhythm, reduce-motion
-// honoured.
+// Calm surfaces and motion for 首页 / 更多 (home redesign r1, 2026-11-02;
+// glass m2): surfaces are the shared glass (hip_glass.dart) — blur only
+// where content is behind — one accent (jade), one motion rhythm,
+// reduce-motion honoured.
 import 'package:flutter/material.dart';
 
+import 'hip_glass.dart';
 import 'hip_theme.dart';
-import 'hip_widgets.dart';
 
 abstract final class HipCalmMotion {
   static const expand = Duration(milliseconds: 260);
@@ -23,8 +22,8 @@ abstract final class HipCalmMotion {
       reduced(context) ? Duration.zero : d;
 }
 
-/// A translucent control/list surface. Light comes from a painted vertical
-/// gradient and a 1px edge; nothing behind it is sampled or blurred.
+/// A translucent control/list surface: the shared glass (hip_glass.dart).
+/// [blur] only where content sits behind it (see HipGlass).
 class HipCalmSurface extends StatelessWidget {
   const HipCalmSurface({
     super.key,
@@ -32,65 +31,26 @@ class HipCalmSurface extends StatelessWidget {
     this.radius = 22,
     this.circle = false,
     this.selected = false,
+    this.blur = false,
   });
   final Widget child;
   final double radius;
   final bool circle;
   final bool selected;
+  final bool blur;
 
   @override
-  Widget build(BuildContext context) {
-    final dark = HipColors.isDark;
-    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
-    const tint = Colors.white;
-    final List<double> a = high
-        ? (dark ? const [.16, .12, .14] : const [.98, .96, .98])
-        : (dark ? const [.09, .045, .065] : const [.86, .7, .78]);
-    final shape = circle
-        ? const CircleBorder()
-        : RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
-    return DecoratedBox(
-      decoration: ShapeDecoration(
-        shape: shape,
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          stops: const [0, .5, 1],
-          colors: [for (final x in a) tint.withValues(alpha: x)],
-        ),
-        shadows: HipColors.shadows([
-          BoxShadow(
-            color: dark ? const Color(0x33000000) : const Color(0x0f1d2b25),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ]),
-      ),
-      position: DecorationPosition.background,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          shape: circle
-              ? CircleBorder(side: BorderSide(color: _edge(dark, high)))
-              : RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(radius),
-                  side: BorderSide(color: _edge(dark, high)),
-                ),
-        ),
-        position: DecorationPosition.foreground,
-        child: ClipPath(
-          clipper: ShapeBorderClipper(shape: shape),
+  Widget build(BuildContext context) => selected
+      ? HipGlassPill(radius: circle ? 999 : radius, child: child)
+      : HipGlass(
+          shape: circle ? HipGlassShape.circle : HipGlassShape.rounded,
+          radius: radius,
+          blur: blur,
           child: child,
-        ),
-      ),
-    );
-  }
-
-  static Color _edge(bool dark, bool high) => dark
-      ? Colors.white.withValues(alpha: high ? .3 : .09)
-      : (high ? HipColors.line : Colors.white.withValues(alpha: .9));
+        );
 }
 
-/// Round 38pt control on a calm surface (⋯, back).
+/// Round 40pt control on glass (⋯, back).
 class HipCalmRoundButton extends StatelessWidget {
   const HipCalmRoundButton({
     super.key,
@@ -98,21 +58,21 @@ class HipCalmRoundButton extends StatelessWidget {
     required this.onTap,
     required this.semanticLabel,
     this.size = 40,
+    this.blur = false,
   });
   final Widget child;
   final VoidCallback? onTap;
   final String semanticLabel;
   final double size;
+  final bool blur;
 
   @override
-  Widget build(BuildContext context) => HipPressable(
+  Widget build(BuildContext context) => HipGlassRoundButton(
     semanticLabel: semanticLabel,
     onTap: onTap,
-    scale: .94,
-    child: SizedBox.square(
-      dimension: size,
-      child: HipCalmSurface(circle: true, child: Center(child: child)),
-    ),
+    size: size,
+    blur: blur,
+    child: child,
   );
 }
 

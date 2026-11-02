@@ -8,6 +8,7 @@ import '../domain/hip_library.dart';
 import 'coach/hip_coach_chat_page.dart';
 import 'hip_app.dart' show HipProgressPage, HipProgressSection;
 import 'hip_calm.dart';
+import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_routes.dart';
 import 'hip_theme.dart';
@@ -22,8 +23,13 @@ class HipMorePage extends StatelessWidget {
     required this.actions,
     required this.practice,
     required this.onStartAssessment,
+    this.cover,
   });
   final HipStore store;
+
+  /// Poster of the routine on 首页: blurred, darkened, it is the depth the
+  /// glass panels refract (null: plain depth gradient).
+  final String? cover;
   final LibraryActions actions;
 
   /// 练习库 segment and filter, shared with every opening of the library.
@@ -33,11 +39,19 @@ class HipMorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: ListenableBuilder(
-        listenable: store,
-        builder: (context, _) => _list(context),
-      ),
+    body: Stack(
+      fit: StackFit.expand,
+      children: [
+        HipGlassBackdrop(
+          image: cover == null ? null : HipMediaVariants.themed(cover!),
+        ),
+        SafeArea(
+          child: ListenableBuilder(
+            listenable: store,
+            builder: (context, _) => _list(context),
+          ),
+        ),
+      ],
     ),
   );
 
@@ -53,13 +67,19 @@ class HipMorePage extends StatelessWidget {
           HipCalmRoundButton(
             key: const ValueKey('more-back'),
             semanticLabel: '返回',
+            blur: true,
             onTap: () => Navigator.of(context).maybePop(),
             child: HipIcon(HipGlyph.back, size: 20, color: HipColors.text),
           ),
           const SizedBox(width: 14),
           const Text(
             '更多',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 24,
+              height: 1.2,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),
@@ -153,121 +173,118 @@ class HipMorePage extends StatelessWidget {
       semanticLabel: '让 AI 帮你排一套',
       scale: .98,
       onTap: () => _push(context, HipCoachChatPage(actions: actions)),
-      child: RepaintBoundary(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                jade.withValues(alpha: HipColors.isDark ? .18 : .14),
-                HipColors.glow.withValues(alpha: HipColors.isDark ? .06 : .05),
-              ],
-            ),
-            border: Border.all(
-              color: jade.withValues(alpha: HipColors.isDark ? .25 : .22),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '让 AI 帮你排一套',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '说说哪里紧、有多少时间，直接给你一套能练的',
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  height: 46,
-                  padding: const EdgeInsets.fromLTRB(18, 0, 6, 0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(23),
-                    color: HipColors.isDark
-                        ? Colors.black.withValues(alpha: .35)
-                        : Colors.white.withValues(alpha: .8),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '比如：下午腰胯很僵，10 分钟',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: HipColors.faint,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 34,
-                        height: 34,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: jade,
-                        ),
-                        child: HipIcon(
-                          HipGlyph.play,
-                          size: 14,
-                          filled: true,
-                          color: HipColors.onJade,
-                        ),
-                      ),
-                    ],
+      child: HipGlass(
+        blur: true,
+        radius: 26,
+        tint: jade,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '让 AI 帮你排一套',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '说说哪里紧、有多少时间，直接给你一套能练的',
+                style: TextStyle(fontSize: 13, color: HipColors.muted),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                height: 46,
+                padding: const EdgeInsets.fromLTRB(18, 0, 6, 0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(23),
+                  color: HipColors.isDark
+                      ? Colors.black.withValues(alpha: .28)
+                      : Colors.white.withValues(alpha: .72),
+                  border: Border.all(
+                    color: Colors.white.withValues(
+                      alpha: HipColors.isDark ? .08 : .9,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                child: Row(
                   children: [
-                    for (final c in const ['久坐腰胯僵', '想练劈叉', '跑步后放松'])
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          color: HipColors.isDark
-                              ? Colors.white.withValues(alpha: .06)
-                              : Colors.white.withValues(alpha: .7),
-                        ),
-                        child: Text(
-                          c,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: HipColors.muted,
-                          ),
-                        ),
+                    Expanded(
+                      child: Text(
+                        '比如：下午腰胯很僵，10 分钟',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 14, color: HipColors.faint),
                       ),
+                    ),
+                    Container(
+                      width: 34,
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: jade,
+                      ),
+                      child: HipIcon(
+                        HipGlyph.play,
+                        size: 14,
+                        filled: true,
+                        color: HipColors.onJade,
+                      ),
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final c in const ['久坐腰胯僵', '想练劈叉', '跑步后放松'])
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: HipColors.isDark
+                            ? Colors.white.withValues(alpha: .08)
+                            : Colors.white.withValues(alpha: .66),
+                        border: Border.all(
+                          color: Colors.white.withValues(
+                            alpha: HipColors.isDark ? .1 : .9,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        c,
+                        style: TextStyle(fontSize: 12, color: HipColors.muted),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
+  /// One glass panel per group (never one per row).
   Widget _group(List<Widget> rows) => HipCalmSurface(
-    radius: 22,
+    radius: 24,
+    blur: true,
     child: Column(
       children: [
         for (final (i, r) in rows.indexed) ...[
           if (i > 0)
             Padding(
               padding: const EdgeInsets.only(left: 66),
-              child: Divider(height: 1, thickness: 1, color: HipColors.line),
+              child: Divider(
+                height: 1,
+                thickness: .5,
+                color: HipColors.text.withValues(alpha: .1),
+              ),
             ),
           r,
         ],
@@ -297,12 +314,22 @@ class HipMorePage extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(11),
-              color: HipColors.surfaceHigh,
+              color: Colors.white.withValues(
+                alpha: HipColors.isDark ? .07 : .8,
+              ),
             ),
             child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
           ),
           const SizedBox(width: 16),
-          Text(title, maxLines: 1, style: const TextStyle(fontSize: 16)),
+          Text(
+            title,
+            maxLines: 1,
+            style: const TextStyle(
+              fontSize: 16,
+              letterSpacing: .3,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           if (meta.isEmpty)
             const Spacer()
           else
@@ -340,24 +367,47 @@ class HipMorePage extends StatelessWidget {
 
   void _sub(BuildContext context, String? title, WidgetBuilder body) => _push(
     context,
-    Scaffold(
-      appBar: AppBar(
-        // HipLab glyphs only (no Material Icon), same back as everywhere.
-        leading: Builder(
-          builder: (c) => IconButton(
-            tooltip: '返回',
-            onPressed: () => Navigator.of(c).maybePop(),
-            icon: HipIcon(HipGlyph.back, size: 22, color: HipColors.text),
+    Stack(
+      fit: StackFit.expand,
+      children: [
+        const HipGlassBackdrop(),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            // HipLab glyphs only (no Material Icon), same back as everywhere.
+            leading: Builder(
+              builder: (c) => Center(
+                child: Tooltip(
+                  message: '返回',
+                  child: HipCalmRoundButton(
+                    semanticLabel: '返回',
+                    size: 38,
+                    onTap: () => Navigator.of(c).maybePop(),
+                    child: HipIcon(
+                      HipGlyph.back,
+                      size: 20,
+                      color: HipColors.text,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            leadingWidth: 64,
+            title: title == null ? null : Text(title),
+          ),
+          // A pushed route is not rebuilt by the app root: follow the store
+          // here so switches and choices show their new state.
+          body: SafeArea(
+            top: false,
+            child: ListenableBuilder(
+              listenable: store,
+              builder: (c, _) => body(c),
+            ),
           ),
         ),
-        title: title == null ? null : Text(title),
-      ),
-      // A pushed route is not rebuilt by the app root: follow the store
-      // here so switches and choices show their new state.
-      body: SafeArea(
-        top: false,
-        child: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),
-      ),
+      ],
     ),
   );
 
