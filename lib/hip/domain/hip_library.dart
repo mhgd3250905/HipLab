@@ -7,7 +7,7 @@ import 'dart:math' as math;
 
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/engine.dart'
-    show SessionBuilderPlanExecutionTiming;
+    show SessionBuilderPlanExecutionTiming, PhaseKind;
 
 import '../trainer/hip_sdk_session_builder.dart';
 import 'hip_models.dart';
@@ -74,6 +74,77 @@ HipDrill? hipSdkDrill(HipContent c, String id) {
     duration: video?.loopSeconds,
     alternative: source.alternative,
   );
+}
+
+/// M6: a training-group step for a public SDK action outside the local
+/// action kits. It is stored as a plain [CustomStep] (same keys; its dose
+/// fields override the SDK catalog's default dose) and the group then plays
+/// through one host-built SDK plan.
+bool isSdkGroupStep(HipContent c, String id) =>
+    !inLibrary(c, id) &&
+    !assessmentOnlyDrills.contains(id) &&
+    c.publicCatalog?[id] != null;
+
+/// Whether [id] can be put into a training group: a local kit drill or any
+/// public SDK action.
+bool canJoinGroup(HipContent c, String id) =>
+    inLibrary(c, id) || isSdkGroupStep(c, id);
+
+/// The catalog default dose of an SDK group step as a [LibraryDose]
+/// (reps or seconds, sets).
+LibraryDose? sdkDefaultDose(HipContent c, String id) {
+  final d = c.publicCatalog?[id]?.defaultDose;
+  if (d == null) return null;
+  final reps = d.mode == coach.DoseMode.reps;
+  return LibraryDose(
+    reps: reps ? (d.reps ?? 1) : null,
+    seconds: reps ? null : (d.seconds ?? 30),
+    sets: math.max(1, d.sets),
+  );
+}
+
+/// The effective dose of an SDK group step, as the editor and picker show it.
+String sdkStepDoseText(HipContent c, CustomStep s, {String lang = 'zh'}) {
+  final item = s.planItem(c);
+  if (item == null) return '';
+  final en = lang == 'en';
+  final timed = item.mode == coach.DoseMode.time;
+  final v = timed ? item.workSeconds : item.reps;
+  final unit = timed ? (en ? 's' : ' 秒') : (en ? ' reps' : ' 次');
+  final side = item.perSide ? (en ? ' each side' : '每侧 ') : '';
+  final body = en ? '$v$unit$side' : '$side$v$unit';
+  return item.sets > 1
+      ? (en ? '${item.sets} × $body' : '${item.sets} 组 × $body')
+      : body;
+}
+
+/// Work time of one SDK group step (sets, sides and their switches; no prep
+/// or rest), with the player's own execution timing.
+int sdkStepSeconds(HipContent c, CustomStep s) {
+  final item = s.planItem(c);
+  if (item == null) return 0;
+  final plan = coach.TrainingPlan(
+    id: 'step-${s.kitId}',
+    source: 'template',
+    title: s.kitId,
+    goal: '',
+    scene: 'home',
+    level: 1,
+    targetMinutes: 1,
+    blocks: [
+      coach.PlanBlock(
+        id: 'one',
+        name: s.kitId,
+        type: coach.BlockType.main,
+        items: [item],
+      ),
+    ],
+  );
+  return hipSdkSessionBuilder(c)
+      .phases(plan)
+      .where((p) => p.kind == PhaseKind.work || p.kind == PhaseKind.switchSide)
+      .fold<double>(0, (sum, p) => sum + p.seconds)
+      .ceil();
 }
 
 // ───────────────────────── doses ─────────────────────────
@@ -374,6 +445,69 @@ class CustomStep {
     paceSeconds: k.kind.counted ? paceSeconds : null,
   );
 
+  /// The effective dose of an SDK group step: catalog default overridden by
+  /// the stored reps / seconds / sets.
+  LibraryDose? sdkDose(HipContent c) {
+    final base = sdkDefaultDose(c, kitId);
+    if (base == null) return null;
+    return LibraryDose(
+      reps: base.reps == null ? null : (reps ?? base.reps),
+      seconds: base.seconds == null ? null : (seconds ?? base.seconds),
+      sets: sets ?? base.sets,
+    );
+  }
+
+  /// An SDK group step storing only what differs from the catalog default,
+  /// clamped to sane bounds (reps 1–100, seconds 5–600, sets 1–10).
+  static CustomStep? sdk(HipContent c, String id, [LibraryDose? d]) {
+    final base = sdkDefaultDose(c, id);
+    if (base == null) return null;
+    final r = d?.reps?.clamp(1, 100);
+    final sec = d?.seconds?.clamp(5, 600);
+    final n = d?.sets.clamp(1, 10);
+    return CustomStep(
+      id,
+      reps: base.reps != null && r != null && r != base.reps ? r : null,
+      seconds: base.seconds != null && sec != null && sec != base.seconds
+          ? sec
+          : null,
+      sets: n != null && n != base.sets ? n : null,
+    );
+  }
+
+  /// This step as an SDK plan item (M6 mixed groups). A local kit drill keeps
+  /// the user's reps/seconds/sets when its unit matches the catalog dose.
+  coach.PlanItem? planItem(HipContent c) {
+    final source = c.publicCatalog?[kitId];
+    if (source == null) return null;
+    final dd = source.defaultDose;
+    final kit = inLibrary(c, kitId) ? c.kit(kitId) : null;
+    final repsMode = dd.mode == coach.DoseMode.reps;
+    int? r = dd.reps;
+    int? sec = dd.seconds;
+    var n = dd.sets;
+    if (kit != null) {
+      final d = dose(kit);
+      n = d.sets;
+      if (repsMode && kit.kind.counted && d.reps != null) r = d.reps;
+      if (!repsMode && !kit.kind.counted && d.seconds != null) sec = d.seconds;
+    } else {
+      final d = sdkDose(c)!;
+      n = d.sets;
+      r = d.reps ?? r;
+      sec = d.seconds ?? sec;
+    }
+    return coach.PlanItem(
+      exerciseId: kitId,
+      mode: dd.mode,
+      sets: math.max(1, n),
+      reps: repsMode ? (r ?? 1) : null,
+      workSeconds: repsMode ? sec : (sec ?? 30),
+      perSide: source.unilateral,
+      restSeconds: dd.restSeconds,
+    );
+  }
+
   /// The step for [d], storing only what differs from the kit default.
   factory CustomStep.fromDose(ActionKit k, LibraryDose d) {
     final c = DoseRules.clamp(k, d, single: false);
@@ -470,9 +604,66 @@ class CustomRoutine {
     coachSdkVersion: coachSdkVersion,
   );
 
+  /// M6: a group with at least one SDK-only action. It plays (and is timed)
+  /// as one host-built SDK plan, resting [restSeconds] between actions.
+  /// Groups of local kit drills only keep the original path byte for byte.
+  bool mixed(HipContent c) =>
+      coachPlan == null && steps.any((s) => isSdkGroupStep(c, s.kitId));
+
+  /// The SDK plan of a mixed group, in step order. [keep] filters steps
+  /// (relax-only directions); null when nothing is left.
+  coach.TrainingPlan? mixedPlan(
+    HipContent c, {
+    bool Function(CustomStep step)? keep,
+  }) {
+    final items = <coach.PlanItem>[];
+    final sources = <coach.Drill>[];
+    for (final s in steps) {
+      if (keep != null && !keep(s)) continue;
+      final item = s.planItem(c);
+      final source = c.publicCatalog?[s.kitId];
+      if (item == null || source == null) continue;
+      items.add(item);
+      sources.add(source);
+    }
+    if (items.isEmpty) return null;
+    final first = sources.first;
+    final plan = coach.TrainingPlan(
+      id: 'group-$id',
+      source: 'template',
+      title: name,
+      goal: first.purpose,
+      scene: first.scenes.firstOrNull ?? 'home',
+      equipment: {for (final s in sources) ...s.equipment}.toList(),
+      level: sources.map((s) => s.level).reduce(math.max),
+      targetMinutes: 1,
+      blocks: [
+        coach.PlanBlock(
+          id: 'group',
+          name: name,
+          type: coach.BlockType.main,
+          items: items,
+        ),
+      ],
+    );
+    final total = hipSdkSessionBuilder(
+      c,
+      transitionSeconds: restSeconds,
+    ).executionTiming(plan).totalSeconds;
+    return plan.copyWith(targetMinutes: (total / 60).ceil().clamp(1, 10000));
+  }
+
   /// SDK plans use the same execution timing as their player. Local custom
   /// groups retain their existing work-plus-rest estimate.
   int seconds(HipContent c) {
+    if (mixed(c)) {
+      final plan = mixedPlan(c);
+      if (plan == null) return 0;
+      return hipSdkSessionBuilder(
+        c,
+        transitionSeconds: restSeconds,
+      ).executionTiming(plan).totalSeconds.ceil();
+    }
     if (coachPlan != null) {
       final plan = const coach.PlanCodec().decodeStrict(coachPlan).plan;
       if (plan == null) return 0;
@@ -529,7 +720,9 @@ class CustomRoutine {
       }
       final kitId = s['kitId'];
       if (kitId is! String ||
-          !(coachPlan == null ? inLibrary(c, kitId) : inSdkLibrary(c, kitId))) {
+          !(coachPlan == null
+              ? canJoinGroup(c, kitId)
+              : inSdkLibrary(c, kitId))) {
         removed++;
         continue;
       }
@@ -545,6 +738,20 @@ class CustomRoutine {
       if (coachPlan != null) {
         // The preview is not redosed through a legacy kit during migration.
         steps.add(stored);
+      } else if (isSdkGroupStep(c, kitId)) {
+        // M6 SDK step: overrides of the catalog default, clamped.
+        final base = sdkDefaultDose(c, kitId)!;
+        steps.add(
+          CustomStep.sdk(
+            c,
+            kitId,
+            LibraryDose(
+              reps: stored.reps ?? base.reps,
+              seconds: stored.seconds ?? base.seconds,
+              sets: stored.sets ?? base.sets,
+            ),
+          )!,
+        );
       } else {
         final k = c.kit(kitId)!;
         steps.add(CustomStep.fromDose(k, stored.dose(k)));

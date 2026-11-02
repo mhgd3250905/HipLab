@@ -90,6 +90,7 @@ class HipActionItem {
     this.aliases = const [],
     this.drill,
     this.poster,
+    this.groupable = false,
   });
   final String id;
   final String name;
@@ -113,7 +114,10 @@ class HipActionItem {
   final HipDrill? drill;
   final String? poster;
 
-  bool get canAddToGroup => drill != null;
+  /// M6: any local kit drill or public SDK action can join a training group.
+  final bool groupable;
+
+  bool get canAddToGroup => groupable || drill != null;
   String get tag => parts.isNotEmpty ? parts.first : type;
 }
 
@@ -219,6 +223,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
         ),
         drill: inLibrary(c, id) ? local : null,
         poster: '$posterRoot$id.webp',
+        groupable: canJoinGroup(c, id),
       ),
     );
   }

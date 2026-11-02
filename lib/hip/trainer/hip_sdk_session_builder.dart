@@ -7,6 +7,8 @@ import '../domain/hip_models.dart';
 trainer.SessionBuilder hipSdkSessionBuilder(
   HipContent content, {
   trainer.SwitchSeconds? switchSecondsFor,
+  // A mixed training group (M6) rests its own 10/15/20/30 s between actions.
+  int transitionSeconds = 15,
 }) => trainer.SessionBuilder(
   // Production SDK plans use the public catalog's execution semantics. The
   // local action kits only belong to HipLab's earlier, authored routines.
@@ -18,6 +20,6 @@ trainer.SessionBuilder hipSdkSessionBuilder(
         },
   known: content.publicCatalog?.contains,
   prepSeconds: 15,
-  transitionSeconds: 15,
+  transitionSeconds: transitionSeconds,
   switchSecondsFor: switchSecondsFor,
 );

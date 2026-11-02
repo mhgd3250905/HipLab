@@ -423,7 +423,7 @@ class GroupCard extends StatelessWidget {
     final secs = g.seconds(content);
     final drills = [
       for (final s in g.steps)
-        ?(g.coachPlan != null
+        ?(g.coachPlan != null || g.mixed(content)
             ? hipSdkDrill(content, s.kitId)
             : content.drills[s.kitId]),
     ];

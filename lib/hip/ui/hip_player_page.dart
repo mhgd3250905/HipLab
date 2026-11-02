@@ -59,6 +59,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             hipSdkSessionBuilder(
               widget.store.content,
               switchSecondsFor: script.switchSecondsFor,
+              transitionSeconds: widget.plan.transitionSeconds,
             )
       : HipSessionBuilder(
           script: script,

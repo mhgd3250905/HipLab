@@ -254,6 +254,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     final at = _indexOf(key);
     if (at < 0 || _deleting.contains(key)) return;
     final step = _steps[at].$2;
+    if (isSdkGroupStep(content, step.kitId)) return _showSdkDose(step);
     final kit = content.kit(step.kitId)!;
     var dose = step.dose(kit);
     final result = await showLibSheet<LibraryDose>(
@@ -304,6 +305,43 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     final now = _indexOf(key);
     if (now < 0 || _deleting.contains(key)) return;
     setState(() => _steps[now] = (key, CustomStep.fromDose(kit, result)));
+  }
+
+  /// SDK actions (M6) train at the SDK library's default dose; shown
+  /// read-only.
+  Future<void> _showSdkDose(CustomStep step) async {
+    final t = LibText.of(context);
+    final d = hipSdkDrill(content, step.kitId);
+    if (d == null) return;
+    await showLibSheet<void>(
+      context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          sheetTitle(drillName(content, d, t.lang)),
+          const SizedBox(height: 12),
+          Text(
+            sdkStepDoseText(content, step, lang: t.lang),
+            key: const ValueKey('sdk-dose'),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            t.lang == 'en'
+                ? 'Library moves use their default dose in a group.'
+                : '动作库动作在训练组里按默认剂量练，暂不支持调整',
+            style: TextStyle(fontSize: 13, color: HipColors.muted),
+          ),
+          const SizedBox(height: 14),
+          HipPrimaryButton(
+            key: const ValueKey('dose-done'),
+            label: t.done,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -594,9 +632,10 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
 
   Widget _row(int i, int key, CustomStep s, TrainingProfile profile) {
     final t = LibText.of(context);
-    final k = content.kit(s.kitId)!;
-    final d = content.drill(s.kitId);
-    final dose = s.dose(k);
+    final sdk = isSdkGroupStep(content, s.kitId);
+    final k = sdk ? null : content.kit(s.kitId)!;
+    final d = sdk ? hipSdkDrill(content, s.kitId)! : content.drill(s.kitId);
+    final dose = k == null ? null : s.dose(k);
     final relaxOnly = TrainingPlanner.lockedOut(d, profile);
     return HipPressable(
       key: ValueKey('editor-row-$i'),
@@ -669,7 +708,9 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                     children: [
                       Flexible(
                         child: Text(
-                          doseText(k, dose, single: false, lang: t.lang),
+                          k == null
+                              ? sdkStepDoseText(content, s, lang: t.lang)
+                              : doseText(k, dose!, single: false, lang: t.lang),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -695,7 +736,11 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              clockText(DoseRules.stepSeconds(k, dose, single: false)),
+              clockText(
+                k == null
+                    ? sdkStepSeconds(content, s)
+                    : DoseRules.stepSeconds(k, dose!, single: false),
+              ),
               style: TextStyle(
                 fontSize: 14,
                 color: HipColors.muted,
@@ -752,7 +797,7 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
   Widget build(BuildContext context) {
     final t = LibText.of(context);
     final all = hipActionItems(content, t);
-    // Addable actions first; SDK-only ones follow, dimmed (solo only).
+    // Addable actions first (M6: every public SDK action is addable).
     final match = _actions.apply(all);
     final shown = [
       for (final a in match)
@@ -799,10 +844,12 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
                       ActionCard(
                         key: ValueKey('pick-${a.id}'),
                         item: a,
-                        // Local groups play through HipLab action kits;
-                        // SDK-only actions are solo-only for now.
+                        // Local kit drills show their group dose; SDK
+                        // actions their catalog default (M6).
                         disabled: !a.canAddToGroup,
-                        dose: a.canAddToGroup
+                        dose:
+                            content.kit(a.id) != null &&
+                                inLibrary(content, a.id)
                             ? doseText(
                                 content.kit(a.id)!,
                                 DoseRules.kitDefault(content.kit(a.id)!),

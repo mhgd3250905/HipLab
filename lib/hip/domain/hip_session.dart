@@ -400,6 +400,12 @@ class TrainingPlanner {
           if (skipped(id)) CustomStep(id),
       ];
     }
+    if (r.mixed(content)) {
+      return [
+        for (final s in r.steps)
+          if (!_sdkStepPlayable(s, profile)) s,
+      ];
+    }
     return [
       for (final s in r.steps)
         if (!inLibrary(content, s.kitId) ||
@@ -414,6 +420,29 @@ class TrainingPlanner {
   TrainingPlan? customPlan(CustomRoutine r, TrainingProfile profile) {
     if (profile.blocked) return null;
     if (r.coachPlan != null) return _sdkCustomPlan(r, profile);
+    if (r.mixed(content)) {
+      // M6 mixed group: relax-only directions are skipped as in local groups,
+      // the rest plays as one SDK plan with the group's own rest.
+      final plan = r.mixedPlan(
+        content,
+        keep: (s) => _sdkStepPlayable(s, profile),
+      );
+      if (plan == null) {
+        return TrainingPlan(
+          routines: const [],
+          steps: const [],
+          transitionSeconds: r.restSeconds,
+          source: PlanSource.custom,
+          refId: r.id,
+          name: r.name,
+        );
+      }
+      return _sdkPlayable(
+        r,
+        plan,
+        hipSdkSessionBuilder(content, transitionSeconds: r.restSeconds),
+      );
+    }
     final steps = <PlanStep>[];
     for (final s in r.steps) {
       if (!inLibrary(content, s.kitId)) continue;
@@ -451,6 +480,14 @@ class TrainingPlanner {
     );
   }
 
+  bool _sdkStepPlayable(CustomStep s, TrainingProfile profile) {
+    final drill = hipSdkDrill(content, s.kitId);
+    return drill != null &&
+        canJoinGroup(content, s.kitId) &&
+        content.publicCatalog?[s.kitId] != null &&
+        !lockedOut(drill, profile);
+  }
+
   TrainingPlan? _sdkCustomPlan(CustomRoutine routine, TrainingProfile profile) {
     final original = const coach.PlanCodec()
         .decodeStrict(routine.coachPlan)
@@ -469,7 +506,18 @@ class TrainingPlanner {
     if (original.blocks.any((b) => b.items.any((i) => !playable(i)))) {
       return null;
     }
-    final builder = sdkBuilder ?? hipSdkSessionBuilder(content);
+    return _sdkPlayable(
+      routine,
+      original,
+      sdkBuilder ?? hipSdkSessionBuilder(content),
+    );
+  }
+
+  TrainingPlan? _sdkPlayable(
+    CustomRoutine routine,
+    coach.TrainingPlan original,
+    trainer.SessionBuilder builder,
+  ) {
     final phases = builder.phases(original);
     final steps = <PlanStep>[];
     for (var index = 0; index < builder.occurrenceCount(original); index++) {
