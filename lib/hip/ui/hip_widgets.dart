@@ -1076,8 +1076,11 @@ class HipSecondaryButton extends StatelessWidget {
       semanticLabel: label,
       onTap: onPressed,
       child: _HipFlatFace(
-        // m3: fill only, no outline.
-        color: HipColors.track,
+        // m3: fill only, no outline. UI r2: on dark the inset track was
+        // near-black on near-black; a raised white α .10 fill reads.
+        color: HipColors.isDark && !sdkScale
+            ? Colors.white.withValues(alpha: .10)
+            : HipColors.track,
         pressedColor: HipColors.surfaceHigh,
         child: Center(
           child: Padding(

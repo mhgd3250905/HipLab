@@ -73,7 +73,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await openPractice(tester);
+    await openGroups(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('practice-2')));
     await tester.pumpAndSettle();
@@ -142,7 +142,7 @@ void main() {
     await openEditor(tester, [_a, _b, _c]);
     await swipeLeft(tester, 0);
     await tester.pump(const Duration(milliseconds: 150));
-    await tester.tap(find.bySemanticsLabel('取消').first);
+    await tester.tap(find.byKey(const ValueKey('editor-close')));
     await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('editor-discard')),

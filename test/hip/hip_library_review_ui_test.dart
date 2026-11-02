@@ -108,7 +108,12 @@ void main() {
   }
 
   Future<void> toPractice(WidgetTester tester, {int segment = 0}) async {
-    await openPractice(tester);
+    // UI r2: 0 is 动作库; 1 推荐套路 / 2 我的 live on 训练组.
+    if (segment == 0) {
+      await openPractice(tester);
+    } else {
+      await openGroups(tester);
+    }
     await tester.pumpAndSettle();
     if (segment != 0) {
       await tester.tap(find.byKey(ValueKey('practice-$segment')));

@@ -8,6 +8,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
+import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
@@ -247,7 +248,8 @@ void main() {
       await tester.pumpAndSettle();
     }
     final title = tester.getRect(find.text('你的髋部'));
-    final close = tester.getRect(find.byType(HipCircleButton).first);
+    // UI r2: the shared HipNavBar (title centred in the bar).
+    final close = tester.getRect(find.byType(HipNavBar).first);
     expect(title.center.dy, closeTo(close.center.dy, 14));
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.

@@ -10,6 +10,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
 import '../hip_theme.dart';
@@ -317,19 +318,31 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
           bottom: false,
           child: Column(
             children: [
-              HipTopBar(
-                icon: HipGlyph.close,
-                tooltip: t.cancel,
-                onClose: _close,
-                subtitle: t.myGroupsHome,
+              HipNavBar(
+                leading: HipNavLeading.close,
+                leadingKey: const ValueKey('editor-close'),
+                onLeading: _close,
                 title: t.editGroup,
                 trailing: widget.isNew
                     ? null
-                    : HipCircleButton(
-                        key: const ValueKey('editor-delete'),
-                        icon: HipGlyph.trash,
-                        tooltip: t.deleteGroup,
-                        onPressed: _delete,
+                    : Tooltip(
+                        message: t.deleteGroup,
+                        child: HipPressable(
+                          key: const ValueKey('editor-delete'),
+                          semanticLabel: t.deleteGroup,
+                          scale: .9,
+                          onTap: _delete,
+                          child: SizedBox.square(
+                            dimension: 44,
+                            child: Center(
+                              child: HipIcon(
+                                HipGlyph.trash,
+                                size: 20,
+                                color: HipColors.text,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
               ),
               Padding(
@@ -736,12 +749,12 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
         bottom: false,
         child: Column(
           children: [
-            HipTopBar(
-              icon: HipGlyph.close,
-              tooltip: t.cancel,
-              onClose: () => Navigator.of(context).pop(),
-              subtitle: t.addTo(widget.groupName),
+            HipNavBar(
+              leading: HipNavLeading.close,
+              leadingKey: const ValueKey('picker-close'),
+              onLeading: () => Navigator.of(context).pop(),
               title: t.addMovesTitle,
+              subtitle: t.addTo(widget.groupName),
             ),
             Expanded(
               child: ListView(

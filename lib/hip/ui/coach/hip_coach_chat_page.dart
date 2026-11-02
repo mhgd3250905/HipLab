@@ -13,6 +13,7 @@ import '../../voice/session_script.dart';
 import '../hip_app.dart' show HipSettingsPage;
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
+import '../hip_page_kit.dart';
 import '../hip_player_page.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -157,34 +158,46 @@ Future<void> _pushPractice(
 ) => _push(
   context,
   Builder(
-    builder: (pageContext) => Scaffold(
-      appBar: AppBar(
-        title: Text(segment == 2 ? '我的训练组' : '练习库'),
-        actions: [
-          if (segment == 2)
-            TextButton(
-              onPressed: () {
+    builder: (pageContext) => PracticePage(
+      actions: actions,
+      library: segment == 0,
+      memory: PracticeMemory()..segment = segment,
+      // UI r2: 去排一套 is the bar's trailing action.
+      trailing: segment == 2
+          ? HipPressable(
+              key: const ValueKey('practice-compose'),
+              semanticLabel: '去排一套',
+              scale: .95,
+              onTap: () {
                 Navigator.of(pageContext).pop();
                 actions.coach!.requestCompose();
               },
-              child: const Text('去排一套'),
-            ),
-        ],
-      ),
-      body: PracticePage(
-        actions: actions,
-        memory: PracticeMemory()..segment = segment,
-        onStartAssessment:
-            ({BuildContext? from, double radius = 28, Color? color}) {
-              _push(
-                pageContext,
-                HipAssessmentPage(
-                  store: actions.store,
-                  onStartPlan: actions.startPlan,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
                 ),
-              );
-            },
-      ),
+                child: Text(
+                  '去排一套',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: HipColors.jadeText,
+                  ),
+                ),
+              ),
+            )
+          : null,
+      onStartAssessment:
+          ({BuildContext? from, double radius = 28, Color? color}) {
+            _push(
+              pageContext,
+              HipAssessmentPage(
+                store: actions.store,
+                onStartPlan: actions.startPlan,
+              ),
+            );
+          },
     ),
   ),
 );
@@ -243,32 +256,12 @@ class HipCoachChatEntryCard extends StatelessWidget {
   const HipCoachChatEntryCard({super.key, required this.actions});
   final LibraryActions actions;
   @override
-  Widget build(BuildContext context) => HipPressable(
+  Widget build(BuildContext context) => HipListRow(
+    // UI r2: a normal row in 训练组's first group, not a big card.
     key: const ValueKey('practice-ai-coach'),
-    semanticLabel: 'AI 定制训练',
-    scale: .98,
+    glyph: HipGlyph.bolt,
+    title: 'AI 定制训练',
+    subtitle: '说说想拉伸哪里，用髋部动作排一套训练',
     onTap: () => _push(context, HipCoachChatPage(actions: actions)),
-    child: HipPanel(
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          HipIcon(HipGlyph.bolt, color: HipColors.jadeText, filled: true),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'AI 定制训练',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                ),
-                Text('说说想拉伸哪里，用髋部动作排一套训练'),
-              ],
-            ),
-          ),
-          HipIcon(HipGlyph.chevronRight, size: 18, color: HipColors.muted),
-        ],
-      ),
-    ),
   );
 }

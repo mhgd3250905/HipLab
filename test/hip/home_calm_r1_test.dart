@@ -263,7 +263,7 @@ void main() {
     });
     testWidgets('6 套路详情 dark', (tester) async {
       await pumpHome(tester);
-      await openPractice(tester);
+      await openGroups(tester);
       await tester.tap(find.byKey(const ValueKey('practice-1')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('routine-card-A')));
@@ -285,12 +285,17 @@ void main() {
       await openMore(tester);
       await tester.tap(find.byKey(const ValueKey('more-checkup')));
       await tester.pumpAndSettle();
+      // UI r2: 髋部自测 opens its intro page first.
+      await tester.tap(find.byKey(const ValueKey('assessment-start')));
+      await tester.pumpAndSettle();
       await _capture(tester, '$shots/checkup-dark.png');
     });
     testWidgets('10 自测结果 dark', (tester) async {
       await pumpHome(tester);
       await openMore(tester);
       await tester.tap(find.byKey(const ValueKey('more-checkup')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('assessment-start')));
       await tester.pumpAndSettle();
       for (var n = 0; n < 14; n++) {
         if (find.text('你的髋部').evaluate().isNotEmpty) break;
@@ -306,8 +311,8 @@ void main() {
     });
     testWidgets('12 自测 intro dark', (tester) async {
       await pumpHome(tester);
-      await openPractice(tester);
-      await tester.tap(find.byKey(const ValueKey('hip-check-card')));
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
       await tester.pumpAndSettle();
       await _capture(tester, '$shots/intro-dark.png');
     });

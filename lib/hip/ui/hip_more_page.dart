@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../control/hip_store.dart';
 import '../domain/hip_library.dart';
-import 'hip_app.dart'
-    show HipProgressPage, HipProgressSection, HipSettingsPage;
+import 'hip_app.dart' show HipProgressPage, HipProgressSection, HipSettingsPage;
 import 'hip_calm.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
@@ -79,18 +78,13 @@ class HipMorePage extends StatelessWidget {
       const HipSection('身体'),
       HipListGroup(
         children: [
-          Builder(
-            builder: (rowContext) => HipListRow(
-              key: const ValueKey('more-checkup'),
-              glyph: HipGlyph.radar,
-              title: '髋部自测',
-              meta: '3 分半',
-              onTap: () => onStartAssessment(
-                from: rowContext,
-                radius: 0,
-                color: HipColors.surface,
-              ),
-            ),
+          // UI r2 §1: 髋部自测 opens its 自测说明 page (开始 / 重测 there).
+          HipListRow(
+            key: const ValueKey('more-checkup'),
+            glyph: HipGlyph.radar,
+            title: '髋部自测',
+            meta: '3 分半',
+            onTap: () => _push(context, AssessmentIntroPage(actions: actions)),
           ),
           HipListRow(
             key: const ValueKey('more-records'),
@@ -138,14 +132,13 @@ class HipMorePage extends StatelessWidget {
 
   void _practice(BuildContext context, int segment) {
     practice.segment = segment;
-    // PracticePage carries its own big 「练习」 title.
-    _sub(
+    // PracticePage carries its own HipNavBar (训练组 / 动作库).
+    _push(
       context,
-      null,
-      (_) => PracticePage(
+      PracticePage(
         actions: actions,
         memory: practice,
-        topPadding: 2,
+        library: segment == 0,
         onStartAssessment: onStartAssessment,
       ),
     );

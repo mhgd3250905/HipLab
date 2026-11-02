@@ -7,6 +7,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
@@ -144,13 +145,11 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
         bottom: false,
         child: Column(
           children: [
-            HipTopBar(
-              icon: HipGlyph.back,
-              tooltip: t.back,
-              onClose: () => Navigator.of(context).maybePop(),
+            HipNavBar(
+              leadingKey: const ValueKey('drill-back'),
+              title: drillName(content, d, t.lang),
               subtitle:
                   '${t.area(dir)} · ${d.methods.map(t.method).join(' / ')}',
-              title: drillName(content, d, t.lang),
             ),
             Expanded(
               child: ListView(

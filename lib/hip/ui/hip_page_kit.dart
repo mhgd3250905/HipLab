@@ -83,33 +83,38 @@ class HipNavBar extends StatelessWidget {
             Positioned.fill(
               left: 64,
               right: 64,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 17,
-                        height: 1.2,
-                        fontWeight: FontWeight.w600,
-                        color: HipColors.text,
-                      ),
-                    ),
-                    if (subtitle != null)
+              // Like a system bar, the title caps its text growth so title
+              // + subtitle always fit the 52pt bar.
+              child: MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.3,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        subtitle!,
+                        title!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 12,
-                          height: 1.25,
-                          color: HipColors.muted,
+                          fontSize: 17,
+                          height: 1.2,
+                          fontWeight: FontWeight.w600,
+                          color: HipColors.text,
                         ),
                       ),
-                  ],
+                      if (subtitle != null)
+                        Text(
+                          subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.25,
+                            color: HipColors.muted,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

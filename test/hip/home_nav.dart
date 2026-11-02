@@ -16,9 +16,12 @@ Future<void> _openRow(WidgetTester tester, String key) async {
   await tester.pumpAndSettle();
 }
 
-/// The former 练习 tab: 更多 → 动作库.
+/// The former 练习 tab's moves view: 更多 → 动作库.
 Future<void> openPractice(WidgetTester tester) =>
     _openRow(tester, 'more-practice');
+
+/// 更多 → 我的训练组 (UI r2: the 训练组 page, 我的 / 推荐套路).
+Future<void> openGroups(WidgetTester tester) => _openRow(tester, 'more-groups');
 
 /// The settings half of the former 进度 tab: 更多 → 设置.
 Future<void> openSettings(WidgetTester tester) =>

@@ -55,7 +55,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await openPractice(tester);
+    await openGroups(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('practice-2')));
     await tester.pumpAndSettle();

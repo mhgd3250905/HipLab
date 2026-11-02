@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../coach/coach_config.dart';
 import 'hip_theme.dart';
 import 'hip_icons.dart';
+import 'hip_page_kit.dart';
 import 'hip_widgets.dart';
 
 /// Bundled policy remains readable without an internet connection.
@@ -17,7 +18,7 @@ class HipPrivacyPage extends StatelessWidget {
     body: SafeArea(
       child: Column(
         children: [
-          const HipTopBar(title: '隐私政策', icon: HipGlyph.back, tooltip: '返回'),
+          const HipNavBar(title: '隐私政策', leadingKey: ValueKey('privacy-back')),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),

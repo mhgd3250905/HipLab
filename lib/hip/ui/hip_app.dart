@@ -293,10 +293,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const HipNavBar(
-                    key: ValueKey('safety-nav'),
-                    title: '安全提示',
-                  ),
+                  const HipNavBar(key: ValueKey('safety-nav'), title: '安全提示'),
                   Expanded(child: body),
                 ],
               )
@@ -330,14 +327,16 @@ class _HipOnboardingState extends State<HipOnboarding> {
         const SizedBox(height: 18),
         Row(
           children: [
-            Text(
-              '开始之前 · 安全确认',
-              style: TextStyle(
-                fontSize: 14,
-                color: HipColors.jadeText,
-                fontWeight: FontWeight.w600,
+            // From 设置 the bar already says 安全提示: no repeated eyebrow.
+            if (!widget.review)
+              Text(
+                '开始之前 · 安全确认',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: HipColors.jadeText,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
             const Spacer(),
             Text(
               '${_index + 1} / ${_cards.length}',

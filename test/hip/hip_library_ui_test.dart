@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
-import 'package:hiplab/hip/domain/hip_assessment.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_pain.dart';
@@ -52,7 +51,12 @@ void main() {
   }
 
   Future<void> toPractice(WidgetTester tester, {int segment = 0}) async {
-    await openPractice(tester);
+    // UI r2: 0 is 动作库; 1 推荐套路 / 2 我的 live on 训练组.
+    if (segment == 0) {
+      await openPractice(tester);
+    } else {
+      await openGroups(tester);
+    }
     await tester.pumpAndSettle();
     if (segment != 0) {
       await tester.tap(find.byKey(ValueKey('practice-$segment')));
@@ -88,25 +92,6 @@ void main() {
     find.byKey(const ValueKey('library-detail-start')),
   );
 
-  void addAssessment(HipStore s) {
-    ItemAnswer one(int v) => ItemAnswer.single(SideAnswer.choice(v));
-    ItemAnswer two(int l, int r) => ItemAnswer.sided(
-      left: SideAnswer.choice(l),
-      right: SideAnswer.choice(r),
-    );
-    s.assessments.add((
-      at: DateTime(2026, 10, 18, 20),
-      answers: {
-        'butterfly': one(1),
-        'ninety_ninety': two(1, 1),
-        'thomas': two(0, 1),
-        'supine_cross': two(1, 1),
-        'seated_fold': one(2),
-        'deep_squat': one(2),
-      },
-    ));
-  }
-
   group('tabs (拍板 1)', () {
     // Home r1 (2026-11-02): no tab bar; 更多 holds the former tabs.
     testWidgets('no tab bar; 更多 lists the entries; no 自测 tab', (tester) async {
@@ -117,22 +102,24 @@ void main() {
         expect(find.text(label), findsOneWidget, reason: label);
       }
       expect(find.text('自测'), findsNothing);
-      await toPractice(tester);
-      expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
-      for (final s in ['动作', '套路', '我的']) {
+      // UI r2: 训练组 is 我的 / 推荐套路 — no 自测 card, no 动作 tab.
+      await toPractice(tester, segment: 2);
+      expect(find.byKey(const ValueKey('hip-check-card')), findsNothing);
+      for (final s in ['我的', '推荐套路']) {
         expect(find.text(s), findsOneWidget);
       }
+      expect(find.text('动作'), findsNothing);
+      expect(find.byKey(const ValueKey('practice-0')), findsNothing);
     });
 
-    testWidgets('untested card → intro page → the check-up', (tester) async {
+    testWidgets('更多 髋部自测 → intro page → the check-up', (tester) async {
       await pumpApp(tester);
-      await toPractice(tester);
-      expect(find.text('开始自测'), findsOneWidget);
-      expect(find.byKey(const ValueKey('check-radar')), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('hip-check-card')));
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
       await tester.pumpAndSettle();
       // The former 自测 tab content is kept as the intro page.
-      expect(find.text('开胯体检'), findsOneWidget);
+      expect(find.text('髋部自测'), findsOneWidget);
+      expect(find.text('开始自测'), findsOneWidget);
       for (final item in content.rules.items) {
         expect(find.byKey(ValueKey('intro-item-${item.id}')), findsOneWidget);
       }
@@ -141,29 +128,8 @@ void main() {
       expect(find.byType(HipAssessmentPage), findsOneWidget);
     });
 
-    testWidgets('tested card: radar, last date, 重测 starts directly', (
-      tester,
-    ) async {
-      await pumpApp(tester, setup: addAssessment);
-      await toPractice(tester);
-      expect(find.byKey(const ValueKey('check-radar')), findsOneWidget);
-      expect(find.text('重测'), findsOneWidget);
-      final caption = tester.widget<Text>(
-        find.byKey(const ValueKey('check-caption')),
-      );
-      expect(caption.data, startsWith('上次 10 月 18 日'));
-      await tester.tap(find.byKey(const ValueKey('check-start')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HipAssessmentPage), findsOneWidget);
-    });
-
-    testWidgets('更多 髋部自测 entry opens the check-up', (tester) async {
-      await pumpApp(tester);
-      await openMore(tester);
-      await tester.tap(find.byKey(const ValueKey('more-checkup')));
-      await tester.pumpAndSettle();
-      expect(find.byType(HipAssessmentPage), findsOneWidget);
-    });
+    // UI r2: the 自测 card left 训练组; the last result's radar moves to
+    // the intro page in M4.
   });
 
   group('SDK 动作库与宿主单练', () {
@@ -364,7 +330,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('dose-done')));
       await tester.pumpAndSettle();
       expect(find.textContaining('已调整'), findsOneWidget);
-      await tester.tap(find.bySemanticsLabel('取消').first);
+      await tester.tap(find.byKey(const ValueKey('editor-close')));
       await tester.pumpAndSettle();
       expect(find.text('放弃修改？'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('editor-discard')));
@@ -523,8 +489,8 @@ void main() {
       tester.element(find.byType(trainer.TrainingLibraryDetail)),
     ).pop();
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('practice-2')));
-    await tester.pumpAndSettle();
+    // UI r2: the groups live on 训练组, not on 动作库.
+    await toPractice(tester, segment: 2);
     await tester.tap(find.byKey(const ValueKey('group-card-c_1')));
     await tester.pumpAndSettle();
     expect(find.byType(GroupEditorPage), findsOneWidget);

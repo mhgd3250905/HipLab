@@ -24,6 +24,9 @@ class LibText {
   String get segActions => _('动作', 'Moves');
   String get segRoutines => _('套路', 'Routines');
   String get segMine => _('我的', 'Mine');
+  String get segRecommended => _('推荐套路', 'Routines');
+  String get groupsTitle => _('训练组', 'Groups');
+  String get libraryTitle => _('动作库', 'Moves');
   String get myHip => _('我的髋部', 'My hips');
   String get checkTitle => _('3 分半自测', '3½-min check-up');
   String get checkUntested =>
@@ -177,7 +180,7 @@ class LibText {
 
   // ── mine ──
   String get newGroupHint =>
-      _('从动作大全挑动作，最多 20 个', 'Pick from the moves, up to 20');
+      _('从动作库挑动作，最多 20 个', 'Pick from the moves, up to 20');
   String myGroups(int n) => _('我的训练组 · $n', 'My groups · $n');
   String fromRoutine(String name) => _('改自套路「$name」', 'From routine "$name"');
   String delisted(int n) => _('$n 个动作已下架', '$n moves were removed');

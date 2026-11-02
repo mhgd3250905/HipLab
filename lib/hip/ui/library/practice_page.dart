@@ -1,5 +1,8 @@
-// 练习 tab (拍板 1, 2026-10-19 13:08): big title, the 「我的髋部 · 3 分半自测」
-// card (the former 自测 tab), then 动作 | 套路 | 我的.
+// 「训练组」 (UI r2 M2, 2026-11-03): HipNavBar 训练组, segments 我的 / 推荐套路
+// (我的 default). 我的: 新建训练组 + AI 定制 as flat rows, then the groups.
+// The 自测 card and the 动作 tab left (更多 has 髋部自测 and 动作库).
+// [PracticePage.library] is the 动作库 entry: the moves view only (the SDK
+// library under the HipLab bar until M3 replaces it).
 import 'package:flutter/material.dart';
 import '../../data/hip_shared_library.dart';
 import '../../data/hip_public_media.dart';
@@ -9,6 +12,7 @@ import '../../domain/hip_models.dart';
 import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
+import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
 import '../hip_theme.dart';
@@ -20,21 +24,42 @@ import 'library_actions.dart';
 import 'library_widgets.dart';
 import 'routine_detail_page.dart';
 
+/// Flat card of the r2 kit: the [HipListGroup] panel colour, radius 12, no
+/// border, no shadow.
+Widget hipFlatCard({
+  Key? key,
+  required Widget child,
+  EdgeInsets padding = const EdgeInsets.fromLTRB(16, 14, 14, 14),
+}) => Container(
+  key: key,
+  padding: padding,
+  decoration: BoxDecoration(
+    color: HipListGroup.fill(),
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: child,
+);
+
 class PracticePage extends StatefulWidget {
   const PracticePage({
     super.key,
     required this.actions,
     required this.memory,
     required this.onStartAssessment,
-    this.topPadding = 12,
+    this.library = false,
+    this.trailing,
   });
   final LibraryActions actions;
-
-  /// Space above the 「练习」 title (less under a short back bar, m6).
-  final double topPadding;
   final PracticeMemory memory;
 
-  /// Starts the check-up straight away, growing out of [from].
+  /// The 动作库 entry instead of 训练组.
+  final bool library;
+
+  /// One action on the right of the bar (coach: 去排一套).
+  final Widget? trailing;
+
+  /// Starts the check-up (kept for the callers; the page no longer has the
+  /// 自测 card).
   final void Function({BuildContext? from, double radius, Color? color})
   onStartAssessment;
   @override
@@ -43,12 +68,13 @@ class PracticePage extends StatefulWidget {
 
 class _PracticePageState extends State<PracticePage> {
   late final _search = TextEditingController(text: widget.memory.filter.query);
-  final _cardKey = GlobalKey();
-  final _checkPillKey = GlobalKey();
 
   PracticeMemory get mem => widget.memory;
   LibraryActions get actions => widget.actions;
   HipContent get content => actions.store.content;
+
+  /// 训练组 segment: 2 我的 (default) or 1 推荐套路.
+  int get _segment => mem.segment == 1 ? 1 : 2;
 
   @override
   void dispose() {
@@ -57,192 +83,50 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: actions.store,
-    builder: (context, _) => _build(context),
-  );
+  Widget build(BuildContext context) {
+    final t = LibText.of(context);
+    return HipNavPage(
+      title: widget.library ? t.libraryTitle : t.groupsTitle,
+      leadingKey: const ValueKey('practice-back'),
+      trailing: widget.trailing,
+      body: ListenableBuilder(
+        listenable: actions.store,
+        builder: (context, _) => _build(context),
+      ),
+    );
+  }
 
   Widget _build(BuildContext context) {
     final t = LibText.of(context);
-    if (mem.segment == 0 &&
-        HipSharedLibrary.current != null &&
-        HipPublicMedia.current != null) {
-      return HipSharedLibraryPage(
-        actions: actions,
-        header: Column(
-          children: [
-            _checkCard(t),
-            const SizedBox(height: 12),
-            HipSegmented<int>(
-              keyPrefix: 'practice',
-              standalone: true,
-              height: 46,
-              radius: 16,
-              inset: 4,
-              values: const [0, 1, 2],
-              selected: mem.segment,
-              onChanged: (v) => setState(() => mem.segment = v),
-              label: (v) => [t.segActions, t.segRoutines, t.segMine][v],
-            ),
-          ],
-        ),
+    if (widget.library) {
+      if (HipSharedLibrary.current != null && HipPublicMedia.current != null) {
+        return HipSharedLibraryPage(actions: actions);
+      }
+      return ListView(
+        key: const ValueKey('practice-list'),
+        padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
+        children: _actions(t),
       );
     }
-    final body = switch (mem.segment) {
-      1 => _routines(t),
-      2 => _mine(t),
-      _ => _actions(t),
-    };
+    final seg = _segment;
     return ListView(
       key: const ValueKey('practice-list'),
-      padding: EdgeInsets.fromLTRB(20, widget.topPadding, 20, 20),
+      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
       children: [
-        Text(
-          t.practice,
-          style: const TextStyle(
-            fontSize: 28,
-            letterSpacing: .5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _checkCard(t),
-        const SizedBox(height: 14),
         HipSegmented<int>(
           keyPrefix: 'practice',
           standalone: true,
           height: 34,
           radius: 9,
           inset: 3,
-          values: const [0, 1, 2],
-          selected: mem.segment,
+          values: const [2, 1],
+          selected: seg,
           onChanged: (v) => setState(() => mem.segment = v),
-          label: (v) => [t.segActions, t.segRoutines, t.segMine][v],
+          label: (v) => v == 2 ? t.segMine : t.segRecommended,
         ),
-        const SizedBox(height: 14),
-        ...body,
+        const SizedBox(height: 16),
+        ...(seg == 1 ? _routines(t) : _mine(t)),
       ],
-    );
-  }
-
-  // ── 我的髋部 · 3 分半自测 ──
-
-  Widget _checkCard(LibText t) {
-    final store = actions.store;
-    final result = store.latestResult;
-    final blocked = store.blocked;
-    final last = store.assessments.isEmpty ? null : store.assessments.last.at;
-    final pill = KeyedSubtree(
-      key: _checkPillKey,
-      child: RepaintBoundary(
-        child: LibPill(
-          key: const ValueKey('check-start'),
-          label: blocked
-              ? t.checkBlocked
-              : result == null
-              ? t.checkStart
-              : t.checkRetest,
-          icon: blocked ? null : HipGlyph.play,
-          onTap: blocked
-              ? null
-              : () => widget.onStartAssessment(
-                  from: _checkPillKey.currentContext,
-                  radius: 14,
-                  color: tintOf(HipColors.jade),
-                ),
-        ),
-      ),
-    );
-    final radar = SizedBox(
-      width: 48,
-      height: 48,
-      child: result == null
-          ? Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: tintOf(HipColors.jade),
-              ),
-              alignment: Alignment.center,
-              child: HipIcon(HipGlyph.radar, size: 24, color: HipColors.jade),
-            )
-          : HipRadar(
-              key: const ValueKey('check-radar'),
-              values: result.radar,
-              highlight: result.tightest.toSet(),
-              warn: result.painDirections,
-              compact: true,
-              labels: false,
-            ),
-    );
-    // Title and caption wrap rather than cut (PR #22 P3).
-    final texts = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(t.myHip, style: TextStyle(fontSize: 12, color: HipColors.muted)),
-        Text(
-          t.checkTitle,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          result == null || last == null
-              ? t.checkUntested
-              : '${t.lastChecked(last)} · ${t.levelName(result.level.level)}',
-          key: const ValueKey('check-caption'),
-          style: TextStyle(fontSize: 12, color: HipColors.muted),
-        ),
-      ],
-    );
-    // Very large text: the pill moves under the texts so they keep the
-    // card's width.
-    final large = libLargeText(context);
-    return HipPressable(
-      key: const ValueKey('hip-check-card'),
-      semanticLabel: '${t.myHip} · ${t.checkTitle}',
-      scale: .98,
-      onTap: _openIntro,
-      child: RepaintBoundary(
-        key: _cardKey,
-        child: HipPanel(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-          child: large
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        radar,
-                        const SizedBox(width: 12),
-                        Expanded(child: texts),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    pill,
-                  ],
-                )
-              : Row(
-                  children: [
-                    radar,
-                    const SizedBox(width: 12),
-                    Expanded(child: texts),
-                    const SizedBox(width: 8),
-                    pill,
-                  ],
-                ),
-        ),
-      ),
-    );
-  }
-
-  /// The former 自测 tab body, now a page grown out of the card.
-  void _openIntro() {
-    Navigator.of(context).push(
-      HipRoute.expandFrom<void>(
-        _cardKey.currentContext,
-        (_) => AssessmentIntroPage(actions: actions),
-        radius: 22,
-        color: HipColors.surface,
-      ),
     );
   }
 
@@ -337,14 +221,25 @@ class _PracticePageState extends State<PracticePage> {
   /// A detail page (or a routine's move) answered 看放松: 动作大全 filtered
   /// to that direction's relax moves.
   void _applyJump(Object? jump) {
-    if (jump is LibraryJump && mounted) {
+    if (jump is! LibraryJump || !mounted) return;
+    if (widget.library) {
       setState(() {
         _search.clear();
-        mem
-          ..segment = 0
-          ..filter = jump.filter;
+        mem.filter = jump.filter;
       });
+      return;
     }
+    // 训练组 has no moves view: open 动作库 filtered.
+    Navigator.of(context).push(
+      HipRoute.push<void>(
+        (_) => PracticePage(
+          actions: actions,
+          library: true,
+          memory: PracticeMemory()..filter = jump.filter,
+          onStartAssessment: widget.onStartAssessment,
+        ),
+      ),
+    );
   }
 
   // ── ③ 套路 ──
@@ -355,23 +250,24 @@ class _PracticePageState extends State<PracticePage> {
       ..sort((a, b) => (a.id == rec ? 0 : 1).compareTo(b.id == rec ? 0 : 1));
     final dancer = actions.store.identity == HipIdentity.dancer;
     return [
-      Text(
-        t.routinesCount(content.routines.length),
-        style: TextStyle(fontSize: 13, color: HipColors.muted),
-      ),
-      const SizedBox(height: 10),
+      HipSection(t.routinesCount(content.routines.length), first: true),
       for (final r in list) ...[
         _routineCard(t, r, r.id == rec, dancer),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
       ],
     ];
   }
 
   Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
-    const nameStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w600);
+    final nameStyle = TextStyle(
+      fontSize: 16,
+      height: 1.25,
+      fontWeight: FontWeight.w600,
+      color: HipColors.text,
+    );
     final minutes = Text(
       t.minutes(r.minutes),
-      style: TextStyle(fontSize: 13, color: HipColors.muted),
+      style: TextStyle(fontSize: 14, color: HipColors.faint),
     );
     return HipPressable(
       key: ValueKey('routine-card-${r.id}'),
@@ -384,8 +280,7 @@ class _PracticePageState extends State<PracticePage> {
           ),
         ),
       ),
-      child: HipPanel(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: hipFlatCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -412,22 +307,14 @@ class _PracticePageState extends State<PracticePage> {
                 ],
               ),
             const SizedBox(height: 4),
-            Row(
-              children: [
-                HipIcon(
-                  r.scene == HipScene.chair ? HipGlyph.chair : HipGlyph.home,
-                  size: 13,
-                  color: HipColors.muted,
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
-                    '${r.audience.split('；').first}',
-                    style: TextStyle(fontSize: 12, color: HipColors.muted),
-                  ),
-                ),
-              ],
+            Text(
+              '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
+              '${r.audience.split('；').first}',
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.3,
+                color: HipColors.muted,
+              ),
             ),
             if (r.id == 'F' && !dancer) ...[
               const SizedBox(height: 6),
@@ -440,8 +327,10 @@ class _PracticePageState extends State<PracticePage> {
                 ),
               ),
             ],
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             LibThumbStrip(
+              size: 32,
+              gap: 8,
               drills: [for (final s in r.steps) content.drill(s.drillId)],
             ),
           ],
@@ -455,84 +344,33 @@ class _PracticePageState extends State<PracticePage> {
   List<Widget> _mine(LibText t) {
     final groups = actions.store.customRoutines;
     return [
-      _newGroupCard(t),
-      // AI 定制 (docs/ai-coach.md): next to the custom groups, zh UI only.
-      if (actions.coach != null &&
-          aiCoachAvailable(context, configured: actions.coach!.configured)) ...[
-        const SizedBox(height: 10),
-        HipCoachChatEntryCard(actions: actions),
-      ],
-      const SizedBox(height: 16),
-      if (groups.isEmpty)
-        _emptyMine(t)
-      else ...[
-        Text(
-          t.myGroups(groups.length),
-          style: TextStyle(
-            fontSize: 13,
-            color: HipColors.muted,
-            fontWeight: FontWeight.w600,
+      HipListGroup(
+        children: [
+          HipListRow(
+            key: const ValueKey('new-group'),
+            glyph: HipGlyph.plus,
+            title: t.newGroup,
+            subtitle: t.newGroupHint,
+            onTap: _newGroup,
           ),
-        ),
-        const SizedBox(height: 8),
+          // AI 定制 (docs/ai-coach.md): the app's only AI entry, zh UI only.
+          if (actions.coach != null &&
+              aiCoachAvailable(context, configured: actions.coach!.configured))
+            HipCoachChatEntryCard(actions: actions),
+        ],
+      ),
+      if (groups.isEmpty) ...[
+        const SizedBox(height: 24),
+        _emptyMine(t),
+      ] else ...[
+        HipSection(t.myGroups(groups.length)),
         for (final g in groups) ...[
           GroupCard(actions: actions, group: g),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
         ],
       ],
     ];
   }
-
-  Widget _newGroupCard(LibText t) => HipPressable(
-    key: const ValueKey('new-group'),
-    semanticLabel: t.newGroup,
-    scale: .98,
-    onTap: () => _newGroup(),
-    child: HipPanel(
-      padding: const EdgeInsets.all(14),
-      borderColor: HipColors.jade.withValues(alpha: .55),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: tintOf(HipColors.jade),
-            ),
-            alignment: Alignment.center,
-            child: HipIcon(
-              HipGlyph.plus,
-              size: 18,
-              strokeWidth: 2.2,
-              color: HipColors.jadeText,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t.newGroup,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.jadeText,
-                  ),
-                ),
-                Text(
-                  t.newGroupHint,
-                  style: TextStyle(fontSize: 12, color: HipColors.muted),
-                ),
-              ],
-            ),
-          ),
-          HipIcon(HipGlyph.chevronRight, size: 16, color: HipColors.jadeText),
-        ],
-      ),
-    ),
-  );
 
   Future<void> _newGroup() async {
     final store = actions.store;
@@ -567,16 +405,16 @@ class _PracticePageState extends State<PracticePage> {
     );
   }
 
-  Widget _emptyMine(LibText t) => HipPanel(
+  Widget _emptyMine(LibText t) => hipFlatCard(
     key: const ValueKey('mine-empty'),
     padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
     child: Column(
       children: [
-        HipIcon(HipGlyph.library, size: 44, color: HipColors.jade),
+        HipIcon(HipGlyph.library, size: 32, color: HipColors.jade),
         const SizedBox(height: 10),
         Text(
           t.emptyTitle,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 4),
         Text(
@@ -631,8 +469,7 @@ class GroupCard extends StatelessWidget {
                 (_) => GroupEditorPage(actions: actions, initial: g),
               ),
             ),
-      child: HipPanel(
-        padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+      child: hipFlatCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -651,29 +488,31 @@ class GroupCard extends StatelessWidget {
                     children: [
                       Text(
                         g.name,
-                        style: const TextStyle(
-                          fontSize: 15,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.25,
                           fontWeight: FontWeight.w600,
+                          color: HipColors.text,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                        style: TextStyle(fontSize: 12, color: HipColors.muted),
-                      ),
-                      if (from != null)
-                        Text(
-                          t.fromRoutine(routineShortName(from)),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: HipColors.faint,
-                          ),
+                        [
+                          '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
+                          if (from != null)
+                            t.fromRoutine(routineShortName(from)),
+                        ].join(' · '),
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.3,
+                          color: HipColors.muted,
                         ),
+                      ),
                       if (g.removed > 0)
                         Text(
                           t.delisted(g.removed),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 13,
                             color: HipColors.tight,
                           ),
                         ),
@@ -688,6 +527,8 @@ class GroupCard extends StatelessWidget {
                       key: ValueKey('group-start-${g.id}'),
                       label: t.start,
                       icon: HipGlyph.play,
+                      height: 32,
+                      radius: 8,
                       onTap: store.blocked || g.steps.isEmpty
                           ? null
                           : () => startGroup(
@@ -701,8 +542,8 @@ class GroupCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            LibThumbStrip(drills: drills),
+            const SizedBox(height: 12),
+            LibThumbStrip(drills: drills, size: 32, gap: 8),
           ],
         ),
       ),
@@ -812,31 +653,13 @@ class _AssessmentIntroPageState extends State<AssessmentIntroPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final t = LibText.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: HipTopBar(
-                icon: HipGlyph.back,
-                tooltip: t.back,
-                onClose: () => Navigator.of(context).maybePop(),
-              ),
-            ),
-            Expanded(
-              child: HipAssessmentIntro(
-                store: widget.actions.store,
-                startKey: _startKey,
-                onStart: _start,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => HipNavPage(
+    title: '髋部自测',
+    leadingKey: const ValueKey('intro-back'),
+    body: HipAssessmentIntro(
+      store: widget.actions.store,
+      startKey: _startKey,
+      onStart: _start,
+    ),
+  );
 }

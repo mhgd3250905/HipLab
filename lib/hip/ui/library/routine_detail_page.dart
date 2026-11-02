@@ -7,6 +7,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
@@ -51,12 +52,10 @@ class RoutineDetailPage extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            HipTopBar(
-              icon: HipGlyph.back,
-              tooltip: t.back,
-              onClose: () => Navigator.of(context).maybePop(),
-              subtitle: '${t.routine} · ${t.scene(r.scene)}',
+            HipNavBar(
+              leadingKey: const ValueKey('routine-back'),
               title: routineShortName(r),
+              subtitle: '${t.routine} · ${t.scene(r.scene)}',
             ),
             Expanded(
               child: ListView(

@@ -298,8 +298,9 @@ void main() {
       tester,
       find.byKey(const ValueKey('more-practice')),
     );
-    // 练习 (拍板 2026-10-19): the check-up card replaces the 自测 tab.
-    expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
+    // UI r2: 动作库 under the shared nav bar.
+    expect(find.byKey(const ValueKey('practice-back')), findsOneWidget);
+    expect(find.text('动作库'), findsOneWidget);
     await tester.state<NavigatorState>(find.byType(Navigator).first).maybePop();
     await tester.pumpAndSettle();
     await _keyboardActivate(tester, find.byKey(const ValueKey('more-back')));

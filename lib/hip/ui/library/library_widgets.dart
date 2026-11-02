@@ -220,10 +220,16 @@ class LibPill extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.height = 28,
+    this.radius = 14,
   });
   final String label;
   final HipGlyph? icon;
   final VoidCallback? onTap;
+
+  /// UI r2 compact action pill: 32 high, radius 8.
+  final double height;
+  final double radius;
   @override
   Widget build(BuildContext context) {
     final on = onTap != null;
@@ -233,11 +239,11 @@ class LibPill extends StatelessWidget {
       onTap: onTap,
       scale: .95,
       child: Container(
-        height: 28,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: height,
+        padding: EdgeInsets.symmetric(horizontal: height > 28 ? 12 : 10),
         decoration: BoxDecoration(
           color: on ? tintOf(HipColors.jade) : HipColors.surfaceHigh,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(radius),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -408,6 +414,9 @@ class LibDrillCard extends StatelessWidget {
   final bool? check;
   final bool inGroup;
 
+  static const double _radius = 12;
+  static const double _edge = 2;
+
   @override
   Widget build(BuildContext context) {
     final t = LibText.of(context);
@@ -426,17 +435,25 @@ class LibDrillCard extends StatelessWidget {
         scale: .97,
         onTap: () => onTap(cardContext),
         child: RepaintBoundary(
-          child: DecoratedBox(
-            decoration: const BoxDecoration(),
-            // m3: flat tile, small corners; an outline only marks a
-            // selected card while picking.
-            child: Container(
-              decoration: BoxDecoration(
-                color: HipColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: on ? Border.all(color: HipColors.jade, width: 2) : null,
-              ),
-              clipBehavior: Clip.antiAlias,
+          // m3: flat tile, small corners; an outline only marks a selected
+          // card while picking. UI r2 #3: the art is clipped to the inner
+          // radius and the outline is painted on top of it (foregroundDecoration),
+          // so the picture never covers the rounded border.
+          child: Container(
+            foregroundDecoration: on
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(_radius),
+                    border: Border.all(color: HipColors.jade, width: _edge),
+                  )
+                : null,
+            decoration: BoxDecoration(
+              color: HipColors.surface,
+              borderRadius: BorderRadius.circular(_radius),
+            ),
+            // No inset padding, so selecting does not shift the art; the
+            // outline (on top) covers the clipped corner exactly.
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(_radius),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -483,7 +500,12 @@ class LibDrillCard extends StatelessWidget {
                           ),
                         ),
                         if (check != null)
-                          Positioned(right: 8, top: 8, child: _checkDot(on)),
+                          Positioned(
+                            // Inset from the outline, never on it.
+                            right: on ? 6 : 8,
+                            top: on ? 6 : 8,
+                            child: _checkDot(on),
+                          ),
                       ],
                     ),
                   ),
@@ -663,38 +685,46 @@ class LibFooter extends StatelessWidget {
 
 /// Row of 40 pt drill thumbnails with a +N tile when they do not fit.
 class LibThumbStrip extends StatelessWidget {
-  const LibThumbStrip({super.key, required this.drills});
+  const LibThumbStrip({
+    super.key,
+    required this.drills,
+    this.size = 40,
+    this.gap = 6,
+  });
   final List<HipDrill> drills;
+  final double size;
+  final double gap;
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) {
-      final fit = ((c.maxWidth + 6) / 46).floor();
+      final fit = ((c.maxWidth + gap) / (size + gap)).floor();
       final show = drills.length > fit ? fit - 1 : drills.length;
+      final r = size <= 32 ? 8.0 : 10.0;
       return Row(
         children: [
           for (final (j, d) in drills.take(show).indexed)
             Padding(
-              padding: EdgeInsets.only(left: j == 0 ? 0 : 6),
+              padding: EdgeInsets.only(left: j == 0 ? 0 : gap),
               child: HipThumb(
-                size: 40,
-                radius: 10,
+                size: size,
+                radius: r,
                 child: HipDrillArt(drill: d, showPendingLabel: false),
               ),
             ),
           if (show < drills.length) ...[
-            const SizedBox(width: 6),
+            SizedBox(width: gap),
             Container(
-              width: 40,
-              height: 40,
+              width: size,
+              height: size,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: HipColors.surfaceHigh,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(r),
               ),
               child: Text(
                 '+${drills.length - show}',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: HipColors.muted,
                   fontWeight: FontWeight.w600,
                 ),

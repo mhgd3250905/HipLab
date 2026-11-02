@@ -17,6 +17,7 @@ import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
 import 'hip_icons.dart';
+import 'hip_page_kit.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -73,13 +74,9 @@ class HipAssessmentIntro extends StatelessWidget {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
             children: [
-              const Text(
-                '开胯体检',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 4),
+              // UI r2: the bar carries the title; one lead line here.
               Text(
                 '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
                 style: TextStyle(
@@ -960,7 +957,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         : store.planner.planFor([routine], store.profile);
     return Column(
       children: [
-        const HipTopBar(subtitle: '自测完成', title: '你的髋部'),
+        const HipNavBar(title: '你的髋部', subtitle: '自测完成'),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
