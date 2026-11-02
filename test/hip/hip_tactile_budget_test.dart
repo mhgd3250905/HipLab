@@ -118,19 +118,19 @@ void main() {
       // Home r1: no tab bar (its filled/outline glyphs went with it).
       expect(find.byKey(const ValueKey('tab-0')), findsNothing);
 
-      // 练习: only the 动作 | 套路 | 我的 thumb is tactile (T1); the check-up
-      // card's 开始自测 is a flat tinted pill.
-      await openPractice(tester);
+      // 训练组 (UI r2): only the 我的 | 推荐套路 thumb is tactile (T1).
+      await openGroups(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'practice');
       expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
       for (final seg in [1, 2]) {
+        // 1 推荐套路, 2 我的.
         await tester.tap(find.byKey(ValueKey('practice-$seg')));
         await tester.pumpAndSettle();
         _expectBudget(tester, p, 'practice segment $seg');
       }
 
-      // Check-up intro (from the card): the primary CTA is flat (T3).
+      // Check-up intro (更多 → 髋部自测): the primary CTA is flat (T3).
       await openCheckupIntro(tester);
       _expectBudget(tester, p, 'check-up');
       final cta = find.byKey(const ValueKey('assessment-start'));

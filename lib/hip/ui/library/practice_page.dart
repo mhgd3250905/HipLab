@@ -497,17 +497,26 @@ class GroupCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        [
-                          '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                          if (from != null)
-                            t.fromRoutine(routineShortName(from)),
-                        ].join(' · '),
+                        '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
                           height: 1.3,
                           color: HipColors.muted,
                         ),
                       ),
+                      if (from != null)
+                        Text(
+                          t.fromRoutine(routineShortName(from)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.3,
+                            color: HipColors.faint,
+                          ),
+                        ),
                       if (g.removed > 0)
                         Text(
                           t.delisted(g.removed),

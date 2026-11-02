@@ -252,9 +252,8 @@ void main() {
 
   testWidgets('iOS base release hides both AI entry points', (tester) async {
     await bootIos(tester);
-    await openPractice(tester);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('我的'));
+    // UI r2: 训练组 opens on 我的.
+    await openGroups(tester);
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('new-group')), findsOneWidget);
     expect(find.text('AI 定制训练'), findsNothing);
