@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
@@ -122,21 +123,20 @@ void main() {
   }
 
   Future<void> openDrill(WidgetTester tester, String id) async {
-    final page = tester.widget<trainer.TrainingLibraryPage>(
-      find.byType(trainer.TrainingLibraryPage),
-    );
+    // UI r2 M3: HipLab 动作库 → the SDK detail.
+    final policy = HipPublicMedia.current!;
     await tester.enterText(
-      find.byKey(const ValueKey('posehub-search')),
-      page.mediaPolicy.actionFor(id)!.nameZh,
+      find.byKey(const ValueKey('lib-search')),
+      policy.actionFor(id)!.nameZh,
     );
     await tester.pumpAndSettle();
-    final card = find.byKey(ValueKey('posehub-action-$id'));
+    final card = find.byKey(ValueKey('drill-card-$id'));
     await tester.ensureVisible(card);
     await tester.pumpAndSettle();
     final prepared = await tester.runAsync(
       () => trainer.TrainingPosterImages.prepareAsset(
         tester.element(card),
-        page.mediaPolicy.posterAssetFor(id)!,
+        policy.posterAssetFor(id)!,
       ),
     );
     expect(prepared, isTrue);
@@ -212,7 +212,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('finish')));
       await tester.pumpAndSettle();
       expect(find.byType(HipPlayerPage), findsNothing);
-      expect(find.byType(trainer.TrainingLibraryPage), findsOneWidget);
+      expect(find.byKey(const ValueKey('actions-count')), findsOneWidget);
       expect(out.events.where((e) => e == 'end').length, 1);
       expect(out.began, isFalse);
     });
