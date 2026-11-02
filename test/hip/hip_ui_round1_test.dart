@@ -14,6 +14,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -285,7 +286,7 @@ void main() {
   ) async {
     final store = await pumpApp(tester);
     expect(HipColors.palette, HipPalette.dark);
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('theme-${HipThemeChoice.light}')),
@@ -318,7 +319,7 @@ void main() {
     '#13 voice settings persist (voice / chimes / language / volume)',
     (tester) async {
       final store = await pumpApp(tester);
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await openSettings(tester);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const ValueKey('voice-preview')),

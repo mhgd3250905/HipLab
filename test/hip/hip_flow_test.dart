@@ -10,6 +10,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'trainer_test_pump.dart';
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 
 void main() {
   final content = loadContent();
@@ -43,7 +44,7 @@ void main() {
         s.identity = HipIdentity.office;
       },
     );
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await openPractice(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('practice-2')));
     await tester.pumpAndSettle();
@@ -51,7 +52,7 @@ void main() {
     expect(find.byKey(const ValueKey('practice-ai-coach')), findsNothing);
     expect(find.text('AI 定制训练'), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.byKey(const ValueKey('privacy-policy')),
@@ -74,13 +75,16 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('identity-office')));
       await tester.pumpAndSettle();
       expect(store.onboarded, isTrue);
-      expect(find.text('今日训练'), findsOneWidget);
+      // Home r1: no tab bar, one start button, ⋯ for everything else.
+      expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
       expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('scene-HipScene.chair')));
-      await tester.tap(find.byKey(const ValueKey('minutes-5')));
       await tester.pumpAndSettle();
-      expect(store.todayPlan!.routines.single.id, 'A');
-      expect(find.text('办公室'), findsOneWidget);
+      expect(store.scene, HipScene.chair);
+      expect(store.sceneChosenToday, isTrue);
+      expect(store.sceneRoutines(HipScene.chair).first.id, 'A');
+      expect(find.text('工位放松'), findsOneWidget);
     },
   );
 
@@ -272,7 +276,7 @@ void main() {
         s.identity = HipIdentity.office;
       },
     );
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     final entry = find.byKey(const ValueKey('privacy-policy'));
     await tester.scrollUntilVisible(
@@ -327,7 +331,7 @@ void main() {
         s.identity = HipIdentity.dancer;
       },
     );
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('reminder-switch')));
     await tester.pumpAndSettle();

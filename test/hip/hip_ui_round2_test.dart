@@ -18,6 +18,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 
 Future<void> expectPausedClock(WidgetTester tester) async {
   // Paused controls intentionally keep breathing; wait only for their morph.
@@ -66,60 +67,56 @@ void main() {
 
   group('segmented control', () {
     for (final theme in [HipThemeChoice.dark, HipThemeChoice.light]) {
-      testWidgets('home pickers slide one concentric thumb (${theme.id})', (
-        tester,
-      ) async {
-        final store = await pumpApp(tester, theme: theme);
-        final picker = find.byWidgetPredicate(
-          (w) => w is HipSegmented<int> && w.keyPrefix == 'minutes',
-        );
-        expect(picker, findsOneWidget);
-        final seg = tester.widget<HipSegmented<int>>(picker);
-        // Concentric corners: inner radius = outer radius − inset.
-        expect(seg.thumbRadius, seg.radius - seg.inset);
-        final thumb = find.byKey(const ValueKey('minutes-thumb'));
-        expect(thumb, findsOneWidget);
-        // The selection is the shared neutral tactile tile (no accent
-        // outline), its corners concentric with the track.
-        final face = tester.widget<HipTactile>(
-          find.descendant(of: thumb, matching: find.byType(HipTactile)),
-        );
-        expect(face.style, HipTactileStyle.neutral());
-        expect(face.radius, seg.thumbRadius);
+      // Home r1: the 分钟 picker left 首页; the 办公/居家 switch is its one
+      // segmented control and keeps the concentric sliding thumb.
+      testWidgets(
+        'home scene switch slides one concentric thumb (${theme.id})',
+        (tester) async {
+          final store = await pumpApp(tester, theme: theme);
+          final picker = find.byWidgetPredicate(
+            (w) => w is HipSegmented<HipScene> && w.keyPrefix == 'scene',
+          );
+          expect(picker, findsOneWidget);
+          final seg = tester.widget<HipSegmented<HipScene>>(picker);
+          // Concentric corners: inner radius = outer radius − inset.
+          expect(seg.thumbRadius, seg.radius - seg.inset);
+          final thumb = find.byKey(const ValueKey('scene-thumb'));
+          expect(thumb, findsOneWidget);
+          final face = tester.widget<HipTactile>(
+            find.descendant(of: thumb, matching: find.byType(HipTactile)),
+          );
+          expect(face.style, HipTactileStyle.neutral());
+          expect(face.radius, seg.thumbRadius);
 
-        final x0 = tester.getRect(thumb).left;
-        final target = tester.getRect(find.byKey(const ValueKey('minutes-15')));
-        await tester.tap(find.byKey(const ValueKey('minutes-15')));
-        await tester.pump();
-        await tester.pump(HipMotion.segment ~/ 3);
-        final mid = tester.getRect(thumb).left;
-        // Mid-flight: the thumb is travelling, not jumping.
-        expect(mid, greaterThan(x0 + 1));
-        expect(mid, lessThan(target.left - 1));
-        await tester.pumpAndSettle();
-        expect(store.minutes, 15);
-        expect(tester.getRect(thumb).center.dx, closeTo(target.center.dx, 1));
-
-        // The scene picker is the same control.
-        await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
-        await tester.pumpAndSettle();
-        expect(store.scene, HipScene.home);
-        final scene = tester.widget<HipSegmented<HipScene>>(
-          find.byWidgetPredicate((w) => w is HipSegmented<HipScene>),
-        );
-        expect(scene.radius, seg.radius);
-        expect(scene.inset, seg.inset);
-        expect(scene.height, seg.height);
-      });
+          final x0 = tester.getRect(thumb).left;
+          final target = tester.getRect(
+            find.byKey(ValueKey('scene-${HipScene.home}')),
+          );
+          await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
+          await tester.pump();
+          await tester.pump(HipMotion.segment ~/ 3);
+          final mid = tester.getRect(thumb).left;
+          // Mid-flight: the thumb is travelling, not jumping.
+          expect(mid, greaterThan(x0 + 1));
+          expect(mid, lessThan(target.left - 1));
+          await tester.pumpAndSettle();
+          expect(store.scene, HipScene.home);
+          expect(tester.getRect(thumb).center.dx, closeTo(target.center.dx, 1));
+        },
+      );
     }
 
     testWidgets('dragging along the track selects', (tester) async {
       final store = await pumpApp(tester);
-      final from = tester.getCenter(find.byKey(const ValueKey('minutes-5')));
-      final to = tester.getCenter(find.byKey(const ValueKey('minutes-15')));
+      final from = tester.getCenter(
+        find.byKey(ValueKey('scene-${HipScene.chair}')),
+      );
+      final to = tester.getCenter(
+        find.byKey(ValueKey('scene-${HipScene.home}')),
+      );
       await tester.dragFrom(from, to - from);
       await tester.pumpAndSettle();
-      expect(store.minutes, 15);
+      expect(store.scene, HipScene.home);
     });
   });
 
@@ -192,12 +189,17 @@ void main() {
       await pumpApp(tester);
       expect(find.byType(Icon), findsNothing);
       expect(find.byType(HipIcon), findsWidgets);
-      for (final tab in [1, 2]) {
-        await tester.tap(find.byKey(ValueKey('tab-$tab')));
-        await tester.pumpAndSettle();
-        expect(find.byType(Icon), findsNothing, reason: 'tab $tab');
+      // Home r1: the former tabs are pages 「更多」 opens.
+      for (final (name, open) in [
+        ('more', openMore),
+        ('practice', openPractice),
+        ('settings', openSettings),
+        ('records', openRecords),
+      ]) {
+        await open(tester);
+        expect(find.byType(Icon), findsNothing, reason: name);
       }
-      await tester.tap(find.byKey(const ValueKey('tab-0')));
+      await backHome(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await tester.pumpAndSettle();
@@ -300,45 +302,29 @@ void main() {
       await expectPausedClock(tester);
     });
 
-    testWidgets('tabs slide toward the tapped side', (tester) async {
+    testWidgets('更多 slides in from the right and back out', (tester) async {
       await pumpApp(tester);
-      double incomingDx() {
-        final slide = tester.widget<SlideTransition>(
-          find
-              .ancestor(
-                of: find.byKey(const ValueKey('tab-body-2')),
-                matching: find.byType(SlideTransition),
-              )
-              .first,
-        );
-        return slide.position.value.dx;
-      }
-
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      double left() =>
+          tester.getRect(find.byKey(const ValueKey('more-list'))).left;
+      await tester.tap(find.byKey(const ValueKey('home-more')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 40));
-      expect(incomingDx(), greaterThan(0)); // from the right
+      expect(left(), greaterThan(0)); // from the right
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('tab-0')));
+      expect(left(), closeTo(20, 1));
+      await tester.tap(find.byKey(const ValueKey('more-back')));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 40));
-      final incoming = tester.widget<SlideTransition>(
-        find
-            .ancestor(
-              of: find.byKey(const ValueKey('tab-body-0')),
-              matching: find.byType(SlideTransition),
-            )
-            .first,
-      );
-      expect(incoming.position.value.dx, lessThan(0)); // from the left
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(left(), greaterThan(20)); // back out to the right
       await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('more-list')), findsNothing);
     });
 
     testWidgets(
       'drill-down pages push from the right and swipe back on iOS',
       (tester) async {
         await pumpApp(tester);
-        await tester.tap(find.byKey(const ValueKey('tab-2')));
+        await openSettings(tester);
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(find.text('重新看安全提示'), 200);
         await tester.drag(find.byType(ListView).first, const Offset(0, -300));

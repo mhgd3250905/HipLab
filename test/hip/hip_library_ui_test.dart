@@ -16,6 +16,7 @@ import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart';
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -46,7 +47,7 @@ void main() {
   }
 
   Future<void> toPractice(WidgetTester tester, {int segment = 0}) async {
-    await tester.tap(find.byKey(const ValueKey('tab-1')));
+    await openPractice(tester);
     await tester.pumpAndSettle();
     if (segment != 0) {
       await tester.tap(find.byKey(ValueKey('practice-$segment')));
@@ -310,14 +311,18 @@ void main() {
         'h-adductor-rock',
       ]);
       expect(find.byKey(ValueKey('group-card-${g.id}')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('tab-0')));
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.byKey(ValueKey('home-group-${g.id}')),
-        300,
-        scrollable: find.byType(Scrollable).first,
+      // Home r1: groups moved from 首页 to 更多 › 我的训练组.
+      await openMore(tester);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('more-groups')),
+          matching: find.text('1 组'),
+        ),
+        findsOneWidget,
       );
-      expect(find.byKey(ValueKey('home-group-${g.id}')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('more-groups')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(ValueKey('group-card-${g.id}')), findsOneWidget);
     });
 
     testWidgets('editor: dose sheet within kit range; discard asks first', (
@@ -517,12 +522,10 @@ void main() {
             );
           },
         );
-        await tester.scrollUntilVisible(
-          find.byKey(const ValueKey('home-group-c_1')),
-          300,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(tester.takeException(), isNull, reason: 'home groups row');
+        // Home r1: the long group name now shows in 更多 › 我的训练组.
+        await openMore(tester);
+        expect(find.byKey(const ValueKey('more-groups')), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'more page');
         for (final seg in [0, 1, 2]) {
           await toPractice(tester, segment: seg);
           expect(tester.takeException(), isNull, reason: 'segment $seg');

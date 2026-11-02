@@ -6,6 +6,7 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart';
 
 void main() {
   testWidgets('progress keeps the published privacy policy reachable', (
@@ -20,7 +21,7 @@ void main() {
     store.identity = HipIdentity.office;
     await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('tab-2')));
+    await openSettings(tester);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('隐私政策'), 400);
     await tester.tap(find.text('隐私政策'));

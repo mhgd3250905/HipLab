@@ -61,8 +61,8 @@ class HipCalmSurface extends StatelessWidget {
         shadows: HipColors.shadows([
           BoxShadow(
             color: dark ? const Color(0x33000000) : const Color(0x0f1d2b25),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
           ),
         ]),
       ),

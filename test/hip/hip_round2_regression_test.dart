@@ -101,17 +101,20 @@ Future<void> _expectPausedClock(WidgetTester tester) async {
 
 void main() {
   testWidgets(
-    'zero-time tab reversals leave start hittable and open training',
+    'zero-time 更多 open/close reversals leave start hittable and open training',
     (tester) async {
       final handle = tester.ensureSemantics();
       await _app(tester);
-      for (final tab in [1, 0, 1, 0, 2, 0]) {
-        await tester.tap(find.byKey(ValueKey('tab-$tab')));
+      // Home r1: the tab bar is gone; 更多 is the one page 首页 opens.
+      final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byKey(const ValueKey('home-more')));
+        await tester.pump();
+        nav.pop();
         await tester.pump();
       }
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('tab-body-1')), findsNothing);
-      expect(find.byKey(const ValueKey('tab-body-2')), findsNothing);
+      expect(find.byKey(const ValueKey('more-list')), findsNothing);
       final start = find.byKey(const ValueKey('start-today'));
       expect(start.hitTestable(), findsOneWidget);
       await tester.tap(start);
@@ -238,33 +241,28 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets(
-    'rapid tab returns keep one source-key and Hero subtree per tab',
-    (tester) async {
-      await _app(tester);
-      for (final index in [1, 0, 2, 1, 2, 0]) {
-        await tester.tap(find.byKey(ValueKey('tab-$index')));
-        await tester.pump(const Duration(milliseconds: 35));
-        expect(tester.takeException(), isNull);
-        expect(
-          find.byKey(ValueKey('tab-body-$index'), skipOffstage: false),
-          findsOneWidget,
-        );
-      }
-      await tester.pumpAndSettle();
-      for (var i = 0; i < 3; i++) {
-        expect(
-          find.byKey(ValueKey('tab-body-$i'), skipOffstage: false),
-          findsOneWidget,
-        );
-        expect(
-          find.byKey(ValueKey('tab-body-$i')),
-          i == 0 ? findsOneWidget : findsNothing,
-        );
-      }
+  testWidgets('rapid 更多 returns keep one home and one hero subtree', (
+    tester,
+  ) async {
+    await _app(tester);
+    final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.byKey(const ValueKey('home-more')));
+      await tester.pump(const Duration(milliseconds: 35));
       expect(tester.takeException(), isNull);
-    },
-  );
+      nav.pop();
+      await tester.pump(const Duration(milliseconds: 35));
+      expect(tester.takeException(), isNull);
+    }
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
+    expect(find.byKey(const ValueKey('more-list')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('home-hero'), skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'pressable supports Enter and Space and disables keyboard activation',
@@ -294,16 +292,26 @@ void main() {
     },
   );
 
-  testWidgets('bottom tabs and segmented choices remain keyboard operable', (
+  testWidgets('scene switch and 更多 entries remain keyboard operable', (
     tester,
   ) async {
     final store = await _app(tester);
-    await _keyboardActivate(tester, find.byKey(const ValueKey('minutes-15')));
-    expect(store.minutes, 15);
-    await _keyboardActivate(tester, find.byKey(const ValueKey('tab-1')));
+    final other = store.scene == HipScene.chair
+        ? HipScene.home
+        : HipScene.chair;
+    await _keyboardActivate(tester, find.byKey(ValueKey('scene-$other')));
+    expect(store.scene, other);
+    await _keyboardActivate(tester, find.byKey(const ValueKey('home-more')));
+    expect(find.byKey(const ValueKey('more-list')), findsOneWidget);
+    await _keyboardActivate(
+      tester,
+      find.byKey(const ValueKey('more-practice')),
+    );
     // 练习 (拍板 2026-10-19): the check-up card replaces the 自测 tab.
     expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
-    await _keyboardActivate(tester, find.byKey(const ValueKey('tab-0')));
+    await tester.state<NavigatorState>(find.byType(Navigator).first).maybePop();
+    await tester.pumpAndSettle();
+    await _keyboardActivate(tester, find.byKey(const ValueKey('more-back')));
     expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
   });
 

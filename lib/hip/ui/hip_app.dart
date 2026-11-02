@@ -61,7 +61,12 @@ class _HipAppState extends State<HipApp> {
 
   Future<(HipStore, HipVoice)> _load() async {
     final store = widget.store ?? HipStore(content: await loadHipContent());
-    if (widget.store == null) await store.initialize();
+    if (widget.store == null) {
+      await store.initialize();
+      // 办公 by weekday daytime, 居家 otherwise, unless picked today
+      // (home r1). Injected test stores keep the scene they were given.
+      store.applyTimeScene();
+    }
     HipMediaVariants.media = await loadHipActionMedia();
     HipVoice voice;
     if (widget.voice != null) {
@@ -567,12 +572,6 @@ class _HipHomeState extends State<HipHome> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    store.applyTimeScene();
-  }
-
-  @override
   void dispose() {
     _coach.dispose();
     super.dispose();
@@ -723,7 +722,11 @@ class _HipHomeState extends State<HipHome> {
                                   onPressed: _rotate,
                                   style: TextButton.styleFrom(
                                     foregroundColor: HipColors.muted,
-                                    textStyle: const TextStyle(fontSize: 14),
+                                    textStyle: const TextStyle(
+                                      fontFamily: hipFontFamily,
+                                      fontSize: 14,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                   child: const Text('换一套'),
                                 ),
@@ -743,22 +746,28 @@ class _HipHomeState extends State<HipHome> {
 
   Widget _topBar() => Row(
     children: [
-      Flexible(
-        child: Text(
-          _greeting(store.now()),
-          key: const ValueKey('home-greeting'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 14,
-            letterSpacing: .5,
-            color: HipColors.muted,
-          ),
+      Expanded(
+        child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                _greeting(store.now()),
+                key: const ValueKey('home-greeting'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  letterSpacing: .5,
+                  color: HipColors.muted,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            _streakChip(),
+          ],
         ),
       ),
-      const SizedBox(width: 10),
-      _streakChip(),
-      const Spacer(),
+      const SizedBox(width: 12),
       HipCalmRoundButton(
         key: const ValueKey('home-more'),
         semanticLabel: '更多',
@@ -878,10 +887,10 @@ class _HipHomeState extends State<HipHome> {
                 ? HipColors.shadows([
                     BoxShadow(
                       color: HipColors.jade.withValues(
-                        alpha: HipColors.isDark ? .35 : .28,
+                        alpha: HipColors.isDark ? .28 : .22,
                       ),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
                   ])
                 : null,
@@ -1045,8 +1054,8 @@ class _HomeHeroArt extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   center: const Alignment(0, -.1),
-                  radius: .95,
-                  stops: const [.5, 1],
+                  radius: .9,
+                  stops: const [.45, .95],
                   colors: [bg.withValues(alpha: 0), bg],
                 ),
               ),
@@ -1056,7 +1065,7 @@ class _HomeHeroArt extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0, .14, .58, .97],
+                  stops: const [0, .14, .5, .88],
                   colors: [
                     bg,
                     bg.withValues(alpha: 0),

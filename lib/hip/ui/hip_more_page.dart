@@ -115,7 +115,7 @@ class HipMorePage extends StatelessWidget {
           key: 'more-settings',
           glyph: HipGlyph.contrast,
           title: '设置',
-          meta: '语音 · 外观 · 久坐提醒',
+          meta: '语音 · 外观 · 提醒',
           onTap: () => _sub(
             context,
             '设置',
@@ -339,7 +339,17 @@ class HipMorePage extends StatelessWidget {
   void _sub(BuildContext context, String? title, Widget body) => _push(
     context,
     Scaffold(
-      appBar: AppBar(title: title == null ? null : Text(title)),
+      appBar: AppBar(
+        // HipLab glyphs only (no Material Icon), same back as everywhere.
+        leading: Builder(
+          builder: (c) => IconButton(
+            tooltip: '返回',
+            onPressed: () => Navigator.of(c).maybePop(),
+            icon: HipIcon(HipGlyph.back, size: 22, color: HipColors.text),
+          ),
+        ),
+        title: title == null ? null : Text(title),
+      ),
       body: SafeArea(top: false, child: body),
     ),
   );

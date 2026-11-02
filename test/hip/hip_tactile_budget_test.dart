@@ -21,6 +21,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 
 bool _inside<T>(Element e) {
   var found = false;
@@ -125,7 +126,7 @@ void main() {
 
       // 练习: only the 动作 | 套路 | 我的 thumb is tactile (T1); the check-up
       // card's 开始自测 is a flat tinted pill.
-      await tester.tap(find.byKey(const ValueKey('tab-1')));
+      await openPractice(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'practice');
       expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
@@ -150,7 +151,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Progress + settings (scrolled): only segmented thumbs (T1).
-      await tester.tap(find.byKey(const ValueKey('tab-2')));
+      await openSettings(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'progress');
       expect(
