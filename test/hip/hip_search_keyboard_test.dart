@@ -17,7 +17,7 @@ import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
-import 'home_nav.dart';
+import 'home_nav.dart' as nav;
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -43,7 +43,7 @@ void main() {
       ..voice = const VoiceSettings(chimes: false);
     await tester.pumpWidget(HipApp(store: store, videoEnabled: false));
     await tester.pumpAndSettle();
-    await openPractice(tester);
+    await nav.openPractice(tester);
     await tester.pumpAndSettle();
     expect(tester.testTextInput.hasAnyClients, isFalse);
     return store;
@@ -133,10 +133,10 @@ void main() {
     await openPractice(tester, 1);
     await tester.tap(search);
     await tester.pumpAndSettle();
-    await openSettings(tester);
+    await nav.openSettings(tester);
     await tester.pumpAndSettle();
     expect(tester.testTextInput.hasAnyClients, isFalse);
-    await openPractice(tester);
+    await nav.openPractice(tester);
     await tester.pumpAndSettle();
     await tester.tap(search);
     await tester.pump();

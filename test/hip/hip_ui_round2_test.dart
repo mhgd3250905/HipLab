@@ -311,11 +311,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 40));
       expect(left(), greaterThan(0)); // from the right
       await tester.pumpAndSettle();
-      expect(left(), closeTo(20, 1));
+      expect(left(), closeTo(0, 1));
       await tester.tap(find.byKey(const ValueKey('more-back')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 60));
-      expect(left(), greaterThan(20)); // back out to the right
+      expect(left(), greaterThan(0)); // back out to the right
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('more-list')), findsNothing);
     });

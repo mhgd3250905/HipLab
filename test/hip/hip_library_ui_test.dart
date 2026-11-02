@@ -97,18 +97,14 @@ void main() {
   }
 
   group('tabs (拍板 1)', () {
-    testWidgets('three tabs 今日 / 练习 / 进度; no 自测 tab', (tester) async {
+    // Home r1 (2026-11-02): no tab bar; 更多 holds the former tabs.
+    testWidgets('no tab bar; 更多 lists the entries; no 自测 tab', (tester) async {
       await pumpApp(tester);
-      for (final (i, label) in [(0, '今日'), (1, '练习'), (2, '进度')]) {
-        expect(
-          find.descendant(
-            of: find.byKey(ValueKey('tab-$i')),
-            matching: find.text(label),
-          ),
-          findsOneWidget,
-        );
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
+      await openMore(tester);
+      for (final label in ['我的训练组', '全部动作与套路', '髋部自测', '训练记录', '设置']) {
+        expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.byKey(const ValueKey('tab-3')), findsNothing);
       expect(find.text('自测'), findsNothing);
       await toPractice(tester);
       expect(find.byKey(const ValueKey('hip-check-card')), findsOneWidget);
@@ -150,9 +146,10 @@ void main() {
       expect(find.byType(HipAssessmentPage), findsOneWidget);
     });
 
-    testWidgets('home 我的髋部 tile entry is kept', (tester) async {
+    testWidgets('更多 髋部自测 entry opens the check-up', (tester) async {
       await pumpApp(tester);
-      await tester.tap(find.text('3 分半自测'));
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
       await tester.pumpAndSettle();
       expect(find.byType(HipAssessmentPage), findsOneWidget);
     });

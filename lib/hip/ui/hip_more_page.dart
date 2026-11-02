@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 
 import '../control/hip_store.dart';
+import '../domain/hip_library.dart';
 import 'coach/hip_coach_chat_page.dart';
 import 'hip_app.dart' show HipProgressPage, HipProgressSection;
 import 'hip_calm.dart';
@@ -78,7 +79,7 @@ class HipMorePage extends StatelessWidget {
           key: 'more-practice',
           glyph: HipGlyph.library,
           title: '全部动作与套路',
-          meta: '${store.content.drills.length} 个动作',
+          meta: '${libraryDrills(store.content).length} 个动作',
           onTap: () => _practice(context, 0),
         ),
         Builder(
@@ -104,7 +105,10 @@ class HipMorePage extends StatelessWidget {
           onTap: () => _sub(
             context,
             '训练记录',
-            HipProgressPage(store: store, section: HipProgressSection.records),
+            (_) => HipProgressPage(
+              store: store,
+              section: HipProgressSection.records,
+            ),
           ),
         ),
       ]),
@@ -119,7 +123,10 @@ class HipMorePage extends StatelessWidget {
           onTap: () => _sub(
             context,
             '设置',
-            HipProgressPage(store: store, section: HipProgressSection.settings),
+            (_) => HipProgressPage(
+              store: store,
+              section: HipProgressSection.settings,
+            ),
           ),
         ),
       ]),
@@ -328,7 +335,7 @@ class HipMorePage extends StatelessWidget {
     _sub(
       context,
       null,
-      PracticePage(
+      (_) => PracticePage(
         actions: actions,
         memory: practice,
         onStartAssessment: onStartAssessment,
@@ -336,7 +343,7 @@ class HipMorePage extends StatelessWidget {
     );
   }
 
-  void _sub(BuildContext context, String? title, Widget body) => _push(
+  void _sub(BuildContext context, String? title, WidgetBuilder body) => _push(
     context,
     Scaffold(
       appBar: AppBar(
@@ -350,7 +357,12 @@ class HipMorePage extends StatelessWidget {
         ),
         title: title == null ? null : Text(title),
       ),
-      body: SafeArea(top: false, child: body),
+      // A pushed route is not rebuilt by the app root: follow the store
+      // here so switches and choices show their new state.
+      body: SafeArea(
+        top: false,
+        child: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),
+      ),
     ),
   );
 

@@ -708,8 +708,10 @@ class _HipHomeState extends State<HipHome> {
                         _blockedHero()
                       else
                         _headline(routine!, plan),
-                      const SizedBox(height: 26),
-                      _startButton(plan),
+                      if (plan != null) ...[
+                        const SizedBox(height: 26),
+                        _startButton(plan),
+                      ],
                       const SizedBox(height: 6),
                       SizedBox(
                         height: 40,
@@ -862,59 +864,21 @@ class _HipHomeState extends State<HipHome> {
     );
   }
 
-  Widget _startButton(TrainingPlan? plan) {
-    final enabled = plan != null && plan.steps.isNotEmpty;
-    final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
-    final fg = enabled ? HipColors.onJade : HipColors.faint;
-    return HipPressable(
-      key: const ValueKey('start-today'),
-      semanticLabel: '开始',
-      scale: .98,
-      onTap: enabled
-          ? () => _startPlan(plan, from: _startKey.currentContext)
-          : null,
-      // Its own layer: the player's container transform starts from a
-      // snapshot of this face (HipRoute.expandFrom).
-      child: RepaintBoundary(
-        key: _startKey,
-        child: AnimatedContainer(
-          duration: HipCalmMotion.of(context, HipCalmMotion.swap),
-          height: 62,
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(31),
-            boxShadow: enabled
-                ? HipColors.shadows([
-                    BoxShadow(
-                      color: HipColors.jade.withValues(
-                        alpha: HipColors.isDark ? .28 : .22,
-                      ),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ])
-                : null,
+  /// One big 开始: the shared tactile accent, as a wide pill.
+  Widget _startButton(TrainingPlan plan) => HipStartButton(
+    key: _startKey,
+    buttonKey: const ValueKey('start-today'),
+    stage: HipColors.palette,
+    size: 62,
+    width: double.infinity,
+    onTap: plan.steps.isEmpty
+        ? null
+        : () => _startPlan(
+            plan,
+            from: _startKey.currentContext,
+            originColor: HipColors.jade,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              HipIcon(HipGlyph.play, size: 20, filled: true, color: fg),
-              const SizedBox(width: 8),
-              Text(
-                '开始',
-                style: TextStyle(
-                  fontSize: 19,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.w700,
-                  color: fg,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  );
 
   Widget _blockedHero() => HipPanel(
     borderColor: HipColors.tight.withValues(alpha: .5),

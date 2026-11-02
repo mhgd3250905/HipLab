@@ -113,16 +113,8 @@ void main() {
         ),
       );
 
-      // Tab glyphs: filled when selected, outline otherwise (T4).
-      bool filled(int i) => tester
-          .widget<HipIcon>(
-            find.descendant(
-              of: find.byKey(ValueKey('tab-$i')),
-              matching: find.byType(HipIcon),
-            ),
-          )
-          .filled;
-      expect([filled(0), filled(1), filled(2)], [true, false, false]);
+      // Home r1: no tab bar (its filled/outline glyphs went with it).
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
 
       // 练习: only the 动作 | 套路 | 我的 thumb is tactile (T1); the check-up
       // card's 开始自测 is a flat tinted pill.
@@ -130,7 +122,6 @@ void main() {
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'practice');
       expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
-      expect([filled(0), filled(1), filled(2)], [false, true, false]);
       for (final seg in [1, 2]) {
         await tester.tap(find.byKey(ValueKey('practice-$seg')));
         await tester.pumpAndSettle();

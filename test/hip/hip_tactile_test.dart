@@ -305,11 +305,15 @@ void main() {
     await tester.tap(start);
     await tester.pump();
     final route =
-        ModalRoute.of(tester.element(find.byType(HipPlayerPage, skipOffstage: false))) as HipRoute;
+        ModalRoute.of(
+              tester.element(find.byType(HipPlayerPage, skipOffstage: false)),
+            )
+            as HipRoute;
     expect(route.transition, HipTransition.expand);
     final snap = route.originImage;
     expect(snap, isNotNull);
-    expect(snap!.width, 104);
+    // Home r1: the wide 开始 pill (snapshot at the test's 1× ratio).
+    expect(snap!.width, closeTo(tester.getSize(start).width, 1));
     late Uint8List first;
     await tester.runAsync(() async => first = await pixels(snap));
     expect(first.length, face.length);

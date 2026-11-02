@@ -1362,6 +1362,7 @@ class HipStartButton extends StatelessWidget {
     required this.stage,
     this.buttonKey,
     this.size = 104,
+    this.width,
     this.label = '开始',
   });
   final VoidCallback? onTap;
@@ -1369,50 +1370,77 @@ class HipStartButton extends StatelessWidget {
   /// Palette of what the button sits on (the dark media stage).
   final HipPalette stage;
   final Key? buttonKey;
+
+  /// Disc diameter, or the pill's height when [width] is set.
   final double size;
+
+  /// Set for the wide pill (首页 r1, 2026-11-02): icon and label side by
+  /// side; `double.infinity` fills the row.
+  final double? width;
   final String label;
 
   @override
-  Widget build(BuildContext context) => HipPressable(
-    semanticLabel: label,
-    key: buttonKey,
-    onTap: onTap,
-    // Its own layer: the player's container transform starts from a
-    // snapshot of this face (HipRoute.expandFrom).
-    child: RepaintBoundary(
-      child: SizedBox.square(
-        dimension: size,
-        child: HipTactile(
-          style: HipTactileStyle.accent(stage),
-          circle: true,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HipIcon(
-                  HipGlyph.play,
-                  size: size * .32,
-                  filled: true,
-                  color: stage.onJade,
-                ),
-                SizedBox(height: size * .015),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: size * .14,
-                    height: 1.2,
-                    letterSpacing: size * .01,
-                    fontWeight: FontWeight.w700,
-                    color: stage.onJade,
-                  ),
-                ),
-              ],
+  Widget build(BuildContext context) {
+    final pill = width != null;
+    final enabled = onTap != null;
+    final fg = enabled ? stage.onJade : stage.faint;
+    final glyph = HipIcon(
+      HipGlyph.play,
+      size: pill ? size * .32 : size * .32,
+      filled: true,
+      color: fg,
+    );
+    final text = Text(
+      label,
+      style: TextStyle(
+        fontSize: pill ? size * .3 : size * .14,
+        height: 1.2,
+        letterSpacing: pill ? 2 : size * .01,
+        fontWeight: FontWeight.w700,
+        color: fg,
+      ),
+    );
+    return HipPressable(
+      semanticLabel: label,
+      key: buttonKey,
+      onTap: onTap,
+      scale: pill ? .98 : HipMotion.pressScale,
+      // Its own layer: the player's container transform starts from a
+      // snapshot of this face (HipRoute.expandFrom).
+      child: RepaintBoundary(
+        child: SizedBox(
+          width: width ?? size,
+          height: size,
+          child: HipTactile(
+            style: enabled
+                ? HipTactileStyle.accent(stage)
+                : HipTactileStyle.neutral(stage),
+            circle: !pill,
+            radius: size / 2,
+            child: Center(
+              child: pill
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        glyph,
+                        SizedBox(width: size * .12),
+                        text,
+                      ],
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        glyph,
+                        SizedBox(height: size * .015),
+                        text,
+                      ],
+                    ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class HipPanel extends StatelessWidget {

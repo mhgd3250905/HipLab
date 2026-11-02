@@ -175,18 +175,9 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    await _app(tester);
-    for (final label in [
-      '5 分',
-      '10 分',
-      '15 分',
-      '办公椅',
-      '居家',
-      '今日',
-      '练习',
-      '进度',
-      '开始',
-    ]) {
+    final store = await _app(tester);
+    // Home r1: the scene switch, ⋯ 更多 and 开始 (no tabs, no 分钟 picker).
+    for (final label in ['办公', '居家', '更多', '开始']) {
       final matches = find.semantics
           .byPredicate(
             (node) =>
@@ -211,7 +202,8 @@ void main() {
           (node) =>
               !node.isMergedIntoParent &&
               node.getSemanticsData().flagsCollection.isButton &&
-              node.getSemanticsData().label == '今日',
+              node.getSemanticsData().label ==
+                  (store.scene == HipScene.chair ? '办公' : '居家'),
         )
         .evaluate()
         .single;

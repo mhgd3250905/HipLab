@@ -221,7 +221,7 @@ void main() {
     expect(store.streak, 1);
     await tester.tap(find.byKey(const ValueKey('finish')));
     await tester.pumpAndSettle();
-    expect(find.text('今日训练'), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
   });
 
   testWidgets('nerve-type pain stops the session and asks next time', (
