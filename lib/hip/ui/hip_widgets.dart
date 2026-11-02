@@ -1013,10 +1013,15 @@ class _HipFlatFace extends StatelessWidget {
     required this.color,
     required this.pressedColor,
     required this.child,
+    this.stadium = false,
   });
   final Color color;
   final Color pressedColor;
   final Widget child;
+
+  /// UI r2 §2: HipLab buttons are 48 high with a 12 radius. The pill shape
+  /// stays only where the button sits on an SDK-owned screen.
+  final bool stadium;
 
   @override
   Widget build(BuildContext context) {
@@ -1028,7 +1033,11 @@ class _HipFlatFace extends StatelessWidget {
       builder: (context, t, child) => DecoratedBox(
         decoration: ShapeDecoration(
           color: Color.lerp(color, pressedColor, t),
-          shape: const StadiumBorder(),
+          shape: stadium
+              ? const StadiumBorder()
+              : const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
         ),
         child: child,
       ),
@@ -1057,7 +1066,7 @@ class HipPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    final fg = enabled ? HipColors.onJade : HipColors.faint;
+    final fg = enabled ? HipColors.onJade : HipColors.muted;
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
@@ -1135,6 +1144,7 @@ class HipSecondaryButton extends StatelessWidget {
             ? Colors.white.withValues(alpha: .10)
             : HipColors.track,
         pressedColor: HipColors.surfaceHigh,
+        stadium: sdkScale,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1146,7 +1156,7 @@ class HipSecondaryButton extends StatelessWidget {
                   fontFamily: hipFontFamily,
                   fontSize: sdkScale ? 18 : 15,
                   fontWeight: FontWeight.w500,
-                  color: onPressed == null ? HipColors.faint : HipColors.text,
+                  color: onPressed == null ? HipColors.muted : HipColors.text,
                 ),
               ),
             ),
@@ -1208,7 +1218,7 @@ class HipCircleButton extends StatelessWidget {
           icon,
           key: ValueKey(icon),
           size: size * (size > 50 ? .42 : .45),
-          color: onPressed == null ? HipColors.faint : HipColors.text,
+          color: onPressed == null ? HipColors.muted : HipColors.text,
           filled: true,
           strokeWidth: size > 50 ? 1.75 : 2,
         ),

@@ -51,8 +51,10 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
       if (snapshot.data case final chat?) {
         return CoachChatPage(controller: chat);
       }
-      return Scaffold(
-        appBar: AppBar(title: const Text('HipLab 训练助手')),
+      // UI r2: HipLab's own loading/error shell uses HipNavBar; the chat
+      // itself is the SDK's CoachChatPage.
+      return HipNavPage(
+        title: 'HipLab 训练助手',
         body: Center(
           child: snapshot.hasError
               ? TextButton(
@@ -61,7 +63,7 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
                   }),
                   child: const Text('对话恢复失败，点击重试'),
                 )
-              : const CircularProgressIndicator(),
+              : CircularProgressIndicator(color: HipColors.jade),
         ),
       );
     },

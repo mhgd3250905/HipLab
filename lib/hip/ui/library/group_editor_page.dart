@@ -39,6 +39,9 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     text: widget.initial.name,
   );
   late int _rest = widget.initial.restSeconds;
+  late final FocusNode _nameFocus = FocusNode()
+    ..addListener(() => setState(() {}));
+  bool get _nameFocused => _nameFocus.hasFocus;
 
   /// Steps with a stable key each (reorder / dismiss).
   late final List<(int, CustomStep)> _steps = [
@@ -136,6 +139,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
   @override
   void dispose() {
     _name.dispose();
+    _nameFocus.dispose();
     super.dispose();
   }
 
@@ -351,16 +355,17 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      height: 52,
+                    // UI r2 §2: flat filled field, no outline; focus only
+                    // lifts the fill a touch (the caret is jade).
+                    AnimatedContainer(
+                      duration: HipMotion.fast,
+                      height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: HipColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: HipColors.jade.withValues(alpha: .7),
-                          width: 1.5,
-                        ),
+                        color: _nameFocused
+                            ? HipColors.text.withValues(alpha: .10)
+                            : HipColors.text.withValues(alpha: .06),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
@@ -376,6 +381,8 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             child: TextField(
                               key: const ValueKey('editor-name'),
                               controller: _name,
+                              focusNode: _nameFocus,
+                              cursorColor: HipColors.jade,
                               onChanged: (_) => setState(() {}),
                               inputFormatters: [
                                 LengthLimitingTextInputFormatter(
@@ -418,9 +425,9 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                           child: HipSegmented<int>(
                             keyPrefix: 'rest',
                             standalone: true,
-                            height: 42,
-                            radius: 14,
-                            inset: 4,
+                            height: 34,
+                            radius: 9,
+                            inset: 3,
                             values: CustomRoutine.rests,
                             selected: _rest,
                             onChanged: (v) => setState(() => _rest = v),

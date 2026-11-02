@@ -326,6 +326,79 @@ void main() {
       await tester.pumpAndSettle();
       await _capture(tester, '$shots/safety-review-dark.png');
     });
+    // ── M5 final: every changed page, dark + light; 1.5× overflow pass ──
+    for (final t in [HipThemeChoice.dark, HipThemeChoice.light]) {
+      final n = t == HipThemeChoice.dark ? 'dark' : 'light';
+      final dir = '$shots/final';
+      testWidgets('final 更多 $n', (tester) async {
+        await pump(tester, theme: t);
+        await openMore(tester);
+        await _capture(tester, '$dir/more-$n.png');
+      });
+      testWidgets('final 设置 $n', (tester) async {
+        await pump(tester, theme: t);
+        await openSettings(tester);
+        await _capture(tester, '$dir/settings-$n.png');
+      });
+      testWidgets('final 训练组 $n', (tester) async {
+        await pump(tester, theme: t, groups: true);
+        await openGroups(tester);
+        await _capture(tester, '$dir/groups-$n.png');
+      });
+      testWidgets('final 组编辑 $n', (tester) async {
+        await pump(tester, theme: t, groups: true);
+        await openGroups(tester);
+        await tester.tap(find.byKey(const ValueKey('group-card-c_1')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$dir/editor-$n.png');
+      });
+      testWidgets('final 添加动作 $n', (tester) async {
+        await pump(tester, theme: t, groups: true, public: true);
+        await openGroups(tester);
+        await tester.tap(find.byKey(const ValueKey('new-group')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$dir/picker-empty-$n.png');
+      });
+      testWidgets('final 动作库 $n', (tester) async {
+        await pump(tester, theme: t, public: true);
+        await openPractice(tester);
+        await _capture(tester, '$dir/library-$n.png');
+      });
+      testWidgets('final 套路详情 $n', (tester) async {
+        await pump(tester, theme: t);
+        await openGroups(tester);
+        await tester.tap(find.byKey(const ValueKey('practice-1')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('routine-card-A')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$dir/routine-$n.png');
+      });
+      testWidgets('final 训练记录 empty $n', (tester) async {
+        await pump(tester, theme: t, emptyRecords: true);
+        await openRecords(tester);
+        await _capture(tester, '$dir/records-empty-$n.png');
+      });
+      testWidgets('final 自测说明 $n', (tester) async {
+        await pump(tester, theme: t, assessed: true);
+        await openMore(tester);
+        await tester.tap(find.byKey(const ValueKey('more-checkup')));
+        await tester.pumpAndSettle();
+        await _capture(tester, '$dir/intro-$n.png');
+      });
+    }
+    final scaled = <String, Future<void> Function(WidgetTester)>{
+      'more': openMore,
+      'settings': openSettings,
+      'library': openPractice,
+      'records': openRecords,
+    };
+    for (final MapEntry(key: name, value: open) in scaled.entries) {
+      testWidgets('final 1.5x $name', (tester) async {
+        await pump(tester, public: name == 'library', textScale: 1.5);
+        await open(tester);
+        await _capture(tester, '$shots/final/x15-$name-dark.png');
+      });
+    }
   }, skip: shots == null);
 }
 

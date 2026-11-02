@@ -145,7 +145,12 @@ void main() {
                 as ShapeDecoration;
         // m3: fill only, no outline.
         expect(edge.color, p.track);
-        expect((edge.shape as StadiumBorder).side, BorderSide.none);
+        // UI r2 §2: 48 high, radius 12, no outline.
+        expect((edge.shape as RoundedRectangleBorder).side, BorderSide.none);
+        expect(
+          (edge.shape as RoundedRectangleBorder).borderRadius,
+          const BorderRadius.all(Radius.circular(12)),
+        );
         expect(edge.shadows, anyOf(isNull, isEmpty));
 
         await show(
