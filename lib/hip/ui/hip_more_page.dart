@@ -375,6 +375,7 @@ class HipMorePage extends StatelessWidget {
       (_) => PracticePage(
         actions: actions,
         memory: practice,
+        topPadding: 2,
         onStartAssessment: onStartAssessment,
       ),
     );
@@ -410,6 +411,9 @@ class HipMorePage extends StatelessWidget {
               ),
             ),
             leadingWidth: 64,
+            // m6: no title (练习 carries its own) → a short bar, so the big
+            // title sits right under the back glyph.
+            toolbarHeight: title == null ? 44 : null,
             // m5: the same large left title as 更多 (28 w700).
             centerTitle: false,
             titleSpacing: 0,

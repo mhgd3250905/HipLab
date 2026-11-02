@@ -304,12 +304,14 @@ class HipGlassBackdrop extends StatelessWidget {
           children: [
             ColoredBox(color: bg),
             if (image != null)
+              // m6: in light mode the grey figure read as blotches through
+              // the light wash — keep only a faint tint of the cover there.
               Opacity(
-                opacity: dark ? .55 : .5,
+                opacity: dark ? .55 : .14,
                 child: Image.asset(
                   image!,
                   fit: BoxFit.cover,
-                  cacheWidth: 18,
+                  cacheWidth: dark ? 18 : 10,
                   filterQuality: FilterQuality.medium,
                   alignment: const Alignment(0, -.3),
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),

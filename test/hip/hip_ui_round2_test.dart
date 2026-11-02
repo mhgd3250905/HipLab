@@ -266,11 +266,15 @@ void main() {
       find.descendant(of: row, matching: find.byType(HipMediaFrame)),
       findsNothing,
     );
-    final panel = tester.widget<HipPanel>(row);
+    // m6: flat hairline rows — no card around the row, small clean crop.
+    expect(
+      find.ancestor(of: row, matching: find.byType(HipPanel)),
+      findsNothing,
+    );
     final thumb = tester.widget<HipThumb>(
       find.descendant(of: row, matching: find.byType(HipThumb)),
     );
-    expect(thumb.radius, panel.radius - panel.padding.left);
+    expect(thumb.radius, lessThanOrEqualTo(8));
   });
 
   group('page transitions', () {

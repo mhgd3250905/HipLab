@@ -1620,3 +1620,68 @@ class HipLevelBars extends StatelessWidget {
 
 String mmss(int seconds) =>
     '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+/// m6: settings-style flat group — a small grey section header, then rows
+/// divided by 0.5pt hairlines (no panel, no radius), like 「更多」.
+class HipFlatGroup extends StatelessWidget {
+  const HipFlatGroup({
+    super.key,
+    this.title,
+    this.trailing,
+    required this.children,
+    this.indent = 0,
+  });
+  final String? title;
+  final Widget? trailing;
+  final List<Widget> children;
+
+  /// Left inset of the dividers between rows (to clear a leading glyph).
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) {
+    final line = Divider(
+      height: 1,
+      thickness: .5,
+      color: HipColors.text.withValues(alpha: .12),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.2,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                      color: HipColors.faint,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+          ),
+        line,
+        for (final (i, c) in children.indexed) ...[
+          if (i > 0)
+            Padding(
+              padding: EdgeInsets.only(left: indent),
+              child: line,
+            ),
+          c,
+        ],
+        line,
+      ],
+    );
+  }
+}

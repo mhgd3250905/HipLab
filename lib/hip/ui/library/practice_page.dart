@@ -24,8 +24,12 @@ class PracticePage extends StatefulWidget {
     required this.actions,
     required this.memory,
     required this.onStartAssessment,
+    this.topPadding = 12,
   });
   final LibraryActions actions;
+
+  /// Space above the 「练习」 title (less under a short back bar, m6).
+  final double topPadding;
   final PracticeMemory memory;
 
   /// Starts the check-up straight away, growing out of [from].
@@ -65,7 +69,7 @@ class _PracticePageState extends State<PracticePage> {
     };
     return ListView(
       key: const ValueKey('practice-list'),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, widget.topPadding, 20, 20),
       children: [
         Text(
           t.practice,

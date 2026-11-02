@@ -85,10 +85,10 @@ class HipAssessmentIntro extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              for (final (i, item) in items.indexed) ...[
-                if (i > 0) const SizedBox(height: 8),
-                _row(item),
-              ],
+              HipFlatGroup(
+                indent: 60,
+                children: [for (final item in items) _row(item)],
+              ),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -126,12 +126,11 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
-    // One card edge only; the thumbnail is a clean rounded crop concentric
-    // with the card (20 − 7 = 13), no frame of its own (round 2 #3).
-    return HipPanel(
+    // m6: a flat row between hairlines (no card); the thumbnail is a clean
+    // rounded crop, no frame of its own (round 2 #3).
+    return Padding(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.all(6),
-      radius: 12,
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
       child: Row(
         children: [
           HipThumb(size: 44, radius: 6, child: _thumbArt(item, still)),
@@ -1058,26 +1057,27 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     }
   }
 
+  // m6: flat fill chip (28pt, radius 8, no outline) — matches 练习 chips.
   Widget _resultChip(Color color, String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+    constraints: const BoxConstraints(minHeight: 28),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
-      color: HipColors.surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: HipColors.line),
+      color: HipColors.track,
+      borderRadius: BorderRadius.circular(8),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 8,
-          height: 8,
+          width: 7,
+          height: 7,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -1099,13 +1099,13 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     return DecoratedBox(
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
+        // m6: flat layered card — surface fill, radius 12, no outline.
         color: HipColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: HipColors.jade.withValues(alpha: .45)),
         boxShadow: HipColors.cardShadow,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1128,8 +1128,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                       Text(
                         headline,
                         style: const TextStyle(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           height: 1.3,
                         ),
                       ),
@@ -1144,7 +1144,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 if (hero != null) ...[
                   const SizedBox(width: 12),
                   HipThumb(
-                    size: 96,
+                    size: 84,
                     radius: 10,
                     child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),

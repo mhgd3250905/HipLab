@@ -251,6 +251,40 @@ void main() {
       await tester.pumpAndSettle();
       await _capture(tester, '$shots/checkup-dark.png');
     });
+    testWidgets('10 自测结果 dark', (tester) async {
+      await pumpHome(tester);
+      await openMore(tester);
+      await tester.tap(find.byKey(const ValueKey('more-checkup')));
+      await tester.pumpAndSettle();
+      for (var n = 0; n < 14; n++) {
+        if (find.text('你的髋部').evaluate().isNotEmpty) break;
+        final f = find.byKey(ValueKey('option-${n.isEven ? 1 : 2}'));
+        await tester.ensureVisible(f);
+        await tester.pumpAndSettle();
+        await tester.tap(f);
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('assessment-next')));
+        await tester.pumpAndSettle();
+      }
+      await _capture(tester, '$shots/result-dark.png');
+    });
+    testWidgets('12 自测 intro dark', (tester) async {
+      await pumpHome(tester);
+      await openPractice(tester);
+      await tester.tap(find.byKey(const ValueKey('hip-check-card')));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/intro-dark.png');
+    });
+    testWidgets('11 设置 light', (tester) async {
+      await pumpHome(
+        tester,
+        theme: HipThemeChoice.light,
+        scene: HipScene.home,
+        at: DateTime(2026, 11, 2, 21, 40),
+      );
+      await openSettings(tester);
+      await _capture(tester, '$shots/settings-light.png');
+    });
   }, skip: shots == null);
 }
 

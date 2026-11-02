@@ -1186,53 +1186,49 @@ class HipProgressPage extends StatelessWidget {
           const SizedBox(height: 14),
         ],
         if (records) ...[
-          HipPanel(
-            child: Row(
-              children: [
-                HipIcon(
-                  HipGlyph.flame,
-                  size: 18,
-                  filled: true,
-                  color: HipColors.tight,
+          HipFlatGroup(
+            title: '坚持',
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 15, 4, 15),
+                child: Row(
+                  children: [
+                    HipIcon(
+                      HipGlyph.flame,
+                      size: 18,
+                      filled: true,
+                      color: HipColors.tight,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '连续 ${store.streak} 天',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '共 ${store.doneDays.length} 天',
+                      style: TextStyle(fontSize: 13, color: HipColors.muted),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  '连续 ${store.streak} 天',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '共 ${store.doneDays.length} 天',
-                  style: TextStyle(fontSize: 13, color: HipColors.muted),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           if (result != null)
-            HipPanel(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '最近一次自测',
-                        style: TextStyle(fontSize: 13, color: HipColors.muted),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${result.level.name} · ${result.total}/12',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: HipColors.jadeText,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
+            HipFlatGroup(
+              title: '最近一次自测',
+              trailing: Text(
+                '${result.level.name} · ${result.total}/12',
+                style: TextStyle(fontSize: 12, color: HipColors.jadeText),
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: SizedBox(
                     height: 210,
                     child: HipRadar(
                       values: result.radar,
@@ -1240,8 +1236,8 @@ class HipProgressPage extends StatelessWidget {
                       warn: result.painDirections,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             )
           else if (section == HipProgressSection.records)
             Padding(
@@ -1251,136 +1247,158 @@ class HipProgressPage extends StatelessWidget {
                 style: TextStyle(fontSize: 13, color: HipColors.muted),
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
         ],
         if (settings) ...[
-          HipPanel(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          HipFlatGroup(
+            title: '提醒',
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 6, 0, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HipIcon(HipGlyph.bell, size: 18, color: HipColors.jade),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        '久坐提醒',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        HipIcon(
+                          HipGlyph.bell,
+                          size: 18,
+                          color: HipColors.jadeText,
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            '久坐提醒',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        _HipSmallSwitch(
+                          child: Switch(
+                            key: const ValueKey('reminder-switch'),
+                            value: reminder.enabled,
+                            onChanged: (v) => store.setReminder(
+                              reminder.copyWith(enabled: v),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (reminder.enabled) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 2, 8, 0),
+                        child: SizedBox(
+                          width: 220,
+                          // The same tactile thumb as every other either/or
+                          // choice (button audit 2026-10-18), not a Material chip.
+                          child: HipSegmented<int>(
+                            keyPrefix: 'reminder-interval',
+                            height: 32,
+                            radius: 8,
+                            inset: 3,
+                            values: const [45, 60],
+                            selected: reminder.intervalMinutes,
+                            label: (m) => '$m 分钟',
+                            onChanged: (m) => store.setReminder(
+                              reminder.copyWith(intervalMinutes: m),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    _HipSmallSwitch(
-                      child: Switch(
-                        key: const ValueKey('reminder-switch'),
-                        value: reminder.enabled,
-                        onChanged: (v) =>
-                            store.setReminder(reminder.copyWith(enabled: v)),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 6, 8, 8),
+                        child: Text(
+                          store.reminders.deliversNotifications
+                              ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00 提醒，点开直接做 2 分钟椅边放松'
+                              : '已记下提醒时间。系统通知将在接入通知组件后生效；现在可以在首页随时开始 2 分钟椅边放松。',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: HipColors.muted,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                    RepaintBoundary(
+                      key: tileKey,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.only(
+                          left: 28,
+                          right: 4,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        title: const Text('2 分钟椅边放松'),
+                        trailing: const HipIcon(
+                          HipGlyph.chevronRight,
+                          size: 16,
+                        ),
+                        onTap: () {
+                          final plan = store.microPlan;
+                          if (plan == null) return;
+                          Navigator.of(context).push(
+                            HipRoute.expandFrom<void>(
+                              tileKey.currentContext,
+                              (_) => HipPlayerPage(store: store, plan: plan),
+                              radius: 12,
+                              // The row sits on its panel: grow from the panel's
+                              // colour, not a lighter one (a frame-1 flash).
+                              color: HipColors.surface,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
-                if (reminder.enabled) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(34, 2, 8, 0),
-                    child: SizedBox(
-                      width: 220,
-                      // The same tactile thumb as every other either/or
-                      // choice (button audit 2026-10-18), not a Material chip.
-                      child: HipSegmented<int>(
-                        keyPrefix: 'reminder-interval',
-                        height: 32,
-                        radius: 8,
-                        inset: 3,
-                        values: const [45, 60],
-                        selected: reminder.intervalMinutes,
-                        label: (m) => '$m 分钟',
-                        onChanged: (m) => store.setReminder(
-                          reminder.copyWith(intervalMinutes: m),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(34, 6, 8, 8),
-                    child: Text(
-                      store.reminders.deliversNotifications
-                          ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00 提醒，点开直接做 2 分钟椅边放松'
-                          : '已记下提醒时间。系统通知将在接入通知组件后生效；现在可以在首页随时开始 2 分钟椅边放松。',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: HipColors.muted,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-                RepaintBoundary(
-                  key: tileKey,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.only(left: 34, right: 8),
-                    title: const Text('2 分钟椅边放松'),
-                    trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
-                    onTap: () {
-                      final plan = store.microPlan;
-                      if (plan == null) return;
-                      Navigator.of(context).push(
-                        HipRoute.expandFrom<void>(
-                          tileKey.currentContext,
-                          (_) => HipPlayerPage(store: store, plan: plan),
-                          radius: 12,
-                          // The row sits on its panel: grow from the panel's
-                          // colour, not a lighter one (a frame-1 flash).
-                          color: HipColors.surface,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           HipVoiceSettingsPanel(store: store),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           HipAppearancePanel(store: store),
-          const SizedBox(height: 12),
-          HipPanel(
-            padding: EdgeInsets.zero,
-            child: ListTile(
-              leading: HipIcon(
-                HipGlyph.shield,
-                size: 18,
-                color: HipColors.jade,
-              ),
-              title: const Text('重新看安全提示'),
-              trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
-              onTap: () => Navigator.of(context).push(
-                HipRoute.push<void>(
-                  (_) => HipOnboarding(store: store, review: true),
+          const SizedBox(height: 24),
+          HipFlatGroup(
+            title: '其他',
+            indent: 32,
+            children: [
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                horizontalTitleGap: 10,
+                minLeadingWidth: 18,
+                leading: HipIcon(
+                  HipGlyph.shield,
+                  size: 18,
+                  color: HipColors.jadeText,
+                ),
+                title: const Text('重新看安全提示'),
+                trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
+                onTap: () => Navigator.of(context).push(
+                  HipRoute.push<void>(
+                    (_) => HipOnboarding(store: store, review: true),
+                  ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          HipPanel(
-            padding: EdgeInsets.zero,
-            child: ListTile(
-              key: const ValueKey('privacy-policy'),
-              leading: HipIcon(
-                HipGlyph.shield,
-                size: 18,
-                color: HipColors.jade,
+              ListTile(
+                key: const ValueKey('privacy-policy'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                horizontalTitleGap: 10,
+                minLeadingWidth: 18,
+                leading: HipIcon(
+                  HipGlyph.shield,
+                  size: 18,
+                  color: HipColors.jadeText,
+                ),
+                title: const Text('隐私政策'),
+                subtitle: const Text('离线阅读 · 数据保存在设备上'),
+                trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(HipRoute.push<void>((_) => const HipPrivacyPage())),
               ),
-              title: const Text('隐私政策'),
-              subtitle: const Text('离线阅读 · 数据保存在设备上'),
-              trailing: const HipIcon(HipGlyph.chevronRight, size: 16),
-              onTap: () => Navigator.of(
-                context,
-              ).push(HipRoute.push<void>((_) => const HipPrivacyPage())),
-            ),
+            ],
           ),
         ],
         const SizedBox(height: 16),
@@ -1431,24 +1449,6 @@ String reminderLabel(ReminderSettings r) =>
 
 // ───────────────────────── settings: voice + appearance ─────────────────────
 
-Widget _settingsHeader(HipGlyph icon, String title, {String? hint}) => Padding(
-  padding: const EdgeInsets.only(bottom: 10),
-  child: Row(
-    children: [
-      HipIcon(icon, size: 18, color: HipColors.jade),
-      const SizedBox(width: 10),
-      Expanded(
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-      ),
-      if (hint != null)
-        Text(hint, style: TextStyle(fontSize: 12, color: HipColors.muted)),
-    ],
-  ),
-);
-
 /// 语音播报: voice on/off, chimes on/off, language, volume, preview (#13).
 class HipVoiceSettingsPanel extends StatelessWidget {
   const HipVoiceSettingsPanel({super.key, required this.store});
@@ -1457,69 +1457,79 @@ class HipVoiceSettingsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = store.voice;
-    return HipPanel(
+    // m6: flat group (header + hairlines), no panel.
+    return HipFlatGroup(
       key: const ValueKey('voice-settings'),
-      padding: const EdgeInsets.fromLTRB(16, 14, 12, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _settingsHeader(HipGlyph.voice, '语音播报'),
-          _switchRow(
-            key: const ValueKey('voice-switch'),
-            title: '人声口令',
-            subtitle: '动作预告、倒数、换边、要点提醒',
-            value: v.voice,
-            onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
-          ),
-          _switchRow(
-            key: const ValueKey('chime-switch'),
-            title: '提示音',
-            subtitle: '开始、结束和倒数的“滴”声',
-            value: v.chimes,
-            onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
-          ),
-          const SizedBox(height: 8),
-          Text('语言', style: TextStyle(fontSize: 13, color: HipColors.muted)),
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: HipSegmented<VoiceLanguage>(
-              keyPrefix: 'voice-lang',
-              values: VoiceLanguage.values,
-              selected: v.language,
-              label: (l) => l.label,
-              onChanged: (l) => store.setVoice(v.copyWith(language: l)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
+      title: '语音播报',
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 0, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HipIcon(HipGlyph.volumeLow, size: 20, color: HipColors.muted),
-              Expanded(
-                child: Slider(
-                  key: const ValueKey('voice-volume'),
-                  value: v.volume,
-                  onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
+              _switchRow(
+                key: const ValueKey('voice-switch'),
+                title: '人声口令',
+                subtitle: '动作预告、倒数、换边、要点提醒',
+                value: v.voice,
+                onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
+              ),
+              _switchRow(
+                key: const ValueKey('chime-switch'),
+                title: '提示音',
+                subtitle: '开始、结束和倒数的“滴”声',
+                value: v.chimes,
+                onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '语言',
+                style: TextStyle(fontSize: 13, color: HipColors.muted),
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: HipSegmented<VoiceLanguage>(
+                  keyPrefix: 'voice-lang',
+                  values: VoiceLanguage.values,
+                  selected: v.language,
+                  label: (l) => l.label,
+                  onChanged: (l) => store.setVoice(v.copyWith(language: l)),
                 ),
               ),
-              HipIcon(HipGlyph.volume, size: 20, color: HipColors.muted),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  HipIcon(HipGlyph.volumeLow, size: 20, color: HipColors.muted),
+                  Expanded(
+                    child: Slider(
+                      key: const ValueKey('voice-volume'),
+                      value: v.volume,
+                      onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
+                    ),
+                  ),
+                  HipIcon(HipGlyph.volume, size: 20, color: HipColors.muted),
+                ],
+              ),
+              // The iOS base release only opens background audio for guided
+              // exercise sessions. The shared settings preview has no session
+              // lifetime, so do not expose it on iOS.
+              if (Theme.of(context).platform != TargetPlatform.iOS)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    key: const ValueKey('voice-preview'),
+                    onPressed: v.voice || v.chimes
+                        ? () => _preview(context)
+                        : null,
+                    icon: const HipIcon(HipGlyph.today, size: 20),
+                    label: const Text('试听'),
+                  ),
+                ),
             ],
           ),
-          // The iOS base release only opens background audio for guided
-          // exercise sessions. The shared settings preview has no session
-          // lifetime, so do not expose it on iOS.
-          if (Theme.of(context).platform != TargetPlatform.iOS)
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                key: const ValueKey('voice-preview'),
-                onPressed: v.voice || v.chimes ? () => _preview(context) : null,
-                icon: const HipIcon(HipGlyph.today, size: 20),
-                label: const Text('试听'),
-              ),
-            ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1580,22 +1590,21 @@ class HipAppearancePanel extends StatelessWidget {
   const HipAppearancePanel({super.key, required this.store});
   final HipStore store;
   @override
-  Widget build(BuildContext context) => HipPanel(
+  Widget build(BuildContext context) => HipFlatGroup(
     key: const ValueKey('appearance-settings'),
-    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _settingsHeader(HipGlyph.contrast, '外观'),
-        HipSegmented<HipThemeChoice>(
+    title: '外观',
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 12),
+        child: HipSegmented<HipThemeChoice>(
           keyPrefix: 'theme',
           values: HipThemeChoice.values,
           selected: store.theme,
           label: (c) => c.zh,
           onChanged: store.setTheme,
         ),
-      ],
-    ),
+      ),
+    ],
   );
 }
 
