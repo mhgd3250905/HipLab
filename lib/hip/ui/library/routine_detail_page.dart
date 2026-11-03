@@ -223,7 +223,7 @@ class RoutineDetailPage extends StatelessWidget {
               '${i + 1}',
               style: TextStyle(
                 fontSize: 13,
-                color: HipColors.faint,
+                color: HipColors.meta,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -231,7 +231,7 @@ class RoutineDetailPage extends StatelessWidget {
           const SizedBox(width: 2),
           HipThumb(
             size: 44,
-            radius: 10,
+            radius: HipRadius.small,
             child: HipDrillArt(drill: s.drill, showPendingLabel: false),
           ),
           const SizedBox(width: 12),

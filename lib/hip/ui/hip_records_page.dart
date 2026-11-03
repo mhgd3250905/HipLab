@@ -227,7 +227,7 @@ class _Hero extends StatelessWidget {
                   fontSize: 56,
                   height: 1.05,
                   fontWeight: FontWeight.w700,
-                  color: streak > 0 ? HipColors.jadeText : HipColors.faint,
+                  color: streak > 0 ? HipColors.jadeText : HipColors.meta,
                   fontFeatures: tab,
                 ),
               ),
@@ -285,7 +285,7 @@ class _Hero extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 12, color: HipColors.faint)),
+        Text(label, style: TextStyle(fontSize: 12, color: HipColors.meta)),
       ],
     ),
   );
@@ -394,7 +394,7 @@ class _Week extends StatelessWidget {
                               : FontWeight.w400,
                           color: isToday
                               ? HipColors.jadeText
-                              : HipColors.faint,
+                              : HipColors.meta,
                         ),
                       ),
                     ],
@@ -440,7 +440,7 @@ class _Heatmap extends StatelessWidget {
                   ),
         ],
     ];
-    final labelStyle = TextStyle(fontSize: 11, color: HipColors.faint);
+    final labelStyle = TextStyle(fontSize: 11, color: HipColors.meta);
     return Padding(
       key: const ValueKey('records-heatmap'),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -664,7 +664,7 @@ class _Badge extends StatelessWidget {
                   ? p.onJade
                   : progress != null
                   ? p.text
-                  : p.faint,
+                  : p.meta,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
@@ -685,7 +685,7 @@ class _Badge extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: earned || progress != null ? p.text : p.faint,
+            color: earned || progress != null ? p.text : p.meta,
           ),
         ),
         const SizedBox(height: 2),
@@ -700,7 +700,7 @@ class _Badge extends StatelessWidget {
                 ? HipColors.jadeText
                 : progress != null
                 ? p.muted
-                : p.faint.withValues(alpha: .7),
+                : p.meta,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
@@ -810,22 +810,10 @@ class _CelebrateState extends State<_Celebrate>
     builder: (context, child) {
       final t = _c.value;
       final pop = Curves.elasticOut.transform((t / .7).clamp(0, 1));
-      final glow = math.sin(math.pi * t);
       return Transform.scale(
         scale: .7 + .3 * pop,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: HipColors.jade.withValues(alpha: .45 * glow),
-                blurRadius: 18 * glow,
-                spreadRadius: 2 * glow,
-              ),
-            ],
-          ),
-          child: child,
-        ),
+        // No glow (audit r3 12-1): the pop alone marks a new milestone.
+        child: child,
       );
     },
   );

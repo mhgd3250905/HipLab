@@ -209,14 +209,17 @@ abstract final class HipGlassStyle {
       ? Colors.white.withValues(alpha: high ? .3 : .16 * strength)
       : Colors.black.withValues(alpha: high ? .12 : .06 * strength);
 
-  /// At most a tiny soft shadow under the base level.
-  static List<BoxShadow>? shadow({required bool dark}) => HipColors.shadows([
-    BoxShadow(
-      color: dark ? const Color(0x2e000000) : const Color(0x0f1d2b25),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    ),
-  ]);
+  /// At most a tiny soft shadow under the base level — dark theme only.
+  /// Light glass has no shadow (audit r3 G1): fill + 0.5pt rim carry it.
+  static List<BoxShadow>? shadow({required bool dark}) => dark
+      ? HipColors.shadows(const [
+          BoxShadow(
+            color: Color(0x2e000000),
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ])
+      : null;
 
   /// Blur plus a slight saturation lift (the "liquid" look: colour behind
   /// glass reads richer, not washed out).

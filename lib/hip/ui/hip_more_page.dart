@@ -122,7 +122,7 @@ class HipMorePage extends StatelessWidget {
       Text(
         '这是运动练习，不能替代医生的建议。',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: HipColors.faint),
+        style: TextStyle(fontSize: 12, color: HipColors.meta),
       ),
     ];
     return ListView(

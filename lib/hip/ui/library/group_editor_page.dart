@@ -370,21 +370,11 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                     ? null
                     : Tooltip(
                         message: t.deleteGroup,
-                        child: HipPressable(
+                        child: HipNavButton(
                           key: const ValueKey('editor-delete'),
+                          glyph: HipGlyph.trash,
                           semanticLabel: t.deleteGroup,
-                          scale: .9,
                           onTap: _delete,
-                          child: SizedBox.square(
-                            dimension: 44,
-                            child: Center(
-                              child: HipIcon(
-                                HipGlyph.trash,
-                                size: 20,
-                                color: HipColors.text,
-                              ),
-                            ),
-                          ),
                         ),
                       ),
               ),
@@ -442,7 +432,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             '${_name.text.runes.length}/${CustomRoutine.maxName}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ],
@@ -494,7 +484,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ),
@@ -523,7 +513,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             t.rowHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ),
@@ -669,7 +659,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
             ),
             HipThumb(
               size: 52,
-              radius: 11,
+              radius: HipRadius.small,
               child: HipDrillArt(drill: d, showPendingLabel: false),
             ),
             const SizedBox(width: 12),
@@ -726,7 +716,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                           ' · ${t.adjusted}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: HipColors.faint,
+                            color: HipColors.meta,
                           ),
                         ),
                     ],

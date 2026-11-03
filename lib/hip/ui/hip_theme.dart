@@ -24,6 +24,7 @@ class HipPalette {
     required this.text,
     required this.muted,
     required this.faint,
+    required this.meta,
     required this.tight,
     required this.pain,
     required this.scrim,
@@ -59,7 +60,12 @@ class HipPalette {
   final Color glow;
   final Color text;
   final Color muted;
+  /// Decorative / disabled only (below 3:1 on the surface).
   final Color faint;
+
+  /// Secondary meta text (counts, durations, "未解锁"): ≥4.5:1 on light
+  /// panels, ≥4:1 on dark (used at ≥12pt; audit r3 G6).
+  final Color meta;
   final Color tight;
   final Color pain;
 
@@ -97,6 +103,7 @@ class HipPalette {
     text: Color(0xfff2f3f5),
     muted: Color(0xff8c9096),
     faint: Color(0xff5b5f66),
+    meta: Color(0xff767b82),
     tight: Color(0xfff3a443),
     pain: Color(0xffef5a5a),
     scrim: Color(0x990c0d0f),
@@ -120,6 +127,7 @@ class HipPalette {
     text: Color(0xff121614),
     muted: Color(0xff5d6661),
     faint: Color(0xff9aa29e),
+    meta: Color(0xff6f7873),
     tight: Color(0xffd27a1e),
     pain: Color(0xffd43f3f),
     scrim: Color(0xccffffff),
@@ -167,6 +175,13 @@ abstract final class HipColors {
   static Color get text => palette.text;
   static Color get muted => palette.muted;
   static Color get faint => palette.faint;
+  static Color get meta => palette.meta;
+
+  /// 0.5pt panel rim (audit r3 G4): depth = fill + this hairline, never a
+  /// shadow.
+  static Color get rim => palette.isDark
+      ? Colors.white.withValues(alpha: .08)
+      : Colors.black.withValues(alpha: .06);
   static Color get tight => palette.tight;
   static Color get pain => palette.pain;
   static Color get scrim => palette.scrim;
@@ -176,22 +191,26 @@ abstract final class HipColors {
   static Color get thumb => palette.thumb;
   static Color get thumbHighlight => palette.thumbHighlight;
 
-  /// Soft elevation for cards: none on dark (strokes carry the shape), a
-  /// faint two-layer shadow on light.
-  static List<BoxShadow>? get cardShadow => palette.isDark || flatShadows
-      ? null
-      : [
-          BoxShadow(
-            color: palette.shadow,
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-          const BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 2,
-            offset: Offset(0, 1),
-          ),
-        ];
+  /// Cards carry no shadow in either theme (audit r3 G1, 开哥: light-mode
+  /// shadows look cheap): depth = fill + [rim]. Kept as an API so call sites
+  /// read the same.
+  static List<BoxShadow>? get cardShadow => null;
+}
+
+/// Corner radius tiers (THEME.md §3, audit r3 G3). Capsules/circles stay for
+/// HipLab's signature glass (dock, start, 换一套, nav round buttons).
+abstract final class HipRadius {
+  /// Lists, cards, media frames, radar panel, routine cards.
+  static const double panel = 16;
+
+  /// 48pt buttons, inputs, segmented controls.
+  static const double control = 12;
+
+  /// Chips, 32pt row icons, thumbnails.
+  static const double small = 8;
+
+  /// Top corners of bottom sheets.
+  static const double sheet = 24;
 }
 
 /// Motion tokens shared by every transition (#12, round 2). Every duration
@@ -306,7 +325,7 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
       showDragHandle: true,
       dragHandleColor: p.faint,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(HipRadius.sheet)),
       ),
     ),
     listTileTheme: ListTileThemeData(

@@ -159,7 +159,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
                   SizedBox(
                     height: 232,
                     child: HipMediaFrame(
-                      radius: 24,
+                      radius: HipRadius.panel,
                       color: HipColors.mediaBackdrop,
                       overlays: [
                         Positioned(
@@ -188,7 +188,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
                   const SizedBox(height: 16),
                   Text(
                     drillAltName(content, d, t.lang),
-                    style: TextStyle(fontSize: 12.5, color: HipColors.faint),
+                    style: TextStyle(fontSize: 12.5, color: HipColors.meta),
                   ),
                   const SizedBox(height: 4),
                   if (point.isNotEmpty)
@@ -226,7 +226,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
                   const SizedBox(height: 10),
                   Text(
                     t.singleNoStreak,
-                    style: TextStyle(fontSize: 12, color: HipColors.faint),
+                    style: TextStyle(fontSize: 12, color: HipColors.meta),
                   ),
                 ],
               ),
@@ -272,7 +272,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
       color: HipColors.surfaceHigh,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(HipRadius.small),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -420,7 +420,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
       opacity: onTap == null ? .5 : 1,
       child: HipPanel(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        radius: 18,
+        radius: HipRadius.panel,
         child: Row(
           children: [
             Container(

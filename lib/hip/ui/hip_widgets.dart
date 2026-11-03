@@ -70,7 +70,7 @@ class HipMediaFrame extends StatelessWidget {
   const HipMediaFrame({
     super.key,
     required this.child,
-    this.radius = 22,
+    this.radius = HipRadius.panel,
     this.borderColor,
     this.borderWidth = 1,
     this.color,
@@ -400,12 +400,22 @@ class HipTopBar extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         children: [
-          HipCircleButton(
-            icon: icon,
-            tooltip: tooltip,
-            onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+          // 40pt glass round button in a 48 hit area, outer edge on the 20pt
+          // margin — same as HipNavBar (audit r3 G2).
+          Tooltip(
+            message: tooltip,
+            child: SizedBox.square(
+              dimension: 48,
+              child: Center(
+                child: HipGlassRoundButton(
+                  semanticLabel: tooltip,
+                  onTap: onClose ?? () => Navigator.of(context).maybePop(),
+                  child: HipIcon(icon, size: 20, color: HipColors.text),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child:
                 center ??
@@ -1426,7 +1436,7 @@ class HipPanel extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
-    this.radius = 12,
+    this.radius = HipRadius.panel,
   });
   final Widget child;
   final EdgeInsets padding;
@@ -1437,7 +1447,7 @@ class HipPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = HipColors.isDark;
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
-    final rr = BorderRadius.circular(radius.clamp(0, 12).toDouble());
+    final rr = BorderRadius.circular(radius);
     final base = dark
         ? Colors.white.withValues(alpha: high ? .12 : .05)
         : Colors.black.withValues(alpha: high ? .08 : .035);
@@ -1451,9 +1461,10 @@ class HipPanel extends StatelessWidget {
       color: fill,
       shape: RoundedRectangleBorder(
         borderRadius: rr,
+        // 0.5pt rim instead of a shadow (audit r3 G4).
         side: high
             ? BorderSide(color: borderColor ?? HipColors.line)
-            : BorderSide.none,
+            : BorderSide(width: .5, color: HipColors.rim),
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
@@ -1530,7 +1541,7 @@ class HipFlatGroup extends StatelessWidget {
                       height: 1.2,
                       letterSpacing: 1,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.faint,
+                      color: HipColors.meta,
                     ),
                   ),
                 ),

@@ -24,8 +24,8 @@ import 'library_actions.dart';
 import 'library_widgets.dart';
 import 'routine_detail_page.dart';
 
-/// Flat card of the r2 kit: the [HipListGroup] panel colour, radius 12, no
-/// border, no shadow.
+/// Flat card of the r2 kit: the [HipListGroup] panel colour, radius 16, a
+/// 0.5pt rim, no shadow (audit r3 G3/G4).
 Widget hipFlatCard({
   Key? key,
   required Widget child,
@@ -35,7 +35,8 @@ Widget hipFlatCard({
   padding: padding,
   decoration: BoxDecoration(
     color: HipListGroup.fill(),
-    borderRadius: BorderRadius.circular(12),
+    borderRadius: BorderRadius.circular(HipRadius.panel),
+    border: Border.all(width: .5, color: HipColors.rim),
   ),
   child: child,
 );
@@ -240,7 +241,7 @@ class _PracticePageState extends State<PracticePage> {
     );
     final minutes = Text(
       t.minutes(r.minutes),
-      style: TextStyle(fontSize: 14, color: HipColors.faint),
+      style: TextStyle(fontSize: 14, color: HipColors.meta),
     );
     return HipPressable(
       key: ValueKey('routine-card-${r.id}'),
@@ -487,7 +488,7 @@ class GroupCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             height: 1.3,
-                            color: HipColors.faint,
+                            color: HipColors.meta,
                           ),
                         ),
                       if (g.removed > 0)

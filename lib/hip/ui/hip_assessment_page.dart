@@ -93,7 +93,7 @@ class HipAssessmentIntro extends StatelessWidget {
                   trailing: Text(
                     '${last.at.year}/${last.at.month}/${last.at.day}',
                     key: const ValueKey('intro-last-date'),
-                    style: TextStyle(fontSize: 12, color: HipColors.faint),
+                    style: TextStyle(fontSize: 12, color: HipColors.meta),
                   ),
                 ),
                 HipListGroup(
@@ -190,7 +190,7 @@ class HipAssessmentIntro extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
       child: Row(
         children: [
-          HipThumb(size: 44, radius: 6, child: _thumbArt(item, still)),
+          HipThumb(size: 44, radius: HipRadius.small, child: _thumbArt(item, still)),
           const SizedBox(width: 12),
           Container(
             width: 20,
@@ -477,12 +477,11 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     final item = _item;
     return Column(
       children: [
-        HipTopBar(
-          center: _questionHeading(item),
-          trailing: Text(
-            '${_index + 1}/${_items.length}',
-            style: TextStyle(fontSize: 16, color: HipColors.muted),
-          ),
+        HipTopBar(center: _questionHeading(item)),
+        // Shared step indicator (audit r3 G7).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 2, 20, 6),
+          child: HipStepProgress(index: _index, count: _items.length),
         ),
         Expanded(
           child: Padding(
@@ -528,7 +527,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         HipSharedLibrary.current?.allowedActionIds.contains(demo.id) == true;
     return HipMediaFrame(
       key: const ValueKey('assessment-demo'),
-      radius: 14,
+      radius: HipRadius.panel,
       overlays: [
         Positioned(
           left: 14,
@@ -707,22 +706,40 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _pill(HipGlyph icon, String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: .45),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HipIcon(icon, size: 16, color: Colors.white70),
-        const SizedBox(width: 5),
-        Text(text, style: const TextStyle(fontSize: 13, color: Colors.white)),
-      ],
-    ),
-  );
+  // On media: light = white scrim + dark text, dark = black α + light (G8).
+  Widget _pill(HipGlyph icon, String text) {
+    final dark = HipColors.isDark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: dark ? Colors.black.withValues(alpha: .45) : HipColors.scrim,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: dark
+              ? Colors.white.withValues(alpha: .12)
+              : Colors.black.withValues(alpha: .06),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          HipIcon(
+            icon,
+            size: 16,
+            color: dark ? Colors.white70 : HipColors.muted,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: dark ? Colors.white : HipColors.text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _questionHeading(AssessmentItem item) => Column(
     mainAxisSize: MainAxisSize.min,
@@ -938,13 +955,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       child: SizedBox(
         height: height,
         child: HipMediaFrame(
-          radius: 12,
+          radius: HipRadius.panel,
           color: HipColors.surface,
           // A calm 2 px accent edge (no glow halo) plus the tinted footer
           // and the check badge carry the selection.
           borderColor: selected ? HipColors.jade : HipColors.line,
           borderWidth: selected ? 2 : 1,
-          shadow: HipColors.cardShadow,
           overlays: [
             Positioned(
               right: 9,
@@ -1193,10 +1209,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     return DecoratedBox(
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
-        // m6: flat layered card — surface fill, radius 12, no outline.
+        // Flat card: surface fill, radius 16, 0.5pt rim, no shadow (r3 G1/G4).
         color: HipColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: HipColors.cardShadow,
+        borderRadius: BorderRadius.circular(HipRadius.panel),
+        border: Border.all(width: .5, color: HipColors.rim),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1239,7 +1255,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   const SizedBox(width: 12),
                   HipThumb(
                     size: 84,
-                    radius: 10,
+                    radius: HipRadius.small,
                     child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),
                 ],
@@ -1252,7 +1268,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   for (final p in steps.skip(1).take(4)) ...[
                     HipThumb(
                       size: 48,
-                      radius: 10,
+                      radius: HipRadius.small,
                       child: HipDrillArt(
                         drill: p.drill,
                         showPendingLabel: false,
