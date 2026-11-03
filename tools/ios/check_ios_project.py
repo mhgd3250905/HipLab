@@ -283,7 +283,7 @@ def check_plists():
         "CFBundleIdentifier": "$(PRODUCT_BUNDLE_IDENTIFIER)",
         "CFBundleShortVersionString": "$(FLUTTER_BUILD_NAME)",
         "CFBundleVersion": "$(FLUTTER_BUILD_NUMBER)",
-        "CFBundleDisplayName": "开胯训练助手",
+        "CFBundleDisplayName": "HipLab",
         "ITSAppUsesNonExemptEncryption": False,
         "LSRequiresIPhoneOS": True,
         "UILaunchStoryboardName": "LaunchScreen",
@@ -315,7 +315,7 @@ def check_plists():
         fail(f"PrivacyInfo: UserDefaults reason {apis.get('NSPrivacyAccessedAPICategoryUserDefaults')}")
 
     strings_re = re.compile(r'^\s*"((?:[^"\\]|\\.)+)"\s*=\s*"((?:[^"\\]|\\.)*)"\s*;\s*$')
-    expected_names = {"zh-Hans": "开胯训练助手", "en": "HipLab"}
+    expected_names = {"zh-Hans": "HipLab开髋训练", "en": "HipLab"}
     for lang, name in expected_names.items():
         p = RUNNER / f"{lang}.lproj" / "InfoPlist.strings"
         if not p.exists():

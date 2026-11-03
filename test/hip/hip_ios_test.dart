@@ -270,13 +270,27 @@ void main() {
     expect(find.byKey(const ValueKey('voice-preview')), findsNothing);
   }, variant: ios);
 
-  testWidgets('iOS privacy explains the offline audio session', (tester) async {
+  testWidgets('iOS privacy explains downloaded media and training audio', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(platform: TargetPlatform.iOS),
         home: const HipPrivacyPage(),
       ),
     );
+    await tester.scrollUntilVisible(
+      find.textContaining('动作视频从 media.uuugk.win'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('已缓存的视频可离线播放'), findsOneWidget);
+    expect(find.textContaining('动作视频随应用内置'), findsNothing);
+    tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position
+        .jumpTo(0);
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('训练语音与后台播放'),
       300,
@@ -285,6 +299,12 @@ void main() {
     expect(find.textContaining('iOS 后台音频'), findsOneWidget);
     expect(find.text('AI 入口与本地预设'), findsNothing);
     expect(find.textContaining('媒体播放前台服务'), findsNothing);
+    await tester.scrollUntilVisible(
+      find.text(HipPrivacyPage.iosPolicyUrl),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text(HipPrivacyPage.iosPolicyUrl), findsOneWidget);
   }, variant: ios);
 
   group('audio interruptions pause the session', () {

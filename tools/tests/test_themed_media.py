@@ -6,7 +6,8 @@ import io
 from pathlib import Path
 import hashlib
 import json
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 import unittest
 from unittest import mock
 
@@ -41,7 +42,7 @@ class ThemedMediaTest(unittest.TestCase):
         packages = json.loads((ROOT / '.dart_tool/package_config.json').read_text(encoding='utf-8'))['packages']
         sdk = next(package for package in packages if package['name'] == 'ugk_coach')
         uri = urlparse(sdk['rootUri'])
-        sdk_root = Path(unquote(uri.path).lstrip('/') if uri.scheme == 'file' else ROOT / '.dart_tool' / sdk['rootUri'])
+        sdk_root = Path(url2pathname(uri.path)) if uri.scheme == 'file' else ROOT / '.dart_tool' / sdk['rootUri']
         index = sdk_root / 'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json'
         catalog = json.loads(index.read_text(encoding='utf-8'))
         covers = {action['id']: action for action in catalog['actions']}
