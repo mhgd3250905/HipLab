@@ -1,5 +1,19 @@
 # 版本交付台账
 
+## 2026-11-04：+30 包身份与集成状态补记（无新构建）
+
+本次只整理已有交付，App 仍 `1.1.0+30`，arm64 split `2030`。同版本号的三个包对应不同源码，不能互相替代：
+
+| 包 / 来源 | 验证 / 包体 | 已知安装与主线状态 |
+|---|---|---|
+| PR #26 首页主题；`a7e371eb71df29af3929ac4a98098371c3c8928f` | 47.70 MiB；444/0/13及截图4通过归属于合并前验证源683eb81；构建点另列 | 11月2日同测试签名保留数据安装，快速走查通过；PR26合并点a201fd5，SDK当时d4502f3 |
+| SDK0.6主线内部包；`3a449c33be01dbef35c635a346f35eb26be1154a` | 47.64 MiB；analyze0、454/0/68及重点24通过；SDK693cbc02 | 11月3日已构建、记录中未安装；PR28已合入main0737e4e，后续仅docs |
+| UI r3 内部包；`00feee16ea049e636f3c43f900ce7a5902d10363` | 47.64 MiB；analyze0、test/hip 434/0/68；SDK693cbc02 | 11月3日已构建、记录中未安装；分支回执447ca1c，PR29仍OPEN/Draft，待用户远程反馈 |
+
+主线 SDK0.6 包 SHA256 `4589119c89ef15c296ffc063a243af6fdc3c54b65c97d1281e239ababa17e169`，路径及完整身份见[原回执](sdk-pin-v0.6.0-validation-2026-11-03.md)。UI r3 包 SHA256 `86d918792e13ff15f736ca160102ba88e8757c94d0362d7ffe4dc9d811908d69`，本机路径 `E:/AII-3D/hiplab-releases/ui-r2-r3-00feee1-20261103/hiplab-1.1.0+30-00feee1-internal-arm64-release.apk`，完整来源见[候选报告](https://github.com/mhgd3250905/HipLab/blob/447ca1ca3471aa6504e43179cdedeaa1fb8120d0/docs/ui-r2-r3-validation-2026-11-03.md)。二者均com.ugk.hiplab、arm64 release、非debuggable、211公共封面/0MP4，沿用测试证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；本轮仅引用已提交报告，未重新读取或核验产物。
+
+GitHub 11月4日回读 #27合并点 `2647d4c60b8410ccbf0cc558c7fff88e816835bc`，#28合并点 `0737e4e3e34cc7116e03554e977a0d8e65b39267`。UI r2/SDK0.6旧“未合main”文字是当时快照。release/1.0远端为 `a20721e25044f87399ec633c93fb04d6d55c6ff4`，本轮未改、未上传商店、未更新发布状态。本机路径不代表产物已上传GitHub。
+
 ## 2026-11-03：SDK v0.6.0 候选测试与内部包完成
 
 `codex/sdk-pin-v0.6.0` / Draft PR #28 的测试与构建源 `3a449c3`，SDK pin `693cbc02`。严格 analyze 0；全量 64 文件分 16 批共 454 通过 / 0 失败 / 68 既有条件跳过，四个重点文件 24 通过，无代码修复。1.1.0+30/2030 arm64 内部包 47.64 MiB、同测试签名、0 MP4，文件名含 3a449c3，未安装。App 界面固定中文，语音语言切换不能验收动作库界面切换；聊天单返回键仅代码核对，真机由用户远程安装抽查。不合 main、不动 release/商店，日常 WIP 未操作。[完整回执](sdk-pin-v0.6.0-validation-2026-11-03.md)。以下保留历史阶段。

@@ -1,5 +1,46 @@
 # 验证台账
 
+## 2026-11-04：近期文档收束与证据适用性
+
+### Preflight（只读）
+
+- 收束 scope：共享体验→211完整动作→首页/主题→UI r2/混合组→SDK0.6的已入主线成果，并补记UI r3候选及未验边界；只修文档。不含功能修改、SDK升级、候选合并、构建/手机/商店操作。第5批Coach是阶段前背景。
+- baseline：`0f507a3124436d29e8e3fbb7e2769a1d7d3c9018`（可核对引用`0f507a3^{commit}`），来源为根README及共享体验报告明确的main起点；`git rev-parse --verify`成功，`git merge-base --is-ancestor 0f507a3 HEAD`退出0。
+- HEAD：`0737e4e3e34cc7116e03554e977a0d8e65b39267`；fetch后等于origin/main。`git log 0f507a3..HEAD`为46提交；同基线diff为420路径：assets308、lib37、test43、test_screens7、tools7、docs14、android1、根README1、pubspec.yaml/lock各1。已核对SDK/版本、媒体/冷启动、页面/混合组/计时、测试与构建配置主题；Android已有`kotlin.incremental=false`用于跨盘依赖编译，本轮不改配置。
+- 完整工作区：`git status --porcelain=v1 --untracked-files=all`返回空；staged/unstaged/deleted/renamed/untracked均0，无未知归属。阶段delta是既有已提交来源；本次文档编辑归本Agent，原WIP stash和其他工作副本保留，不读取其内容。
+- GitHub只读回读：PR26/27/28均merged=true；PR29为open/draft，head447ca1c。远端release/1.0为a20721e；不以此推定商店状态。
+
+| 实际检查来源 | current / archive 判定与核对 |
+|---|---|
+| `AGENTS.md`、`README.md`、`docs/README.md` | current入口/规则；发现已合PR仍写候选、旧素材恢复仍被当默认流程 |
+| `docs/current-state.md` | current状态源；发现版本/安装/SDK/主线旧表未明确降为历史、缺PR29候选索引 |
+| `docs/version-management.md`、`docs/version-ledger.md` | current版本规则/交付源；发现0.3.9+17和旧SDK仍写当前、同号+30身份需区分 |
+| `docs/verification.md` | current验证源；补充454主线与434候选的source state适用性，不混用 |
+| `docs/development-roadmap.md`、`docs/development-log.md` | current事项/成果源；补齐已集成、待真机与候选状态 |
+| `docs/development-workflow.md` | current工作流；旧冻结ZIP恢复步骤与主线0MP4冲突，需标历史 |
+| `pubspec.yaml`、`pubspec.lock` | current配置；1.1.0+30、四个实际SDK包/override均693cbc02，lock ref/resolved-ref一致；本轮不改 |
+| `lib/hip/data/hip_action_scope.dart`、`hip_public_media.dart`、`hip_shared_library.dart` | current实现来源；211授权、按需媒体、UI locale zh；配置与报告一致 |
+| `assets/public_media/catalog.json`、`assets/public_media/catalog/catalog.json`、Git资源路径清单 | current元数据；目录含219定义但授权仍211、公共封面211、tracked MP4为0；目录数量不等于App可用数量 |
+| `docs/coach-chat-sdk-2026-11-02.md`、`sdk-shared-experience-completion-2026-11-02.md`、`full-action-scope-completion-2026-11-02.md`、`home-calm-r1-2026-11-02.md`、`ui-r2-pages-integration-2026-11-03.md`、`sdk-pin-v0.6.0-validation-2026-11-03.md` | archive/history专题证据，分别保留当时source/结果/包与验收；不作当前分支状态源 |
+| `origin/feat/ui-r2-pages:docs/ui-r2-r3-validation-2026-11-03.md` | 候选分支history证据；从已恢复relay明确指向的同仓库ref读取，不是main已验事实 |
+
+### 验证绑定
+
+| source state / 执行日期及来源 | 命令与结果 | 当前适用性 |
+|---|---|---|
+| `3a449c33be01dbef35c635a346f35eb26be1154a`；2026-11-03，[SDK报告](sdk-pin-v0.6.0-validation-2026-11-03.md) | `flutter pub get --offline --enforce-lockfile`通过；`flutter analyze --no-pub --fatal-infos`0；报告记录逐批`flutter test --no-pub`，64文件、4文件/批、concurrency=2：454通过/0失败/68条件跳过，重点24通过 | `git diff --name-status 3a449c3 HEAD`仅6份docs，无运行/依赖/资源/测试差异，故可沿用主线；不是本轮重跑。报告未提供精确执行时刻或完整分批shell，不补造 |
+| `00feee16ea049e636f3c43f900ce7a5902d10363`；2026-11-03，[候选报告](https://github.com/mhgd3250905/HipLab/blob/447ca1ca3471aa6504e43179cdedeaa1fb8120d0/docs/ui-r2-r3-validation-2026-11-03.md) | `flutter pub get --enforce-lockfile`通过；严格analyze0；`flutter test --no-pub --concurrency=2 --reporter=expanded test/hip`60文件434通过/0失败/68既有条件跳过 | 到候选447ca1c仅6份docs；不属于main祖先，不能写成main测试。非本轮重跑 |
+| `f4714c6630205afdd85fd4c4655bd51ee814b0b0`及更早来源 | 原命令/454与各阶段结果仍保留在日期报告 | f4714c6到当前HEAD有5个非docs路径变化，SDK已升级；更早测试均仅作各阶段历史，不叠加为当前全量 |
+| 本轮文档工作树（基于0737e4e） | 完整Git状态、来源/版本/PR核对；必要验证为`git diff --check`、本轮新增/修改本地链接与一致性检查 | 只改Markdown，主线运行源码仍等同3a449c3；无需重跑Flutter测试/构建，无真机新增结论 |
+
+68条件跳过在主线为12首页截图+55 r2截图+1可选语音导出，候选为67截图+1可选导出；保留原统计范围，不把434与454当同一次全量。SDK换侧3秒是预计余量，`phases/executionTiming`按真实阶段；不机械增加执行时长断言。App UI固定中文，语音切换不能作为动作库UI切换验收。旧D-34失败、混合组完整真机、数据保持与聊天返回键抽查仍未关闭。
+
+### Alignment
+
+确定finding为：已合PR的当前状态滞后、旧App/SDK版本和内置媒体恢复步骤仍作当前口径、同号包/候选与主线验证混用风险、UI r3候选缺当前索引。按已核对来源在入口、当前状态、版本/验证/事项/日志及工作流中修正，并明确历史边界；原报告/包SHA/历史失败保留。检查不读凭据、日志、构建产物，不扫描其他仓库。本次提交自身即为文档source state，最终commit SHA及push回读由Git和Cockpit回执记录。
+
+本轮完成结果（2026-11-04）：`git diff --check`退出0；Python只读校验通过53处新增/修改本地链接及锚点、版本/SDK pin/lock与source delta一致性；完整状态为10份明确Markdown未暂存、staged0/untracked0，无其他路径；独立只读复审无新增finding。改动全部归本Agent，确定alignment findings已清零。仅文档，未重复Flutter analyze/test、APK构建或设备检查。
+
 ## 2026-11-03：SDK v0.6.0 候选测试与内部包完成
 
 `codex/sdk-pin-v0.6.0` / Draft PR #28 的测试与构建源 `3a449c3`，SDK pin `693cbc02`。严格 analyze 0；全量 64 文件分 16 批共 454 通过 / 0 失败 / 68 既有条件跳过，四个重点文件 24 通过，无代码修复。1.1.0+30/2030 arm64 内部包 47.64 MiB、同测试签名、0 MP4，文件名含 3a449c3，未安装。App 界面固定中文，语音语言切换不能验收动作库界面切换；聊天单返回键仅代码核对，真机由用户远程安装抽查。不合 main、不动 release/商店，日常 WIP 未操作。[完整回执](sdk-pin-v0.6.0-validation-2026-11-03.md)。以下保留历史阶段。

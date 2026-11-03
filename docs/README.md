@@ -1,5 +1,19 @@
 # HipLab 文档与开发台账
 
+## 2026-11-04：当前导航
+
+当前 main 已含 PR #26/#27/#28，版本 **1.1.0+30 / 2030**、SDK pin `693cbc02`；UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，待用户远程安装反馈。下方旧“候选未合 main”等文字均为当时快照。
+
+| 要查什么 | 当前来源 |
+|---|---|
+| 近期成果、分支与验收边界 | [当前状态](current-state.md) |
+| 主线 SDK 0.6 包、UI r3 包、最后已核验安装的区别 | [版本台账](version-ledger.md) |
+| 主线 454/68 与候选 434/68 的源码绑定、本次收束记录 | [验证台账](verification.md) |
+| 已完成事项及剩余真机反馈 | [开发事项](development-roadmap.md) |
+| App/SDK 版本和媒体来源规则 | [版本管理](version-management.md)、[开发工作流](development-workflow.md) |
+
+本次只对齐文档并保存提交，不增版、不构建、不安装、不合并 UI r3。日期专题报告是历史证据，不能替代以上当前台账。
+
 ## 2026-11-03：PR #27 r2候选验证完成，待用户远程安装
 
 保留已确认的r2结构，仅修每日训练分钟重复取整，补混合组实际SDK阶段/组间休息/完成保存回归。验证构建源`f4714c6`；analyze0，64文件按4文件/批全部通过，含新增回归去重454通过/0失败/68条件跳过（opt-in截图/导出）。47.64MiB release候选保持+30/2030、同测试签名/0MP4，交用户远程安装验混合组和旧数据，本轮未安装。只正常字体，不合main、不升版、不动release/商店。[交付与APK身份](ui-r2-pages-integration-2026-11-03.md)。以下为历史阶段。
@@ -110,6 +124,16 @@
 逐条媒体来源以 [hip-media.json](../tools/hip_content/source/hip-media.json) 为准；[hip-content.json](../assets/hip/hip-content.json) 是生成结果。APK、截图、运行日志与设备数据备份在 Git 忽略目录内；文档中的本机路径不代表这些文件已备份到 GitHub。
 
 ## 新机器拉素材（Mac / Windows）
+
+### 当前 main：公共元数据、封面与 SDK 按需视频
+
+从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/` 和 `assets/public_posters/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。公共目录/语义与 211 张封面随仓库保存；`HipPublicMedia` 从这些元数据创建 SDK 媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。
+
+两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，已有解析时才用 `--no-pub` 验证。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
+
+### 冻结 v0.2.0 ZIP 恢复（仅旧分支历史）
+
+以下保留旧内置视频版本的来源、校验及恢复命令，适用于需要该资源布局的旧提交；其中“当前包/main”均指当时版本。当前主线使用上节流程。
 
 先拉取 HipLab 的最新 `main`，以下命令均在仓库根目录执行。`pose-hub.lock.json` 和 `tools/pose-hub-manifest.json` 已随主线保存，固定 Pose-Hub **v0.2.0**；新机器直接使用这两个文件，不另取最新版 manifest。两端统一 **Flutter 3.44.7 stable**；Mac 不修改 lock、版本号或依赖，后续素材升级由 Windows 维护。
 

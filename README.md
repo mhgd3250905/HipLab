@@ -1,5 +1,17 @@
 # HipLab · 开胯训练助手
 
+## 2026-11-04：近期更新整理与当前交付
+
+主线已完成共享训练/媒体接入、211 完整动作准入、简约玻璃首页、UI r2 页面统一及 SDK v0.6.0 接入。PR [#26](https://github.com/mhgd3250905/HipLab/pull/26)、[#27](https://github.com/mhgd3250905/HipLab/pull/27)、[#28](https://github.com/mhgd3250905/HipLab/pull/28) 均已合并；收束前 main 为 `0737e4e`，共用版本 **1.1.0+30 / arm64 2030**，SDK 固定 `693cbc02`。
+
+- 训练组可使用动作库的 210 个动作，混合组按一个 SDK 计划执行，使用所选休息并保存训练记录；训练记录新增热力图与成就，自测说明展示雷达。
+- 动作库与添加动作共用搜索/筛选和懒加载列表；更多、设置、导航及按钮统一。每日训练秒数先合计再取整。
+- 公共封面 211 张，视频按需获取，包内 0 MP4；Coach 范围 211，8 条不完整动作排除。界面固定中文，设置语言只改变语音。
+
+主线运行源码沿用 `3a449c3` 的严格 analyze 0、454 通过 / 68 条件跳过；到收束前 HEAD 仅文档变化。UI r3 [Draft PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 另有候选包与 434 通过 / 68 条件跳过，**待用户远程真机反馈，尚未合入**。最后有安装证据的是 PR #26 的 `a7e371e` 包，不能以同为 +30 推断手机已有最新候选。
+
+成果、包身份及未验边界从 [文档入口](docs/README.md)、[当前状态](docs/current-state.md)、[版本交付](docs/version-ledger.md) 和 [验证台账](docs/verification.md) 查看。本次仅文档收束；以下日期条目保留为历史快照。
+
 ## 2026-11-03：PR #27 r2候选验证完成，待用户远程安装
 
 保留已确认的r2结构，仅修每日训练分钟重复取整，补混合组实际SDK阶段/组间休息/完成保存回归。验证构建源`f4714c6`；analyze0，64文件按4文件/批全部通过，含新增回归去重454通过/0失败/68条件跳过（opt-in截图/导出）。47.64MiB release候选保持+30/2030、同测试签名/0MP4，交用户远程安装验混合组和旧数据，本轮未安装。只正常字体，不合main、不升版、不动release/商店。[交付与APK身份](docs/ui-r2-pages-integration-2026-11-03.md)。以下为历史阶段。
@@ -34,7 +46,7 @@
 - App 名：开胯训练助手（iOS 英文系统显示 HipLab，`CFBundleName` 为 HipLab）
 - Dart ^3.12.2；两端统一 Flutter **3.44.7 stable**。只支持 Android / iOS，中文界面；浅色/深色/跟随系统主题，中英语音播报（`feat/polish-round1` 起）
 
-后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-10-21**；按页内日期保留历史交付与验证。
+后续在本目录进行 main 主线开发，文档统一从 **[文档与开发台账](docs/README.md)** 进入：[当前状态](docs/current-state.md)、[版本管理](docs/version-management.md)、[版本交付](docs/version-ledger.md)、[验证记录](docs/verification.md)、[开发事项](docs/development-roadmap.md)、[工作流](docs/development-workflow.md)。当前状态核对日期为 **2026-11-04**；按页内日期保留历史交付与验证。
 
 2026-10-21，**训练包接入及AI新中转已获同意合入并推送两仓库main**：HipLab集成点691ace2，SDK d193a70（PR #2已MERGED，coach0.1.3/trainer0.1.4）。手机已保留数据安装0.3.9+17，运行源79c172d；锁屏冻结仍是已知失败，用户后测，本轮不再排查/复测，不上传商店。[合并与验收边界](docs/android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)。
 
@@ -54,7 +66,9 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。当前共用版本为 **0.3.9+17**；Android带AI新入口配置的debug arm64包已在源码 `79c172d9a83d248f23e136cffe825f3bd016e16b` 构建并保留数据安装，固定SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach0.1.3/trainer0.1.4），签名连续、包身份/CRC/876资产及唯一训练服务核验通过。该源analyze无问题、保活专项8/8；439过/1条件跳属于此前38bce47全量基线，未在最终依赖上重复全量测试。构建、安装和后续文档HEAD分别记录，详见[证据绑定](docs/verification.md#训练包与新中转阶段收束2026-10-21)；此次文档对齐不递增版本、不重新构建或安装。
+当前源码为 **1.1.0+30**，SDK 四包/override pin `693cbc02`；使用 Flutter 3.44.7。当前依赖与素材准备见[文档入口](docs/README.md#新机器拉素材mac--windows)，构建/安装身份见[版本台账](docs/version-ledger.md)。下段 0.3.9+17 是 10 月 21 日历史，不代表当前版本或最新安装。
+
+本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。2026-10-21 历史共用版本为 **0.3.9+17**；Android带AI新入口配置的debug arm64包已在源码 `79c172d9a83d248f23e136cffe825f3bd016e16b` 构建并保留数据安装，固定SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach0.1.3/trainer0.1.4），签名连续、包身份/CRC/876资产及唯一训练服务核验通过。该源analyze无问题、保活专项8/8；439过/1条件跳属于此前38bce47全量基线，未在最终依赖上重复全量测试。构建、安装和后续文档HEAD分别记录，详见[证据绑定](docs/verification.md#训练包与新中转阶段收束2026-10-21)；此次文档对齐不递增版本、不重新构建或安装。
 
 **#19～#21阶段构建记录（历史）：** 本机现有依赖缓存的验证命令使用 `--no-pub`，见[工作流](docs/development-workflow.md)。本轮已合main的运行源c7def28：analyze0、254pass/1条件skip、Python19，arm64 debug APK已交付且用户报告安装/简单测试通过。文档收束未改变运行源码，不重复构建。真机结论限用户报告的简单测试，完整课程/音乐ducking、低端帧时、强光、新自测结果页及Mac/iPhone仍保持待验。0.2.0+4的Alpha送审回执属于2026-10-17历史，本次未回读Console或上传商店；见[送审记录](docs/play-store-release-2026-10-17.md)。下列为通用构建命令，不代表本次执行发布。
 
@@ -89,7 +103,9 @@ lib/core/                      公共代码来源见下表；常亮导出及trai
 assets/hip/hip-content.json    内容包（脚本生成，不要手改）
 assets/hip/posters/            历史原型静帧（当前 46 项动作均已接入视频）
 assets/hip/assessment/         自测对比图（20 张）
-assets/drill_media/            动作成片 hip-<id>.mp4 + .jpg，以及 WebView 播放器 player.html/js/css；light/ 放浅色版后自动用于浅色主题
+assets/public_media/           当前 SDK 公共目录与训练语义元数据
+assets/public_posters/         211 张内置公共封面；视频由 SDK 按需获取
+assets/drill_media/            历史封面和 WebView 播放器源；当前包不内置 MP4
 assets/hip/onboarding/         引导页三问主视觉（深/浅各 3 张；换 B 套：tools/onboarding_art/import_onboarding_art.py <目录> B）
 assets/voice/                  预生成语音 zh/ en/ chime/ + manifest.json（tools/voice/ 生成）
 assets/fonts/NotoSansSC.ttf    字体（OFL）
@@ -126,7 +142,7 @@ docs/                          当前状态、版本/验证/事项台账、工�
 
 ## 当前素材来源与历史拆仓关系
 
-- **Pose-Hub**：日常动作素材按发布版本提供；当前冻结 **v0.2.0，46条1080视频和46张540封面**。恢复步骤以[文档入口](docs/README.md#新机器拉素材mac--windows)为准；本阶段不改素材版本。
+- **Pose-Hub / SDK 公共媒体**：当前 main 使用仓库内公共元数据与 211 张封面，视频由 SDK 媒体策略按需缓存。旧 **v0.2.0，46 条 1080 视频 / 46 张 540 封面** 仅用于旧分支追溯，不向当前 main 恢复内置 MP4。准备步骤见[文档入口](docs/README.md#新机器拉素材mac--windows)。
 - **HipLab（本仓库）**：App代码、内容包、构建和版本管理；保留自有supine-cross-demo与20张自测静图。
 - **3D-Body**：保留拆仓来源、旧高清制作和母版追溯；下方同步段落属于历史，不是当前冻结素材的更新入口。
 

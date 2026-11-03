@@ -1,5 +1,13 @@
 # 版本管理说明
 
+## 2026-11-04：当前版本与来源规则
+
+共用版本以pubspec.yaml为准，当前 **1.1.0+30**；arm64 split versionCode为**2030**。四个实际SDK包与coach override均固定`693cbc02cdf284163409868e117e438515c6a8d8`，对应ugk_trainer-v0.6.0；当前无独立ugk_trainer包。Flutter继续3.44.7/Dart3.12.2。PR26/27/28已入main，UI r3的PR29仍为候选。
+
++30并非唯一包身份：PR26已安装包源a7e371e、SDK0.6主线内部包源3a449c3、UIr3内部包源00feee1；各自SHA/签名/安装与验证范围见[版本台账](version-ledger.md)，不能只看版本号判定用户已验。文档收束不增版或重建。
+
+当前媒体由SDK公共元数据、211内置封面和按需视频组成，0内置MP4；Coach211、动作库/组选项210。Pose-Hub v0.2.0的旧视频ZIP/lock保留追溯，当前main不按它回填视频。新机器准备见[文档入口](README.md#新机器拉素材mac--windows)。下方旧日期快照保持历史；当前状态以[当前台账](current-state.md)为准。
+
 ## 2026-11-03：PR #27 r2候选验证完成，待用户远程安装
 
 保留已确认的r2结构，仅修每日训练分钟重复取整，补混合组实际SDK阶段/组间休息/完成保存回归。验证构建源`f4714c6`；analyze0，64文件按4文件/批全部通过，含新增回归去重454通过/0失败/68条件跳过（opt-in截图/导出）。47.64MiB release候选保持+30/2030、同测试签名/0MP4，交用户远程安装验混合组和旧数据，本轮未安装。只正常字体，不合main、不升版、不动release/商店。[交付与APK身份](ui-r2-pages-integration-2026-11-03.md)。以下为历史阶段。
@@ -42,7 +50,7 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 本轮release/1.0来自main e456d2a，基础版1.0.0+20，SDK固定d193a70，编译源4b56b82。该分支只做上架/审核修复并合回main；后续功能在main继续。Mac本轮从release/1.0开iOS分支，不独立升级共用版本、SDK或媒体。上架基础版与原液态玻璃0.3.10+19/AI0.2候选分别保存，不把旧候选内容带进本AAB。AAB无Key，AI入口按用户最新决定保留并本地预设回落。[交付身份](release-1.0/README.md)。
 
-本页说明 HipLab 的版本与台账如何维护。共用版本取自 [`pubspec.yaml`](../pubspec.yaml)，逐次构建、安装和发布事实继续写入[版本交付台账](version-ledger.md)，本页不另建交付流水。核对日期：2026-10-21，北京时间。
+本页说明 HipLab 的版本与台账如何维护。共用版本取自 [`pubspec.yaml`](../pubspec.yaml)，逐次构建、安装和发布事实继续写入[版本交付台账](version-ledger.md)，本页不另建交付流水。本页当前规则核对日期：2026-11-04，北京时间；旧日期流水保留历史。
 
 ## 事实来源
 
@@ -60,13 +68,13 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 ## 版本与来源身份
 
-共用版本采用 `版本名+构建号`，当前为 `0.3.9+17`。已交付Android包回读为 versionName `0.3.9`、versionCode `17`。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
+共用版本采用 `版本名+构建号`，当前为 `1.1.0+30`；arm64 split包为versionName `1.1.0`、versionCode `2030`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
 
 单独的文档整理、合并事实补记不递增 App 版本，也不触发重新构建或安装。审核期曾有多份相同 `0.3.6+11` 的包，不能只凭版本名判断内容；必须结合构建源码、APK SHA256、大小和签名识别。
 
 构建源码 SHA、已验业务来源 SHA、PR 合并提交和后续文档 HEAD 可以不同，分别记录。复用早先测试时先比较到当前树的有限差异；只有业务、资源、原生代码、测试和锁文件未受影响，才能按原来源引用，不能写成新 HEAD 已重新执行。构建证据始终归属于实际构建源码；文档提交不会产生新 APK。
 
-App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前 `ugk_coach 0.1.3`、`ugk_trainer 0.1.4` 共同固定于 Git `d193a703e3a8bef6d41e7705a55ae250e23e6a69`，素材冻结 Pose-Hub `v0.2.0`；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
+App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `693cbc02cdf284163409868e117e438515c6a8d8`；当前媒体采用仓库公共元数据/封面及 SDK 按需策略，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
 
 ## 状态分别登记
 
@@ -81,7 +89,7 @@ App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前 `ugk_coa
 
 “待安装”“待验收”须保留。打包、合并、推送按各自实际完成情况更新，不互相代替；本机忽略目录中的产物路径也不代表已有远端备份。
 
-## 当前对齐快照（2026-10-21）
+## 对齐快照（2026-10-21 历史）
 
 | 对象 | 已确认事实 | 证据 |
 |---|---|---|

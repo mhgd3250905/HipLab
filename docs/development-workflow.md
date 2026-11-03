@@ -1,14 +1,20 @@
 # 主线开发工作流
 
+## 2026-11-04 当前主线和媒体准备
+
+日常目录main收束前为0737e4e，已含PR26/27/28；当前1.1.0+30/2030、四SDK实际包及coach override固定693cbc02，Flutter3.44.7。UI r3 Draft PR29仍在候选分支，未经真机反馈不按本轮文档整理推进合并。
+
+当前新机器使用Git中的`assets/public_media/`、`assets/public_posters/`和pubspec锁文件准备依赖，再按[文档入口](README.md#新机器拉素材mac--windows)执行严格锁解析。0内置MP4，视频由SDK按需缓存；**下方v0.2.0 ZIP同步仅适用于旧分支，不在当前main执行回填**。本页旧版本、安装与工具默认路径描述均按其日期保留；实际操作先核对工作区与显式Flutter入口，不依据历史快照改动环境。
+
 ## 2026-10-24 Windows 固定工具入口
 
-本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。最新三个SDK正式tag及本轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
+本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。当时三个SDK正式tag及该轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
 
 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，本工作目录 `E:\AII-3D\3D-Hip` 用于后续 main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态。
 
 ## 主线基线与更新
 
-最新：2026-10-21，训练包及AI新入口已获准合入并推送两个main：HipLab集成点691ace2，SDK d193a70（coach0.1.3/trainer0.1.4）。当前共用版本与手机均为0.3.9+17，构建运行源79c172d，已保留数据安装；锁屏冻结仍已知失败，交用户后测。本次文档收束不重建/重测/操作手机。见[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)及[版本台账](version-ledger.md)。
+历史基线：2026-10-21，训练包及AI新入口已获准合入并推送两个main：HipLab集成点691ace2，SDK d193a70（coach0.1.3/trainer0.1.4）。当前共用版本与手机均为0.3.9+17，构建运行源79c172d，已保留数据安装；锁屏冻结仍已知失败，交用户后测。本次文档收束不重建/重测/操作手机。见[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)及[版本台账](version-ledger.md)。
 
 2026-10-20早间基线（历史）：main已合PR25，0.3.7+12 AI测试包当时仅构建未安装，手机当时为0.3.6+11；见[历史包身份](android-test-build-0.3.7-2026-10-20.md)。下列其他基线段落亦保留各自日期的历史。
 
@@ -43,7 +49,7 @@ flutter analyze --no-pub
 flutter test --no-pub --concurrency=1
 ```
 
-新环境先按 [README](README.md#新机器拉素材mac--windows) 恢复冻结媒体，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
+新环境先按 [README](README.md#新机器拉素材mac--windows) 核对当前公共元数据和封面，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
 
 提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。共用版本、产物来源和各类状态的登记方式见[版本管理说明](version-management.md)。
 
@@ -63,7 +69,7 @@ Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-当前取用 Pose-Hub v0.2.0，冻结 lock / manifest 随 main 保存；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
+以下为旧内置媒体分支历史流程，不在当前 main 执行。旧版取用 Pose-Hub v0.2.0，冻结 lock / manifest 仍保留；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
 
 ```powershell
 python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --dry-run
