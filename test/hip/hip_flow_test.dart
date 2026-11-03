@@ -344,6 +344,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(store.reminder.enabled, isTrue);
     expect(find.text('45 分钟'), findsOneWidget);
-    expect(find.textContaining('暂不推送系统通知'), findsOneWidget);
+    expect(find.textContaining('通知即将上线'), findsOneWidget);
   });
 }

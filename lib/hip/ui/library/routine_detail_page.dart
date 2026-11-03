@@ -70,14 +70,17 @@ class RoutineDetailPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _stat('${plan.minutes}', t.statMinutes),
-                      const SizedBox(width: 10),
-                      _stat('${plan.steps.length}', t.statMoves),
-                      const SizedBox(width: 10),
-                      _stat('${plan.transitionSeconds}', t.statRest),
-                    ],
+                  // One meta line, no tinted stat tiles (audit r3 06-1).
+                  Text(
+                    '${plan.minutes} ${t.statMinutes} · '
+                    '${plan.steps.length} ${t.statMoves} · '
+                    '${plan.transitionSeconds} ${t.statRest}',
+                    key: const ValueKey('routine-stats'),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: HipColors.meta,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                   if (blocked) ...[
                     const SizedBox(height: 12),
@@ -95,11 +98,13 @@ class RoutineDetailPage extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 14),
-                  for (final (i, s) in plan.steps.indexed) ...[
-                    _row(context, t, content, i, s),
-                    if (i < plan.steps.length - 1)
-                      Divider(height: 1, indent: 64, color: HipColors.line),
-                  ],
+                  HipListGroup(
+                    inset: kHipDrillTextInset + HipDrillIndex.width - 12,
+                    children: [
+                      for (final (i, s) in plan.steps.indexed)
+                        _row(context, t, content, i, s),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -163,39 +168,15 @@ class RoutineDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _stat(String v, String unit) => Expanded(
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: HipColors.track,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Text(
-            v,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              height: 1.15,
-            ),
-          ),
-          Text(unit, style: TextStyle(fontSize: 11, color: HipColors.muted)),
-        ],
-      ),
-    ),
-  );
-
   Widget _row(
     BuildContext context,
     LibText t,
     HipContent content,
     int i,
     PlanStep s,
-  ) => HipPressable(
+  ) => HipDrillRow(
     key: ValueKey('routine-step-${s.drill.id}'),
     semanticLabel: drillName(content, s.drill, t.lang),
-    scale: .98,
     onTap: inLibrary(content, s.drill.id)
         ? () async {
             if (HipSharedLibrary.current != null) {
@@ -213,75 +194,13 @@ class RoutineDetailPage extends StatelessWidget {
             }
           }
         : null,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 18,
-            child: Text(
-              '${i + 1}',
-              style: TextStyle(
-                fontSize: 13,
-                color: HipColors.faint,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          HipThumb(
-            size: 44,
-            radius: 10,
-            child: HipDrillArt(drill: s.drill, showPendingLabel: false),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  drillName(content, s.drill, t.lang),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  s.replaced != null
-                      ? t.easierFor(
-                          drillName(
-                            content,
-                            content.drill(s.replaced!),
-                            t.lang,
-                          ),
-                        )
-                      : s.dose.replaceAll(RegExp(r'（.*?）'), ''),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: s.replaced != null
-                        ? HipColors.jadeText
-                        : HipColors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            clockText(s.seconds),
-            style: TextStyle(
-              fontSize: 13,
-              color: HipColors.muted,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
-    ),
+    leading: HipDrillIndex(i + 1),
+    thumb: HipDrillArt(drill: s.drill, showPendingLabel: false),
+    title: drillName(content, s.drill, t.lang),
+    subtitle: s.replaced != null
+        ? t.easierFor(drillName(content, content.drill(s.replaced!), t.lang))
+        : s.dose.replaceAll(RegExp(r'（.*?）'), ''),
+    subtitleColor: s.replaced != null ? HipColors.jadeText : null,
+    meta: clockText(s.seconds),
   );
 }

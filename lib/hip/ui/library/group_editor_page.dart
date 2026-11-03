@@ -370,21 +370,11 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                     ? null
                     : Tooltip(
                         message: t.deleteGroup,
-                        child: HipPressable(
+                        child: HipNavButton(
                           key: const ValueKey('editor-delete'),
+                          glyph: HipGlyph.trash,
                           semanticLabel: t.deleteGroup,
-                          scale: .9,
                           onTap: _delete,
-                          child: SizedBox.square(
-                            dimension: 44,
-                            child: Center(
-                              child: HipIcon(
-                                HipGlyph.trash,
-                                size: 20,
-                                color: HipColors.text,
-                              ),
-                            ),
-                          ),
                         ),
                       ),
               ),
@@ -442,7 +432,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             '${_name.text.runes.length}/${CustomRoutine.maxName}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ],
@@ -494,7 +484,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ),
@@ -523,7 +513,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                             t.rowHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: HipColors.faint,
+                              color: HipColors.meta,
                             ),
                           ),
                         ),
@@ -532,18 +522,46 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
                         ),
                         itemBuilder: (context, i) {
                           final (key, s) = _steps[i];
-                          return Padding(
+                          // One grouped panel (audit r3 07-1): rounded ends,
+                          // inset hairlines between rows, no per-row border.
+                          final last = i == _steps.length - 1;
+                          final r = _segmentRadius(i, _steps.length);
+                          return Column(
                             key: ValueKey('step-$key'),
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Dismissible(
-                              key: ValueKey('dismiss-$key'),
-                              direction: DismissDirection.endToStart,
-                              background: _deleteBackground(t),
-                              onUpdate: (d) => _onSwipe(key, d.progress),
-                              confirmDismiss: (_) => _commitDelete(key),
-                              onDismissed: (_) => _finishDelete(key),
-                              child: _row(i, key, s, profile),
-                            ),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Dismissible(
+                                key: ValueKey('dismiss-$key'),
+                                direction: DismissDirection.endToStart,
+                                background: _deleteBackground(t, r),
+                                onUpdate: (d) => _onSwipe(key, d.progress),
+                                confirmDismiss: (_) => _commitDelete(key),
+                                onDismissed: (_) => _finishDelete(key),
+                                child: ClipRRect(
+                                  borderRadius: r,
+                                  child: ColoredBox(
+                                    color: HipListGroup.fill(),
+                                    child: _row(i, key, s, profile),
+                                  ),
+                                ),
+                              ),
+                              if (!last)
+                                ColoredBox(
+                                  color: HipListGroup.fill(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 4 + 30 + 48 + 12,
+                                    ),
+                                    child: Divider(
+                                      height: .5,
+                                      thickness: .5,
+                                      color: HipColors.text.withValues(
+                                        alpha: .1,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           );
                         },
                       ),
@@ -606,10 +624,18 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     );
   }
 
-  Widget _deleteBackground(LibText t) => Container(
+  static BorderRadius _segmentRadius(int i, int n) {
+    const c = Radius.circular(HipRadius.panel);
+    return BorderRadius.vertical(
+      top: i == 0 ? c : Radius.zero,
+      bottom: i == n - 1 ? c : Radius.zero,
+    );
+  }
+
+  Widget _deleteBackground(LibText t, BorderRadius r) => Container(
     decoration: BoxDecoration(
       color: HipColors.pain,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: r,
     ),
     alignment: Alignment.centerRight,
     padding: const EdgeInsets.only(right: 18),
@@ -637,118 +663,40 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     final d = sdk ? hipSdkDrill(content, s.kitId)! : content.drill(s.kitId);
     final dose = k == null ? null : s.dose(k);
     final relaxOnly = TrainingPlanner.lockedOut(d, profile);
-    return HipPressable(
+    final doseLine = k == null
+        ? sdkStepDoseText(content, s, lang: t.lang)
+        : doseText(k, dose!, single: false, lang: t.lang);
+    return HipDrillRow(
       key: ValueKey('editor-row-$i'),
       semanticLabel: drillName(content, d, t.lang),
-      scale: .98,
       onTap: () => _editDose(key),
-      child: Container(
-        // Grows with the system text size instead of clipping the dose line.
-        constraints: const BoxConstraints(minHeight: 68),
-        padding: const EdgeInsets.fromLTRB(0, 8, 14, 8),
-        decoration: BoxDecoration(
-          color: HipColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: HipColors.line),
+      leading: ReorderableDragStartListener(
+        index: i,
+        child: SizedBox(
+          width: 30,
+          height: 52,
+          child: Center(
+            child: HipIcon(HipGlyph.grip, size: 18, color: HipColors.faint),
+          ),
         ),
-        child: Row(
-          children: [
-            ReorderableDragStartListener(
-              index: i,
-              child: SizedBox(
-                width: 30,
-                height: 52,
-                child: Center(
-                  child: HipIcon(
-                    HipGlyph.grip,
-                    size: 18,
-                    color: HipColors.faint,
-                  ),
-                ),
+      ),
+      titlePrefix: relaxOnly
+          ? Tooltip(
+              message: t.relaxDot,
+              child: CircleAvatar(
+                radius: 3.5,
+                backgroundColor: HipColors.tight,
               ),
-            ),
-            HipThumb(
-              size: 52,
-              radius: 11,
-              child: HipDrillArt(drill: d, showPendingLabel: false),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (relaxOnly) ...[
-                        Tooltip(
-                          message: t.relaxDot,
-                          child: CircleAvatar(
-                            radius: 3.5,
-                            backgroundColor: HipColors.tight,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                      Expanded(
-                        child: Text(
-                          drillName(content, d, t.lang),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          k == null
-                              ? sdkStepDoseText(content, s, lang: t.lang)
-                              : doseText(k, dose!, single: false, lang: t.lang),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: s.adjusted
-                                ? HipColors.jadeText
-                                : HipColors.muted,
-                          ),
-                        ),
-                      ),
-                      if (s.adjusted)
-                        Text(
-                          ' · ${t.adjusted}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: HipColors.faint,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              clockText(
-                k == null
-                    ? sdkStepSeconds(content, s)
-                    : DoseRules.stepSeconds(k, dose!, single: false),
-              ),
-              style: TextStyle(
-                fontSize: 14,
-                color: HipColors.muted,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ],
-        ),
+            )
+          : null,
+      thumb: HipDrillArt(drill: d, showPendingLabel: false),
+      title: drillName(content, d, t.lang),
+      subtitle: s.adjusted ? '$doseLine · ${t.adjusted}' : doseLine,
+      subtitleColor: s.adjusted ? HipColors.jadeText : null,
+      meta: clockText(
+        k == null
+            ? sdkStepSeconds(content, s)
+            : DoseRules.stepSeconds(k, dose!, single: false),
       ),
     );
   }
@@ -906,7 +854,7 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   over ? t.max20 : t.willHave(after),
@@ -1003,7 +951,9 @@ Future<LibraryFilter?> showFilterSheet(
               trailing: HipPressable(
                 key: const ValueKey('filter-reset'),
                 semanticLabel: t.reset,
-                onTap: () => setSheet(() => f = f.withoutSheet),
+                onTap: f.sheetCount == 0
+                    ? null
+                    : () => setSheet(() => f = f.withoutSheet),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
                   child: Text(
@@ -1011,7 +961,9 @@ Future<LibraryFilter?> showFilterSheet(
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeText,
+                      color: f.sheetCount == 0
+                          ? HipColors.faint
+                          : HipColors.jadeText,
                     ),
                   ),
                 ),

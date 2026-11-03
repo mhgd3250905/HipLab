@@ -278,7 +278,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
   Widget build(BuildContext context) {
     final blocked = _answers.values.any((v) => v);
     final body = Padding(
-      padding: EdgeInsets.fromLTRB(24, widget.review ? 4 : 12, 24, 20),
+      padding: EdgeInsets.fromLTRB(20, widget.review ? 4 : 12, 20, 20),
       child: HipFadeSwitcher(
         child: KeyedSubtree(
           key: ValueKey(_onIdentity ? 'identity' : 'card'),
@@ -309,42 +309,20 @@ class _HipOnboardingState extends State<HipOnboarding> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            for (var i = 0; i < _cards.length; i++)
-              Expanded(
-                child: AnimatedContainer(
-                  duration: HipMotion.medium,
-                  height: 4,
-                  margin: EdgeInsets.only(right: i < _cards.length - 1 ? 6 : 0),
-                  decoration: BoxDecoration(
-                    color: i <= _index ? HipColors.jade : HipColors.surfaceHigh,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        Row(
-          children: [
-            // From 设置 the bar already says 安全提示: no repeated eyebrow.
-            if (!widget.review)
-              Text(
-                '开始之前 · 安全确认',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: HipColors.jadeText,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            const Spacer(),
-            Text(
-              '${_index + 1} / ${_cards.length}',
-              style: TextStyle(fontSize: 14, color: HipColors.muted),
+        // One step indicator for 首启 / 安全提示 / 自测 (audit r3 G7, 17-1).
+        HipStepProgress(index: _index, count: _cards.length),
+        // From 设置 the bar already says 安全提示: no repeated eyebrow.
+        if (!widget.review) ...[
+          const SizedBox(height: 16),
+          Text(
+            '开始之前 · 安全确认',
+            style: TextStyle(
+              fontSize: 14,
+              color: HipColors.jadeText,
+              fontWeight: FontWeight.w600,
             ),
-          ],
-        ),
+          ),
+        ],
         const SizedBox(height: 16),
         // Large hero visual (4:3 art) at the top; on short screens it gives
         // way first, the question and buttons always stay whole.
@@ -361,12 +339,11 @@ class _HipOnboardingState extends State<HipOnboarding> {
                   height: h,
                   child: HipMediaFrame(
                     key: const ValueKey('onboarding-hero'),
-                    radius: 28,
+                    radius: HipRadius.panel,
                     color: HipColors.surface,
                     borderColor: HipColors.isDark
                         ? HipColors.line
-                        : const Color(0x00000000),
-                    shadow: HipColors.cardShadow,
+                        : HipColors.rim,
                     child: HipFadeSwitcher(
                       duration: HipMotion.slow,
                       offset: 0,
@@ -520,7 +497,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
                       height: 60,
                       decoration: BoxDecoration(
                         color: HipColors.jade.withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(HipRadius.control),
                       ),
                       child: HipIcon(icon, size: 30, color: HipColors.jade),
                     ),
@@ -1254,7 +1231,9 @@ class HipProgressPage extends StatelessWidget {
                         ? null
                         : store.reminders.deliversNotifications
                         ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00'
-                        : '时间已记下，暂不推送系统通知',
+                        // Plain product copy (audit r3 16-1); no in-app
+                        // alert exists yet, so don't promise one.
+                        : '工作日 ${reminder.startHour}:00–${reminder.endHour}:00 · 通知即将上线',
                     trailing: _HipSmallSwitch(
                       child: Switch(
                         key: const ValueKey('reminder-switch'),

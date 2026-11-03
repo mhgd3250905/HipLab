@@ -404,7 +404,15 @@ void main() {
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
       // Back out cleanly into the list.
-      await tester.tap(find.byType(HipCircleButton).first);
+      // The close is the glass round button in the top bar now (r3).
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(HipTopBar),
+              matching: find.byType(HipGlassRoundButton),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('intro-item-butterfly')),

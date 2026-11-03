@@ -61,7 +61,7 @@ class HipMorePage extends StatelessWidget {
         children: [
           HipListRow(
             key: const ValueKey('more-groups'),
-            glyph: HipGlyph.grip,
+            glyph: HipGlyph.copy,
             title: '我的训练组',
             meta: groups == 0 ? '还没有' : '$groups 组',
             onTap: () => _practice(context, 2),
@@ -122,7 +122,7 @@ class HipMorePage extends StatelessWidget {
       Text(
         '这是运动练习，不能替代医生的建议。',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: HipColors.faint),
+        style: TextStyle(fontSize: 12, color: HipColors.meta),
       ),
     ];
     return ListView(

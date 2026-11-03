@@ -1,11 +1,12 @@
 // UI r2 (2026-11-03): the shared page kit — one navigation bar, one grouped
 // list language for every HipLab page that is not 首页 or SDK UI.
 //
-//   HipNavBar     52 high, icon-only back (44 hit), centred 17 w600 title.
+//   HipNavBar     52 high, 40pt glass round back/close (48 hit), centred
+//                 17 w600 title.
 //   HipNavPage    backdrop + safe area + HipNavBar + a scrolling body; the bar
 //                 gains a hairline and a faint fill once the body scrolls.
 //   HipSection    12 w600 muted group title, 24 above / 8 below.
-//   HipListGroup  flat panel, radius 12, no border, no shadow, inset hairlines.
+//   HipListGroup  flat panel, radius 16, 0.5pt rim, no shadow, inset hairlines.
 //   HipListRow    32×32 tinted icon, 16 w500 title, 13 muted subtitle,
 //                 14 faint meta + chevron, or a trailing control.
 import 'package:flutter/material.dart';
@@ -120,32 +121,23 @@ class HipNavBar extends StatelessWidget {
             ),
           if (leading != HipNavLeading.none)
             Positioned(
-              // Glyph's left edge on the content edge (20): 44 hit, 20 glyph.
-              left: kHipPageEdge - 12,
-              top: (height - 44) / 2,
+              // 40pt glass round button (same family as 首页 换一套) in a 48
+              // hit area, its outer edge on the 20pt content margin (G2).
+              left: kHipPageEdge - 4,
+              top: (height - 48) / 2,
               child: Tooltip(
                 message: label,
-                child: HipPressable(
+                child: HipNavButton(
                   key: leadingKey,
+                  glyph: close ? HipGlyph.close : HipGlyph.back,
                   semanticLabel: label,
-                  scale: .9,
                   onTap: onLeading ?? () => Navigator.of(context).maybePop(),
-                  child: SizedBox.square(
-                    dimension: 44,
-                    child: Center(
-                      child: HipIcon(
-                        close ? HipGlyph.close : HipGlyph.back,
-                        size: 20,
-                        color: HipColors.text,
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ),
           if (trailing != null)
             Positioned(
-              right: kHipPageEdge - 12,
+              right: kHipPageEdge - 4,
               top: 0,
               bottom: 0,
               child: Center(child: trailing),
@@ -259,8 +251,8 @@ class HipSection extends StatelessWidget {
   );
 }
 
-/// Flat panel of rows: surface tint by opacity, radius 12, no border, no
-/// shadow; 0.5pt dividers start where the row text starts.
+/// Flat panel of rows: surface tint by opacity, radius 16 (panel tier), a
+/// 0.5pt rim (G4), no shadow; 0.5pt dividers start where the row text starts.
 class HipListGroup extends StatelessWidget {
   const HipListGroup({
     super.key,
@@ -277,11 +269,13 @@ class HipListGroup extends StatelessWidget {
       : Colors.white.withValues(alpha: .7);
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(12),
-    child: ColoredBox(
-      color: fill(),
-      child: Material(
+  Widget build(BuildContext context) => CustomPaint(
+    foregroundPainter: const HipRimPainter(radius: HipRadius.panel),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(HipRadius.panel),
+      child: ColoredBox(
+        color: fill(),
+        child: Material(
         type: MaterialType.transparency,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -300,6 +294,60 @@ class HipListGroup extends StatelessWidget {
             ],
           ],
         ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// 0.5pt [HipColors.rim] hairline around a rounded rect.
+class HipRimPainter extends CustomPainter {
+  const HipRimPainter({required this.radius, this.color});
+  final double radius;
+  final Color? color;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = radius.clamp(0, size.shortestSide / 2).toDouble();
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        (Offset.zero & size).deflate(.25),
+        Radius.circular((r - .25).clamp(0, r).toDouble()),
+      ),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .5
+        ..color = color ?? HipColors.rim,
+    );
+  }
+
+  @override
+  bool shouldRepaint(HipRimPainter old) =>
+      old.radius != radius || old.color != color;
+}
+
+/// Nav-bar action (‹, ×, 🗑…): a 40pt [HipGlassRoundButton] centred in a 48pt
+/// hit area (audit r3 G2).
+class HipNavButton extends StatelessWidget {
+  const HipNavButton({
+    super.key,
+    required this.glyph,
+    required this.semanticLabel,
+    required this.onTap,
+    this.color,
+  });
+  final HipGlyph glyph;
+  final String semanticLabel;
+  final VoidCallback? onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 48,
+    child: Center(
+      child: HipGlassRoundButton(
+        semanticLabel: semanticLabel,
+        onTap: onTap,
+        child: HipIcon(glyph, size: 20, color: color ?? HipColors.text),
       ),
     ),
   );
@@ -404,7 +452,7 @@ class HipListRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.right,
-                    style: TextStyle(fontSize: 14, color: HipColors.faint),
+                    style: TextStyle(fontSize: 14, color: HipColors.meta),
                   ),
                 ),
               ),
@@ -450,6 +498,197 @@ class HipListSubRow extends StatelessWidget {
         ),
         child,
       ],
+    ),
+  );
+}
+
+/// Step progress for 首启安全 / 安全提示 / 自测题 (audit r3 G7): a 3pt
+/// segmented bar under the nav with "n/N" on the right.
+class HipStepProgress extends StatelessWidget {
+  const HipStepProgress({super.key, required this.index, required this.count});
+
+  /// 0-based current step.
+  final int index;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Row(
+          children: [
+            for (var i = 0; i < count; i++)
+              Expanded(
+                child: AnimatedContainer(
+                  duration: HipMotion.medium,
+                  height: 3,
+                  margin: EdgeInsets.only(right: i < count - 1 ? 4 : 0),
+                  decoration: BoxDecoration(
+                    color: i <= index ? HipColors.jade : HipColors.surfaceHigh,
+                    borderRadius: BorderRadius.circular(1.5),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(width: 12),
+      Text(
+        '${index + 1}/$count',
+        key: const ValueKey('step-progress-count'),
+        style: TextStyle(
+          fontSize: 13,
+          color: HipColors.meta,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      ),
+    ],
+  );
+}
+
+/// Where a [HipDrillRow]'s text starts (row pad 16 + thumb 48 + 12), for the
+/// [HipListGroup] divider inset.
+const double kHipDrillTextInset = kHipRowPad + 48 + 12;
+
+/// One drill-list row for 套路详情 / 组编辑 / 自测说明 (audit r3 G5): 48pt
+/// thumbnail (r8) + 16 w500 title + 13 subtitle + 14 meta on the right. Put
+/// rows in a [HipListGroup] with `inset: kHipDrillTextInset + leadingWidth`.
+class HipDrillRow extends StatelessWidget {
+  const HipDrillRow({
+    super.key,
+    required this.thumb,
+    required this.title,
+    this.subtitle,
+    this.subtitleColor,
+    this.meta,
+    this.leading,
+    this.trailing,
+    this.titlePrefix,
+    this.onTap,
+    this.semanticLabel,
+  });
+
+  /// Small mark before the title (e.g. the 只做放松 dot).
+  final Widget? titlePrefix;
+
+  /// Art for the 48pt thumbnail (clipped to r8 here).
+  final Widget thumb;
+  final String title;
+  final String? subtitle;
+  final Color? subtitleColor;
+
+  /// Right meta (duration), 14 meta tabular.
+  final String? meta;
+
+  /// Before the thumbnail: a step number or a drag handle.
+  final Widget? leading;
+
+  /// After the meta: a control (remove, chevron).
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final row = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 64),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          leading == null ? kHipRowPad : 4,
+          8,
+          trailing == null ? kHipRowPad : 4,
+          8,
+        ),
+        child: Row(
+          children: [
+            ?leading,
+            HipThumb(size: 48, radius: HipRadius.small, child: thumb),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      if (titlePrefix != null) ...[
+                        titlePrefix!,
+                        const SizedBox(width: 6),
+                      ],
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.25,
+                            fontWeight: FontWeight.w500,
+                            color: HipColors.text,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (subtitle != null && subtitle!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.3,
+                        color: subtitleColor ?? HipColors.muted,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (meta != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                meta!,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: HipColors.meta,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+            if (trailing != null) ...[const SizedBox(width: 4), trailing!],
+          ],
+        ),
+      ),
+    );
+    if (onTap == null) return row;
+    return HipPressable(
+      semanticLabel: semanticLabel ?? title,
+      scale: .99,
+      onTap: onTap,
+      child: row,
+    );
+  }
+}
+
+/// Step number before a [HipDrillRow] thumbnail: 13 w600 meta in a 28 slot.
+class HipDrillIndex extends StatelessWidget {
+  const HipDrillIndex(this.n, {super.key});
+  final int n;
+  static const double width = 28;
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: Text(
+      '$n',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: HipColors.meta,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
     ),
   );
 }

@@ -247,7 +247,8 @@ void main() {
             .first,
       );
       expect(
-        find.descendant(of: row, matching: find.text('3 次 × 停 15 秒')),
+        // The row may append ' · 已调整'; the dose itself must stay.
+        find.descendant(of: row, matching: find.textContaining('3 次 × 停 15 秒')),
         findsOneWidget,
       );
     });

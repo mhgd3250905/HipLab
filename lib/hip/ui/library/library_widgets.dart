@@ -170,7 +170,7 @@ Widget tintTag(String text, {Color? color}) {
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
       color: tintOf(color ?? HipColors.jade),
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(HipRadius.small),
     ),
     child: Text(
       text,
@@ -180,13 +180,16 @@ Widget tintTag(String text, {Color? color}) {
   );
 }
 
-/// Translucent pill on media (same as the player's area chip).
+/// Translucent pill on media. Light: white scrim + dark text; dark: black
+/// α.6 + light text (audit r3 G8).
 Widget mediaPill(String text, {Color? dot, HipGlyph? icon, Color? color}) =>
     Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: .5),
-        borderRadius: BorderRadius.circular(12),
+        color: HipColors.isDark
+            ? Colors.black.withValues(alpha: .6)
+            : HipColors.scrim,
+        borderRadius: BorderRadius.circular(HipRadius.small),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -196,7 +199,11 @@ Widget mediaPill(String text, {Color? dot, HipGlyph? icon, Color? color}) =>
             const SizedBox(width: 5),
           ],
           if (icon != null) ...[
-            HipIcon(icon, size: 13, color: color ?? Colors.white70),
+            HipIcon(
+              icon,
+              size: 13,
+              color: color ?? (HipColors.isDark ? Colors.white70 : HipColors.muted),
+            ),
             if (text.isNotEmpty) const SizedBox(width: 3),
           ],
           if (text.isNotEmpty)
@@ -206,7 +213,11 @@ Widget mediaPill(String text, {Color? dot, HipGlyph? icon, Color? color}) =>
                 fontSize: 11.5,
                 height: 1.2,
                 fontWeight: FontWeight.w600,
-                color: color ?? Colors.white.withValues(alpha: .9),
+                color:
+                    color ??
+                    (HipColors.isDark
+                        ? Colors.white.withValues(alpha: .9)
+                        : HipColors.text),
               ),
             ),
         ],
@@ -285,7 +296,7 @@ class LibSearchField extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 4, 2, 4),
       decoration: BoxDecoration(
         color: HipColors.track,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(HipRadius.control),
       ),
       child: Row(
         children: [
@@ -859,7 +870,7 @@ class LibDosePanel extends StatelessWidget {
               Text(label, style: const TextStyle(fontSize: 15)),
               Text(
                 hint,
-                style: TextStyle(fontSize: 12, color: HipColors.faint),
+                style: TextStyle(fontSize: 12, color: HipColors.meta),
               ),
             ],
           ),
@@ -918,7 +929,7 @@ Future<T?> showLibSheet<T>(
   // m5: smaller top corners on HipLab's own sheets (the theme's 28 stays
   // for SDK-owned sheets, which inherit it).
   shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    borderRadius: BorderRadius.vertical(top: Radius.circular(HipRadius.sheet)),
   ),
   builder: (context) => SafeArea(
     child: Padding(

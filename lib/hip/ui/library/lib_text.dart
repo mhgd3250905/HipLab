@@ -152,8 +152,8 @@ class LibText {
 
   // ── routines ──
   String routinesCount(int n) => _(
-    '$n 套编排好的套路，不受首页推荐限制，随便挑',
-    '$n ready-made routines – pick any, not just the recommended one',
+    '$n 套现成套路',
+    '$n ready-made routines',
   );
   String get recommended => _('为你推荐', 'For you');
   String minutes(int m) => _('$m 分钟', '$m min');
@@ -230,10 +230,10 @@ class LibText {
   // ── picker ──
   String get addMovesTitle => _('添加动作', 'Add moves');
   String addTo(String name) => _('加到「$name」', 'Add to "$name"');
-  String picked(int n) => _('已选 $n 个', '$n picked');
-  String willHave(int n) => _('组里会有 $n/20 个', 'Group: $n/20');
+  String picked(int n) => _('已选 $n', '$n picked');
+  String willHave(int n) => _('· 组里 $n/20', '· group $n/20');
   String get clear => _('清空', 'Clear');
-  String addN(int n) => _('加入 $n 个', 'Add $n');
+  String addN(int n) => n == 0 ? _('加入', 'Add') : _('加入 $n 个', 'Add $n');
   String get max20 => _('最多 20 个', 'Up to 20');
 
   // ── player / history ──

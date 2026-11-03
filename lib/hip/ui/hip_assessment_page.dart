@@ -73,81 +73,117 @@ class HipAssessmentIntro extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          // Audit r3 13-2: the list fades into the page above the fixed CTA
+          // instead of cutting hard at its edge.
+          child: Stack(
             children: [
-              // UI r2: the bar carries the title; one lead line here.
-              Text(
-                '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: HipColors.muted,
-                  height: 1.4,
-                ),
-              ),
-              if (_last(store) case final last?) ...[
-                // UI r2 §1 / M4: the last result's radar lives here (moved
-                // off 训练记录); 重测 is the button below.
-                HipSection(
-                  '上次结果',
-                  trailing: Text(
-                    '${last.at.year}/${last.at.month}/${last.at.day}',
-                    key: const ValueKey('intro-last-date'),
-                    style: TextStyle(fontSize: 12, color: HipColors.faint),
-                  ),
-                ),
-                HipListGroup(
-                  key: const ValueKey('intro-last-result'),
+              Positioned.fill(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-                      child: Column(
+                    // UI r2: the bar carries the title; one lead line here.
+                    Text(
+                      '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: HipColors.muted,
+                        height: 1.4,
+                      ),
+                    ),
+                    if (_last(store) case final last?) ...[
+                      // UI r2 §1 / M4: the last result's radar lives here (moved
+                      // off 训练记录); 重测 is the button below.
+                      HipSection(
+                        '上次结果',
+                        trailing: Text(
+                          '${last.at.year}/${last.at.month}/${last.at.day}',
+                          key: const ValueKey('intro-last-date'),
+                          style: TextStyle(fontSize: 12, color: HipColors.meta),
+                        ),
+                      ),
+                      HipListGroup(
+                        key: const ValueKey('intro-last-result'),
                         children: [
-                          Text(
-                            '${last.result.level.name} · ${last.result.total}/12',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: HipColors.jadeText,
-                            ),
-                          ),
-                          SizedBox(
-                            // Larger text needs room for the labels too.
-                            height:
-                                236 *
-                                MediaQuery.textScalerOf(
-                                  context,
-                                ).scale(1).clamp(1.0, 1.5),
-                            child: HipRadar(
-                              values: last.result.radar,
-                              highlight: last.result.tightest.toSet(),
-                              warn: last.result.painDirections,
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+                            child: Column(
+                              children: [
+                                Text(
+                                  '${last.result.level.name} · ${last.result.total}/12',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: HipColors.jadeText,
+                                  ),
+                                ),
+                                SizedBox(
+                                  // Larger text needs room for the labels too.
+                                  height:
+                                      236 *
+                                      MediaQuery.textScalerOf(
+                                        context,
+                                      ).scale(1).clamp(1.0, 1.5),
+                                  child: HipRadar(
+                                    values: last.result.radar,
+                                    highlight: last.result.tightest.toSet(),
+                                    warn: last.result.painDirections,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
+                      const HipSection('自测内容'),
+                    ] else
+                      const SizedBox(height: 14),
+                    HipListGroup(
+                      inset: kHipDrillTextInset + HipDrillIndex.width - 12,
+                      children: [for (final item in items) _row(item)],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        HipIcon(
+                          HipGlyph.radar,
+                          size: 18,
+                          color: HipColors.jade,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '做完得到：六方向雷达图 + 为你推荐的训练路线',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: HipColors.muted,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const HipSection('自测内容'),
-              ] else
-                const SizedBox(height: 14),
-              HipFlatGroup(
-                indent: 60,
-                children: [for (final item in items) _row(item)],
               ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  HipIcon(HipGlyph.radar, size: 18, color: HipColors.jade),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '做完得到：六方向雷达图 + 为你推荐的训练路线',
-                      style: TextStyle(fontSize: 13, color: HipColors.muted),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 28,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    key: const ValueKey('intro-cta-fade'),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          HipColors.background.withValues(alpha: 0),
+                          HipColors.background,
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             ],
           ),
@@ -183,60 +219,13 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
-    // m6: a flat row between hairlines (no card); the thumbnail is a clean
-    // rounded crop, no frame of its own (round 2 #3).
-    return Padding(
+    // Shared drill row (audit r3 G5); the order stays as a small meta number.
+    return HipDrillRow(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
-      child: Row(
-        children: [
-          HipThumb(size: 44, radius: 6, child: _thumbArt(item, still)),
-          const SizedBox(width: 12),
-          Container(
-            width: 20,
-            height: 20,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: HipColors.jade.withValues(alpha: .14),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '${item.order}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: HipColors.jadeText,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.text,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  _measureLine(item),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: HipColors.muted),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      leading: HipDrillIndex(item.order),
+      thumb: _thumbArt(item, still),
+      title: item.title,
+      subtitle: _measureLine(item),
     );
   }
 }
@@ -477,12 +466,11 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     final item = _item;
     return Column(
       children: [
-        HipTopBar(
-          center: _questionHeading(item),
-          trailing: Text(
-            '${_index + 1}/${_items.length}',
-            style: TextStyle(fontSize: 16, color: HipColors.muted),
-          ),
+        HipTopBar(center: _questionHeading(item)),
+        // Shared step indicator (audit r3 G7).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 2, 20, 6),
+          child: HipStepProgress(index: _index, count: _items.length),
         ),
         Expanded(
           child: Padding(
@@ -528,7 +516,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         HipSharedLibrary.current?.allowedActionIds.contains(demo.id) == true;
     return HipMediaFrame(
       key: const ValueKey('assessment-demo'),
-      radius: 14,
+      radius: HipRadius.panel,
       overlays: [
         Positioned(
           left: 14,
@@ -707,22 +695,42 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     ),
   );
 
-  Widget _pill(HipGlyph icon, String text) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      color: Colors.black.withValues(alpha: .45),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: Colors.white.withValues(alpha: .12)),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HipIcon(icon, size: 16, color: Colors.white70),
-        const SizedBox(width: 5),
-        Text(text, style: const TextStyle(fontSize: 13, color: Colors.white)),
-      ],
-    ),
-  );
+  // On media (G8): light = white scrim + 0.5 rim + meta text, no shadow;
+  // dark = black α + light text.
+  Widget _pill(HipGlyph icon, String text) {
+    final dark = HipColors.isDark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: dark ? Colors.black.withValues(alpha: .45) : HipColors.scrim,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: dark
+              ? Colors.white.withValues(alpha: .12)
+              : Colors.black.withValues(alpha: .06),
+          width: dark ? 1 : .5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          HipIcon(
+            icon,
+            size: 16,
+            color: dark ? Colors.white70 : HipColors.meta,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: dark ? Colors.white : HipColors.meta,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _questionHeading(AssessmentItem item) => Column(
     mainAxisSize: MainAxisSize.min,
@@ -938,13 +946,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       child: SizedBox(
         height: height,
         child: HipMediaFrame(
-          radius: 12,
+          radius: HipRadius.panel,
           color: HipColors.surface,
           // A calm 2 px accent edge (no glow halo) plus the tinted footer
           // and the check badge carry the selection.
           borderColor: selected ? HipColors.jade : HipColors.line,
           borderWidth: selected ? 2 : 1,
-          shadow: HipColors.cardShadow,
           overlays: [
             Positioned(
               right: 9,
@@ -1018,16 +1025,26 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             children: [
-              SizedBox(
-                height: 290,
-                child: Center(
-                  child: HipRadar(
-                    values: r.radar,
-                    highlight: r.tightest.toSet(),
-                    warn: r.painDirections,
+              // 13-1: the radar sits in the same r16 panel as on 自测说明.
+              HipListGroup(
+                key: const ValueKey('result-radar'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    child: SizedBox(
+                      height: 274,
+                      child: Center(
+                        child: HipRadar(
+                          values: r.radar,
+                          highlight: r.tightest.toSet(),
+                          warn: r.painDirections,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              const SizedBox(height: 14),
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 8,
@@ -1073,22 +1090,26 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         if (plan != null && plan.steps.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            // 15-1: 换一条 is a real secondary button beside the primary.
+            child: Row(
               children: [
-                TextButton(
-                  key: const ValueKey('result-other'),
-                  onPressed: _chooseOther,
-                  child: Text(
-                    '换一条路线',
-                    style: TextStyle(color: HipColors.muted),
+                Expanded(
+                  flex: 2,
+                  child: HipSecondaryButton(
+                    key: const ValueKey('result-other'),
+                    label: '换一条路线',
+                    onPressed: _chooseOther,
                   ),
                 ),
-                HipPrimaryButton(
-                  key: const ValueKey('result-start'),
-                  label: '开始这条路线',
-                  icon: HipGlyph.play,
-                  onPressed: () => _start(plan),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 3,
+                  child: HipPrimaryButton(
+                    key: const ValueKey('result-start'),
+                    label: '开始这条路线',
+                    icon: HipGlyph.play,
+                    onPressed: () => _start(plan),
+                  ),
                 ),
               ],
             ),
@@ -1193,10 +1214,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     return DecoratedBox(
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
-        // m6: flat layered card — surface fill, radius 12, no outline.
+        // Flat card: surface fill, radius 16, 0.5pt rim, no shadow (r3 G1/G4).
         color: HipColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: HipColors.cardShadow,
+        borderRadius: BorderRadius.circular(HipRadius.panel),
+        border: Border.all(width: .5, color: HipColors.rim),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1239,7 +1260,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   const SizedBox(width: 12),
                   HipThumb(
                     size: 84,
-                    radius: 10,
+                    radius: HipRadius.small,
                     child: HipDrillArt(drill: hero, showPendingLabel: false),
                   ),
                 ],
@@ -1252,7 +1273,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   for (final p in steps.skip(1).take(4)) ...[
                     HipThumb(
                       size: 48,
-                      radius: 10,
+                      radius: HipRadius.small,
                       child: HipDrillArt(
                         drill: p.drill,
                         showPendingLabel: false,

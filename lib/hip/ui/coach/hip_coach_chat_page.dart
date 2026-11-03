@@ -175,8 +175,9 @@ Future<void> _pushPractice(
                 actions.coach!.requestCompose();
               },
               child: Padding(
+                // Text edge on the 20pt margin (bar inset 16 + 4).
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 4,
                   vertical: 12,
                 ),
                 child: Text(
