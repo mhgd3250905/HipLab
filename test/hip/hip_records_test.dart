@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_progress.dart';
 import 'package:hiplab/hip/ui/hip_records_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
@@ -55,6 +56,45 @@ void main() {
     expect(find.text('还差 6 天'), findsOneWidget);
     expect(find.byType(HipRadar), findsNothing);
     expect(store.celebratedMilestone, 7);
+  });
+
+  testWidgets('records sums daily seconds before rounding heatmap minutes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393 * 3, 1800 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final now = DateTime(2026, 11, 2, 9);
+    final store = HipStore(
+      content: loadContent(),
+      storage: MemoryStorage(),
+      clock: () => now,
+    );
+    store.doneDays.add(dayKey(now));
+    store.sessions.addAll([
+      for (var i = 0; i < 2; i++)
+        SessionRecord(
+          at: now.add(Duration(hours: i)),
+          source: PlanSource.custom,
+          title: '训练 ${i + 1}',
+          seconds: 271,
+          completed: true,
+        ),
+    ]);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: HipRecordsView(store: store)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('9 分钟', findRichText: true), findsOneWidget);
+    final heatmap = find.byKey(const ValueKey('records-heatmap'));
+    final paint = tester.widget<CustomPaint>(
+      find.descendant(of: heatmap, matching: find.byType(CustomPaint)),
+    );
+    final dynamic painter = paint.painter;
+    expect(painter.levels[15][now.weekday - 1], 2);
   });
 
   testWidgets('records empty state offers one start action', (tester) async {

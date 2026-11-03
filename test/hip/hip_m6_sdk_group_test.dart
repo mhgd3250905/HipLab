@@ -11,9 +11,12 @@ import 'package:hiplab/hip/data/hip_content_loader.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
+import 'package:hiplab/hip/domain/hip_pain.dart';
 import 'package:hiplab/hip/domain/hip_session.dart';
+import 'package:hiplab/hip/trainer/hip_sdk_session_builder.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import 'hip_ai_coach_test.dart' show FileAssetBundle;
 import 'hip_domain_test.dart' show MemoryStorage;
@@ -100,6 +103,112 @@ void main() {
     expect(played.transitionSeconds, 30);
     expect(sdkStepDoseText(content, g.steps.first), isNotEmpty);
     expect(sdkStepSeconds(content, g.steps.first), greaterThan(0));
+  });
+
+  test('mixed SDK phases keep action order and the actual group rest', () {
+    final group = CustomRoutine(
+      id: 'phase-mix',
+      name: '混合',
+      restSeconds: 30,
+      steps: [
+        const CustomStep('chest-A'),
+        const CustomStep('h-9090-liftoff', sets: 2),
+      ],
+    );
+    final played = TrainingPlanner(
+      content,
+    ).customPlan(group, profile(content))!;
+    final phases = hipSdkSessionBuilder(
+      content,
+      transitionSeconds: played.transitionSeconds,
+    ).phases(played.sdkPlan!);
+    final workOrder = <String>[];
+    for (final phase in phases.where((p) => p.isWork)) {
+      if (workOrder.lastOrNull != phase.exerciseId) {
+        workOrder.add(phase.exerciseId!);
+      }
+    }
+    expect(workOrder, ['chest-A', 'h-9090-liftoff']);
+    final transition = phases.singleWhere(
+      (p) => p.nextExerciseId == 'h-9090-liftoff',
+    );
+    expect(transition.kind, trainer.PhaseKind.rest);
+    expect(transition.doneExerciseId, 'chest-A');
+    expect(transition.seconds, 30);
+  });
+
+  test('completed mixed SDK session persists its result and streak', () async {
+    final group = CustomRoutine(
+      id: 'completed-mix',
+      name: '混合完成组',
+      restSeconds: 20,
+      steps: [
+        const CustomStep('chest-A'),
+        const CustomStep('h-9090-liftoff', sets: 2),
+      ],
+    );
+    final played = TrainingPlanner(
+      content,
+    ).customPlan(group, profile(content))!;
+    final builder = hipSdkSessionBuilder(
+      content,
+      transitionSeconds: played.transitionSeconds,
+    );
+    final sdkPlan = played.sdkPlan!;
+    final engine = trainer.SessionEngine(builder.phases(sdkPlan));
+    var activeSeconds = 0.0;
+    for (var guard = 0; !engine.done && guard < 1000; guard++) {
+      if (engine.awaitingCompletion) {
+        activeSeconds = engine.phaseStart + 10;
+        expect(engine.completeSet(activeSeconds), isTrue);
+      } else {
+        activeSeconds = engine.phaseStart + engine.phase.seconds;
+        expect(engine.update(activeSeconds), isTrue);
+      }
+    }
+    expect(engine.done, isTrue);
+    final at = DateTime(2026, 11, 3, 10);
+    final result = trainer.SessionRecorder(
+      plan: sdkPlan,
+      totalExercises: builder.occurrenceCount(sdkPlan),
+      sessionId: 'mixed-session',
+      startedAt: at,
+    ).finish(engine, activeSeconds: activeSeconds);
+    expect(result.full, isTrue);
+    expect(result.items.map((item) => item.exerciseId), [
+      'chest-A',
+      'h-9090-liftoff',
+    ]);
+    expect(
+      result.items.every((item) => item.completedSets == item.plannedSets),
+      isTrue,
+    );
+    final storage = MemoryStorage();
+    final store = HipStore(content: content, storage: storage, clock: () => at);
+    await store.initialize();
+    await store.saveTrainerSession(
+      result,
+      plan: played,
+      ladder: SessionPainLadder(content),
+    );
+    final reloaded = HipStore(
+      content: content,
+      storage: storage,
+      clock: () => at,
+    );
+    await reloaded.initialize();
+    final record = reloaded.sessions.single;
+    expect(record.completed, isTrue);
+    expect(record.source, PlanSource.custom);
+    expect(record.refId, group.id);
+    expect(record.title, played.title);
+    expect(record.sessionId, result.sessionId);
+    expect(record.seconds, activeSeconds.round());
+    expect(record.trainerResult?['full'], isTrue);
+    expect(record.trainerResult?['items'], result.toJson()['items']);
+    expect(reloaded.streak, 1);
+    store.dispose();
+    reloaded.dispose();
   });
 
   test('old local-only groups stay byte-compatible and on the old path', () {

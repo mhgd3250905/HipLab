@@ -62,13 +62,17 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     final today = DateTime(now.year, now.month, now.day);
     final done = store.doneDays;
     final finished = [for (final s in store.sessions) if (s.completed) s];
-    final minutesByDay = <String, int>{};
+    final secondsByDay = <String, int>{};
     var seconds = 0;
     for (final s in finished) {
       seconds += s.seconds;
       final k = dayKey(s.at);
-      minutesByDay[k] = (minutesByDay[k] ?? 0) + (s.seconds / 60).round();
+      secondsByDay[k] = (secondsByDay[k] ?? 0) + s.seconds;
     }
+    final minutesByDay = {
+      for (final entry in secondsByDay.entries)
+        entry.key: (entry.value / 60).round(),
+    };
     final history = streakHistory(done);
     final streak = store.streak;
     final empty = done.isEmpty && store.sessions.isEmpty;
