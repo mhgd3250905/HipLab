@@ -854,7 +854,7 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   over ? t.max20 : t.willHave(after),
@@ -951,7 +951,9 @@ Future<LibraryFilter?> showFilterSheet(
               trailing: HipPressable(
                 key: const ValueKey('filter-reset'),
                 semanticLabel: t.reset,
-                onTap: () => setSheet(() => f = f.withoutSheet),
+                onTap: f.sheetCount == 0
+                    ? null
+                    : () => setSheet(() => f = f.withoutSheet),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
                   child: Text(
@@ -959,7 +961,9 @@ Future<LibraryFilter?> showFilterSheet(
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeText,
+                      color: f.sheetCount == 0
+                          ? HipColors.faint
+                          : HipColors.jadeText,
                     ),
                   ),
                 ),

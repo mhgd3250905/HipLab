@@ -987,16 +987,26 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             children: [
-              SizedBox(
-                height: 290,
-                child: Center(
-                  child: HipRadar(
-                    values: r.radar,
-                    highlight: r.tightest.toSet(),
-                    warn: r.painDirections,
+              // 13-1: the radar sits in the same r16 panel as on 自测说明.
+              HipListGroup(
+                key: const ValueKey('result-radar'),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    child: SizedBox(
+                      height: 274,
+                      child: Center(
+                        child: HipRadar(
+                          values: r.radar,
+                          highlight: r.tightest.toSet(),
+                          warn: r.painDirections,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              const SizedBox(height: 14),
               Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 8,
@@ -1042,22 +1052,26 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         if (plan != null && plan.steps.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            // 15-1: 换一条 is a real secondary button beside the primary.
+            child: Row(
               children: [
-                TextButton(
-                  key: const ValueKey('result-other'),
-                  onPressed: _chooseOther,
-                  child: Text(
-                    '换一条路线',
-                    style: TextStyle(color: HipColors.muted),
+                Expanded(
+                  flex: 2,
+                  child: HipSecondaryButton(
+                    key: const ValueKey('result-other'),
+                    label: '换一条路线',
+                    onPressed: _chooseOther,
                   ),
                 ),
-                HipPrimaryButton(
-                  key: const ValueKey('result-start'),
-                  label: '开始这条路线',
-                  icon: HipGlyph.play,
-                  onPressed: () => _start(plan),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 3,
+                  child: HipPrimaryButton(
+                    key: const ValueKey('result-start'),
+                    label: '开始这条路线',
+                    icon: HipGlyph.play,
+                    onPressed: () => _start(plan),
+                  ),
                 ),
               ],
             ),

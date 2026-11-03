@@ -627,7 +627,9 @@ Future<ActionFilter?> showActionFilterSheet(
               trailing: HipPressable(
                 key: const ValueKey('filter-reset'),
                 semanticLabel: t.reset,
-                onTap: () => setSheet(() => f = f.withoutSheet),
+                onTap: f.sheetCount == 0
+                    ? null
+                    : () => setSheet(() => f = f.withoutSheet),
                 child: Padding(
                   padding: const EdgeInsets.all(6),
                   child: Text(
@@ -635,7 +637,10 @@ Future<ActionFilter?> showActionFilterSheet(
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeText,
+                      // 10-1: jade only once something is filtered.
+                      color: f.sheetCount == 0
+                          ? HipColors.faint
+                          : HipColors.jadeText,
                     ),
                   ),
                 ),
@@ -894,15 +899,23 @@ class ActionCard extends StatelessWidget {
     );
   }
 
+  // 08-1: unselected = hollow ring on a light veil in both themes (a solid
+  // grey dot read as disabled in light); selected = jade fill + check.
   Widget _checkDot(bool on) => Container(
     width: 28,
     height: 28,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: on ? HipPalette.dark.jade : Colors.black.withValues(alpha: .35),
+      color: on
+          ? HipPalette.dark.jade
+          : Colors.white.withValues(alpha: HipColors.isDark ? .14 : .55),
       border: Border.all(
-        color: on ? HipPalette.dark.jade : Colors.white.withValues(alpha: .85),
-        width: 1.6,
+        color: on
+            ? HipPalette.dark.jade
+            : (HipColors.isDark
+                  ? Colors.white.withValues(alpha: .85)
+                  : Colors.black.withValues(alpha: .32)),
+        width: 1.5,
       ),
     ),
     alignment: Alignment.center,

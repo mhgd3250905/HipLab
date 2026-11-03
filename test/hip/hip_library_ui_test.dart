@@ -274,7 +274,7 @@ void main() {
       }
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('picker-count'))).data,
-        '组里会有 2/20 个',
+        '· 组里 2/20',
       );
       await tester.tap(find.byKey(const ValueKey('picker-add')));
       await tester.pumpAndSettle();

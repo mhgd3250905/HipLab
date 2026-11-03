@@ -126,10 +126,19 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
   /// top light, a hairline edge and a tight contact shadow.
   Widget _thumb(bool pressed) => widget.glass
       ? HipGlassPill(radius: widget.thumbRadius)
-      : HipTactile(
-          style: HipTactileStyle.neutral(),
-          radius: widget.thumbRadius,
-          pressed: pressed,
+      // 04-2: a 0.5pt rim (same as panels, G4) keeps the white thumb
+      // distinct from the light track.
+      : DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.thumbRadius),
+            border: Border.all(width: .5, color: HipColors.rim),
+          ),
+          child: HipTactile(
+            style: HipTactileStyle.neutral(),
+            radius: widget.thumbRadius,
+            pressed: pressed,
+          ),
         );
 
   void _select(int i) {

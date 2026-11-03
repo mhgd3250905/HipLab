@@ -1076,7 +1076,7 @@ class HipPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
-    final fg = enabled ? HipColors.onJade : HipColors.muted;
+    final fg = enabled ? HipColors.onJade : HipColors.faint;
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
