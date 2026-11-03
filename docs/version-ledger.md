@@ -1,5 +1,12 @@
 # 版本交付台账
 
+## 2026-11-04：Mac iOS 主线对齐未签名构建
+
+- 基线远端main `4d610f50ee47f2d4de7c19517eb7e99220bb2204`；运行/构建源 `edb464ff970973ae140c214da953afd8075833db`，分支 `ios/main-alignment-20261104`。
+- 复用主线 `1.1.0+30`，Bundle ID `com.ugk.hipinterlude`；没有新递增版本、没有签名/安装/上传或商店操作，release/1.0不动。
+- `flutter build ios --release --no-codesign --no-pub` 成功，Runner.app 60,590,429 bytes；arm64/iOS15/iPhone-only/audio、211公共封面/0MP4、7份隐私清单及凭据模式扫描通过。
+- 产物和candidate manifest保存在本地Git忽略目录；不是IPA，不可据此宣称TestFlight或iPhone已验收。[适配与验证详情](ios-main-alignment-2026-11-04.md)。
+
 ## 2026-11-04：+30 包身份与集成状态补记（无新构建）
 
 本次只整理已有交付，App 仍 `1.1.0+30`，arm64 split `2030`。同版本号的三个包对应不同源码，不能互相替代：

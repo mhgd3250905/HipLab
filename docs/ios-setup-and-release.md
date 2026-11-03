@@ -1,5 +1,11 @@
 # iOS 运行与上架说明
 
+## 2026-11-04：当前 main 的 Mac 入口
+
+后续 iOS 开发从 `main@4d610f5` / `1.1.0+30` / SDK `693cbc02` 开始，唯一 Bundle ID 为 `com.ugk.hipinterlude`。当前 main 为公共封面与元数据随包、视频按需下载缓存，不能恢复下方历史 v0.2.0 视频 ZIP，不能承诺首次无网即可播放所有视频。Flutter 固定 3.44.7、SwiftPM、iOS15、iPhone-only。此次适配/验证与下一步见[Mac 对齐报告](ios-main-alignment-2026-11-04.md)。
+
+下方 2026 年 10 月的配置/版本/授权/验收描述保留为历史；真实旧候选及审核回复以[1.0 发布记录](release-1.0/ios/README.md)为准，不代表当前 main 已上传、已测试或解决拒审。
+
 **2026-10-24 iOS 基础版候选：** 本轮按用户新要求复用 Hip Interlude 的 `com.ugk.hipinterlude`，版本沿用 1.0.0+20、iOS 隐藏 AI，已授权自动签名和 TestFlight；不修改商店资料或提交审核。配置、构建、签名、截图与真机证据以 [本轮发布记录](release-1.0/ios/README.md) 为准。下文是此前 com.ugk.hiplab 的历史配置和交接，不能据此选择新 App 记录或判断本轮验收通过。
 
 更新日期：2026-10-18，北京时间。当前共用版本 **0.3.5+10**，运行源 `b3bd499`；Android语音通道修复已推送并真机试听确认，iOS playback/mix/duck策略未改。Mac从最新main按README恢复冻结v0.2.0素材（视频1080/封面540），固定Flutter3.44.7，不升级lock/依赖；本次没有新Mac/Xcode或iPhone验收，已有iOS历史记录独立保留。

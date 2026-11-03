@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-04：Mac iOS 对齐当前 main
+
+本机新建 `ios/main-alignment-20261104`，基于远端 `4d610f5`，沿用 `1.1.0+30` / SDK `693cbc02`；UI r3 未带入。iOS 名称与按需视频隐私说明已对齐，源 `edb464f` 分析0、Flutter454过/68既有条件跳过、Python25过，未签名原生Release构建60.6MB通过；未安装、未上传，旧发布分支和商店未操作。[范围、验证与待验](ios-main-alignment-2026-11-04.md)。
+
 ## 2026-11-04：当前主线与 UI r3 候选
 
 核对目录 `E:/AII-3D/3D-Hip`。收束前本机 main 与 origin/main 均为 `0737e4e3e34cc7116e03554e977a0d8e65b39267`，完整 tracked/untracked 状态为空。GitHub 回读 PR #26/#27/#28 均已合并；#29 OPEN / Draft。以下旧“未合 main”描述保留为对应日期历史。
