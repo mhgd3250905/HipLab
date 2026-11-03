@@ -63,7 +63,7 @@ def pages():
     if batch: flush(batch)
     call('POST', 'https://api.cloudflare.com/client/v4/pages/assets/upsert-hashes', json.dumps({'hashes': list(payload)}).encode(), 'application/json', jwt)
     fields = {'manifest': (None, json.dumps(manifest), 'application/json'), 'branch': (None, 'main', 'text/plain'),
-              '_headers': ('_headers', '/*\n  X-Robots-Tag: noindex\n  X-Content-Type-Options: nosniff\n/img/*\n  Cache-Control: public, max-age=604800\n/fonts/*\n  Cache-Control: public, max-age=604800\n', 'text/plain')}
+              '_headers': ('_headers', '/*\n'+('  X-Robots-Tag: noindex\n' if os.environ.get('NOINDEX','1')=='1' else '')+'  X-Content-Type-Options: nosniff\n/img/*\n  Cache-Control: public, max-age=604800\n/fonts/*\n  Cache-Control: public, max-age=604800\n', 'text/plain')}
     body, ct = multipart(fields)
     st, j = call('POST', f'{B}/pages/projects/{NAME}/deployments', body, ct)
     r = j.get('result') or {}
