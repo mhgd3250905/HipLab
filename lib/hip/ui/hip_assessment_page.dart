@@ -132,8 +132,8 @@ class HipAssessmentIntro extends StatelessWidget {
                 const HipSection('自测内容'),
               ] else
                 const SizedBox(height: 14),
-              HipFlatGroup(
-                indent: 60,
+              HipListGroup(
+                inset: kHipDrillTextInset + HipDrillIndex.width - 12,
                 children: [for (final item in items) _row(item)],
               ),
               const SizedBox(height: 14),
@@ -183,60 +183,13 @@ class HipAssessmentIntro extends StatelessWidget {
 
   Widget _row(AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
-    // m6: a flat row between hairlines (no card); the thumbnail is a clean
-    // rounded crop, no frame of its own (round 2 #3).
-    return Padding(
+    // Shared drill row (audit r3 G5); the order stays as a small meta number.
+    return HipDrillRow(
       key: ValueKey('intro-item-${item.id}'),
-      padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
-      child: Row(
-        children: [
-          HipThumb(size: 44, radius: HipRadius.small, child: _thumbArt(item, still)),
-          const SizedBox(width: 12),
-          Container(
-            width: 20,
-            height: 20,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: HipColors.jade.withValues(alpha: .14),
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '${item.order}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: HipColors.jadeText,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.text,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  _measureLine(item),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: HipColors.muted),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      leading: HipDrillIndex(item.order),
+      thumb: _thumbArt(item, still),
+      title: item.title,
+      subtitle: _measureLine(item),
     );
   }
 }

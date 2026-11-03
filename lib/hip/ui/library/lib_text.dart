@@ -152,8 +152,8 @@ class LibText {
 
   // ── routines ──
   String routinesCount(int n) => _(
-    '$n 套编排好的套路，不受首页推荐限制，随便挑',
-    '$n ready-made routines – pick any, not just the recommended one',
+    '$n 套现成套路',
+    '$n ready-made routines',
   );
   String get recommended => _('为你推荐', 'For you');
   String minutes(int m) => _('$m 分钟', '$m min');

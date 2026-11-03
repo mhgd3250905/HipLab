@@ -1231,7 +1231,9 @@ class HipProgressPage extends StatelessWidget {
                         ? null
                         : store.reminders.deliversNotifications
                         ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00'
-                        : '时间已记下，暂不推送系统通知',
+                        // Plain product copy (audit r3 16-1); no in-app
+                        // alert exists yet, so don't promise one.
+                        : '工作日 ${reminder.startHour}:00–${reminder.endHour}:00 · 通知即将上线',
                     trailing: _HipSmallSwitch(
                       child: Switch(
                         key: const ValueKey('reminder-switch'),
