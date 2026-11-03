@@ -35,21 +35,21 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d4502f35b1503d41cd782aa7fb3780c7f6591ad0
+      ref: 693cbc02cdf284163409868e117e438515c6a8d8
   ugk_trainer_runtime:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d4502f35b1503d41cd782aa7fb3780c7f6591ad0
+      ref: 693cbc02cdf284163409868e117e438515c6a8d8
       path: packages/ugk_trainer_runtime
   ugk_coach_ui:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d4502f35b1503d41cd782aa7fb3780c7f6591ad0
+      ref: 693cbc02cdf284163409868e117e438515c6a8d8
       path: packages/ugk_coach_ui
   ugk_coach_chat:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d4502f35b1503d41cd782aa7fb3780c7f6591ad0
+      ref: 693cbc02cdf284163409868e117e438515c6a8d8
       path: packages/ugk_coach_chat
 
 # Keep SDK transitive dependencies on the same reviewed commit.
@@ -57,7 +57,7 @@ dependency_overrides:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: d4502f35b1503d41cd782aa7fb3780c7f6591ad0
+      ref: 693cbc02cdf284163409868e117e438515c6a8d8
 
 dev_dependencies:
   flutter_test:

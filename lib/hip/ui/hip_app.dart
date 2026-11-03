@@ -148,8 +148,8 @@ class _HipAppState extends State<HipApp> {
     darkTheme: hipTheme(HipPalette.dark),
     themeMode: mode,
     themeAnimationDuration: Duration.zero,
-    locale: const Locale('zh'),
-    supportedLocales: const [Locale('zh')],
+    locale: hipAppLocale,
+    supportedLocales: const [hipAppLocale],
     localizationsDelegates: const [
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
