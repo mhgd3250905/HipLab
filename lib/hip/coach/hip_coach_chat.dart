@@ -11,6 +11,7 @@ import 'coach_config.dart';
 import 'coach_device_id.dart';
 import 'hip_coach_chat_storage.dart';
 import 'hip_coach_profile.dart';
+import 'hip_coach_ai_tags.dart';
 
 /// App lifetime and host ports only. The SDK owns the sole conversation.
 class HipCoachChat {
@@ -62,11 +63,13 @@ class HipCoachChat {
       final catalog = bundle == null
           ? store.content.publicCatalog ?? await loadHipCoachCatalog()
           : await loadHipCoachCatalog(bundle: bundle);
+      final appAiTags = await loadHipCoachAiTags(bundle: bundle);
       final profile = hiplabCoachAppProfile(
         catalog: catalog,
         coachProfile: hiplabCoachProfile,
         executionTiming: builder.executionTiming,
         content: store.content,
+        aiTags: appAiTags,
       );
       final history = HiplabCoachChatHistoryStore(store, storage: storage);
       final preferences = HiplabCoachChatPreferenceStore(

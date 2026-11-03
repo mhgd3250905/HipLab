@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 1.1.0+30
+version: 1.1.0+31
 
 environment:
   sdk: ^3.12.2
@@ -35,21 +35,21 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: 9dd93163e9f355665e5c923f374c64f03bf65a86
   ugk_trainer_runtime:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: 9dd93163e9f355665e5c923f374c64f03bf65a86
       path: packages/ugk_trainer_runtime
   ugk_coach_ui:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: 9dd93163e9f355665e5c923f374c64f03bf65a86
       path: packages/ugk_coach_ui
   ugk_coach_chat:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: 9dd93163e9f355665e5c923f374c64f03bf65a86
       path: packages/ugk_coach_chat
 
 # Keep SDK transitive dependencies on the same reviewed commit.
@@ -57,7 +57,7 @@ dependency_overrides:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: 9dd93163e9f355665e5c923f374c64f03bf65a86
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +84,7 @@ flutter:
     - assets/action_kits/
     - assets/licenses/
     - assets/coach/
+    - assets/coach/ai-tags/
   fonts:
     - family: NotoSansSC
       fonts:
