@@ -169,6 +169,9 @@ def page(L):
     faq = ''.join(f'<details><summary>{E(q)}</summary><p>{E(a)}</p></details>' for q, a in L['faq'])
     ctas = (f'<div class="cta"><a class="btn" href="{PLAY}" rel="noopener"><i></i>{E(L["cta"])}</a>'
             f'<span class="alt">{E(L["mail_q"])}<a href="{mailto}">{E(L["mail_a"])}</a></span></div>')
+    return _page(L, zh, r, mailto, nav, lang, stats, tests, levels, routines, filters, cards, extras, how, facts, faq, ctas).replace('hip check-up</h2>', 'hip <span class="nw">check-up</span></h2>')
+
+def _page(L, zh, r, mailto, nav, lang, stats, tests, levels, routines, filters, cards, extras, how, facts, faq, ctas):
     return f'''<!doctype html>
 <html lang="{L['lang']}">
 <head>

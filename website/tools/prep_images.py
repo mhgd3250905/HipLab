@@ -7,8 +7,8 @@ OUT = os.path.join(WEB, 'src', 'img'); os.makedirs(OUT, exist_ok=True)
 UI = os.environ.get('UI_DIR', '/workspace/work/hiplab-ui-review/r2')
 SHOTS = {  # name: (path, crop height of 786x1704 phone frame)
  'ui-check': 'm4/intro-radar-light.png', 'ui-routine': 'final/routine-light.png', 'ui-library': 'final/library-light.png',
- 'ui-library-dark': 'final/library-dark.png', 'ui-groups': 'final/groups-light.png', 'ui-editor': 'final/editor-light.png',
- 'ui-records': 'm4/records-light.png', 'ui-settings': 'final/settings-light.png'}
+ 'ui-groups': 'final/groups-light.png', 'ui-editor': 'final/editor-light.png',
+ 'ui-records': 'm4/records-light.png'}
 POSTERS = ['s-pigeon','s-lizard','s-frog','h-couch-stretch','o-seated-fig4','n-half-split','w-clamshell','h-9090-liftoff',
  'n-windshield','h-hip-gate','n-chair-wiper','glute-max-A','s-butterfly','s-9090','n-thomas-test','s-seated-fold','h-squat']
 def save(im, name, w):
