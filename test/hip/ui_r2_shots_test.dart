@@ -48,6 +48,7 @@ void main() {
     double height = 852,
     bool reminder = true,
     bool groups = false,
+    bool mixed = false,
     bool public = false,
     bool records = false,
     bool emptyRecords = false,
@@ -136,6 +137,29 @@ void main() {
           ),
         );
       }
+    }
+    if (mixed) {
+      // M6: a mixed group — SDK-only actions with local kit drills.
+      final c = store.content;
+      final sdk = [
+        for (final d in c.publicCatalog!.drills)
+          if (isSdkGroupStep(c, d.id)) d.id,
+      ];
+      store.customRoutines.insert(
+        0,
+        CustomRoutine(
+          id: 'c_mix',
+          name: '全身混合',
+          restSeconds: 20,
+          steps: [
+            CustomStep(sdk[0]),
+            const CustomStep('h-9090-liftoff'),
+            CustomStep(sdk[5]),
+            CustomStep(sdk[12]),
+            const CustomStep('h-adductor-rock'),
+          ],
+        ),
+      );
     }
     await tester.pumpWidget(
       RepaintBoundary(
@@ -243,6 +267,45 @@ void main() {
         await _capture(tester, '$shots/m3/picker-$n.png');
       });
     }
+    // ── M6 训练组支持全部 SDK 动作 ──
+    testWidgets('m6 添加动作 SDK selectable dark', (tester) async {
+      await pump(tester, groups: true, public: true);
+      await openGroups(tester);
+      await tester.tap(find.byKey(const ValueKey('new-group')));
+      await tester.pumpAndSettle();
+      final c = publicContent();
+      final ids = [
+        for (final d in c.publicCatalog!.drills)
+          if (isSdkGroupStep(c, d.id)) d.id,
+      ];
+      await tester.tap(find.byKey(const ValueKey('action-part-臀部')));
+      await tester.pumpAndSettle();
+      final cards = find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey<String> &&
+            ids.contains(
+              (w.key! as ValueKey<String>).value.replaceFirst('pick-', ''),
+            ) &&
+            (w.key! as ValueKey<String>).value.startsWith('pick-'),
+      );
+      await tester.tap(cards.at(0));
+      await tester.pump();
+      await tester.tap(cards.at(1));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/m6/picker-dark.png');
+    });
+    testWidgets('m6 组编辑 mixed dark', (tester) async {
+      await pump(tester, groups: true, mixed: true, public: true);
+      await openGroups(tester);
+      await tester.tap(find.byKey(const ValueKey('group-card-c_mix')));
+      await tester.pumpAndSettle();
+      await _capture(tester, '$shots/m6/editor-dark.png');
+    });
+    testWidgets('m6 训练组 card dark', (tester) async {
+      await pump(tester, groups: true, mixed: true, public: true);
+      await openGroups(tester);
+      await _capture(tester, '$shots/m6/groups-dark.png');
+    });
     // ── M4 训练记录 + 自测雷达 ──
     for (final t in [HipThemeChoice.dark, HipThemeChoice.light]) {
       final n = t == HipThemeChoice.dark ? 'dark' : 'light';
