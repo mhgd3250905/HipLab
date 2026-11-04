@@ -1847,7 +1847,7 @@
    "kind": "routine",
    "name": "办公室 5 分钟",
    "scene": "chair",
-   "seconds": 304,
+   "seconds": 305,
    "steps": [
     {
      "alternative": null,
@@ -1899,14 +1899,14 @@
     },
     {
      "alternative": null,
-     "dose": "左右交替 6 次",
+     "dose": "每侧 3 次",
      "drill": "n-chair-wiper",
      "kit": {
       "id": "n-chair-wiper",
-      "reps": 6
+      "reps": 3
      },
-     "seconds": 25,
-     "sided": false,
+     "seconds": 26,
+     "sided": true,
      "tip": ""
     },
     {
@@ -1932,7 +1932,7 @@
    "kind": "routine",
    "name": "睡前 8 分钟",
    "scene": "home",
-   "seconds": 480,
+   "seconds": 479,
    "steps": [
     {
      "alternative": null,
@@ -1948,14 +1948,14 @@
     },
     {
      "alternative": null,
-     "dose": "左右慢慢倒 8 次",
+     "dose": "每侧 4 次",
      "drill": "n-windshield",
      "kit": {
       "id": "n-windshield",
-      "reps": 8
+      "reps": 4
      },
-     "seconds": 45,
-     "sided": false,
+     "seconds": 44,
+     "sided": true,
      "tip": ""
     },
     {
@@ -2417,14 +2417,14 @@
     },
     {
      "alternative": null,
-     "dose": "左右 8 次",
+     "dose": "每侧 4 次",
      "drill": "n-squat-shift",
      "kit": {
       "id": "n-squat-shift",
-      "reps": 8
+      "reps": 4
      },
      "seconds": 60,
-     "sided": false,
+     "sided": true,
      "tip": ""
     },
     {
