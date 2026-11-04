@@ -25,7 +25,6 @@ import '../library/practice_page.dart';
 
 bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
     (configured ?? CoachConfig.fromEnvironment.configured) &&
-    Theme.of(context).platform != TargetPlatform.iOS &&
     (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
 
 /// Only the route, lifecycle and dependency lookup belong to HipLab.

@@ -1,0 +1,6 @@
+{
+  "UGK_COACH_AUTH": "worker",
+  "UGK_COACH_APP_KEY": "",
+  "UGK_COACH_BASE_URL": "https://api.uuugk.win/v1",
+  "UGK_COACH_MODEL": "deepseek-v4-flash-0731"
+}

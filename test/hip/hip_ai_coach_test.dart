@@ -12,13 +12,21 @@ import 'package:hiplab/hip/coach/hip_coach_profile.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/coach/hip_coach_chat_page.dart';
+import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart';
+import 'public_media_fixture.dart';
 
 class FileAssetBundle extends CachingAssetBundle {
+  // Keep test fixture decoding in the widget test's scheduling domain.
+  @override
+  Future<String> loadString(String key, {bool cache = true}) async =>
+      File(key).readAsStringSync();
+
   @override
   Future<ByteData> load(String key) async =>
       ByteData.sublistView(Uint8List.fromList(File(key).readAsBytesSync()));
@@ -43,6 +51,54 @@ trainer.SessionBuilder testSessionBuilder(HipContent content) =>
     );
 
 void main() {
+  testWidgets(
+    'configured AI opens shared chat without automatic requests',
+    (tester) async {
+      final disk = MemoryStorage();
+      disk.values[HiplabCoachChatPreferenceStore.legacyDisclaimerKey] =
+          '{"disclaimerAccepted":true}';
+      final store = HipStore(content: loadContent(), storage: disk);
+      await store.initialize();
+      store
+        ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
+        ..identity = HipIdentity.office;
+      final client = coach.FakeLlmClient([
+        '可以先做温和的髋部活动。',
+      ], latency: Duration.zero);
+      final host = HipCoachChat(
+        store: store,
+        storage: disk,
+        bundle: FileAssetBundle(),
+        gateway: CoachGatewayBinding.shared(client),
+        replyDelay: Duration.zero,
+      );
+      addTearDown(store.dispose);
+      await tester.pumpWidget(
+        HipApp(
+          store: store,
+          coach: host,
+          videoEnabled: false,
+          mediaPolicy: installPublicMediaFixture().policy,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openGroups(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('practice-ai-coach')));
+      await tester.pumpAndSettle();
+      expect(find.byType(CoachChatPage), findsOneWidget);
+      expect(client.requests, isEmpty);
+      // HipApp owns this host and releases it when its tree is removed.
+      // Awaited controller/client release is covered by the pure host tests.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpAndSettle();
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
+
   test(
     'one host loads one SDK controller and releases its client once',
     () async {
@@ -208,10 +264,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(
-          available,
-          platform == TargetPlatform.android && language == 'zh',
-        );
+        expect(available, language == 'zh');
       });
     }
   }

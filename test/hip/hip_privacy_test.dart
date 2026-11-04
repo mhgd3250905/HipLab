@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_privacy_page.dart';
@@ -10,6 +11,38 @@ import 'home_nav.dart';
 import 'public_media_fixture.dart';
 
 void main() {
+  for (final mode in ['worker', 'bearer']) {
+    testWidgets('configured iOS privacy discloses $mode AI requests', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(platform: TargetPlatform.iOS),
+          home: HipPrivacyPage(
+            coachConfig: CoachConfig(
+              authMode: mode,
+              appKey: mode == 'worker' ? 'local-test-fixture' : '',
+              token: mode == 'bearer' ? 'local-test-fixture' : '',
+            ),
+          ),
+        ),
+      );
+      await tester.scrollUntilVisible(
+        find.text('AI 定制与设备标识'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining('你输入的需求和当前对话会发送给 AI 服务'), findsOneWidget);
+      expect(
+        find.textContaining(
+          mode == 'worker' ? '随机生成并保存在本机的安装标识' : '此连接模式不附带 AI 安装标识',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('在线 AI 未启用'), findsNothing);
+    });
+  }
+
   testWidgets('progress keeps the published privacy policy reachable', (
     tester,
   ) async {

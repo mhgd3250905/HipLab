@@ -256,7 +256,9 @@ void expectPlayerPaused(WidgetTester tester) {
 void main() {
   final ios = TargetPlatformVariant.only(TargetPlatform.iOS);
 
-  testWidgets('iOS base release hides both AI entry points', (tester) async {
+  testWidgets('unconfigured iOS hides AI and keeps voice preview available', (
+    tester,
+  ) async {
     await bootIos(tester);
     // UI r2: 训练组 opens on 我的.
     await openGroups(tester);
@@ -267,7 +269,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('这是运动练习，不能替代医生的建议。'), 300);
     expect(find.text('AI 定制用量'), findsNothing);
-    expect(find.byKey(const ValueKey('voice-preview')), findsNothing);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('voice-preview')),
+      -300,
+    );
+    expect(find.byKey(const ValueKey('voice-preview')), findsOneWidget);
   }, variant: ios);
 
   testWidgets('iOS privacy explains downloaded media and training audio', (

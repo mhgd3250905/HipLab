@@ -9,7 +9,12 @@ import 'hip_widgets.dart';
 
 /// Bundled policy remains readable without an internet connection.
 class HipPrivacyPage extends StatelessWidget {
-  const HipPrivacyPage({super.key});
+  const HipPrivacyPage({
+    super.key,
+    this.coachConfig = CoachConfig.fromEnvironment,
+  });
+
+  final CoachConfig coachConfig;
 
   static const policyUrl = 'https://mhgd3250905.github.io/HipLab/';
   static const iosPolicyUrl =
@@ -18,7 +23,7 @@ class HipPrivacyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIos = Theme.of(context).platform == TargetPlatform.iOS;
-    final aiEnabled = !isIos && CoachConfig.fromEnvironment.configured;
+    final aiEnabled = coachConfig.configured;
     final publicPolicyUrl = isIos ? iosPolicyUrl : policyUrl;
     return Scaffold(
       body: SafeArea(
@@ -71,14 +76,14 @@ class HipPrivacyPage extends StatelessWidget {
                         '我们无法访问或代你删除设备及系统备份中的记录。',
                   ),
                   if (aiEnabled)
-                    const _PolicySection(
+                    _PolicySection(
                       title: 'AI 定制与设备标识',
                       body:
                           '使用 AI 定制时，你输入的需求和当前对话会发送给 AI 服务生成计划。'
-                          '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。'
-                          '该标识不是手机硬件序列号。App 不会自动发送本机自测结果或训练历史。',
+                          '${coachConfig.authMode == 'worker' ? '请求会附带首次使用时随机生成并保存在本机的安装标识，用于识别设备请求；该标识不是手机硬件序列号。' : '此连接模式不附带 AI 安装标识。'}'
+                          'App 不会自动发送本机自测结果或训练历史。',
                     )
-                  else if (!isIos)
+                  else
                     const _PolicySection(
                       title: '在线 AI 未启用',
                       body:
@@ -93,6 +98,7 @@ class HipPrivacyPage extends StatelessWidget {
                               '媒体请求会向内容服务器提供网络连接所需的 IP 地址及所请求的资源路径，'
                               '不附带本机训练记录、自测结果或 AI 安装标识。'
                               '播放器通过 127.0.0.1 本机媒体服务读取素材；该地址不向其他设备开放。'
+                              '${aiEnabled ? '只有主动使用 AI 定制时，才向 AI 服务发送对话请求。' : ''}'
                               '应用不访问相机、麦克风、联系人或位置。'
                         : '动作视频随应用内置，可以离线播放。'
                               'Android 的网络权限用于 127.0.0.1 本机媒体服务，让播放器读取内置素材。'
@@ -104,6 +110,7 @@ class HipPrivacyPage extends StatelessWidget {
                     body: Theme.of(context).platform == TargetPlatform.iOS
                         ? '你主动开始训练或语音自测后，应用使用 iOS 后台音频播放训练口令、倒数和换边提示。'
                               '训练或自测结束、退出后停止播放并释放音频会话；关闭人声和提示音时不启用后台音频。'
+                              '设置中的试听只在前台短时播放，完成、离开或切到后台时结束并释放音频会话。'
                               '应用不通过麦克风录制声音，也不读取耳机或蓝牙设备标识。'
                         : '你主动开始训练后，应用使用媒体播放前台服务和唤醒锁，'
                               '让训练语音在锁屏或切换应用时继续播放，并显示训练通知。'
