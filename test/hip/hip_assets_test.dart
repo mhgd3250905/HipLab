@@ -65,16 +65,14 @@ void main() {
         .whereType<File>()
         .map((file) => file.uri.pathSegments.last)
         .toSet();
-    expect(actions, hasLength(219));
-    expect(expected, hasLength(211));
-    expect(hiplabCoachAuthorizedActionIds, hasLength(211));
-    expect(hiplabCoachAuthorizedActionIds, {
-      for (final entry in actions.entries)
-        if (entry.value['trainingDefinitionComplete'] == true) entry.key,
-    });
+    // r2-v1: 249 complete actions; posters cover HipLab's fixed 209 scope.
+    expect(actions, hasLength(249));
+    expect(expected, hasLength(249));
+    expect(hiplabCoachAuthorizedActionIds, hasLength(209));
+    expect(expected.containsAll(hiplabCoachAuthorizedActionIds), isTrue);
     expect(hiplabCoachAuthorizedActionIds, contains('n-thomas-test'));
-    expect(bundled, {for (final id in expected) '$id.webp'});
-    for (final id in expected) {
+    expect(bundled, {for (final id in hiplabCoachAuthorizedActionIds) '$id.webp'});
+    for (final id in hiplabCoachAuthorizedActionIds) {
       final action = actions[id];
       expect(action, isNotNull, reason: id);
       final files = action!['files'] as Map;

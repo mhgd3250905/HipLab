@@ -55,7 +55,7 @@ void main() {
   });
 
   test(
-    'public single practice preserves all 211 SDK doses and safety gate',
+    'public single practice preserves all 209 SDK doses and safety gate',
     () async {
       final content = await loadHipContent(FileAssetBundle());
       final store = HipStore(content: content, storage: MemoryStorage());
@@ -71,6 +71,11 @@ void main() {
       );
       for (final drill in content.publicCatalog!.drills) {
         final plan = HipSharedLibrary.planFor(actions, drill.id);
+        if (!hiplabCoachAuthorizedActionIds.contains(drill.id)) {
+          // New in r2-v1 but outside HipLab's fixed list: not startable.
+          expect(plan, isNull, reason: drill.id);
+          continue;
+        }
         expect(plan, isNotNull, reason: drill.id);
         expect(plan!.source, PlanSource.single);
         final item = plan.sdkPlan!.items.single;
