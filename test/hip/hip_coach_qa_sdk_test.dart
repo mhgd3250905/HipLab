@@ -35,48 +35,52 @@ coach.LlmResponse _tool(String name, Map<String, Object?> arguments) =>
       ],
     );
 
-Map<String, Object?> _form({
-  String intent = 'actions',
-  String place = 'home',
-  bool equipmentKnown = true,
-  String status = 'none',
-  String next = 'answer',
-  List<String> equipment = const ['mat', 'chair'],
-  List<int> positions = const [],
-}) => {
-  'language': 'zh',
-  'intent': intent,
-  'place': place,
-  'answer_status': status,
-  'equipment_known': equipmentKnown,
-  'equipment': equipment,
-  'next': next,
-  'positions': positions,
-  'stretch_muscles': ['adductors', 'hamstrings'],
-  'types': ['static-stretch'],
-};
+List<String> _candidates(coach.LlmRequest request) => RegExp(
+  r'^([A-Za-z0-9_-]+) \| ',
+  multiLine: true,
+).allMatches(request.messages.last.content).map((m) => m[1]!).toList();
 
-coach.LlmResponse _recommend() => _tool('respond', {
-  'text': '按你的条件推荐这几个。',
-  'items': [
-    {'id': 's-butterfly', 'why': '适合当前条件'},
-    {'id': 's-seated-fold', 'why': '适合当前条件'},
-  ],
-  'chips': [],
+coach.LlmResponse _search() => _tool('search_actions', {
+  'muscles': ['adductors', 'hamstrings'],
+  'types': ['static-stretch'],
 });
 
-// Synthetic real-model tool outputs from the accepted 2026-11-04 QA probe.
-// Fixed here as offline fixtures; no external evidence file is read by tests.
-final _acceptedForm =
-    jsonDecode(
-          r'''{"language": "zh", "intent": "plan", "answer_status": "none", "place": "home", "place_word": "家", "equipment_known": true, "equipment": [], "stretch_muscles": ["hip-flexors", "hip-rotators", "glute-max", "hip-abductors", "adductors"], "types": ["static-stretch"], "goals": ["mobility"], "minutes": 10, "next": "answer", "note": "用户这轮明确说了在家、只有徒手和墙（无器械），要 10 分钟髋部拉伸；地点和器械已知，直接出方案，不再追问。"}''',
-        )
-        as Map<String, Object?>;
-final _acceptedBuild =
-    jsonDecode(
-          r'''{"title": "居家徒手开髋舒展", "text": "按你在家徒手、没有其他器械的条件，这套10分钟以动态开髋和大腿内侧舒展为主：先用相扑深蹲肘推膝打开髋部，再用哥萨克蹲练侧向活动度。动作放慢，在能舒服停住的位置停留，不要弹振；膝盖或髋部不舒服就缩小幅度。", "minutes": 10, "main_ids": ["h-sumo-pry", "adductors-A"], "chips": ["再温和一点", "改成睡前髋部放松", "看看动作要点"], "block_names": {"warmup": "髋部热身", "main": "开髋拉伸", "cooldown": "收操放松"}}''',
-        )
-        as Map<String, Object?>;
+final _picked = <String>[];
+
+coach.LlmResponse _recommend(coach.LlmRequest request) {
+  _picked
+    ..clear()
+    ..addAll(_candidates(request).take(3));
+  return _tool('show_actions', {
+    'text': '按你的条件推荐这几个。',
+    'items': [
+      for (final id in _picked) {'id': id, 'why': '适合当前条件'},
+    ],
+    'chips': [],
+  });
+}
+
+// Plan fixture: home, bodyweight, 10-minute hip stretch (from the accepted
+// 2026-11-04 QA probe), replayed through the v3 tools offline.
+final _acceptedConditions = <String, Object?>{
+  'language': 'zh',
+  'place': 'home',
+  'place_word': '家',
+  'equipment_known': true,
+  'equipment': <String>[],
+  'minutes': 10,
+};
+final _planSearch = <String, Object?>{
+  'muscles': [
+    'hip-flexors',
+    'hip-rotators',
+    'glute-max',
+    'hip-abductors',
+    'adductors',
+  ],
+  'types': ['static-stretch'],
+};
+final _planMain = <String>[];
 
 class _Host {
   _Host(this.store, this.host, this.client, this.disk);
@@ -178,29 +182,24 @@ void main() {
     'App-hosted SDK page sends single choice immediately and multi only on confirm',
     (tester) async {
       final h = await _host(content, [
-        _tool(
-          'fill_form',
-          _form(place: 'unknown', equipmentKnown: false, next: 'ask_place'),
-        ),
         _tool('ask_user', {
+          'step': 'place',
           'question': '在哪练？',
           'options': ['居家', '健身房', '办公室', '直接推荐'],
         }),
-        _tool(
-          'fill_form',
-          _form(
-            intent: 'answer_pending',
-            status: 'answered',
-            equipmentKnown: false,
-            next: 'ask_equipment',
-          ),
-        ),
+        _tool('set_conditions', {'place': 'home', 'place_word': '居家'}),
         _tool('ask_user', {
+          'step': 'equipment',
           'question': '哪些器械？',
           'options': ['瑜伽垫', '椅子', '哑铃', '弹力带', '徒手', '直接推荐'],
+          'multi': true,
         }),
-        _tool('fill_form', _form(intent: 'answer_pending', status: 'answered')),
-        _recommend(),
+        _tool('set_conditions', {
+          'equipment_known': true,
+          'equipment': ['mat', 'chair'],
+        }),
+        _search(),
+        _recommend,
       ]);
       addTearDown(() async {
         await tester.pumpWidget(const SizedBox());
@@ -230,7 +229,7 @@ void main() {
       await tester.ensureVisible(placeChoice);
       await tester.tap(placeChoice);
       await _frames(tester);
-      expect(h.client.requests, hasLength(4));
+      expect(h.client.requests, hasLength(3));
       expect(h.chat.messages.where((m) => m.isUser).last.text, '居家');
       expect(h.chat.canAnswerQuestion(place), isFalse);
       final equipment = h.chat.messages.last;
@@ -244,7 +243,7 @@ void main() {
       await tester.pump();
       expect(
         h.client.requests,
-        hasLength(4),
+        hasLength(3),
         reason: 'Selection is not submission',
       );
       final submit = find.byKey(ValueKey('question-submit-${equipment.id}'));
@@ -265,17 +264,15 @@ void main() {
       );
       expect(h.client.requests, hasLength(6));
       expect(h.chat.messages.where((m) => m.isUser).last.text, '瑜伽垫、椅子');
-      expect(h.client.requests[4].messages.last.content, contains('瑜伽垫、椅子'));
-      expect(h.chat.lastQaReply!.cards.map((c) => c.id), [
-        's-butterfly',
-        's-seated-fold',
-      ]);
+      expect(h.client.requests[3].messages.last.content, contains('瑜伽垫、椅子'));
+      expect(_picked, hasLength(3));
+      expect(h.chat.lastQaReply!.cards.map((c) => c.id), _picked);
       expect(h.chat.messages.last.qaV2, isTrue);
       final recommend = tester.widget<CoachRecommendCard>(
         find.byType(CoachRecommendCard).last,
       );
       expect(recommend.showNumbers, isTrue);
-      expect(recommend.actionIds, ['s-butterfly', 's-seated-fold']);
+      expect(recommend.actionIds, _picked);
       expect(find.byKey(const ValueKey('recommend-number-1')), findsOneWidget);
       expect(find.byKey(const ValueKey('recommend-number-2')), findsOneWidget);
       final before = h.client.requests.length;
@@ -290,8 +287,29 @@ void main() {
     'QA plan uses the App plan writer, persists and restores without a model call',
     () async {
       final h = await _host(content, [
-        _tool('fill_form', _acceptedForm),
-        _tool('build_plan', _acceptedBuild),
+        _tool('set_conditions', _acceptedConditions),
+        _tool('search_actions', _planSearch),
+        (coach.LlmRequest request) {
+          _planMain
+            ..clear()
+            ..addAll(_candidates(request).take(4));
+          return _tool('search_actions', {
+            'roles': ['warmup'],
+            'limit': 3,
+          });
+        },
+        (coach.LlmRequest request) => _tool('build_plan', {
+          'mode': 'new',
+          'title': '居家徒手开髋舒展',
+          'text': '按你在家徒手的条件，这套10分钟以开髋和大腿内侧舒展为主。动作放慢，在能舒服停住的位置停留，不要弹振。',
+          'minutes': 10,
+          'warmup_ids': _candidates(
+            request,
+          ).where((id) => !_planMain.contains(id)).take(1).toList(),
+          'main_ids': _planMain,
+          'chips': ['再温和一点', '看看动作要点'],
+          'block_names': {'warmup': '髋部热身', 'main': '开髋拉伸', 'cooldown': '收操放松'},
+        }),
       ]);
       addTearDown(h.close);
       final result = await h.chat.send('在家徒手做10分钟髋部拉伸');
@@ -311,12 +329,7 @@ void main() {
       final exactJson = saved.plan.toJson();
       await h.host.close();
       final restored = await _host(content, [
-        _tool('fill_form', {
-          ..._acceptedForm,
-          'intent': 'swap',
-          'positions': [3],
-        }),
-        _tool('swap', {'text': '保留这几个动作。', 'changes': [], 'chips': []}),
+        _tool('reply', {'text': '保留这几个动作。', 'items': [], 'chips': []}),
       ], storage: h.disk);
       addTearDown(restored.close);
       expect(restored.store.customRoutines.single.coachPlan, exactJson);
@@ -340,11 +353,8 @@ void main() {
       );
       final swap = await restored.chat.send('换第3个');
       expect(swap?.status, coach.TurnStatus.ok, reason: '${swap?.error}');
-      expect(
-        restored.client.requests.last.messages.last.content,
-        contains('第 3 个（main）'),
-      );
-      expect(restored.chat.lastQaReply!.planOrderedIds, ids);
+      expect(restored.client.requests, hasLength(1));
+      expect(restored.chat.qaAgent.state.lastPlan!.orderedIds, ids);
       expect(restored.store.customRoutines, hasLength(1));
 
       final bad = const coach.PlanCodec().decodeStrict({
