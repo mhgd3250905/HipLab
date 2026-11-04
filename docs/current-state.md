@@ -1,5 +1,17 @@
 # 当前状态
 
+## 2026-11-04：AI 教练修复 +32 候选（待用户远程验收）
+
+构建源 `c327a90e9946edfe7254075deec91edd749b604e`，分支 `codex/sdk-pin-v0.7.0` / [Draft PR #30](https://github.com/mhgd3250905/HipLab/pull/30)，SDK 固定 `3e949ce6ecd695aa954a012f33474942531324ef`（codex/qa-v2-fixes）。`flutter pub get` 成功且锁文件未变；严格 analyze 0，全部 66 个测试文件 461 通过 / 0 失败 / 68 既有条件跳过。
+
+用户随后明确暂无真机，改为打包后远程安装测试。本轮未安装、未卸载、未清数据，也未抓取用户日志；下列 1–4 均不记为实测通过。App/SDK 源码未改，不新增问答适配或绕过。main 保持 4d610f5，release/1.0 不动，不合并、不打 tag、不提交商店。 交付详情见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
+
+## 2026-11-04：SDK 0.7.1 QA v2 / +31 候选
+
+`codex/sdk-pin-v0.7.0` 已接正式SDK `9dd93163`：原SDK聊天页打开qaV2并传App的209条未审AI标签，模型deepseek-v4.1-flash/max；App无问答适配层，原211范围及保存/开练门禁保留。1.1.0+31/2031内部包构建源 `2c13e8a119409c857508c6c3e79dc27241e8e702`。严格analyze0，全部66个test文件461通过/0失败/68既有条件跳过；真实宿主3段9轮18次请求与计划保存通过。
+
+测试APK已备好，同签名、211封面/0MP4，交用户远程安装；本轮未安装，候选不合main、release/商店不动。两条缺标签按目录回退、无替换候选时保留原动作，详细边界见[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。当前main仍4d610f5，UIr3 PR29另行待验，下方main快照保留历史。
+
 ## 2026-11-04：当前主线与 UI r3 候选
 
 核对目录 `E:/AII-3D/3D-Hip`。收束前本机 main 与 origin/main 均为 `0737e4e3e34cc7116e03554e977a0d8e65b39267`，完整 tracked/untracked 状态为空。GitHub 回读 PR #26/#27/#28 均已合并；#29 OPEN / Draft。以下旧“未合 main”描述保留为对应日期历史。

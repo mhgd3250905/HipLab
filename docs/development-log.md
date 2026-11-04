@@ -1,5 +1,17 @@
 # 开发日志
 
+## 2026-11-04：+32 修复候选验证与打包
+
+构建源 `c327a90e9946edfe7254075deec91edd749b604e`，分支 `codex/sdk-pin-v0.7.0` / [Draft PR #30](https://github.com/mhgd3250905/HipLab/pull/30)，SDK 固定 `3e949ce6ecd695aa954a012f33474942531324ef`（codex/qa-v2-fixes）。`flutter pub get` 成功且锁文件未变；严格 analyze 0，全部 66 个测试文件 461 通过 / 0 失败 / 68 既有条件跳过。
+
+沿用 +31 签名准备 release arm64 2032，未改 App 源码或锁文件。用户将真机验收改为远程安装，1–4 待反馈，主线/release/商店不动，见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
+
+## 2026-11-04：SDK 0.7.1 QA v2 / +31 候选
+
+`codex/sdk-pin-v0.7.0` 已接正式SDK `9dd93163`：原SDK聊天页打开qaV2并传App的209条未审AI标签，模型deepseek-v4.1-flash/max；App无问答适配层，原211范围及保存/开练门禁保留。1.1.0+31/2031内部包构建源 `2c13e8a119409c857508c6c3e79dc27241e8e702`。严格analyze0，全部66个test文件461通过/0失败/68既有条件跳过；真实宿主3段9轮18次请求与计划保存通过。
+
+测试APK已备好，同签名、211封面/0MP4，交用户远程安装；本轮未安装，候选不合main、release/商店不动。两条缺标签按目录回退、无替换候选时保留原动作，详细边界见[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。当前main仍4d610f5，UIr3 PR29另行待验，下方main快照保留历史。
+
 ## 2026-11-04：近期成果与文档台账收束
 
 按用户显式cockpit-closeout及提交/push授权，在日常main0737e4e上只读完成Preflight后整理文档。阶段基线0f507a3到main为46提交/420路径；第5批Coach此前已合入，为背景。近期交付依次为共享Launcher/媒体策略与冷启动修复、211完整动作准入和按需视频、首页/主题、UI r2页面与混合组、SDK0.6 pin；GitHub回读#26/#27/#28已合并。

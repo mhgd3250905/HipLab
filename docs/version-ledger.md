@@ -1,5 +1,15 @@
 # 版本交付台账
 
+## 2026-11-04：1.1.0+32 / 2032 修复内部包（未安装）
+
+`com.ugk.hiplab` / release / arm64-v8a，版本 **1.1.0+32 / 2032**，49,590,492 bytes（47.29 MiB）。APK：`E:\AII-3D\hiplab-releases\sdk-qa-fixes-plus32-20261104\hiplab-1.1.0+32-c327a90-internal-arm64-release.apk`；SHA256 `b1a24ae32a64921b5f1e157ce43eefa4648a40a056e2a1cbde11227a6de90379`；证书 SHA256 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与 +31 实际 APK 校验一致。211 公共封面、209 未审 AI 标签、0 MP4；CRC、包名/版本/ABI、签名及重签前后运行负载校验通过。
+
+用户随后明确暂无真机，改为打包后远程安装测试。本轮未安装、未卸载、未清数据，也未抓取用户日志；下列 1–4 均不记为实测通过。App/SDK 源码未改，不新增问答适配或绕过。main 保持 4d610f5，release/1.0 不动，不合并、不打 tag、不提交商店。 构建/测试源 c327a90，详细回执见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
+
+## 2026-11-04：1.1.0+31 / 2031 QA v2 内部包（未安装）
+
+分支codex/sdk-pin-v0.7.0，构建源 `2c13e8a119409c857508c6c3e79dc27241e8e702`，SDK9dd93163。com.ugk.hiplab / arm64-v8a release，49,393,884 bytes (47.11 MiB)，211封面/0MP4/209未审标签，沿用连续测试签名。APK `E:\AII-3D\hiplab-releases\sdk-pin-v0.7.1-20261104\hiplab-1.1.0+31-2c13e8a-internal-arm64-release.apk`，SHA256 `676a1df79cb40f244ef459d27a3e196d423728d09b84b3e8bccaacb0698a7d15`；证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`。真实SDK聊天入口qaV2、模型4.1-flash/max启用；本轮仅构建和静态验包，没有安装/清数据/商店动作。全部66文件461/0/68和实模3段9轮通过，原上传签名包另存、本机路径不代表远端已有制品。[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。+31接续HipLab自己的+30，不使用其他App的+18。
+
 ## 2026-11-04：+30 包身份与集成状态补记（无新构建）
 
 本次只整理已有交付，App 仍 `1.1.0+30`，arm64 split `2030`。同版本号的三个包对应不同源码，不能互相替代：

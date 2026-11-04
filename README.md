@@ -1,5 +1,9 @@
 # HipLab · 开胯训练助手
 
+## 2026-11-04：SDK QA v2 / +31 待验候选
+
+分支codex/sdk-pin-v0.7.0固定SDK0.7.1/9dd93163，原聊天页直接启用qaV2、传入209条未审AI标签，模型deepseek-v4.1-flash/max；App没有问答适配层。analyze0，全部66测试文件461通过/0失败/68既有条件跳过；真实3段9轮及计划保存通过。1.1.0+31/2031同测试签名内部APK已备好、未安装，等待用户远程验收，不合main。[交付、原文与边界](docs/sdk-qa-v0.7.1-validation-2026-11-04.md)。下方主线/旧候选按日期保留。
+
 ## 2026-11-04：近期更新整理与当前交付
 
 主线已完成共享训练/媒体接入、211 完整动作准入、简约玻璃首页、UI r2 页面统一及 SDK v0.6.0 接入。PR [#26](https://github.com/mhgd3250905/HipLab/pull/26)、[#27](https://github.com/mhgd3250905/HipLab/pull/27)、[#28](https://github.com/mhgd3250905/HipLab/pull/28) 均已合并；收束前 main 为 `0737e4e`，共用版本 **1.1.0+30 / arm64 2030**，SDK 固定 `693cbc02`。

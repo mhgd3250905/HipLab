@@ -1,5 +1,9 @@
 # 版本管理说明
 
+## 2026-11-04：+31 开发候选口径
+
+本分支1.1.0+31/arm64 2031，SDK四包及override固定9dd93163（ugk_trainer-v0.7.1），原hosted锁及Flutter3.44.7不升级。新版QA由SDK开关启用，App只传未审标签；构建源码 `2c13e8a119409c857508c6c3e79dc27241e8e702` 与后续测试/文档HEAD分别登记。main仍+30，release不动，本轮无安装/发布。[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。
+
 ## 2026-11-04：当前版本与来源规则
 
 共用版本以pubspec.yaml为准，当前 **1.1.0+30**；arm64 split versionCode为**2030**。四个实际SDK包与coach override均固定`693cbc02cdf284163409868e117e438515c6a8d8`，对应ugk_trainer-v0.6.0；当前无独立ugk_trainer包。Flutter继续3.44.7/Dart3.12.2。PR26/27/28已入main，UI r3的PR29仍为候选。
