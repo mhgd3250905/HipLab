@@ -18,7 +18,7 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
-const _sdk = '7d9be56a6c02b7a28e3d5d5cd9f6c3f1a23ac723';
+const _sdk = '693cbc02cdf284163409868e117e438515c6a8d8';
 const _inputs = ['在家拉伸髋部 10 分钟', '推荐几个拉大腿内侧的动作', '换一套，缩到 5 分钟', '练一下胸肌'];
 
 class _Storage implements LocalStateStorage {
