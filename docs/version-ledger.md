@@ -1,5 +1,12 @@
 # 版本交付台账
 
+## 2026-11-04：iOS 功能对齐无Key构建
+
+- 运行/构建源 `3a54a1bf1b5398ef1523aeda66f7011aa32fbd0d`，`ios/main-alignment-20261104`；沿用1.1.0+30与com.ugk.hipinterlude，SDK693cbc02不变。
+- 取消iOS专属AI禁用，凭据门禁与Android一致；恢复并修复共享前台试听。未配置真实Key，当前构建不显示AI入口。
+- 未签名Runner.app 60,607,014 bytes；arm64/iOS15/iPhone-only/audio、7隐私清单/211封面/0MP4及凭据模式扫描通过。分析0、468通过/0失败/68既有条件跳过。[本轮完整身份](ios-feature-parity-2026-11-04.md#验证)。
+- 当前标准构建路径保存本轮产物；前一轮edb464f未签名包已另存ZIP。未签名IPA、未安装手机、未上传或操作商店；这是本地构建记录，不是新的TestFlight build回执。
+
 ## 2026-11-04：Mac iOS 主线对齐未签名构建
 
 - 基线远端main `4d610f50ee47f2d4de7c19517eb7e99220bb2204`；运行/构建源 `edb464ff970973ae140c214da953afd8075833db`，分支 `ios/main-alignment-20261104`。

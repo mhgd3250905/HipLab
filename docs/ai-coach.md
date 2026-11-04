@@ -1,5 +1,11 @@
 # AI 定制训练（AI 训练助理第二个试验田）
 
+## 2026-11-04：iOS/Android 统一接线与无Key准备
+
+当前开发分支的两端共用SDK CoachChat与宿主端口、211完整动作范围；iOS不再受首版平台禁用限制。有凭据且中文界面才显示入口，无凭据隐藏入口且不创建模型请求；下方旧“未配置仍显示卡片/本地回落”等段落保留历史，以[当前对齐记录](ios-feature-parity-2026-11-04.md)为准。
+
+`config/coach.example.json`包含Worker中转公开默认值和空App Key；实际凭据仅放在已忽略的`config/coach.local.json`，由`--dart-define-from-file=config/coach.local.json`注入，两端方式一致。用户稍后提供HipLab App Key再配置；模型提供商主Key仍留在服务端。本轮没有创建真实凭据文件或调用外部模型。
+
 **2026-10-24 Controller 已集成：** 候选448f109已获开哥同意，快进合入并普通推送main，远端回读一致；coach0.5.0/trainer0.2.3@d7e0b8f、UI0.1.1保持，分析0、454通过/1条件跳过、专项44通过。以下待审与旧接口描述保留历史。[主线集成回执](sdk-conversation-controller-2026-10-24.md#主线集成回执)。
 
 **2026-10-24 controller 待审候选：** coach0.5.0/trainer0.2.3正式tag@d7e0b8f，UI0.1.1不变；SDK controller接管会话/问题生命周期，App旧状态机删除。分支基线main64daf6a，验证与删除范围见[本轮接入](sdk-conversation-controller-2026-10-24.md)，合main等待开哥本轮同意。以下main0.4.2及旧接口段落保留历史。

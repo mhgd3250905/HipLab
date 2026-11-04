@@ -1,5 +1,9 @@
 # iOS 运行与上架说明
 
+## 2026-11-04：iOS 功能与 Android 对齐
+
+用户追加授权覆盖首版AI/试听隐藏：iOS现与Android使用相同的凭据门禁和SDK对话/计划入口，未配置Key时隐藏AI；语音试听恢复并有短时前台及路由/后台释放。沿用1.1.0+30、SDK693cbc02及com.ugk.hipinterlude。[完整功能矩阵、配置与本轮验证](ios-feature-parity-2026-11-04.md)。下面旧基础版禁用条款是历史，不用于后续iOS开发构建。
+
 ## 2026-11-04：当前 main 的 Mac 入口
 
 后续 iOS 开发从 `main@4d610f5` / `1.1.0+30` / SDK `693cbc02` 开始，唯一 Bundle ID 为 `com.ugk.hipinterlude`。当前 main 为公共封面与元数据随包、视频按需下载缓存，不能恢复下方历史 v0.2.0 视频 ZIP，不能承诺首次无网即可播放所有视频。Flutter 固定 3.44.7、SwiftPM、iOS15、iPhone-only。此次适配/验证与下一步见[Mac 对齐报告](ios-main-alignment-2026-11-04.md)。
