@@ -1,10 +1,18 @@
 # HipLab · 开胯训练助手
 
-## 2026-11-04：SDK QA v2 / +31 待验候选
+## 2026-11-04：SDK 问答 v3 / +34 已入 main
+
+[PR #30](https://github.com/mhgd3250905/HipLab/pull/30) 已合并，功能集成点 `2400b34`；共用版本 **1.1.0+34 / arm64 2034**，SDK 固定 `f7b8a8e`（v0.7.2 内容）。App 沿用 SDK 聊天页，只传入 209 条未审 AI 标签，模型 deepseek-v4.1-flash / max；不增加问答适配层，Coach 211、动作库/组选项 210 与原安全/保存门禁保持。
+
+验证/构建源 `0f0882e` 与集成点完整文件树相同：analyze 0，全部 66 文件 **461 通过 / 0 失败 / 68 既有条件跳过**。+34 arm64 release APK 已交付、与实际 +32 签名一致；用户确认 +33 从未出包、手机是 +32。尚无 +34 真机或新 SDK 实模对话结论，旧 +31 对话不作替代。[版本与包身份](docs/version-ledger.md)、[验证适用性](docs/verification.md)。
+
+本轮只收束版本文档并提交推送，不增版、重建或安装。UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，与 SDK 问答 v3 是不同事项。下方 +31、+30 及旧日期记录均为各自阶段历史；最新事实从[当前状态](docs/current-state.md)进入。
+
+## 2026-11-04：SDK QA v2 / +31 待验候选（历史）
 
 分支codex/sdk-pin-v0.7.0固定SDK0.7.1/9dd93163，原聊天页直接启用qaV2、传入209条未审AI标签，模型deepseek-v4.1-flash/max；App没有问答适配层。analyze0，全部66测试文件461通过/0失败/68既有条件跳过；真实3段9轮及计划保存通过。1.1.0+31/2031同测试签名内部APK已备好、未安装，等待用户远程验收，不合main。[交付、原文与边界](docs/sdk-qa-v0.7.1-validation-2026-11-04.md)。下方主线/旧候选按日期保留。
 
-## 2026-11-04：近期更新整理与当前交付
+## 2026-11-04：SDK 0.6 阶段成果整理（历史）
 
 主线已完成共享训练/媒体接入、211 完整动作准入、简约玻璃首页、UI r2 页面统一及 SDK v0.6.0 接入。PR [#26](https://github.com/mhgd3250905/HipLab/pull/26)、[#27](https://github.com/mhgd3250905/HipLab/pull/27)、[#28](https://github.com/mhgd3250905/HipLab/pull/28) 均已合并；收束前 main 为 `0737e4e`，共用版本 **1.1.0+30 / arm64 2030**，SDK 固定 `693cbc02`。
 
@@ -70,7 +78,7 @@ PR #119 已审核合并，本机 4080 制作及三项动作修订已完成。绿
 
 ## 构建
 
-当前源码为 **1.1.0+30**，SDK 四包/override pin `693cbc02`；使用 Flutter 3.44.7。当前依赖与素材准备见[文档入口](docs/README.md#新机器拉素材mac--windows)，构建/安装身份见[版本台账](docs/version-ledger.md)。下段 0.3.9+17 是 10 月 21 日历史，不代表当前版本或最新安装。
+当前源码为 **1.1.0+34**，SDK 四包/override pin `f7b8a8e`；使用 Flutter 3.44.7，按锁文件中的 `pub.dev` 严格解析。当前依赖与素材准备见[文档入口](docs/README.md#新机器拉素材mac--windows)，构建/安装身份见[版本台账](docs/version-ledger.md)。下段 0.3.9+17 是 10 月 21 日历史，不代表当前版本或最新安装。
 
 本机已有依赖解析时使用 `--no-pub`，见[工作流](docs/development-workflow.md)。2026-10-21 历史共用版本为 **0.3.9+17**；Android带AI新入口配置的debug arm64包已在源码 `79c172d9a83d248f23e136cffe825f3bd016e16b` 构建并保留数据安装，固定SDK `d193a703e3a8bef6d41e7705a55ae250e23e6a69`（coach0.1.3/trainer0.1.4），签名连续、包身份/CRC/876资产及唯一训练服务核验通过。该源analyze无问题、保活专项8/8；439过/1条件跳属于此前38bce47全量基线，未在最终依赖上重复全量测试。构建、安装和后续文档HEAD分别记录，详见[证据绑定](docs/verification.md#训练包与新中转阶段收束2026-10-21)；此次文档对齐不递增版本、不重新构建或安装。
 
@@ -93,7 +101,7 @@ flutter build appbundle --release
 flutter build ipa --release                    # 需 Mac + Xcode，签名团队在 Xcode 里选，见 docs/ios-setup-and-release.md
 ```
 
-Android release 签名：有 `android/key.properties` 就用它，没有时退回 debug 签名（和 3D-Body 的做法一样）。
+Android release 构建要求既有 `android/key.properties` 和对应签名材料；缺失时构建失败，不自动退回 debug 签名。内部测试包的签名须与实际旧安装包单独比对，不能把内部测试签名包当作商店上传包。
 
 ## 目录
 

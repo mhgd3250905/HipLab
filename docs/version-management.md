@@ -1,14 +1,22 @@
 # 版本管理说明
 
-## 2026-11-04：+31 开发候选口径
+## 2026-11-04：QA v3 / +34 已入主线
+
+PR #30 的功能集成点是 `2400b344183e1d57636412309899b4a1481966a7`。当前共用版本 **1.1.0+34**，arm64 split **2034**；SDK 四个实际包及 coach override 完整 pin 为 `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`（用户对齐口径为 v0.7.2 内容）。App 继续使用 SDK 聊天页与 qaV2 入口，由固定 SDK 承载问答 v3；SDK pin、App 版本和每个 Dart 包自身版本分别记录。
+
+测试/构建源 `0f0882ede92b796ba53a03df1097f11232cb2d69` 与该集成点完整树相同。本次文档提交只补记版本和证据，不增版、不重新构建；实际包身份仍属于0f0882e。用户确认 +33 未出包、手机现装 +32，+34 测试包已与实际 +32 验签一致，尚未安装。各阶段详见[版本台账](version-ledger.md)，验证沿用依据见[验证台账](verification.md)。下方旧候选日期段均为历史。
+
+## 2026-11-04：+31 开发候选口径（历史）
 
 本分支1.1.0+31/arm64 2031，SDK四包及override固定9dd93163（ugk_trainer-v0.7.1），原hosted锁及Flutter3.44.7不升级。新版QA由SDK开关启用，App只传未审标签；构建源码 `2c13e8a119409c857508c6c3e79dc27241e8e702` 与后续测试/文档HEAD分别登记。main仍+30，release不动，本轮无安装/发布。[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。
 
 ## 2026-11-04：当前版本与来源规则
 
-共用版本以pubspec.yaml为准，当前 **1.1.0+30**；arm64 split versionCode为**2030**。四个实际SDK包与coach override均固定`693cbc02cdf284163409868e117e438515c6a8d8`，对应ugk_trainer-v0.6.0；当前无独立ugk_trainer包。Flutter继续3.44.7/Dart3.12.2。PR26/27/28已入main，UI r3的PR29仍为候选。
+共用版本以pubspec.yaml为准，当前 **1.1.0+34**；arm64 split versionCode为**2034**。四个实际SDK包与coach override均固定`f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`，当前无独立ugk_trainer包。Flutter继续3.44.7/Dart3.12.2。PR26/27/28/30已入main，UI r3的PR29仍为Draft候选。
 
-+30并非唯一包身份：PR26已安装包源a7e371e、SDK0.6主线内部包源3a449c3、UIr3内部包源00feee1；各自SHA/签名/安装与验证范围见[版本台账](version-ledger.md)，不能只看版本号判定用户已验。文档收束不增版或重建。
+版本号并非唯一包身份：历史+30曾有PR26已安装包源a7e371e、SDK0.6内部包源3a449c3、UIr3内部包源00feee1；本阶段+31源2c13e8a、+32源c327a90、+33只改源码未出包、+34源0f0882e。各自SHA/签名/安装与验证范围见[版本台账](version-ledger.md)，不能只看版本号判定用户已验。文档收束不增版或重建。
+
+当前hosted源为`pub.dev`；相对上轮4d610f5基线还带入`jni 1.1.0→1.1.2`及`shared_preferences_android 2.4.28→2.5.4`，并非只有SDK ref变化。这些来自已合源码，本次不改锁或升级。严格解析时保持lock所列源，不为旧镜像缓存重写URL；实际执行的pub get与构建参数按对应源码另记。
 
 当前媒体由SDK公共元数据、211内置封面和按需视频组成，0内置MP4；Coach211、动作库/组选项210。Pose-Hub v0.2.0的旧视频ZIP/lock保留追溯，当前main不按它回填视频。新机器准备见[文档入口](README.md#新机器拉素材mac--windows)。下方旧日期快照保持历史；当前状态以[当前台账](current-state.md)为准。
 
@@ -72,13 +80,13 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 ## 版本与来源身份
 
-共用版本采用 `版本名+构建号`，当前为 `1.1.0+30`；arm64 split包为versionName `1.1.0`、versionCode `2030`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
+共用版本采用 `版本名+构建号`，当前为 `1.1.0+34`；arm64 split包为versionName `1.1.0`、versionCode `2034`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
 
 单独的文档整理、合并事实补记不递增 App 版本，也不触发重新构建或安装。审核期曾有多份相同 `0.3.6+11` 的包，不能只凭版本名判断内容；必须结合构建源码、APK SHA256、大小和签名识别。
 
 构建源码 SHA、已验业务来源 SHA、PR 合并提交和后续文档 HEAD 可以不同，分别记录。复用早先测试时先比较到当前树的有限差异；只有业务、资源、原生代码、测试和锁文件未受影响，才能按原来源引用，不能写成新 HEAD 已重新执行。构建证据始终归属于实际构建源码；文档提交不会产生新 APK。
 
-App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `693cbc02cdf284163409868e117e438515c6a8d8`；当前媒体采用仓库公共元数据/封面及 SDK 按需策略，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
+App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`；当前媒体采用仓库公共元数据/封面及 SDK 按需策略，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
 
 ## 状态分别登记
 

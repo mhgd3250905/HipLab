@@ -1,5 +1,13 @@
 # 开发日志
 
+## 2026-11-04：QA v3 / +34 合入后的版本文档收束
+
+用户对齐目标main2400b34已完成：PR #30合并，版本1.1.0+34/2034，SDK f7b8a8e（v0.7.2内容）。运行源0f0882e与该集成点完整树相同；该源analyze0、全部66文件461/0/68及+34 arm64 release交付回执按原来源沿用，本轮不重跑、不重建。用户确认+33未出包、手机现装+32；+34已与实际+32证书核对一致，仍待远程真机验收。
+
+本次按显式cockpit-closeout完成只读Preflight：基线4d610f5到2400b34为7提交22路径，完整工作区为空，来源及归属可证明。只对齐根AGENTS/README、文档导航、当前状态、版本规则/交付/验证/事项台账、日志和工作流；补记+33未构建/+34包身份、两个hosted版本与pub.dev来源，纠正release缺签名自动回退的旧说明。保留+31/+32及旧日期历史，不拿旧SDK对话代替新SDK结果，PR29与D-34边界不变。完整Preflight、同树证明和必要文档检查见[验证台账](verification.md)。
+
+本轮已授权保存提交并普通push main；不增版、不改运行源码/锁/测试，不操作手机、release/1.0、tag或商店。原stash与候选副本保留，当前事实见[当前状态](current-state.md)、包与证书见[版本台账](version-ledger.md)。
+
 ## 2026-11-04：+32 修复候选验证与打包
 
 构建源 `c327a90e9946edfe7254075deec91edd749b604e`，分支 `codex/sdk-pin-v0.7.0` / [Draft PR #30](https://github.com/mhgd3250905/HipLab/pull/30)，SDK 固定 `3e949ce6ecd695aa954a012f33474942531324ef`（codex/qa-v2-fixes）。`flutter pub get` 成功且锁文件未变；严格 analyze 0，全部 66 个测试文件 461 通过 / 0 失败 / 68 既有条件跳过。

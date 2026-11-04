@@ -1,10 +1,16 @@
 # HipLab 文档与开发台账
 
-## 2026-11-04：AI 教练修复测试包 +32
+## 2026-11-04：QA v3 / +34 主线与交付
+
+PR #30 已合入 main，功能集成点 `2400b34`，版本 **1.1.0+34 / 2034**，SDK `f7b8a8e`（v0.7.2 内容）。测试/构建源 `0f0882e` 与集成点同树，analyze 0、全部 66 文件 461/0/68；+34 已交付、未安装。本轮只做版本文档收束，复用有效证据，不增版或重建。
+
+用户确认 +33 未出包、手机现装 +32，+34 已与实际 +32 验签一致；包路径、文件/证书 SHA-256 见[版本台账](version-ledger.md)，同树证明和未验边界见[验证台账](verification.md)。旧 +31 的实模对话仅是旧 SDK 历史。下方 +32/+31 保留当时状态，不能用于判断当前 main 或手机。
+
+## 2026-11-04：AI 教练修复测试包 +32（历史）
 
 SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68。同 +31 签名测试包已备好，用户远程安装验坏记录恢复、三轮含排计划与重启续聊；本轮未安装，不合 main。详见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
 
-## 2026-11-04：SDK 0.7.1 QA v2 / +31 候选
+## 2026-11-04：SDK 0.7.1 QA v2 / +31 候选（历史）
 
 `codex/sdk-pin-v0.7.0` 已接正式SDK `9dd93163`：原SDK聊天页打开qaV2并传App的209条未审AI标签，模型deepseek-v4.1-flash/max；App无问答适配层，原211范围及保存/开练门禁保留。1.1.0+31/2031内部包构建源 `2c13e8a119409c857508c6c3e79dc27241e8e702`。严格analyze0，全部66个test文件461通过/0失败/68既有条件跳过；真实宿主3段9轮18次请求与计划保存通过。
 
@@ -12,13 +18,13 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 
 ## 2026-11-04：当前导航
 
-当前 main 已含 PR #26/#27/#28，版本 **1.1.0+30 / 2030**、SDK pin `693cbc02`；UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，待用户远程安装反馈。下方旧“候选未合 main”等文字均为当时快照。
+当前 main 已含 PR #26/#27/#28/#30，版本 **1.1.0+34 / 2034**、SDK pin `f7b8a8e`；UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，待用户真机反馈。旧“PR30 候选未合 main”等文字是当时快照。
 
 | 要查什么 | 当前来源 |
 |---|---|
 | 近期成果、分支与验收边界 | [当前状态](current-state.md) |
-| 主线 SDK 0.6 包、UI r3 包、最后已核验安装的区别 | [版本台账](version-ledger.md) |
-| 主线 454/68 与候选 434/68 的源码绑定、本次收束记录 | [验证台账](verification.md) |
+| +34 交付、+33 未构建、用户报告 +32 与旧 UI r3 包的区别 | [版本台账](version-ledger.md) |
+| 主线同树沿用 461/0/68、旧 SDK 对话及候选 434/68 的适用范围 | [验证台账](verification.md) |
 | 已完成事项及剩余真机反馈 | [开发事项](development-roadmap.md) |
 | App/SDK 版本和媒体来源规则 | [版本管理](version-management.md)、[开发工作流](development-workflow.md) |
 
@@ -137,9 +143,9 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 
 ### 当前 main：公共元数据、封面与 SDK 按需视频
 
-从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/` 和 `assets/public_posters/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。公共目录/语义与 211 张封面随仓库保存；`HipPublicMedia` 从这些元数据创建 SDK 媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。
+从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。公共目录/语义与 211 张封面、209 条未审 AI 标签随仓库保存；SDK 不自带 App 标签。`HipPublicMedia` 从这些元数据创建 SDK 媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。
 
-两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，已有解析时才用 `--no-pub` 验证。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
+两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，保持锁文件当前的 `pub.dev` 源，已有解析时才用 `--no-pub` 验证；不要为使用旧镜像缓存重写 lock。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
 
 ### 冻结 v0.2.0 ZIP 恢复（仅旧分支历史）
 
