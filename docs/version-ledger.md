@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-04：iOS内部AI凭据构建
+
+- 源58f594663702b68093d91ce326406b0174a25ccb（生产等同3a54a1b），版本1.1.0(30)、com.ugk.hipinterlude不变；私有外部配置启用内部Bearer网关/deepseek-flash。
+- 未签名Runner.app 60,607,014 bytes，AOT/配置注入/包内身份通过；连续4轮真实联调、真实配置iOS门禁1通过。此包含内部凭据，仅本机联调，未签名IPA、未安装/上传/发布。
+- 前轮无Key包已另存ZIP，详细哈希和身份见[真实AI接入记录](ios-ai-integration-2026-11-04.md)。旧Build20与release/1.0不变。
+
 ## 2026-11-04：iOS 功能对齐无Key构建
 
 - 运行/构建源 `3a54a1bf1b5398ef1523aeda66f7011aa32fbd0d`，`ios/main-alignment-20261104`；沿用1.1.0+30与com.ugk.hipinterlude，SDK693cbc02不变。
