@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 
-/// Fixed SDK d4502f3 public delivery definitions: 211 complete actions.
+/// Fixed SDK d4502f3 public delivery definitions (211), minus scapular-C and
+/// h-sleeper-stretch, deleted before the r2-v1 baseline (2026-11-04): 209.
 /// Generated from trainingDefinitionComplete; the eight partial definitions
 /// are excluded from both browsing and Coach. This is the only authorization
 /// list; a future catalog cannot silently expand it.
@@ -107,7 +108,6 @@ const hiplabCoachAuthorizedActionIds = <String>{
   'h-short-side-plank',
   'h-side-er',
   'h-side-leg-raise',
-  'h-sleeper-stretch',
   'h-slider-body-saw',
   'h-squat',
   'h-standing-forearm-rotation',
@@ -201,7 +201,6 @@ const hiplabCoachAuthorizedActionIds = <String>{
   's-seated-fold',
   'scapular-A',
   'scapular-B',
-  'scapular-C',
   'serratus-A',
   'serratus-B',
   'serratus-C',
