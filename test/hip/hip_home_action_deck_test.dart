@@ -665,6 +665,10 @@ void main() {
         await tester.pump();
         expect(floating, findsOneWidget);
         expect(position(tester), '01');
+        // Vertical drift must keep the same rear faces, including when the
+        // horizontal component exceeds the lateral switch threshold.
+        expect(find.byKey(const ValueKey('home-deck-card-1')), findsOneWidget);
+        expect(find.byKey(const ValueKey('home-deck-card-2')), findsOneWidget);
         drag.onPanEnd!(DragEndDetails());
         await tester.pumpAndSettle();
         expect(frontId(tester), drills.first.id);

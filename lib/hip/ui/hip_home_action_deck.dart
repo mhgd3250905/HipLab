@@ -170,9 +170,14 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   void _dragUpdate(DragUpdateDetails details) {
     if (_committing || _expanded) return;
     final next = _position.value + details.delta.dx;
-    if (next.abs() > 1) _toward = next < 0 ? 1 : -1;
+    final nextVertical = _vertical.value + details.delta.dy;
+    // Small sideways drift while lifting vertically must not swap the rear
+    // faces under the finger. Change browsing direction only for a lateral drag.
+    if (next.abs() > 8 && next.abs() > nextVertical.abs()) {
+      _toward = next < 0 ? 1 : -1;
+    }
     _position.value = next;
-    _vertical.value += details.delta.dy;
+    _vertical.value = nextVertical;
   }
 
   void _dragEnd(DragEndDetails details) {
