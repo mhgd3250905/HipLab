@@ -4,13 +4,13 @@
 
 | 项目 | 已登记事实 |
 |---|---|
-| 分支 / 构建源 | `feat/ui-detail-polish`，基线 `97cecb1`；本轮改动已提交到分支（哈希见 git log），APK 构建源与该提交的 lib 树一致 |
+| 分支 / 构建源 | `feat/ui-detail-polish`，基线 `97cecb1`，上一轮已提交 `7cd5f44`；本段全量 UI 扫描改动仍在工作区，构建源为工作区，尚未提交 |
 | 包身份 | com.ugk.hiplab / versionName 1.1.0 / versionCode 35 / **debug** / 非签名交付包 |
 | 产物 | `build/app/outputs/flutter-apk/app-debug.apk`（本机构建目录，Git 忽略；不是交付制品） |
-| 安装 | Pixel 8 `38011FDJH00940`：`install -r` 覆盖，冷启动 Status ok；2602BRT18C `QSG6Q8IFDMDELVGQ`：首次全新安装成功，之后多次 `install -r` 升级，均未清数据 |
+| 安装 | Pixel 8 `38011FDJH00940`：`install -r` 覆盖，冷启动 Status ok；2026-11-05 11:53、12:17、12:43（设备时钟）先后覆盖安装返回胶囊版/手感版/首页无胶囊版 +35 debug，未清数据；2602BRT18C `QSG6Q8IFDMDELVGQ`：首次全新安装成功，之后 16:37、16:52、17:31、17:33 多次 `install -r` 前序 +35 包，均未清数据；最终版安装前设备断开，未在该机回读 |
 | 设备回读 | 小米机 `dumpsys package` 回读 versionName 1.1.0 / versionCode 35；crash buffer 无 FATAL |
-| 检查 | 最终 `flutter analyze --no-pub` 为 0；受影响测试（round2_regression / ui_round1 / ui_round2 / privacy / flow）最近一次 42/42 通过，之后顶栏几何与胶囊材质改动未重跑；全量测试按用户要求暂缓 |
-| 未做 | 未 push、未合 main、无 release/arm64 split 产物、未动 release/1.0 与商店、未递增版本号 |
+| 检查 | 最终代码 `flutter analyze --no-pub` 为 0；首页无胶囊版全量 `flutter test --no-pub` **462 通过 / 0 失败 / 68 既有跳过**，定向 13/13；已截图更多、设置浅/深、练习分段、套路详情（新间距）、组编辑、iOS 确认弹窗、加动作选择器、安全复审（新按钮）；Pixel 8 `nav11.mp4` 验证更多↔设置（胶囊固定、单一），`nav12.mp4` 验证首页→更多（胶囊随页面滑入/滑出） |
+| 未做 | 扫描改动未提交、未 push、未合 main、无 release/arm64 split 产物、未动 release/1.0 与商店、未递增版本号 |
 
 本条目只记录调试安装事实，不构成交付或验收结论；顶栏规格见 [UI 设计规范](ui-design-standard.md)。
 

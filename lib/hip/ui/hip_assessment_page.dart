@@ -460,18 +460,19 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: HipFadeSwitcher(
-        child: _result == null
-            ? KeyedSubtree(key: const ValueKey('items'), child: _itemScreen())
-            : KeyedSubtree(
-                key: const ValueKey('result'),
-                child: _resultScreen(_result!),
-              ),
+  Widget build(BuildContext context) {
+    if (_result != null) return _resultScreen(_result!);
+    return Scaffold(
+      body: SafeArea(
+        child: HipFadeSwitcher(
+          child: KeyedSubtree(
+            key: const ValueKey('items'),
+            child: _itemScreen(),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _itemScreen() {
     final item = _item;
@@ -1011,89 +1012,91 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     final plan = routine == null
         ? null
         : store.planner.planFor([routine], store.profile);
-    return Column(
-      children: [
-        const HipNavBar(title: '你的髋部', subtitle: '自测完成'),
-        Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            children: [
-              SizedBox(
-                height: 290,
-                child: Center(
-                  child: HipRadar(
-                    values: r.radar,
-                    highlight: r.tightest.toSet(),
-                    warn: r.painDirections,
-                  ),
-                ),
+    return HipNavPage(
+      title: '你的髋部',
+      subtitle: '自测完成',
+      bodyScrollsUnderBar: true,
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(20, hipNavInset(context), 20, 16),
+        children: [
+          SizedBox(
+            height: 290,
+            child: Center(
+              child: HipRadar(
+                values: r.radar,
+                highlight: r.tightest.toSet(),
+                warn: r.painDirections,
               ),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (r.tightest.isNotEmpty)
-                    _resultChip(
-                      HipColors.tight,
-                      '最紧：${r.tightest.map((d) => d.zh).join(' · ')}',
-                    ),
-                  if (r.best != null)
-                    _resultChip(HipColors.jade, '最好：${r.best!.zh}'),
-                  if (r.painDirections.isNotEmpty)
-                    _resultChip(
-                      HipColors.pain,
-                      '先别练这里：${r.painDirections.map((d) => d.zh).join(' · ')}',
-                    ),
-                  if (r.untestedDirections.isNotEmpty)
-                    _resultChip(
-                      HipColors.faint,
-                      '未测：${r.untestedDirections.map((d) => d.zh).join(' · ')}',
-                    ),
-                ],
-              ),
-              if (r.lowest != null) ...[
-                const SizedBox(height: 10),
-                Text(
-                  '你的${_area(r.lowest!)}最紧，先从这里开始。',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: HipColors.muted),
-                ),
-              ],
-              const SizedBox(height: 16),
-              if (r.route != null && routine != null)
-                _routeCard(r.route!, routine, plan),
-              if (r.dancerUnlocked) ...[
-                const SizedBox(height: 10),
-                Center(child: _resultChip(HipColors.jade, '已解锁托马斯动作库')),
-              ],
-            ],
-          ),
-        ),
-        if (plan != null && plan.steps.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextButton(
-                  key: const ValueKey('result-other'),
-                  onPressed: _chooseOther,
-                  child: Text(
-                    '换一条路线',
-                    style: TextStyle(color: HipColors.muted),
-                  ),
-                ),
-                HipPrimaryButton(
-                  key: const ValueKey('result-start'),
-                  label: '开始这条路线',
-                  icon: HipGlyph.play,
-                  onPressed: () => _start(plan),
-                ),
-              ],
             ),
           ),
-      ],
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (r.tightest.isNotEmpty)
+                _resultChip(
+                  HipColors.tight,
+                  '最紧：${r.tightest.map((d) => d.zh).join(' · ')}',
+                ),
+              if (r.best != null)
+                _resultChip(HipColors.jade, '最好：${r.best!.zh}'),
+              if (r.painDirections.isNotEmpty)
+                _resultChip(
+                  HipColors.pain,
+                  '先别练这里：${r.painDirections.map((d) => d.zh).join(' · ')}',
+                ),
+              if (r.untestedDirections.isNotEmpty)
+                _resultChip(
+                  HipColors.faint,
+                  '未测：${r.untestedDirections.map((d) => d.zh).join(' · ')}',
+                ),
+            ],
+          ),
+          if (r.lowest != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              '你的${_area(r.lowest!)}最紧，先从这里开始。',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: HipColors.muted),
+            ),
+          ],
+          const SizedBox(height: 16),
+          if (r.route != null && routine != null)
+            _routeCard(r.route!, routine, plan),
+          if (r.dancerUnlocked) ...[
+            const SizedBox(height: 10),
+            Center(child: _resultChip(HipColors.jade, '已解锁托马斯动作库')),
+          ],
+        ],
+      ),
+      bottomBar: plan != null && plan.steps.isNotEmpty
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      key: const ValueKey('result-other'),
+                      onPressed: _chooseOther,
+                      child: Text(
+                        '换一条路线',
+                        style: TextStyle(color: HipColors.muted),
+                      ),
+                    ),
+                    HipPrimaryButton(
+                      key: const ValueKey('result-start'),
+                      label: '开始这条路线',
+                      icon: HipGlyph.play,
+                      onPressed: () => _start(plan),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
     );
   }
 

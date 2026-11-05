@@ -1019,8 +1019,8 @@ class _HipFlatFace extends StatelessWidget {
   final Color pressedColor;
   final Widget child;
 
-  /// UI r2 §2: HipLab buttons are 48 high with a 12 radius. The pill shape
-  /// stays only where the button sits on an SDK-owned screen.
+  /// iOS control geometry: 50 high with a 14 radius. The pill shape stays
+  /// only where the button sits on an SDK-owned screen.
   final bool stadium;
 
   @override
@@ -1036,7 +1036,7 @@ class _HipFlatFace extends StatelessWidget {
           shape: stadium
               ? const StadiumBorder()
               : const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderRadius: BorderRadius.all(Radius.circular(14)),
                 ),
         ),
         child: child,
@@ -1070,7 +1070,7 @@ class HipPrimaryButton extends StatelessWidget {
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 50,
       child: HipPressable(
         semanticLabel: label,
         onTap: onPressed,
@@ -1086,14 +1086,14 @@ class HipPrimaryButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      HipIcon(icon!, size: 17, filled: true, color: fg),
+                      HipIcon(icon!, size: 18, filled: true, color: fg),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       label,
                       style: TextStyle(
                         fontFamily: hipFontFamily,
-                        fontSize: 15,
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
                         color: fg,
                       ),
@@ -1132,7 +1132,7 @@ class HipSecondaryButton extends StatelessWidget {
   final bool sdkScale;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: sdkScale ? 56 : 48,
+    height: sdkScale ? 56 : 50,
     width: double.infinity,
     child: HipPressable(
       semanticLabel: label,
@@ -1154,7 +1154,7 @@ class HipSecondaryButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontFamily: hipFontFamily,
-                  fontSize: sdkScale ? 18 : 15,
+                  fontSize: sdkScale ? 18 : 17,
                   fontWeight: FontWeight.w500,
                   color: onPressed == null ? HipColors.muted : HipColors.text,
                 ),

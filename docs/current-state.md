@@ -1,6 +1,23 @@
 # 当前状态
 
-## 2026-11-05：UI 顶栏改造分支 `feat/ui-detail-polish`（+35，本轮已提交）
+## 2026-11-05：全量 UI 规范扫描（`feat/ui-detail-polish`，未提交）
+
+用户要求按已确认的 iOS 规范扫一遍所有界面。本段替代下方“顶栏改造”段里的未接入清单。
+
+| 对象 | 当前事实 |
+|---|---|
+| 顶栏 | 所有推入页面已使用 `HipNavPage`，无直接 `HipNavBar`；内容穿透：更多、设置、训练记录、隐私政策、动作详情、套路详情、加动作选择器、自测结果；固定头部：组编辑、安全提示复审、Coach 加载壳。`hipNavInset` 已计入 24pt 过渡段，静止内容不会被渐变遮挡；安全复审正文顶部留 12 |
+| 底部操作 | `HipNavPage.bottomBar` 承载库页 LibFooter；动作详情、套路详情、组编辑、加动作、自测结果均已接入 |
+| 列表 | 行 17pt/w400、图标 30×30/圆角 7、单行 52 / 双行 60、卡片圆角 10、右侧留白 16；设置与更多页移除分组小标题，组间距 28 |
+| 控件 | 原生 `Switch` / `Slider` 已清零；`HipSwitch` 51×31、`HipSegmented(ios:true)` 32 高系统样式、`HipSlider` 4pt 轨道 + 白色滑块；练习页分组与组编辑休息段已切换 |
+| 按钮 / 弹窗 | 主按钮 50 高 / 圆角 14 / 17pt w600，次按钮 50 / 14 / 17pt w500；组编辑放弃/删除与练习跳过提示统一为 `showHipConfirmDialog` iOS 卡片 |
+| 路由过渡 | 全部 `HipNavPage` 目的页改用 `HipRoute.content`：整页（背景/body/bottomBar/顶栏玻璃/标题/右侧操作）横向滑入，返回反向滑出并露出上一页；**前后两页都有胶囊时**仅返回胶囊固定（`HipNavBackChip` 画在滑动层外，`HipNavBar` 用 `showLeading:false`，被覆盖页隐藏自己的胶囊）；**从首页等无返回键页面进入时** `pinLeading:false`，胶囊随顶栏滑入/滑出；下层 -28% 视差；缓动 `HipMotion.enter/exit`，边缘拖动线性跟手；无双重胶囊、无空背景闪烁 |
+| 改动文件 | `hip_app.dart`、`hip_more_page.dart`、`hip_page_kit.dart`（新增 `HipNavBackChip`）、`hip_routes.dart`、`hip_segmented.dart`、`hip_assessment_page.dart`、`library/{drill_detail,group_editor,practice,routine_detail}_page.dart`、`coach/hip_coach_chat_page.dart`；测试 `hip_tactile_budget_test.dart`、`hip_ui_round1_test.dart`、`hip_ui_round2_test.dart`；规范 `docs/ui-design-standard.md` |
+| 真机 | 2602BRT18C `QSG6Q8IFDMDELVGQ` 覆盖安装前序 +35 debug（未清数据），已截图更多、设置浅/深、练习分段、套路详情（含新间距）、组编辑、新确认弹窗、加动作选择器、安全复审（含新按钮）；最终版覆盖安装 Pixel 8 `38011FDJH00940`：`nav11.mp4` 2.40s/4.50s 验证更多↔设置（两侧有胶囊，固定且单一），`nav12.mp4` 2.60s/4.60s 验证首页→更多（胶囊随页面滑入/滑出） |
+| 验证 | `flutter analyze --no-pub` 0；最终 pinLeading 版全量 `flutter test --no-pub` **462 通过 / 0 失败 / 68 既有跳过**（新增 1 条首页无胶囊用例）；定向 13/13；真机 `nav11/nav12` 中间帧已验证 |
+| 未做 | 未提交、未 push、未合 main；自测结果与本地动作详情未单独截图（有测试覆盖）；无 release、未动商店 |
+
+## 2026-11-05：UI 顶栏改造分支 `feat/ui-detail-polish`（+35，上一轮已提交）
 
 用户逐屏确认顶栏与状态栏背景设计（"完美！"），设计已固化为 [UI 设计规范](ui-design-standard.md)。本轮是**开发分支上的真机调试**，不是交付版本。
 

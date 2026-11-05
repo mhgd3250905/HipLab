@@ -57,7 +57,6 @@ class HipMorePage extends StatelessWidget {
     // UI r2 M3: the same list 动作库 shows.
     final drills = hipActionItems(store.content, LibText.of(context)).length;
     final items = <Widget>[
-      const HipSection('训练', first: true),
       HipListGroup(
         children: [
           HipListRow(
@@ -76,7 +75,7 @@ class HipMorePage extends StatelessWidget {
           ),
         ],
       ),
-      const HipSection('身体'),
+      const SizedBox(height: 28),
       HipListGroup(
         children: [
           // UI r2 §1: 髋部自测 opens its 自测说明 page (开始 / 重测 there).
@@ -107,7 +106,7 @@ class HipMorePage extends StatelessWidget {
           ),
         ],
       ),
-      const HipSection('偏好'),
+      const SizedBox(height: 28),
       HipListGroup(
         children: [
           HipListRow(
@@ -130,7 +129,7 @@ class HipMorePage extends StatelessWidget {
       key: const ValueKey('more-list'),
       padding: EdgeInsets.fromLTRB(
         kHipPageEdge,
-        hipNavInset(context),
+        hipNavInset(context) + 12,
         kHipPageEdge,
         24,
       ),
@@ -166,5 +165,5 @@ class HipMorePage extends StatelessWidget {
   );
 
   void _push(BuildContext context, Widget page) =>
-      Navigator.of(context).push(HipRoute.push<void>((_) => page));
+      Navigator.of(context).push(HipRoute.content<void>((_) => page));
 }

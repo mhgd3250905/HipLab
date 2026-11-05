@@ -17,9 +17,11 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'hip_glass.dart';
 import 'hip_icons.dart';
+import 'hip_routes.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -29,8 +31,8 @@ const double kHipPageEdge = 20;
 /// Inner left padding of a row inside a [HipListGroup].
 const double kHipRowPad = 16;
 
-/// Where a row's text starts when it has an icon (16 + 32 + 12).
-const double kHipRowTextInset = kHipRowPad + 32 + 12;
+/// Where a row's text starts when it has an icon (16 + 30 + 12).
+const double kHipRowTextInset = kHipRowPad + 30 + 12;
 
 /// How far the bar's material reaches below its row before it is fully gone.
 /// [HipNavPage] lets the body's viewport start at the row, so this much of the
@@ -42,12 +44,14 @@ const double kHipNavFade = 24;
 /// is on: the body then starts at the top of the screen (iOS behaviour), so the
 /// content itself has to clear the bar row — the equivalent of a table view's
 /// top content inset.
-const double kHipNavInset = HipNavBar.height;
+const double kHipNavInset = HipNavBar.height + kHipNavFade;
 
 /// What a page's scrollable really has to clear when the body scrolls under
-/// the bar: the status bar (content now passes beneath it too) plus the row.
+/// the bar: the status bar, the row, and the transition strip. Content at rest
+/// must start below the strip, otherwise the first line sits in the fading
+/// glass and reads as blurred (开哥 2026-11-05, routine detail).
 double hipNavInset(BuildContext context) =>
-    MediaQuery.paddingOf(context).top + HipNavBar.height;
+    MediaQuery.paddingOf(context).top + HipNavBar.height + kHipNavFade;
 
 enum HipNavLeading { back, close, none }
 
@@ -62,6 +66,7 @@ class HipNavBar extends StatelessWidget {
     this.trailing,
     this.fade = 0,
     this.topInset = 0,
+    this.showLeading = true,
   });
 
   final String? title;
@@ -85,6 +90,10 @@ class HipNavBar extends StatelessWidget {
   /// content disappears under the system icons the way it does in iOS.
   final double topInset;
 
+  /// False when the caller paints [HipNavBackChip] itself (HipNavPage keeps
+  /// that one control still while this bar slides with the page).
+  final bool showLeading;
+
   static const double height = 44;
 
   /// A title + subtitle bar is the system's two-line case: the row grows
@@ -101,8 +110,6 @@ class HipNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final close = leading == HipNavLeading.close;
-    final label = close ? '关闭' : '返回';
     final band = topInset + row + fade;
     return SizedBox(
       height: band,
@@ -150,38 +157,16 @@ class HipNavBar extends StatelessWidget {
                 ),
               ),
             ),
-          if (leading != HipNavLeading.none)
+          if (leading != HipNavLeading.none && showLeading)
             Positioned(
               // A 44pt hit target centred on the chip, so the whole left edge
               // is live the way the system back control is.
               left: chipEdge,
               top: topInset + (row - 44) / 2,
-              child: SizedBox.square(
-                dimension: 44,
-                child: Tooltip(
-                  message: label,
-                  child: HipPressable(
-                    key: leadingKey,
-                    semanticLabel: label,
-                    scale: .9,
-                    onTap: onLeading ?? () => Navigator.of(context).maybePop(),
-                    child: Center(
-                      child: _HipChipSurface(
-                        child: SizedBox.square(
-                          dimension: chip,
-                          child: Center(
-                            child: HipIcon(
-                              close ? HipGlyph.close : HipGlyph.back,
-                              size: 32,
-                              strokeWidth: 2,
-                              color: HipColors.text,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              child: HipNavBackChip(
+                leading: leading,
+                onLeading: onLeading,
+                leadingKey: leadingKey,
               ),
             ),
           if (trailing != null)
@@ -192,6 +177,60 @@ class HipNavBar extends StatelessWidget {
               child: Center(child: trailing),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The back / close chip on its own 44pt hit target.
+///
+/// [HipNavPage] keeps this one control still while the rest of the page —
+/// including the bar's glass, title and trailing action — slides with the
+/// route, so navigation always has a fixed anchor (开哥 2026-11-05).
+class HipNavBackChip extends StatelessWidget {
+  const HipNavBackChip({
+    super.key,
+    this.leading = HipNavLeading.back,
+    this.onLeading,
+    this.leadingKey,
+  });
+
+  final HipNavLeading leading;
+
+  /// Defaults to popping the route.
+  final VoidCallback? onLeading;
+  final Key? leadingKey;
+
+  @override
+  Widget build(BuildContext context) {
+    if (leading == HipNavLeading.none) return const SizedBox.shrink();
+    final close = leading == HipNavLeading.close;
+    final label = close ? '关闭' : '返回';
+    return SizedBox.square(
+      dimension: 44,
+      child: Tooltip(
+        message: label,
+        child: HipPressable(
+          key: leadingKey,
+          semanticLabel: label,
+          scale: .9,
+          onTap: onLeading ?? () => Navigator.of(context).maybePop(),
+          child: Center(
+            child: _HipChipSurface(
+              child: SizedBox.square(
+                dimension: HipNavBar.chip,
+                child: Center(
+                  child: HipIcon(
+                    close ? HipGlyph.close : HipGlyph.back,
+                    size: 32,
+                    strokeWidth: 2,
+                    color: HipColors.text,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -355,6 +394,7 @@ class HipNavPage extends StatefulWidget {
     this.trailing,
     this.backdrop,
     this.bodyScrollsUnderBar = false,
+    this.bottomBar,
   });
   final Widget body;
   final String? title;
@@ -370,6 +410,10 @@ class HipNavPage extends StatefulWidget {
   /// [kHipNavInset] down; otherwise the first rows sit behind the bar.
   final bool bodyScrollsUnderBar;
 
+  /// Fixed action bar under the content (library footers). Owns the bottom
+  /// safe area; the body then skips its own bottom inset.
+  final Widget? bottomBar;
+
   /// Defaults to the plain depth gradient.
   final Widget? backdrop;
 
@@ -378,58 +422,135 @@ class HipNavPage extends StatefulWidget {
 }
 
 class _HipNavPageState extends State<HipNavPage> {
+  /// A shared-bar route keeps only the back chip still: the whole page
+  /// surface — backdrop, body, footer, and the bar's glass/title/trailing —
+  /// slides in horizontally, so the page underneath is revealed on pop
+  /// instead of a flash of empty background.
+  Widget _enter(Widget child, Animation<double> curve) => SlideTransition(
+    position: Tween(begin: const Offset(1, 0), end: Offset.zero).animate(curve),
+    child: child,
+  );
+
   @override
   Widget build(BuildContext context) {
     final backdrop = widget.backdrop ?? const HipGlassBackdrop();
-    return Stack(
+    final route = ModalRoute.of(context);
+    final hip = route is HipRoute ? route : null;
+    final shared = hip?.transition == HipTransition.content;
+    // Pin the chip only when both pages have one (the source sets
+    // [HipRoute.pinLeading] false for the bar-less home shell).
+    final pin = shared && (hip?.pinLeading ?? false);
+    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final anim = shared ? hip?.animation : null;
+    final curve = anim == null || reduce
+        ? null
+        : route is HipRoute && route.popGestureInProgress
+        ? anim
+        : CurvedAnimation(
+            parent: anim,
+            // Same easing as every other page move: a gentle first frame,
+            // then a long soft landing instead of an ease-out snap.
+            curve: HipMotion.enter,
+            reverseCurve: HipMotion.exit.flipped,
+          );
+    Widget content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: widget.bodyScrollsUnderBar
+              ? 0
+              : MediaQuery.paddingOf(context).top +
+                    (widget.subtitle == null
+                        ? HipNavBar.height
+                        : HipNavBar.heightWithSubtitle),
+        ),
+        Expanded(
+          child: SafeArea(
+            top: false,
+            bottom: widget.bottomBar == null,
+            child: widget.body,
+          ),
+        ),
+      ],
+    );
+    final topInset = MediaQuery.paddingOf(context).top;
+    final row = widget.subtitle == null
+        ? HipNavBar.height
+        : HipNavBar.heightWithSubtitle;
+    Widget page = Stack(
       fit: StackFit.expand,
       children: [
         backdrop,
         Scaffold(
           backgroundColor: Colors.transparent,
-          body: Stack(
-            children: [
-              Positioned.fill(
-                // No SafeArea here: with the bar floating over the body the
-                // viewport has to reach the very top of the screen, so the
-                // content slides under the status bar too (Gemini-style,
-                // 开哥 2026-11-05). Pages clear the bar themselves with
-                // [hipNavInset]; the inner SafeArea still handles the bottom.
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(
-                      height: widget.bodyScrollsUnderBar
-                          ? 0
-                          : MediaQuery.paddingOf(context).top +
-                                (widget.subtitle == null
-                                    ? HipNavBar.height
-                                    : HipNavBar.heightWithSubtitle),
-                    ),
-                    Expanded(child: SafeArea(top: false, child: widget.body)),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: HipNavBar(
-                  title: widget.title,
-                  subtitle: widget.subtitle,
-                  leading: widget.leading,
-                  onLeading: widget.onLeading,
-                  leadingKey: widget.leadingKey,
-                  trailing: widget.trailing,
-                  fade: kHipNavFade,
-                  // Not inside SafeArea: the band has to reach the top of the
-                  // screen, while its row still sits below the status bar.
-                  topInset: MediaQuery.paddingOf(context).top,
-                ),
-              ),
-            ],
+          bottomNavigationBar: widget.bottomBar,
+          // No SafeArea here: with the bar floating over the body the
+          // viewport has to reach the very top of the screen, so the content
+          // slides under the status bar too (Gemini-style, 开哥 2026-11-05).
+          // Pages clear the bar themselves with [hipNavInset]; the inner
+          // SafeArea still handles the bottom.
+          body: content,
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          // The bar is no longer inside the Scaffold, so it needs its own
+          // Material text style (otherwise WidgetsApp's error style paints a
+          // yellow underline under the title).
+          child: Material(
+            type: MaterialType.transparency,
+            child: HipNavBar(
+              title: widget.title,
+              subtitle: widget.subtitle,
+              leading: widget.leading,
+              onLeading: widget.onLeading,
+              leadingKey: widget.leadingKey,
+              trailing: widget.trailing,
+              // Only a body that scrolls under the bar needs the extra
+              // transition strip; a spacer layout ends at the row.
+              fade: widget.bodyScrollsUnderBar ? kHipNavFade : 0,
+              // Not inside SafeArea: the band has to reach the top of the
+              // screen, while its row still sits below the status bar.
+              topInset: topInset,
+              // A pinned chip is painted outside this sliding layer; when
+              // there is nothing to stay aligned with, it rides in the bar.
+              showLeading: !pin,
+            ),
           ),
         ),
+      ],
+    );
+    if (curve != null) page = _enter(page, curve);
+    final secondary = route?.secondaryAnimation;
+    final chip = widget.leading == HipNavLeading.none
+        ? null
+        : HipNavBackChip(
+            leading: widget.leading,
+            onLeading: widget.onLeading,
+            leadingKey: widget.leadingKey,
+          );
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        page,
+        if (pin && chip != null)
+          Positioned(
+            left: HipNavBar.chipEdge,
+            top: topInset + (row - 44) / 2,
+            // The one fixed control: the bar's glass, title and trailing
+            // action slide with their page, the chip stays put.
+            child: secondary == null
+                ? chip
+                : AnimatedBuilder(
+                    animation: secondary,
+                    // A covered page hides its chip, so a drifting page
+                    // underneath cannot show a second one.
+                    builder: (context, child) =>
+                        secondary.value > 0 ? const SizedBox.shrink() : child!,
+                    child: chip,
+                  ),
+          ),
       ],
     );
   }
@@ -467,8 +588,8 @@ class HipSection extends StatelessWidget {
   );
 }
 
-/// Flat panel of rows: surface tint by opacity, radius 12, no border, no
-/// shadow; 0.5pt dividers start where the row text starts.
+/// Flat panel of rows: surface tint by opacity, radius 10 (iOS inset group),
+/// no border, no shadow; 0.5pt dividers start where the row text starts.
 class HipListGroup extends StatelessWidget {
   const HipListGroup({
     super.key,
@@ -486,7 +607,7 @@ class HipListGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(12),
+    borderRadius: BorderRadius.circular(10),
     child: ColoredBox(
       color: fill(),
       child: Material(
@@ -513,17 +634,17 @@ class HipListGroup extends StatelessWidget {
   );
 }
 
-/// The 32×32 tinted icon container of a row.
+/// The 30×30 tinted icon container of a row (iOS Settings icon step).
 class HipRowIcon extends StatelessWidget {
   const HipRowIcon(this.glyph, {super.key});
   final HipGlyph glyph;
   @override
   Widget build(BuildContext context) => Container(
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     alignment: Alignment.center,
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(7),
       color: HipColors.jade.withValues(alpha: .14),
     ),
     child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
@@ -561,9 +682,9 @@ class HipListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final showChevron = chevron ?? (onTap != null && trailing == null);
     final row = ConstrainedBox(
-      constraints: BoxConstraints(minHeight: subtitle == null ? 56 : 64),
+      constraints: BoxConstraints(minHeight: subtitle == null ? 52 : 60),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(kHipRowPad, 10, 12, 10),
+        padding: const EdgeInsets.fromLTRB(kHipRowPad, 10, kHipRowPad, 10),
         child: Row(
           children: [
             if (glyph != null) ...[
@@ -580,9 +701,9 @@ class HipListRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 17,
                       height: 1.25,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                       color: HipColors.text,
                     ),
                   ),
@@ -618,7 +739,12 @@ class HipListRow extends StatelessWidget {
               ),
             if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             if (showChevron)
-              HipIcon(HipGlyph.chevronRight, size: 16, color: HipColors.faint),
+              HipIcon(
+                HipGlyph.chevronRight,
+                size: 15,
+                strokeWidth: 2,
+                color: HipColors.faint,
+              ),
           ],
         ),
       ),
@@ -631,6 +757,378 @@ class HipListRow extends StatelessWidget {
       child: row,
     );
   }
+}
+
+/// The iOS switch: a 51×31 capsule with a 27pt white knob, jade when on and
+/// system grey when off. Flat track, one tight knob shadow — the row's own
+/// material carries the surface, the switch does not add another layer.
+class HipSwitch extends StatelessWidget {
+  const HipSwitch({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.semanticLabel,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final String? semanticLabel;
+
+  static const double width = 51;
+  static const double height = 31;
+  static const double _knob = 27;
+  static const double _inset = 2;
+  static const Duration _slide = Duration(milliseconds: 200);
+
+  @override
+  Widget build(BuildContext context) {
+    final track = value
+        ? HipColors.jade
+        : (HipColors.isDark
+              ? const Color(0xFF39393D)
+              : const Color(0xFFE9E9EA));
+    return Semantics(
+      container: true,
+      toggled: value,
+      label: semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onChanged(!value);
+        },
+        // 51×44 touch target; the capsule stays 51×31 and centred.
+        child: SizedBox(
+          width: width,
+          height: 44,
+          child: Center(
+            child: AnimatedContainer(
+              duration: _slide,
+              curve: Curves.easeOutCubic,
+              width: width,
+              height: height,
+              padding: const EdgeInsets.all(_inset),
+              decoration: BoxDecoration(
+                color: track,
+                borderRadius: BorderRadius.circular(height / 2),
+              ),
+              child: AnimatedAlign(
+                duration: _slide,
+                curve: Curves.easeOutCubic,
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: _knob,
+                  height: _knob,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: HipColors.isDark ? .32 : .16,
+                        ),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The iOS slider: a 4pt track and a 26pt white knob with one soft shadow.
+/// The active track is jade; the inactive track is the system grey step used
+/// by the switches, so every control on a settings card reads as one family.
+class HipSlider extends StatelessWidget {
+  const HipSlider({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.semanticLabel,
+  });
+
+  final double value;
+  final ValueChanged<double> onChanged;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: semanticLabel,
+    child: SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        trackHeight: 4,
+        activeTrackColor: HipColors.jade,
+        inactiveTrackColor: HipColors.isDark
+            ? const Color(0xFF39393D)
+            : const Color(0xFFE9E9EA),
+        trackShape: const RoundedRectSliderTrackShape(),
+        thumbColor: Colors.white,
+        thumbShape: const _HipSliderThumbShape(),
+        overlayColor: Colors.transparent,
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+        tickMarkShape: SliderTickMarkShape.noTickMark,
+        showValueIndicator: ShowValueIndicator.never,
+      ),
+      child: Slider(value: value, onChanged: onChanged),
+    ),
+  );
+}
+
+class _HipSliderThumbShape extends SliderComponentShape {
+  const _HipSliderThumbShape();
+
+  static const double _radius = 13;
+
+  @override
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(_radius);
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    canvas.drawCircle(
+      center.translate(0, 1),
+      _radius,
+      Paint()
+        ..color = Colors.black.withValues(alpha: .18)
+        ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 3),
+    );
+    canvas.drawCircle(center, _radius, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      center,
+      _radius - .25,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .5
+        ..color = Colors.black.withValues(alpha: .08),
+    );
+  }
+}
+
+/// iOS alert: a compact card with a centred title, optional message and one
+/// or two flat actions split by hairlines. Returns true for the confirm
+/// action, false for cancel and null when dismissed by the barrier.
+Future<bool?> showHipConfirmDialog(
+  BuildContext context, {
+  String? title,
+  String? message,
+  Key? messageKey,
+  required String cancelLabel,
+  String? confirmLabel,
+  bool destructive = false,
+  Key? cancelKey,
+  Key? confirmKey,
+}) => showGeneralDialog<bool>(
+  context: context,
+  barrierDismissible: true,
+  barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+  barrierColor: Colors.black.withValues(alpha: .36),
+  transitionDuration: const Duration(milliseconds: 180),
+  pageBuilder: (_, _, _) => _HipConfirmDialog(
+    title: title,
+    message: message,
+    messageKey: messageKey,
+    cancelLabel: cancelLabel,
+    confirmLabel: confirmLabel,
+    destructive: destructive,
+    cancelKey: cancelKey,
+    confirmKey: confirmKey,
+  ),
+  transitionBuilder: (_, animation, _, child) {
+    final t = Curves.easeOutCubic.transform(animation.value);
+    return FadeTransition(
+      opacity: animation,
+      child: Transform.scale(scale: .96 + .04 * t, child: child),
+    );
+  },
+);
+
+class _HipConfirmDialog extends StatelessWidget {
+  const _HipConfirmDialog({
+    this.title,
+    this.message,
+    this.messageKey,
+    required this.cancelLabel,
+    this.confirmLabel,
+    required this.destructive,
+    this.cancelKey,
+    this.confirmKey,
+  });
+
+  final String? title;
+  final String? message;
+  final Key? messageKey;
+  final String cancelLabel;
+  final String? confirmLabel;
+  final bool destructive;
+  final Key? cancelKey;
+  final Key? confirmKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasMessage = message != null && message!.isNotEmpty;
+    final line = HipColors.text.withValues(alpha: .10);
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 320,
+          maxHeight: MediaQuery.sizeOf(context).height * .78,
+        ),
+        // A dialog route sits above the page Material; without this layer its
+        // raw Texts inherit WidgetsApp's error style (yellow underline).
+        child: Material(
+          type: MaterialType.transparency,
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: HipColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .18),
+                  blurRadius: 28,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      22,
+                      hasMessage ? 22 : 20,
+                      22,
+                      hasMessage ? 20 : 20,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (title != null)
+                          Text(
+                            title!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: HipColors.text,
+                            ),
+                          ),
+                        if (title != null && hasMessage)
+                          const SizedBox(height: 6),
+                        if (hasMessage)
+                          Text(
+                            message!,
+                            key: messageKey,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.45,
+                              color: HipColors.muted,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                Divider(height: .5, thickness: .5, color: line),
+                IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _HipDialogAction(
+                          key: cancelKey,
+                          label: cancelLabel,
+                          color: HipColors.text,
+                          weight: FontWeight.w400,
+                          onTap: () => Navigator.of(context).pop(false),
+                        ),
+                      ),
+                      if (confirmLabel != null) ...[
+                        VerticalDivider(width: .5, thickness: .5, color: line),
+                        Expanded(
+                          child: _HipDialogAction(
+                            key: confirmKey,
+                            label: confirmLabel!,
+                            color: destructive
+                                ? HipColors.pain
+                                : HipColors.jadeText,
+                            weight: FontWeight.w600,
+                            onTap: () => Navigator.of(context).pop(true),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HipDialogAction extends StatelessWidget {
+  const _HipDialogAction({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.weight,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final FontWeight weight;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => HipPressable(
+    semanticLabel: label,
+    scale: .98,
+    onTap: onTap,
+    child: SizedBox(
+      height: 50,
+      child: Builder(
+        builder: (context) {
+          final down = HipPressedScope.of(context);
+          return AnimatedContainer(
+            duration: HipMotion.press,
+            color: down
+                ? HipColors.text.withValues(alpha: .05)
+                : Colors.transparent,
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 17, fontWeight: weight, color: color),
+            ),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 /// A secondary line inside a group, under its parent row (e.g. the reminder

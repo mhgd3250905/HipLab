@@ -10,6 +10,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
+import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -332,7 +333,7 @@ void main() {
     });
 
     testWidgets(
-      'drill-down pages push from the right and swipe back on iOS',
+      'shared-bar pages keep only the back chip still and swipe back on iOS',
       (tester) async {
         await pumpApp(tester);
         await openSettings(tester);
@@ -347,11 +348,35 @@ void main() {
         final route =
             ModalRoute.of(tester.element(find.byType(HipOnboarding)))!
                 as HipRoute;
-        expect(route.transition, HipTransition.push);
-        // Mid-flight the new page is still partly off to the right.
+        expect(route.transition, HipTransition.content);
+        // 设置页有返回键，目标页的胶囊钉住。
+        expect(route.pinLeading, isTrue);
+        // The bar's glass and title slide with the page; only the back chip
+        // stays fixed.
+        expect(
+          find.ancestor(
+            of: find.byType(HipNavBar),
+            matching: find.byType(SlideTransition),
+          ),
+          findsWidgets,
+        );
+        expect(
+          find.ancestor(
+            of: find.byType(HipNavBackChip),
+            matching: find.byType(SlideTransition),
+          ),
+          findsNothing,
+        );
+        final bar = tester.getRect(
+          find.descendant(
+            of: find.byType(HipOnboarding),
+            matching: find.byType(HipNavBar),
+          ),
+        );
+        expect(bar.top, 0);
         final slide = tester.widget<SlideTransition>(
           find
-              .ancestor(
+              .descendant(
                 of: find.byType(HipOnboarding),
                 matching: find.byType(SlideTransition),
               )
@@ -373,6 +398,37 @@ void main() {
         );
       },
       variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  });
+
+  testWidgets('a page from the bar-less home brings its chip in with it', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tester.tap(find.byKey(const ValueKey('home-more')));
+    await tester.pump();
+    await tester.pump(HipMotion.page ~/ 3);
+    final route =
+        ModalRoute.of(tester.element(find.byType(HipNavBar)))! as HipRoute;
+    expect(route.transition, HipTransition.content);
+    expect(route.pinLeading, isFalse);
+    // The chip rides on the sliding bar instead of appearing pinned at
+    // frame 0 over the home page, which has no back control.
+    expect(
+      find.ancestor(
+        of: find.byType(HipNavBackChip),
+        matching: find.byType(SlideTransition),
+      ),
+      findsWidgets,
+    );
+    expect(
+      tester.getRect(find.byType(HipNavBackChip)).left,
+      greaterThan(HipNavBar.chipEdge + 40),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.byType(HipNavBackChip)).left,
+      HipNavBar.chipEdge,
     );
   });
 
