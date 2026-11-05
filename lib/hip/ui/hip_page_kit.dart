@@ -300,32 +300,38 @@ class _HipBarGlass extends StatelessWidget {
     final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final bg = HipColors.background;
     return RepaintBoundary(
-      child: IgnorePointer(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Frost that follows the same curve: the heaviest layer fades out
-            // highest, the lightest reaches the bottom, so the blur thins with
-            // the strip instead of ending on a line.
-            if (!high) ...[
-              _frost(34, reach: .78),
-              _frost(20, reach: .9),
-              _frost(9, reach: 1),
-            ],
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    for (var i = 0; i <= _samples; i++)
-                      bg.withValues(alpha: _fade(i / _samples, 1)),
-                  ],
-                  stops: [for (var i = 0; i <= _samples; i++) i / _samples],
+      // BackdropFilter uses the ancestor paint clip, not its child's layout
+      // bounds. Limit all three frost passes to this band; without this clip,
+      // two sliding navigation bars can each read back the whole viewport.
+      child: ClipRect(
+        key: const ValueKey('hip-nav-frost-clip'),
+        child: IgnorePointer(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Frost that follows the same curve: the heaviest layer fades out
+              // highest, the lightest reaches the bottom, so the blur thins with
+              // the strip instead of ending on a line.
+              if (!high) ...[
+                _frost(34, reach: .78),
+                _frost(20, reach: .9),
+                _frost(9, reach: 1),
+              ],
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      for (var i = 0; i <= _samples; i++)
+                        bg.withValues(alpha: _fade(i / _samples, 1)),
+                    ],
+                    stops: [for (var i = 0; i <= _samples; i++) i / _samples],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
