@@ -1,5 +1,50 @@
 # 当前状态
 
+## 2026-11-05：UI r4 / PR #32 合并复审
+
+按用户要求，日常目录 `E:/AII-3D/3D-Hip` 已切换到 `feat/ui-detail-polish`。本轮合并对象是 [PR #32](https://github.com/mhgd3250905/HipLab/pull/32)，目标保持 `codex/sdk-r2-v1-hot-update`；main 仍为 `6bdf1e9`，PR #31 的主线集成另行处理。
+
+原 UI 源 `cb0f063` 上补了一项返回胶囊修复：更多页的内嵌胶囊和后续页面的固定胶囊都在被覆盖期间隐藏，防止更多→设置转场出现双胶囊。新增三条回归在原源码全部失败，修复后全部通过；验证源 `6969425` 严格分析 0、全部66文件465通过/0失败/68既有跳过，详见[本轮审核](ui-r4-pr32-review-2026-11-05.md)。练习主页保留固定头部，其它穿透/固定页面按实际接入记录，不笼统称为每页穿透。
+
+版本保持 `1.1.0+35`、SDK `97eb66d`，依赖和 lock 不变。本轮不出新包、不安装；此前 `97cecb1` 的 +35/2035 release APK 不含本次 UI。PR 作者的远程 Pixel 8 debug/录屏记录与本轮组件回归分别归属，新增补丁未做新真机验收；UI r3 PR #29、D-34、release/1.0 与商店边界不变。
+
+下方“未提交/未 push”等为远程打磨阶段快照；本次保存与合并身份见本轮审核和 GitHub PR #32 回执。
+
+## 2026-11-05：全量 UI 规范扫描（`feat/ui-detail-polish`，未提交）
+
+用户要求按已确认的 iOS 规范扫一遍所有界面。本段替代下方“顶栏改造”段里的未接入清单。
+
+| 对象 | 当前事实 |
+|---|---|
+| 顶栏 | 所有推入页面已使用 `HipNavPage`，无直接 `HipNavBar`；内容穿透：更多、设置、训练记录、隐私政策、动作详情、套路详情、加动作选择器、自测结果；固定头部：组编辑、安全提示复审、Coach 加载壳。`hipNavInset` 已计入 24pt 过渡段，静止内容不会被渐变遮挡；安全复审正文顶部留 12 |
+| 底部操作 | `HipNavPage.bottomBar` 承载库页 LibFooter；动作详情、套路详情、组编辑、加动作、自测结果均已接入 |
+| 列表 | 行 17pt/w400、图标 30×30/圆角 7、单行 52 / 双行 60、卡片圆角 10、右侧留白 16；设置与更多页移除分组小标题，组间距 28 |
+| 控件 | 原生 `Switch` / `Slider` 已清零；`HipSwitch` 51×31、`HipSegmented(ios:true)` 32 高系统样式、`HipSlider` 4pt 轨道 + 白色滑块；练习页分组与组编辑休息段已切换 |
+| 按钮 / 弹窗 | 主按钮 50 高 / 圆角 14 / 17pt w600，次按钮 50 / 14 / 17pt w500；组编辑放弃/删除与练习跳过提示统一为 `showHipConfirmDialog` iOS 卡片 |
+| 路由过渡 | 全部 `HipNavPage` 目的页改用 `HipRoute.content`：整页（背景/body/bottomBar/顶栏玻璃/标题/右侧操作）横向滑入，返回反向滑出并露出上一页；**前后两页都有胶囊时**仅返回胶囊固定（`HipNavBackChip` 画在滑动层外，`HipNavBar` 用 `showLeading:false`，被覆盖页隐藏自己的胶囊）；**从首页等无返回键页面进入时** `pinLeading:false`，胶囊随顶栏滑入/滑出；下层 -28% 视差；缓动 `HipMotion.enter/exit`，边缘拖动线性跟手；无双重胶囊、无空背景闪烁 |
+| 改动文件 | `hip_app.dart`、`hip_more_page.dart`、`hip_page_kit.dart`（新增 `HipNavBackChip`）、`hip_routes.dart`、`hip_segmented.dart`、`hip_assessment_page.dart`、`library/{drill_detail,group_editor,practice,routine_detail}_page.dart`、`coach/hip_coach_chat_page.dart`；测试 `hip_tactile_budget_test.dart`、`hip_ui_round1_test.dart`、`hip_ui_round2_test.dart`；规范 `docs/ui-design-standard.md` |
+| 真机 | 2602BRT18C `QSG6Q8IFDMDELVGQ` 覆盖安装前序 +35 debug（未清数据），已截图更多、设置浅/深、练习分段、套路详情（含新间距）、组编辑、新确认弹窗、加动作选择器、安全复审（含新按钮）；最终版覆盖安装 Pixel 8 `38011FDJH00940`：`nav11.mp4` 2.40s/4.50s 验证更多↔设置（两侧有胶囊，固定且单一），`nav12.mp4` 2.60s/4.60s 验证首页→更多（胶囊随页面滑入/滑出） |
+| 验证 | `flutter analyze --no-pub` 0；最终 pinLeading 版全量 `flutter test --no-pub` **462 通过 / 0 失败 / 68 既有跳过**（新增 1 条首页无胶囊用例）；定向 13/13；真机 `nav11/nav12` 中间帧已验证 |
+| 未做 | 未提交、未 push、未合 main；自测结果与本地动作详情未单独截图（有测试覆盖）；无 release、未动商店 |
+
+## 2026-11-05：UI 顶栏改造分支 `feat/ui-detail-polish`（+35，上一轮已提交）
+
+用户逐屏确认顶栏与状态栏背景设计（"完美！"），设计已固化为 [UI 设计规范](ui-design-standard.md)。本轮是**开发分支上的真机调试**，不是交付版本。
+
+| 对象 | 当前事实 |
+|---|---|
+| 分支 / 基线 | `feat/ui-detail-polish`，基线提交 `97cecb1`；本轮 UI 改动与文档已作为一次提交保存在分支上，具体哈希以 `git log` 为准，未 push |
+| 版本 | `1.1.0+35`（沿用分支既有版本号，本轮未再递增）；仅 debug 包，无 release 产物 |
+| 改动文件 | `lib/hip/ui/hip_page_kit.dart`（HipNavBar/玻璃/胶囊、`kHipNavFade=24`、`hipNavInset`）、`hip_app.dart`、`hip_more_page.dart`、`hip_privacy_page.dart`、`hip_records_page.dart`；新增 `docs/ui-design-standard.md`；`docs/README.md` 索引 |
+| 顶栏形制 | 带高 = 状态栏 + 44 行 + 24 过渡；页面背景色渐变（顶 α1 → 60% 处 .86 → 抛物线归零）+ σ34/20/9 三层模糊；返回胶囊 44pt/字形 32，平整磨砂玻璃（浅色填充 `white @ .38`、深色 `white @ .12` + σ12 真实模糊 + 0.75pt 细边，无渐变、无投影） |
+| 内容穿透 | `bodyScrollsUnderBar` 已开：更多、设置、训练记录、隐私政策；视口顶到 y=0，页面用 `hipNavInset(context)` 留状态栏 + 44 |
+| 未接入 | 动作详情、套路详情、组编辑×2、安全提示、自测结果（仍是旧 `HipNavBar`，无穿透/过渡） |
+| 真机 | Pixel 8 `38011FDJH00940` 与 2602BRT18C `QSG6Q8IFDMDELVGQ` 均已覆盖安装 debug +35；最终胶囊版本在小米机多次 `-r` 升级，浅色与深色均已截图，未清数据 |
+| 验证 | 最终 `flutter analyze --no-pub` 为 0；受影响测试最近一次 42/42 通过（顶栏几何定稿前），其后曲线与胶囊材质改动未重跑；**全量测试按用户要求暂缓** |
+| 未做 | 仅本地提交；未 push、未合 main、未做 release 构建、5 个页面接入、版本递增、深色主题全页检查和商店/手机发布动作 |
+
+下方 2026-11-04 及更早段落保留历史快照，不作为本分支状态。
+
 ## 2026-11-04：QA v3 / +34 主线对齐与版本收束
 
 本轮文档收束前，`E:/AII-3D/3D-Hip` 的 main 与 origin/main 已对齐到功能集成点 `2400b344183e1d57636412309899b4a1481966a7`，即 PR #30 合并点。后续本次提交只更新文档，具体文档 HEAD 以 Git 为准。

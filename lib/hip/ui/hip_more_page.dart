@@ -42,6 +42,7 @@ class HipMorePage extends StatelessWidget {
   Widget build(BuildContext context) => HipNavPage(
     title: '更多',
     leadingKey: const ValueKey('more-back'),
+    bodyScrollsUnderBar: true,
     backdrop: HipGlassBackdrop(
       image: cover == null ? null : HipMediaVariants.themed(cover!),
     ),
@@ -56,7 +57,6 @@ class HipMorePage extends StatelessWidget {
     // UI r2 M3: the same list 动作库 shows.
     final drills = hipActionItems(store.content, LibText.of(context)).length;
     final items = <Widget>[
-      const HipSection('训练', first: true),
       HipListGroup(
         children: [
           HipListRow(
@@ -75,7 +75,7 @@ class HipMorePage extends StatelessWidget {
           ),
         ],
       ),
-      const HipSection('身体'),
+      const SizedBox(height: 28),
       HipListGroup(
         children: [
           // UI r2 §1: 髋部自测 opens its 自测说明 page (开始 / 重测 there).
@@ -106,7 +106,7 @@ class HipMorePage extends StatelessWidget {
           ),
         ],
       ),
-      const HipSection('偏好'),
+      const SizedBox(height: 28),
       HipListGroup(
         children: [
           HipListRow(
@@ -127,7 +127,12 @@ class HipMorePage extends StatelessWidget {
     ];
     return ListView(
       key: const ValueKey('more-list'),
-      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 0, kHipPageEdge, 24),
+      padding: EdgeInsets.fromLTRB(
+        kHipPageEdge,
+        hipNavInset(context) + 12,
+        kHipPageEdge,
+        24,
+      ),
       children: [
         for (final (i, w) in items.indexed) HipCalmStagger(index: i, child: w),
       ],
@@ -152,6 +157,7 @@ class HipMorePage extends StatelessWidget {
     context,
     HipNavPage(
       title: title,
+      bodyScrollsUnderBar: true,
       // A pushed route is not rebuilt by the app root: follow the store
       // here so switches and choices show their new state.
       body: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),
@@ -159,5 +165,5 @@ class HipMorePage extends StatelessWidget {
   );
 
   void _push(BuildContext context, Widget page) =>
-      Navigator.of(context).push(HipRoute.push<void>((_) => page));
+      Navigator.of(context).push(HipRoute.content<void>((_) => page));
 }

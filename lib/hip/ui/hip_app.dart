@@ -278,7 +278,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
   Widget build(BuildContext context) {
     final blocked = _answers.values.any((v) => v);
     final body = Padding(
-      padding: EdgeInsets.fromLTRB(24, widget.review ? 4 : 12, 24, 20),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
       child: HipFadeSwitcher(
         child: KeyedSubtree(
           key: ValueKey(_onIdentity ? 'identity' : 'card'),
@@ -286,21 +286,12 @@ class _HipOnboardingState extends State<HipOnboarding> {
         ),
       ),
     );
-    return Scaffold(
-      body: SafeArea(
-        // UI r2 (#9): opened again from 设置 it has a back and a title;
-        // first launch keeps none (the cards must be answered).
-        child: widget.review
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const HipNavBar(key: ValueKey('safety-nav'), title: '安全提示'),
-                  Expanded(child: body),
-                ],
-              )
-            : body,
-      ),
-    );
+    // UI r2 (#9): opened again from 设置 it has a back and a title; first
+    // launch keeps none (the cards must be answered).
+    if (widget.review) {
+      return HipNavPage(title: '安全提示', body: body);
+    }
+    return Scaffold(body: SafeArea(child: body));
   }
 
   Widget _safetyCard() {
@@ -652,7 +643,7 @@ class _HipHomeState extends State<HipHome> {
   }
 
   void _openMore() => Navigator.of(context).push(
-    HipRoute.push<void>(
+    HipRoute.content<void>(
       (_) => HipMorePage(
         store: store,
         cover: _heroDrill == null
@@ -662,6 +653,8 @@ class _HipHomeState extends State<HipHome> {
         practice: _practice,
         onStartAssessment: _startAssessment,
       ),
+      // 首页没有返回键，更多页的返回键随页面滑入，不能先钉在左上角。
+      pinLeading: false,
     ),
   );
 
@@ -1023,8 +1016,10 @@ class _HipHomeState extends State<HipHome> {
         const SizedBox(height: 4),
         TextButton(
           onPressed: () => Navigator.of(context).push(
-            HipRoute.push<void>(
+            HipRoute.content<void>(
               (_) => HipOnboarding(store: store, review: true),
+              // 首页无返回键，安全提示页的返回键随页面滑入。
+              pinLeading: false,
             ),
           ),
           child: const Text('重新选择安全提示'),
@@ -1220,12 +1215,7 @@ class HipProgressPage extends StatelessWidget {
     final records = section != HipProgressSection.settings;
     final settings = section != HipProgressSection.records;
     return ListView(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        section == HipProgressSection.settings ? 0 : 12,
-        20,
-        24,
-      ),
+      padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 12, 20, 24),
       children: [
         if (section == HipProgressSection.all) ...[
           const Text(
@@ -1240,7 +1230,6 @@ class HipProgressPage extends StatelessWidget {
           const SizedBox(height: 24),
         ],
         if (settings) ...[
-          const HipSection('提醒', first: true),
           HipListGroup(
             key: const ValueKey('reminder-settings'),
             children: [
@@ -1255,13 +1244,11 @@ class HipProgressPage extends StatelessWidget {
                         : store.reminders.deliversNotifications
                         ? '工作日 ${reminder.startHour}:00–${reminder.endHour}:00'
                         : '时间已记下，暂不推送系统通知',
-                    trailing: _HipSmallSwitch(
-                      child: Switch(
-                        key: const ValueKey('reminder-switch'),
-                        value: reminder.enabled,
-                        onChanged: (v) =>
-                            store.setReminder(reminder.copyWith(enabled: v)),
-                      ),
+                    trailing: HipSwitch(
+                      key: const ValueKey('reminder-switch'),
+                      value: reminder.enabled,
+                      onChanged: (v) =>
+                          store.setReminder(reminder.copyWith(enabled: v)),
                     ),
                   ),
                   if (reminder.enabled)
@@ -1273,9 +1260,10 @@ class HipProgressPage extends StatelessWidget {
                         // choice (button audit 2026-10-18), not a Material chip.
                         child: HipSegmented<int>(
                           keyPrefix: 'reminder-interval',
-                          height: 30,
-                          radius: 8,
-                          inset: 3,
+                          height: 32,
+                          radius: 9,
+                          inset: 2,
+                          ios: true,
                           values: const [45, 60],
                           selected: reminder.intervalMinutes,
                           label: (m) => '$m 分钟',
@@ -1314,9 +1302,11 @@ class HipProgressPage extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 28),
           HipVoiceSettingsPanel(store: store),
+          const SizedBox(height: 28),
           HipAppearancePanel(store: store),
-          const HipSection('其他'),
+          const SizedBox(height: 28),
           HipListGroup(
             children: [
               HipListRow(
@@ -1324,7 +1314,7 @@ class HipProgressPage extends StatelessWidget {
                 glyph: HipGlyph.shield,
                 title: '重新看安全提示',
                 onTap: () => Navigator.of(context).push(
-                  HipRoute.push<void>(
+                  HipRoute.content<void>(
                     (_) => HipOnboarding(store: store, review: true),
                   ),
                 ),
@@ -1336,7 +1326,7 @@ class HipProgressPage extends StatelessWidget {
                 subtitle: '离线阅读 · 数据保存在设备上',
                 onTap: () => Navigator.of(
                   context,
-                ).push(HipRoute.push<void>((_) => const HipPrivacyPage())),
+                ).push(HipRoute.content<void>((_) => const HipPrivacyPage())),
               ),
             ],
           ),
@@ -1393,6 +1383,7 @@ class HipSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => HipNavPage(
     title: '设置',
+    bodyScrollsUnderBar: true,
     // A pushed route is not rebuilt by the app root: follow the store so
     // switches and choices show their new state.
     body: ListenableBuilder(
@@ -1424,31 +1415,26 @@ class HipVoiceSettingsPanel extends StatelessWidget {
       key: const ValueKey('voice-settings'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HipSection('语音播报'),
         HipListGroup(
           children: [
             HipListRow(
               glyph: HipGlyph.voice,
               title: '人声口令',
               subtitle: '动作预告、倒数、换边、要点提醒',
-              trailing: _HipSmallSwitch(
-                child: Switch(
-                  key: const ValueKey('voice-switch'),
-                  value: v.voice,
-                  onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
-                ),
+              trailing: HipSwitch(
+                key: const ValueKey('voice-switch'),
+                value: v.voice,
+                onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
               ),
             ),
             HipListRow(
               glyph: HipGlyph.today,
               title: '提示音',
               subtitle: '开始、结束和倒数的“滴”声',
-              trailing: _HipSmallSwitch(
-                child: Switch(
-                  key: const ValueKey('chime-switch'),
-                  value: v.chimes,
-                  onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
-                ),
+              trailing: HipSwitch(
+                key: const ValueKey('chime-switch'),
+                value: v.chimes,
+                onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
               ),
             ),
             HipListRow(
@@ -1458,8 +1444,10 @@ class HipVoiceSettingsPanel extends StatelessWidget {
                 width: 196,
                 child: HipSegmented<VoiceLanguage>(
                   keyPrefix: 'voice-lang',
-                  height: 30,
-                  radius: 8,
+                  height: 32,
+                  radius: 9,
+                  inset: 2,
+                  ios: true,
                   values: VoiceLanguage.values,
                   selected: v.language,
                   label: (l) => l.label,
@@ -1476,15 +1464,16 @@ class HipVoiceSettingsPanel extends StatelessWidget {
                   Text(
                     '音量',
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
                       color: HipColors.text,
                     ),
                   ),
                   Expanded(
-                    child: Slider(
+                    child: HipSlider(
                       key: const ValueKey('voice-volume'),
                       value: v.volume,
+                      semanticLabel: '音量',
                       onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
                     ),
                   ),
@@ -1554,7 +1543,6 @@ class HipAppearancePanel extends StatelessWidget {
     key: const ValueKey('appearance-settings'),
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      const HipSection('外观'),
       HipListGroup(
         children: [
           HipListRow(
@@ -1564,8 +1552,10 @@ class HipAppearancePanel extends StatelessWidget {
               width: 210,
               child: HipSegmented<HipThemeChoice>(
                 keyPrefix: 'theme',
-                height: 30,
-                radius: 8,
+                height: 32,
+                radius: 9,
+                inset: 2,
+                ios: true,
                 values: HipThemeChoice.values,
                 selected: store.theme,
                 label: (c) => c.zh,
@@ -1576,17 +1566,5 @@ class HipAppearancePanel extends StatelessWidget {
         ],
       ),
     ],
-  );
-}
-
-/// m5: Material's switch at ~80 % — proportionate to 15 pt rows.
-class _HipSmallSwitch extends StatelessWidget {
-  const _HipSmallSwitch({required this.child});
-  final Widget child;
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 44,
-    height: 28,
-    child: FittedBox(fit: BoxFit.contain, child: child),
   );
 }

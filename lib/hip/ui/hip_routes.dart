@@ -28,6 +28,13 @@ enum HipTransition {
   /// page background, then the page fades in over the second half — and
   /// shrinks back into the control on close. No Hero flies alongside.
   expand,
+
+  /// Shared back chip: [HipNavPage] slides the whole page (backdrop, body,
+  /// bottom bar, and the bar's glass/title/trailing) in from the right, while
+  /// only the back chip stays visually fixed. The page underneath is
+  /// revealed on pop, and two chips never cross the screen at once
+  /// (开哥 2026-11-05).
+  content,
 }
 
 /// The one page route of the app. Durations and curves come from
@@ -40,6 +47,7 @@ class HipRoute<T> extends PageRoute<T> {
     this.originRadius = 28,
     this.originColor,
     this.originImage,
+    this.pinLeading = true,
     super.settings,
   }) : assert(transition != HipTransition.expand || origin != null);
 
@@ -50,6 +58,22 @@ class HipRoute<T> extends PageRoute<T> {
   /// Rise from the bottom (no on-screen origin).
   static HipRoute<T> rise<T>(WidgetBuilder builder) =>
       HipRoute<T>(builder: builder, transition: HipTransition.rise);
+
+  /// Shared-back-chip drill-down: the page surface (bar included) slides in
+  /// from the right while the chip stays fixed. Use for every destination
+  /// built from [HipNavPage].
+  ///
+  /// [pinLeading] must be false when the page below has no back chip (the
+  /// home shell): the destination's chip then arrives with its bar instead
+  /// of popping in over a page that had none.
+  static HipRoute<T> content<T>(
+    WidgetBuilder builder, {
+    bool pinLeading = true,
+  }) => HipRoute<T>(
+    builder: builder,
+    transition: HipTransition.content,
+    pinLeading: pinLeading,
+  );
 
   /// Grow out of the widget whose context is [from] (a tapped button's
   /// context, or `key.currentContext`); rises instead when that widget is
@@ -115,6 +139,10 @@ class HipRoute<T> extends PageRoute<T> {
   /// Snapshot of that control (see [expandFrom]); owned and disposed by
   /// the route.
   final ui.Image? originImage;
+
+  /// Whether a [HipTransition.content] destination keeps its back chip
+  /// pinned while the page slides; false when the page below has no chip.
+  final bool pinLeading;
 
   @override
   void dispose() {
@@ -187,7 +215,8 @@ class HipRoute<T> extends PageRoute<T> {
   ) {
     final linear = popGestureInProgress;
     final gesture =
-        transition == HipTransition.push &&
+        (transition == HipTransition.push ||
+            transition == HipTransition.content) &&
         Theme.of(context).platform == TargetPlatform.iOS;
     if (_reduceMotion(context)) {
       return FadeTransition(
@@ -230,6 +259,10 @@ class HipRoute<T> extends PageRoute<T> {
           originImage: originImage,
           child: child,
         );
+      case HipTransition.content:
+        // The page itself is not transformed; HipNavPage slides its surface
+        // below the bar on this route's clock.
+        return gesture ? _HipBackGesture(route: this, child: child) : child;
     }
   }
 
@@ -311,10 +344,13 @@ class HipCoveredTransition extends StatelessWidget {
                 ? HipMotion.container
                 : HipMotion.exit.flipped,
           );
-    // Only a push drifts (parallax, like iOS); a rise or an expand covers
-    // the page in place, so the page below just dims. No scale: a second
-    // moving layer is what made the old transitions feel busy.
-    final drift = kind == HipTransition.push && !reduce;
+    // A push and the shared-chip page move both drift (parallax, like iOS);
+    // a rise or an expand covers the page in place, so the page below just
+    // dims. No scale: a second moving layer is what made the old transitions
+    // feel busy.
+    final drift =
+        (kind == HipTransition.push || kind == HipTransition.content) &&
+        !reduce;
     final dim = HipColors.isDark ? .32 : .14;
     return AnimatedBuilder(
       animation: a,

@@ -150,7 +150,7 @@ Future<CoachChatController> loadHipChat(
 }
 
 Future<void> _push(BuildContext context, Widget page) async {
-  await Navigator.of(context).push(HipRoute.push<void>((_) => page));
+  await Navigator.of(context).push(HipRoute.content<void>((_) => page));
 }
 
 Future<void> _pushPractice(

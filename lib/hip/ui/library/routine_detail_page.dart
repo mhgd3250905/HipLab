@@ -47,66 +47,56 @@ class RoutineDetailPage extends StatelessWidget {
     final swapped = plan.steps.where((s) => s.replaced != null).length;
     final dropped = r.steps.length - plan.steps.length;
     final blocked = profile.blocked;
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HipNavBar(
-              leadingKey: const ValueKey('routine-back'),
-              title: routineShortName(r),
-              subtitle: '${t.routine} · ${t.scene(r.scene)}',
+    return HipNavPage(
+      leadingKey: const ValueKey('routine-back'),
+      title: routineShortName(r),
+      subtitle: '${t.routine} · ${t.scene(r.scene)}',
+      bodyScrollsUnderBar: true,
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+        children: [
+          Text(
+            r.audience,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.45,
+              color: HipColors.muted,
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                children: [
-                  Text(
-                    r.audience,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.45,
-                      color: HipColors.muted,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _stat('${plan.minutes}', t.statMinutes),
-                      const SizedBox(width: 10),
-                      _stat('${plan.steps.length}', t.statMoves),
-                      const SizedBox(width: 10),
-                      _stat('${plan.transitionSeconds}', t.statRest),
-                    ],
-                  ),
-                  if (blocked) ...[
-                    const SizedBox(height: 12),
-                    LibNotice(
-                      text: t.noticeBlocked,
-                      color: HipColors.tight,
-                      icon: HipGlyph.shield,
-                    ),
-                  ] else if (swapped + dropped > 0) ...[
-                    const SizedBox(height: 12),
-                    LibNotice(
-                      key: const ValueKey('routine-adapted'),
-                      text: t.levelAdapted(swapped, dropped),
-                      color: HipColors.jadeText,
-                    ),
-                  ],
-                  const SizedBox(height: 14),
-                  for (final (i, s) in plan.steps.indexed) ...[
-                    _row(context, t, content, i, s),
-                    if (i < plan.steps.length - 1)
-                      Divider(height: 1, indent: 64, color: HipColors.line),
-                  ],
-                ],
-              ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _stat('${plan.minutes}', t.statMinutes),
+              const SizedBox(width: 10),
+              _stat('${plan.steps.length}', t.statMoves),
+              const SizedBox(width: 10),
+              _stat('${plan.transitionSeconds}', t.statRest),
+            ],
+          ),
+          if (blocked) ...[
+            const SizedBox(height: 12),
+            LibNotice(
+              text: t.noticeBlocked,
+              color: HipColors.tight,
+              icon: HipGlyph.shield,
+            ),
+          ] else if (swapped + dropped > 0) ...[
+            const SizedBox(height: 12),
+            LibNotice(
+              key: const ValueKey('routine-adapted'),
+              text: t.levelAdapted(swapped, dropped),
+              color: HipColors.jadeText,
             ),
           ],
-        ),
+          const SizedBox(height: 14),
+          for (final (i, s) in plan.steps.indexed) ...[
+            _row(context, t, content, i, s),
+            if (i < plan.steps.length - 1)
+              Divider(height: 1, indent: 64, color: HipColors.line),
+          ],
+        ],
       ),
-      bottomNavigationBar: LibFooter(
+      bottomBar: LibFooter(
         children: [
           Expanded(
             flex: 3,
@@ -204,7 +194,7 @@ class RoutineDetailPage extends StatelessWidget {
             }
             // 看放松 inside the move: hand the jump back to 动作大全 (F4).
             final jump = await Navigator.of(context).push<Object?>(
-              HipRoute.push<Object?>(
+              HipRoute.content<Object?>(
                 (_) => DrillDetailPage(actions: actions, drillId: s.drill.id),
               ),
             );
