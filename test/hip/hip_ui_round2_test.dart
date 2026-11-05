@@ -432,6 +432,78 @@ void main() {
     );
   });
 
+  group('shared chip regression', () {
+    Future<void> openMore(WidgetTester tester) async {
+      await pumpApp(tester);
+      await tester.tap(find.byKey(const ValueKey('home-more')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('more-back')), findsOneWidget);
+    }
+
+    Future<void> pushSettings(WidgetTester tester) async {
+      await tester.tap(find.byKey(const ValueKey('more-settings')));
+      await tester.pump();
+    }
+
+    void expectOnlySettingsChip(WidgetTester tester) {
+      expect(find.byKey(const ValueKey('more-back')), findsNothing);
+      expect(find.byType(HipNavBackChip), findsOneWidget);
+      expect(
+        tester.getRect(find.byType(HipNavBackChip)).left,
+        closeTo(HipNavBar.chipEdge, .01),
+      );
+    }
+
+    testWidgets('More hides its inline chip during Settings push', (
+      tester,
+    ) async {
+      await openMore(tester);
+      await pushSettings(tester);
+      await tester.pump(const Duration(milliseconds: 20));
+      expectOnlySettingsChip(tester);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('More restores its inline chip only after Settings pop', (
+      tester,
+    ) async {
+      await openMore(tester);
+      await pushSettings(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(HipNavBackChip));
+      await tester.pump();
+      await tester.pump(
+        HipMotion.pageReverse - const Duration(milliseconds: 20),
+      );
+      expectOnlySettingsChip(tester);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('more-back')), findsOneWidget);
+      expect(find.byType(HipNavBackChip), findsOneWidget);
+    });
+
+    testWidgets(
+      'cancelled Settings edge swipe keeps the covered More chip hidden',
+      (tester) async {
+        await openMore(tester);
+        await pushSettings(tester);
+        await tester.pumpAndSettle();
+        final gesture = await tester.startGesture(const Offset(5, 400));
+        await gesture.moveBy(const Offset(20, 0));
+        await gesture.moveBy(const Offset(35, 0));
+        await tester.pump();
+        expectOnlySettingsChip(tester);
+        await gesture.cancel();
+        await tester.pumpAndSettle();
+        expect(find.byType(HipSettingsPage), findsOneWidget);
+        expectOnlySettingsChip(tester);
+        await tester.tap(find.byType(HipNavBackChip));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('more-back')), findsOneWidget);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  });
+
   group('one move per transition', () {
     testWidgets('开始 grows the player alone: no Hero flies alongside', (
       tester,

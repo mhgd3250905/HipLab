@@ -163,10 +163,12 @@ class HipNavBar extends StatelessWidget {
               // is live the way the system back control is.
               left: chipEdge,
               top: topInset + (row - 44) / 2,
-              child: HipNavBackChip(
-                leading: leading,
-                onLeading: onLeading,
-                leadingKey: leadingKey,
+              child: _HipUncoveredLeading(
+                child: HipNavBackChip(
+                  leading: leading,
+                  onLeading: onLeading,
+                  leadingKey: leadingKey,
+                ),
               ),
             ),
           if (trailing != null)
@@ -232,6 +234,26 @@ class HipNavBackChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A covered page hides its leading control in both layouts: inline in the
+/// sliding bar and pinned above the surface. The top page owns the chip until
+/// its reverse transition has completely revealed this page again.
+class _HipUncoveredLeading extends StatelessWidget {
+  const _HipUncoveredLeading({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final secondary = ModalRoute.of(context)?.secondaryAnimation;
+    if (secondary == null) return child;
+    return AnimatedBuilder(
+      animation: secondary,
+      builder: (context, child) =>
+          secondary.value > 0 ? const SizedBox.shrink() : child!,
+      child: child,
     );
   }
 }
@@ -522,7 +544,6 @@ class _HipNavPageState extends State<HipNavPage> {
       ],
     );
     if (curve != null) page = _enter(page, curve);
-    final secondary = route?.secondaryAnimation;
     final chip = widget.leading == HipNavLeading.none
         ? null
         : HipNavBackChip(
@@ -540,16 +561,7 @@ class _HipNavPageState extends State<HipNavPage> {
             top: topInset + (row - 44) / 2,
             // The one fixed control: the bar's glass, title and trailing
             // action slide with their page, the chip stays put.
-            child: secondary == null
-                ? chip
-                : AnimatedBuilder(
-                    animation: secondary,
-                    // A covered page hides its chip, so a drifting page
-                    // underneath cannot show a second one.
-                    builder: (context, child) =>
-                        secondary.value > 0 ? const SizedBox.shrink() : child!,
-                    child: chip,
-                  ),
+            child: _HipUncoveredLeading(child: chip),
           ),
       ],
     );
