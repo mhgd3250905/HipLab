@@ -1,11 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
+import 'hip_home_action_inspect.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -18,26 +21,34 @@ class HipHomeActionDeck extends StatefulWidget {
     required this.drills,
     this.doses = const [],
     this.cues = const [],
+    this.descriptions = const [],
   });
 
   final String identity;
   final List<HipDrill> drills;
   final List<String> doses;
   final List<String> cues;
+  final List<String> descriptions;
 
   @override
   State<HipHomeActionDeck> createState() => _HipHomeActionDeckState();
 }
 
 class _HipHomeActionDeckState extends State<HipHomeActionDeck>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _position;
+  late final AnimationController _vertical;
+  final _overlay = OverlayPortalController();
+  final _frontAnchor = GlobalKey();
+  bool _floating = false;
+  bool _expanded = false;
   int _index = 0;
   int _toward = 1;
   int _generation = 0;
   bool _committing = false;
   double _cardWidth = 1;
   double _exitDistance = 1;
+  double _switchDistance = 1;
   bool _lastReduced = false;
   Size? _viewport;
   bool get _multiple => widget.drills.length > 1;
@@ -47,6 +58,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   void initState() {
     super.initState();
     _position = AnimationController.unbounded(vsync: this);
+    _vertical = AnimationController.unbounded(vsync: this);
   }
 
   @override
@@ -57,9 +69,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     if ((_reduced && !_lastReduced) || resized) {
       _generation++;
       _position.stop();
+      _vertical.stop();
       if (_committing) _index = _at(_toward);
       _committing = false;
       _position.value = 0;
+      _vertical.value = 0;
+      _finishFloating();
     }
     _lastReduced = _reduced;
     _viewport = viewport;
@@ -72,7 +87,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         !listEqualsIds(oldWidget.drills, widget.drills)) {
       _generation++;
       _position.stop();
+      _vertical.stop();
       _position.value = 0;
+      _vertical.value = 0;
+      _finishFloating();
       _index = 0;
       _toward = 1;
       _committing = false;
@@ -87,68 +105,143 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   void dispose() {
     _generation++;
     _position.dispose();
+    _vertical.dispose();
     super.dispose();
   }
 
   int _at(int offset) => (_index + offset) % widget.drills.length;
 
+  void _floatFront() {
+    if (_reduced || _floating) return;
+    setState(() => _floating = true);
+    _overlay.show();
+  }
+
+  void _finishFloating() {
+    _floating = false;
+    if (!_overlay.isShowing) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      // Identity/viewport changes arrive during build; the portal cannot be
+      // hidden in that phase. Its builder already paints nothing this frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_floating && _overlay.isShowing) _overlay.hide();
+      });
+    } else {
+      _overlay.hide();
+    }
+  }
+
+  Future<void> _openCard([TapUpDetails? details]) async {
+    if (_expanded || _floating || _position.isAnimating) return;
+    final box = _frontAnchor.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final rect = MatrixUtils.transformRect(
+      box.getTransformTo(null),
+      Offset.zero & box.size,
+    );
+    if (details != null && !rect.contains(details.globalPosition)) return;
+    final index = _index;
+    setState(() => _expanded = true);
+    try {
+      await showHipHomeActionCard(
+        context,
+        sourceRect: rect,
+        drill: widget.drills[index],
+        number: index + 1,
+        dose: widget.doses.elementAtOrNull(index) ?? '',
+        cue: widget.cues.elementAtOrNull(index) ?? '',
+        description: widget.descriptions.elementAtOrNull(index) ?? '',
+      );
+    } finally {
+      if (mounted) setState(() => _expanded = false);
+    }
+  }
+
   void _dragStart(DragStartDetails details) {
-    if (!_multiple || _committing) return;
+    if (_committing || _expanded) return;
     // Catch a returning card where it is, rather than jumping it to rest.
     _generation++;
     _position.stop();
+    _vertical.stop();
+    _floatFront();
   }
 
   void _dragUpdate(DragUpdateDetails details) {
-    if (!_multiple || _committing) return;
-    final next = (_position.value + details.primaryDelta!).clamp(
-      -_cardWidth * 1.25,
-      _cardWidth * 1.25,
-    );
+    if (_committing || _expanded) return;
+    final next = _position.value + details.delta.dx;
     if (next.abs() > 1) _toward = next < 0 ? 1 : -1;
     _position.value = next;
+    _vertical.value += details.delta.dy;
   }
 
   void _dragEnd(DragEndDetails details) {
-    if (!_multiple || _committing) return;
-    final velocity = details.primaryVelocity ?? 0;
+    if (_committing || _expanded) return;
+    final velocity = details.velocity.pixelsPerSecond.dx;
+    final verticalVelocity = details.velocity.pixelsPerSecond.dy;
     final distance = _position.value;
-    final far = distance.abs() > _cardWidth * .24;
+    // A diagonal trip toward the top/bottom is still a vertical gesture, even
+    // if it happens to cross a horizontal boundary on the way.
+    final far =
+        _multiple &&
+        distance.abs() > _switchDistance &&
+        distance.abs() > _vertical.value.abs();
     final flick = velocity.abs() > 650;
     if (far && flick && velocity * distance < 0) {
       // A deliberate flick back toward the stack cancels this preview.
-      _returnCard(velocity);
+      _returnCard(velocity, verticalVelocity);
       return;
     }
-    if (far || flick) {
+    if (far) {
       // Once the next card is exposed, a last-moment velocity reversal must
       // not replace it with a different image under the user's hand.
-      final direction = far ? _toward : (velocity < 0 ? 1 : -1);
+      final direction = _toward;
       _turn(direction, velocity: velocity);
     } else {
-      _returnCard(velocity);
+      _returnCard(velocity, verticalVelocity);
     }
   }
 
-  Future<void> _returnCard([double velocity = 0]) async {
+  Future<void> _returnCard([
+    double velocity = 0,
+    double verticalVelocity = 0,
+  ]) async {
     if (_committing) return;
+    // The pan recognizer is also cancelled when a tap wins the gesture arena.
+    // Starting a zero-distance spring there would block the tap-to-open action.
+    if (!_floating && _position.value == 0 && _vertical.value == 0) return;
     if (_reduced) {
       _position.value = 0;
+      _vertical.value = 0;
+      setState(_finishFloating);
       return;
     }
     final generation = ++_generation;
     try {
-      await _position
-          .animateWith(
-            SpringSimulation(
-              const SpringDescription(mass: 1, stiffness: 310, damping: 29),
-              _position.value,
-              0,
-              velocity.clamp(-1800.0, 1800.0),
-              tolerance: const Tolerance(distance: .2, velocity: 2),
-            ),
-          )
-          .orCancel;
+      await Future.wait([
+        _vertical
+            .animateWith(
+              SpringSimulation(
+                const SpringDescription(mass: 1, stiffness: 310, damping: 29),
+                _vertical.value,
+                0,
+                verticalVelocity.clamp(-1800.0, 1800.0),
+                tolerance: const Tolerance(distance: .2, velocity: 2),
+              ),
+            )
+            .orCancel,
+        _position
+            .animateWith(
+              SpringSimulation(
+                const SpringDescription(mass: 1, stiffness: 310, damping: 29),
+                _position.value,
+                0,
+                velocity.clamp(-1800.0, 1800.0),
+                tolerance: const Tolerance(distance: .2, velocity: 2),
+              ),
+            )
+            .orCancel,
+      ]);
     } on TickerCanceled {
       return;
     }
@@ -156,6 +249,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     // at rest so the hidden reserve is removed after a cancelled drag.
     if (mounted && generation == _generation && !_committing) {
       _position.value = 0;
+      _vertical.value = 0;
+      setState(_finishFloating);
     }
   }
 
@@ -164,7 +259,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     _toward = direction;
     final generation = ++_generation;
     _position.stop();
+    _vertical.stop();
     if (!_reduced) {
+      _floatFront();
       _committing = true;
       try {
         await _position
@@ -186,6 +283,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _index = _at(direction);
       _committing = false;
       _position.value = 0;
+      _vertical.value = 0;
+      _finishFloating();
     });
   }
 
@@ -196,10 +295,11 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       container: true,
       explicitChildNodes: true,
       label: '训练动作预览',
+      onTap: _openCard,
       value: _description(_index),
       increasedValue: _multiple ? _description(_at(1)) : null,
       decreasedValue: _multiple ? _description(_at(-1)) : null,
-      hint: _multiple ? '左右滑动预览，不改变训练顺序' : null,
+      hint: '轻点展开动作，拖到左右区域切换，上下拖动松手回位',
       onIncrease: _multiple ? () => _turn(1) : null,
       onDecrease: _multiple ? () => _turn(-1) : null,
       child: FocusableActionDetector(
@@ -224,31 +324,67 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
               math.max(156, available / 1.62),
             );
             _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
+            _switchDistance = MediaQuery.sizeOf(context).width * .26;
             final cardHeight = math.min(available, _cardWidth * 1.62);
             return Align(
               alignment: const Alignment(0, .2),
-              child: SizedBox(
-                height: cardHeight + 100,
-                child: GestureDetector(
-                  key: const ValueKey('home-deck-gesture'),
-                  behavior: HitTestBehavior.opaque,
-                  onHorizontalDragStart: _multiple ? _dragStart : null,
-                  onHorizontalDragUpdate: _multiple ? _dragUpdate : null,
-                  onHorizontalDragEnd: _multiple ? _dragEnd : null,
-                  onHorizontalDragCancel: _multiple ? _returnCard : null,
-                  child: ClipRect(
-                    clipper: _DeckViewportClip(
-                      math.max(
-                        0,
-                        (MediaQuery.sizeOf(context).width -
-                                constraints.maxWidth) /
-                            2,
+              child: OverlayPortal.overlayChildLayoutBuilder(
+                controller: _overlay,
+                overlayLocation: OverlayChildLocation.rootOverlay,
+                overlayChildBuilder: (context, info) {
+                  if (!_floating) return const SizedBox.shrink();
+                  return Positioned.fromRect(
+                    rect: MatrixUtils.transformRect(
+                      info.childPaintTransform,
+                      Offset.zero & info.childSize,
+                    ),
+                    child: IgnorePointer(
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([_position, _vertical]),
+                        builder: (context, _) => Stack(
+                          clipBehavior: Clip.none,
+                          fit: StackFit.expand,
+                          children: [
+                            _card(
+                              _index,
+                              0,
+                              constraints.maxWidth,
+                              cardHeight,
+                              offset: _reduced ? 0 : _position.value,
+                              front: true,
+                              floatingCopy: true,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: AnimatedBuilder(
-                      animation: _position,
-                      builder: (context, _) =>
-                          _cards(constraints.maxWidth, cardHeight),
+                  );
+                },
+                child: SizedBox(
+                  height: cardHeight + 100,
+                  child: GestureDetector(
+                    key: const ValueKey('home-deck-gesture'),
+                    behavior: HitTestBehavior.opaque,
+                    dragStartBehavior: DragStartBehavior.down,
+                    onPanStart: _dragStart,
+                    onPanUpdate: _dragUpdate,
+                    onPanEnd: _dragEnd,
+                    onPanCancel: _returnCard,
+                    onTapUp: _openCard,
+                    child: ClipRect(
+                      clipper: _DeckViewportClip(
+                        math.max(
+                          0,
+                          (MediaQuery.sizeOf(context).width -
+                                  constraints.maxWidth) /
+                              2,
+                        ),
+                      ),
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([_position, _vertical]),
+                        builder: (context, _) =>
+                            _cards(constraints.maxWidth, cardHeight),
+                      ),
                     ),
                   ),
                 ),
@@ -314,6 +450,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
             height,
             offset: layer == 0 ? offset : 0,
             front: layer == 0,
+            opacity: layer == 0 && (_floating || _expanded) ? 0 : 1,
           ),
       ],
     );
@@ -328,30 +465,44 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     required bool front,
     bool replenishing = false,
     double opacity = 1,
+    bool floatingCopy = false,
   }) {
     final travel = (offset / _cardWidth).clamp(-1.5, 1.5);
-    final lift = front ? math.sin(travel.abs().clamp(0, 1) * math.pi) : 0.0;
+    final vertical = _reduced ? 0.0 : _vertical.value;
+    final lift = front
+        ? math.sin(
+            (Offset(offset, vertical).distance / _cardWidth).clamp(0, 1) *
+                math.pi /
+                2,
+          )
+        : 0.0;
     final angle = -.025 + depth * .105 + (front ? travel * .18 : 0);
     final dark = HipColors.isDark;
     final high = MediaQuery.highContrastOf(context);
     final tilt = Matrix4.identity()
       ..setEntry(3, 2, .0012)
-      ..rotateX(.018 + lift * .035)
+      ..rotateX(
+        .018 + (front ? (vertical / _cardWidth).clamp(-1, 1) * -.04 : 0),
+      )
       ..rotateY(-.10 + (front ? travel * .19 : 0));
     return Positioned(
       key: ValueKey(
-        'home-deck-card-$index'
+        '${floatingCopy ? 'home-deck-floating-card' : 'home-deck-card'}-$index'
         '${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
       ),
       left: (width - _cardWidth) / 2 - 18 + depth * 16 + offset,
-      top: 74 - depth * 26 - lift * 18,
+      top: 74 - depth * 26 - lift * 18 + (front ? vertical : 0),
       width: _cardWidth,
       height: height,
       child: Opacity(
-        key: ValueKey('home-deck-opacity-$index'),
+        key: floatingCopy
+            ? const ValueKey('home-deck-floating-front')
+            : ValueKey('home-deck-opacity-$index'),
         opacity: opacity,
         child: Transform.rotate(
-          key: front ? const ValueKey('home-deck-front') : null,
+          key: front && !floatingCopy
+              ? const ValueKey('home-deck-front')
+              : null,
           alignment: const Alignment(0, .8),
           angle: angle,
           child: Transform(
@@ -361,10 +512,11 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
               scale: (1 - depth * .045) * (1 + lift * .018),
               alignment: const Alignment(0, .8),
               child: ExcludeSemantics(
-                excluding: !front,
+                excluding: !front || floatingCopy,
                 child: IgnorePointer(
                   ignoring: !front,
                   child: RepaintBoundary(
+                    key: front && !floatingCopy ? _frontAnchor : null,
                     child: Stack(
                       clipBehavior: Clip.none,
                       fit: StackFit.expand,
@@ -400,7 +552,11 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(22),
-                            child: _poster(index, front: front),
+                            child: _poster(
+                              index,
+                              front: front,
+                              keyed: !floatingCopy,
+                            ),
                           ),
                         ),
                         IgnorePointer(
@@ -430,7 +586,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     );
   }
 
-  Widget _poster(int index, {required bool front}) {
+  Widget _poster(int index, {required bool front, bool keyed = true}) {
     final drill = widget.drills[index];
     final dose = widget.doses.elementAtOrNull(index) ?? '';
     final cue = widget.cues.elementAtOrNull(index) ?? '';
@@ -481,7 +637,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     ),
                     Text(
                       (index + 1).toString().padLeft(2, '0'),
-                      key: front ? const ValueKey('home-deck-position') : null,
+                      key: front && keyed
+                          ? const ValueKey('home-deck-position')
+                          : null,
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: compact ? 10 : 17,
@@ -499,7 +657,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
               child: ExcludeSemantics(
                 child: IgnorePointer(
                   child: HipDrillArt(
-                    key: front ? const ValueKey('home-hero') : null,
+                    key: front && keyed ? const ValueKey('home-hero') : null,
                     drill: drill,
                     showPendingLabel: false,
                   ),
@@ -514,7 +672,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                   children: [
                     Text(
                       drill.name,
-                      key: front ? const ValueKey('home-deck-caption') : null,
+                      key: front && keyed
+                          ? const ValueKey('home-deck-caption')
+                          : null,
                       maxLines: compact ? 1 : 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -529,7 +689,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                       const SizedBox(height: 7),
                       Text(
                         dose,
-                        key: front ? const ValueKey('home-deck-dose') : null,
+                        key: front && keyed
+                            ? const ValueKey('home-deck-dose')
+                            : null,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

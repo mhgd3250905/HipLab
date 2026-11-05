@@ -35,6 +35,7 @@ import 'hip_segmented.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 import 'library/library_actions.dart';
+import 'library/library_widgets.dart' show drillPoint;
 
 const hipAppName = '开胯训练助手';
 
@@ -731,6 +732,10 @@ class _HipHomeState extends State<HipHome> {
                     drills: [for (final step in plan.steps) step.drill],
                     doses: [for (final step in plan.steps) step.dose],
                     cues: [for (final step in plan.steps) step.tip],
+                    descriptions: [
+                      for (final step in plan.steps)
+                        drillPoint(store.content, step.drill, 'zh'),
+                    ],
                   ),
                 )
               else

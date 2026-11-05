@@ -47,8 +47,11 @@ void main() {
     String identity = 'day/home/A',
     List<HipDrill>? items,
     List<String> doses = const [],
+    List<String> cues = const [],
+    List<String> descriptions = const [],
     HipPalette palette = HipPalette.dark,
     bool reduced = false,
+    bool videoEnabled = false,
     double height = 600,
   }) async {
     HipColors.palette = palette;
@@ -58,7 +61,7 @@ void main() {
         themeAnimationDuration: Duration.zero,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduced),
-          child: HipMediaPolicy(videoEnabled: false, child: child!),
+          child: HipMediaPolicy(videoEnabled: videoEnabled, child: child!),
         ),
         home: Scaffold(
           body: Center(
@@ -70,6 +73,8 @@ void main() {
                 identity: identity,
                 drills: items ?? drills,
                 doses: doses,
+                cues: cues,
+                descriptions: descriptions,
               ),
             ),
           ),
@@ -99,18 +104,31 @@ void main() {
   GestureDetector deckDrag(WidgetTester tester) => tester
       .widget<GestureDetector>(find.byKey(const ValueKey('home-deck-gesture')));
 
-  void moveCard(GestureDetector drag, double delta) =>
-      drag.onHorizontalDragUpdate!(
-        DragUpdateDetails(
-          globalPosition: Offset.zero,
-          delta: Offset(delta, 0),
-          primaryDelta: delta,
-        ),
-      );
+  void moveCard(GestureDetector drag, double delta) => drag.onPanUpdate!(
+    DragUpdateDetails(
+      globalPosition: Offset.zero,
+      delta: Offset(delta, 0),
+      primaryDelta: delta,
+    ),
+  );
 
   Finder artFor(HipDrill drill) => find.byWidgetPredicate(
     (widget) => widget is HipDrillArt && widget.drill.id == drill.id,
   );
+
+  Finder sourceCards() => find.byWidgetPredicate(
+    (widget) =>
+        widget is Positioned &&
+        widget.key is ValueKey<String> &&
+        (widget.key! as ValueKey<String>).value.startsWith('home-deck-card-'),
+  );
+
+  Finder visualFront() {
+    final floating = find.byKey(const ValueKey('home-deck-floating-front'));
+    return floating.evaluate().isEmpty
+        ? find.byKey(const ValueKey('home-deck-front'))
+        : floating;
+  }
 
   testWidgets('three visible action cards cycle through every ordered action', (
     tester,
@@ -211,11 +229,11 @@ void main() {
           .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
           .width!;
       final drag = deckDrag(tester);
-      drag.onHorizontalDragStart!(DragStartDetails());
+      drag.onPanStart!(DragStartDetails());
       moveCard(drag, -width * .08);
       await tester.pump();
       expect(frontId(tester), drills.first.id);
-      expect(find.byType(HipDrillArt), findsNWidgets(4));
+      expect(sourceCards(), findsNWidgets(4));
       expect(replenishing, findsOneWidget);
       final beginningOpacity = tester.widget<Opacity>(replenishing).opacity;
       expect(beginningOpacity, greaterThan(0));
@@ -238,7 +256,7 @@ void main() {
       expect(tester.getRect(artFor(drills[2])), isNot(previousBottom));
       // The incoming artwork is already in its final bottom position. Committing
       // the turn must keep that pose rather than suddenly adding another card.
-      drag.onHorizontalDragEnd!(
+      drag.onPanEnd!(
         DragEndDetails(
           velocity: const Velocity(pixelsPerSecond: Offset(-800, 0)),
           primaryVelocity: -800,
@@ -282,12 +300,12 @@ void main() {
     final rest = tester.getRect(artFor(drills[2]));
     for (final direction in [-1, 1]) {
       final drag = deckDrag(tester);
-      drag.onHorizontalDragStart!(DragStartDetails());
+      drag.onPanStart!(DragStartDetails());
       moveCard(drag, direction * width * .15);
       await tester.pump();
       expect(replenishing, findsOneWidget);
-      expect(find.byType(HipDrillArt), findsNWidgets(4));
-      drag.onHorizontalDragCancel!();
+      expect(sourceCards(), findsNWidgets(4));
+      drag.onPanCancel!();
       await tester.pumpAndSettle();
       expect(position(tester), '01');
       expect(frontId(tester), drills.first.id);
@@ -318,16 +336,16 @@ void main() {
               )
               .width!;
           final drag = deckDrag(tester);
-          drag.onHorizontalDragStart!(DragStartDetails());
+          drag.onPanStart!(DragStartDetails());
           moveCard(drag, -direction * width * 1.05);
           await tester.pump();
           final reserve = find.byKey(
             ValueKey('home-deck-card-$expectedIndex-reserve'),
           );
           expect(reserve, findsOneWidget);
-          expect(find.byType(HipDrillArt), findsNWidgets(count + 1));
+          expect(sourceCards(), findsNWidgets(count + 1));
           expect(tester.takeException(), isNull);
-          drag.onHorizontalDragEnd!(
+          drag.onPanEnd!(
             DragEndDetails(
               velocity: Velocity(
                 pixelsPerSecond: Offset(-direction * 800.0, 0),
@@ -459,15 +477,11 @@ void main() {
     await first.cancel();
     await tester.pump(const Duration(milliseconds: 16));
     expect(position(tester), '01');
-    final returningCenter = tester
-        .getRect(find.byKey(const ValueKey('home-deck-front')))
-        .center;
+    final returningCenter = tester.getRect(visualFront()).center;
     final reverse = await tester.startGesture(tester.getCenter(area));
     await reverse.moveBy(const Offset(30, 0));
     await tester.pump(const Duration(milliseconds: 16));
-    final caughtCenter = tester
-        .getRect(find.byKey(const ValueKey('home-deck-front')))
-        .center;
+    final caughtCenter = tester.getRect(visualFront()).center;
     expect((caughtCenter.dx - returningCenter.dx).abs(), lessThanOrEqualTo(32));
     await reverse.moveBy(const Offset(210, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -479,7 +493,7 @@ void main() {
   });
 
   testWidgets(
-    'a far left preview flicked back right returns without committing',
+    'a fast flick inside the central region returns without committing',
     (tester) async {
       phone(tester);
       await showDeck(tester);
@@ -489,22 +503,22 @@ void main() {
       final drag = tester.widget<GestureDetector>(
         find.byKey(const ValueKey('home-deck-gesture')),
       );
-      drag.onHorizontalDragStart!(DragStartDetails());
-      drag.onHorizontalDragUpdate!(
+      drag.onPanStart!(DragStartDetails());
+      drag.onPanUpdate!(
         DragUpdateDetails(
           globalPosition: Offset.zero,
-          delta: const Offset(-190, 0),
-          primaryDelta: -190,
+          delta: const Offset(-55, 0),
         ),
       );
       await tester.pump();
-      expect(tester.getRect(front).center.dx, lessThan(rest.center.dx - 20));
-      // Supply the final velocity explicitly: the card is already far left,
-      // while this release is a deliberate flick back toward its original stack.
-      drag.onHorizontalDragEnd!(
+      expect(
+        tester.getRect(visualFront()).center.dx,
+        lessThan(rest.center.dx - 20),
+      );
+      // Velocity alone cannot turn a card that remains in the central region.
+      drag.onPanEnd!(
         DragEndDetails(
-          velocity: const Velocity(pixelsPerSecond: Offset(1200, 0)),
-          primaryVelocity: 1200,
+          velocity: const Velocity(pixelsPerSecond: Offset(-2400, 0)),
         ),
       );
       await tester.pumpAndSettle();
@@ -513,6 +527,252 @@ void main() {
       expect(tester.getRect(front).center.dx, closeTo(rest.center.dx, .5));
       await next(tester);
       expect(frontId(tester), drills[1].id);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'vertical and diagonal drags follow the hand and return on cancel',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final rest = tester.getRect(visualFront());
+      final drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      drag.onPanUpdate!(
+        DragUpdateDetails(
+          globalPosition: Offset.zero,
+          delta: const Offset(0, 170),
+        ),
+      );
+      await tester.pump();
+      final floating = find.byKey(const ValueKey('home-deck-floating-front'));
+      expect(floating, findsOneWidget);
+      expect(
+        tester.getRect(floating).center.dy,
+        greaterThan(rest.center.dy + 120),
+      );
+      expect(position(tester), '01');
+      drag.onPanEnd!(DragEndDetails());
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills.first.id);
+      expect(floating, findsNothing);
+      expect(
+        tester.getRect(visualFront()).center.dy,
+        closeTo(rest.center.dy, .5),
+      );
+
+      final diagonal = deckDrag(tester);
+      diagonal.onPanStart!(DragStartDetails());
+      diagonal.onPanUpdate!(
+        DragUpdateDetails(
+          globalPosition: Offset.zero,
+          delta: const Offset(65, -130),
+        ),
+      );
+      await tester.pump();
+      final moved = tester.getRect(floating);
+      expect(moved.center.dx, greaterThan(rest.center.dx + 35));
+      expect(moved.center.dy, lessThan(rest.center.dy - 90));
+      diagonal.onPanCancel!();
+      await tester.pumpAndSettle();
+      expect(position(tester), '01');
+      expect(floating, findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('dragged front floats beyond both vertical edges of the deck', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester, height: 360);
+    await tester.pumpAndSettle();
+    final deckBounds = tester.getRect(
+      find.byKey(const ValueKey('home-deck-gesture')),
+    );
+    final floating = find.byKey(const ValueKey('home-deck-floating-front'));
+    final drag = deckDrag(tester);
+    drag.onPanStart!(DragStartDetails());
+    drag.onPanUpdate!(
+      DragUpdateDetails(
+        globalPosition: Offset.zero,
+        delta: const Offset(0, -210),
+      ),
+    );
+    await tester.pump();
+    expect(tester.getRect(floating).top, lessThan(deckBounds.top));
+    drag.onPanUpdate!(
+      DragUpdateDetails(
+        globalPosition: Offset.zero,
+        delta: const Offset(0, 440),
+      ),
+    );
+    await tester.pump();
+    expect(tester.getRect(floating).bottom, greaterThan(deckBounds.bottom));
+    expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-deck-position')), findsOneWidget);
+    drag.onPanCancel!();
+    await tester.pumpAndSettle();
+    expect(floating, findsNothing);
+    expect(position(tester), '01');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('only the horizontal side regions commit a released card', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester);
+    await tester.pumpAndSettle();
+    for (final (distance, expected) in [
+      (-75.0, '01'),
+      (-140.0, '02'),
+      (140.0, '01'),
+      (75.0, '01'),
+    ]) {
+      final drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      moveCard(drag, distance);
+      await tester.pump();
+      drag.onPanEnd!(DragEndDetails());
+      await tester.pumpAndSettle();
+      expect(position(tester), expected);
+      expect(
+        find.byKey(const ValueKey('home-deck-floating-front')),
+        findsNothing,
+      );
+    }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'vertical-dominant releases return even after crossing a horizontal threshold',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final rest = tester.getRect(visualFront());
+      final floating = find.byKey(const ValueKey('home-deck-floating-front'));
+      for (final delta in [const Offset(130, 500), const Offset(-130, -500)]) {
+        final drag = deckDrag(tester);
+        drag.onPanStart!(DragStartDetails());
+        drag.onPanUpdate!(
+          DragUpdateDetails(globalPosition: Offset.zero, delta: delta),
+        );
+        await tester.pump();
+        expect(floating, findsOneWidget);
+        expect(position(tester), '01');
+        drag.onPanEnd!(DragEndDetails());
+        await tester.pumpAndSettle();
+        expect(frontId(tester), drills.first.id);
+        expect(position(tester), '01');
+        expect(floating, findsNothing);
+        final settled = tester.getRect(visualFront());
+        expect(settled.center.dx, closeTo(rest.center.dx, .5));
+        expect(settled.center.dy, closeTo(rest.center.dy, .5));
+        expect(tester.takeException(), isNull);
+      }
+      expect(fixture.requested, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'tapping a card opens a bounded action preview that pauses without rebuilding media',
+    (tester) async {
+      phone(tester);
+      const description = '动作介绍：保持骨盆稳定，缓慢完成动作。';
+      const cue = '动作提示：不要屏住呼吸';
+      await showDeck(
+        tester,
+        descriptions: [description],
+        cues: [cue],
+        doses: ['每侧 40 秒'],
+        videoEnabled: true,
+      );
+      await tester.pumpAndSettle();
+      await tester.tapAt(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pumpAndSettle();
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      expect(expanded, findsOneWidget);
+      final bounds = tester.getRect(expanded);
+      expect(bounds.left, greaterThan(0));
+      expect(bounds.right, lessThan(394));
+      expect(bounds.top, greaterThan(0));
+      expect(bounds.bottom, lessThan(853));
+      expect(
+        find.descendant(of: expanded, matching: find.text(description)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: expanded, matching: find.text(cue)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: expanded, matching: find.text(drills.first.name)),
+        findsOneWidget,
+      );
+      final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
+      final media = find.descendant(
+        of: mediaTap,
+        matching: find.byType(trainer.TrainingActionMedia),
+      );
+      final mediaElement = tester.element(media);
+      final mediaState = tester.state(media);
+      expect(tester.widget<trainer.TrainingActionMedia>(media).playing, isTrue);
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isFalse);
+      await tester.tap(mediaTap);
+      await tester.pump();
+      expect(tester.element(media), same(mediaElement));
+      expect(tester.widget<trainer.TrainingActionMedia>(media).playing, isTrue);
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
+      await tester.tap(mediaTap);
+      await tester.pump();
+      expect(tester.element(media), same(mediaElement));
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isFalse);
+      await tester.tap(arrow('收起动作卡片'));
+      await tester.pumpAndSettle();
+      expect(expanded, findsNothing);
+      expect(mediaState.mounted, isFalse);
+      expect(position(tester), '01');
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'action preview dismisses outside and unmounts cleanly while open',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester, videoEnabled: true);
+      await tester.pumpAndSettle();
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      await tester.tapAt(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pumpAndSettle();
+      expect(expanded, findsOneWidget);
+      final bounds = tester.getRect(expanded);
+      await tester.tapAt(Offset(3, bounds.center.dy));
+      await tester.pumpAndSettle();
+      expect(expanded, findsNothing);
+      await tester.tapAt(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pumpAndSettle();
+      final media = find.descendant(
+        of: find.byKey(const ValueKey('home-deck-expanded-media')),
+        matching: find.byType(trainer.TrainingActionMedia),
+      );
+      final state = tester.state(media);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      expect(state.mounted, isFalse);
+      expect(expanded, findsNothing);
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
     },
