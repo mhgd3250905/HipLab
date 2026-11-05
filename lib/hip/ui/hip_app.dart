@@ -14,6 +14,7 @@ import '../data/hip_shared_library.dart';
 import '../data/hip_action_scope.dart';
 import '../coach/hip_coach_profile.dart' show loadHipCoachCatalog;
 import '../domain/hip_models.dart';
+import '../domain/hip_progress.dart' show dayKey;
 import '../domain/hip_session.dart';
 import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
@@ -23,6 +24,7 @@ import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
+import 'hip_home_action_deck.dart';
 import 'hip_more_page.dart';
 import 'hip_page_kit.dart';
 import 'hip_player_page.dart';
@@ -704,70 +706,63 @@ class _HipHomeState extends State<HipHome> {
   Widget build(BuildContext context) {
     final routine = _routine;
     final plan = routine == null ? null : store.planForRoutine(routine);
-    final hero = plan == null
-        ? null
-        : (plan.steps.where((s) => s.drill.poster != null).firstOrNull ??
-                  plan.steps.firstOrNull)
-              ?.drill;
     final alerts = [
       if (store.askNumbness) _numbnessCard(),
       for (final d in store.lockedDirections.keys) _lockCard(d),
     ];
     final canRotate = store.sceneRoutines(store.scene).length > 1;
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Full-bleed cover, edge to edge and under the status bar: the
-          // text sits straight on it and the dock has something to blur.
-          if (hero != null)
-            Positioned.fill(
-              child: _HomeHeroArt(
-                drill: hero,
-                id: '${store.scene.id}-${routine!.id}',
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: _topBar(),
               ),
-            ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: _topBar(),
+              if (plan != null && plan.steps.isNotEmpty)
+                Expanded(
+                  child: HipHomeActionDeck(
+                    key: const ValueKey('home-deck'),
+                    identity:
+                        '${dayKey(store.now())}/${store.scene.id}/${routine!.id}',
+                    drills: [for (final step in plan.steps) step.drill],
+                    doses: [for (final step in plan.steps) step.dose],
+                    cues: [for (final step in plan.steps) step.tip],
                   ),
-                  const Spacer(),
-                  for (final a in alerts) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: a,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  if (plan == null)
-                    _blockedHero()
-                  else
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(child: _headline(routine!, plan)),
-                          if (canRotate) ...[
-                            const SizedBox(width: 12),
-                            _rotateButton(),
-                          ],
-                        ],
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  _dock(plan),
-                ],
-              ),
-            ),
+                )
+              else
+                const Spacer(),
+              for (final a in alerts) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: a,
+                ),
+                const SizedBox(height: 10),
+              ],
+              if (plan == null)
+                _blockedHero()
+              else
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(child: _headline(routine!, plan)),
+                      if (canRotate) ...[
+                        const SizedBox(width: 12),
+                        _rotateButton(),
+                      ],
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 20),
+              _dock(plan),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1088,96 +1083,6 @@ class _HipHomeState extends State<HipHome> {
     ),
     onChanged: store.pickScene,
   );
-}
-
-/// The recommended routine's picture, full-bleed: soft radial vignette and
-/// a long fade into the page at top and bottom, a faint jade glow under the
-/// figure. Cross-fades (300ms) when the scene or routine changes.
-class _HomeHeroArt extends StatelessWidget {
-  const _HomeHeroArt({required this.drill, required this.id});
-  final HipDrill drill;
-  final String id;
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = HipColors.background;
-    return RepaintBoundary(
-      child: IgnorePointer(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Faint jade glow low behind the figure (and the dock).
-            Align(
-              alignment: const Alignment(0, .62),
-              child: FractionallySizedBox(
-                widthFactor: 1,
-                heightFactor: .5,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      colors: [
-                        HipColors.jade.withValues(
-                          alpha: HipColors.isDark ? .2 : .12,
-                        ),
-                        HipColors.jade.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            AnimatedSwitcher(
-              duration: HipCalmMotion.of(context, HipCalmMotion.swap),
-              switchInCurve: HipCalmMotion.curve,
-              switchOutCurve: HipCalmMotion.curve,
-              layoutBuilder: (current, previous) => Stack(
-                fit: StackFit.expand,
-                children: [...previous, ?current],
-              ),
-              child: KeyedSubtree(
-                key: ValueKey(id),
-                child: HipDrillArt(
-                  key: const ValueKey('home-hero'),
-                  drill: drill,
-                  showPendingLabel: false,
-                  // Lower than centre: the head clears the greeting line.
-                  alignment: const Alignment(0, .25),
-                ),
-              ),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(0, -.05),
-                  radius: 1.1,
-                  stops: const [.5, 1],
-                  colors: [bg.withValues(alpha: 0), bg],
-                ),
-              ),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  // Top: a scrim so the greeting reads over the head.
-                  // Bottom: the title and how-to sit on a soft fade.
-                  stops: const [0, .16, .5, .78, 1],
-                  colors: [
-                    bg.withValues(alpha: .9),
-                    bg.withValues(alpha: 0),
-                    bg.withValues(alpha: 0),
-                    bg.withValues(alpha: .6),
-                    bg.withValues(alpha: .8),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ───────────────────────── progress & settings ─────────────────────────
