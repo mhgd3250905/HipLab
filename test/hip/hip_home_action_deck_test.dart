@@ -96,6 +96,22 @@ void main() {
       .widget<Text>(find.byKey(const ValueKey('home-deck-position')))
       .data!;
 
+  GestureDetector deckDrag(WidgetTester tester) => tester
+      .widget<GestureDetector>(find.byKey(const ValueKey('home-deck-gesture')));
+
+  void moveCard(GestureDetector drag, double delta) =>
+      drag.onHorizontalDragUpdate!(
+        DragUpdateDetails(
+          globalPosition: Offset.zero,
+          delta: Offset(delta, 0),
+          primaryDelta: delta,
+        ),
+      );
+
+  Finder artFor(HipDrill drill) => find.byWidgetPredicate(
+    (widget) => widget is HipDrillArt && widget.drill.id == drill.id,
+  );
+
   testWidgets('three visible action cards cycle through every ordered action', (
     tester,
   ) async {
@@ -178,6 +194,157 @@ void main() {
       );
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'new bottom card emerges behind the moving stack before the turn commits',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final replenishing = find.byKey(const ValueKey('home-deck-opacity-3'));
+      expect(replenishing, findsNothing);
+      expect(artFor(drills[3]), findsNothing);
+      final previousBottom = tester.getRect(artFor(drills[2]));
+      final width = tester
+          .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
+          .width!;
+      final drag = deckDrag(tester);
+      drag.onHorizontalDragStart!(DragStartDetails());
+      moveCard(drag, -width * .08);
+      await tester.pump();
+      expect(frontId(tester), drills.first.id);
+      expect(find.byType(HipDrillArt), findsNWidgets(4));
+      expect(replenishing, findsOneWidget);
+      final beginningOpacity = tester.widget<Opacity>(replenishing).opacity;
+      expect(beginningOpacity, greaterThan(0));
+      expect(beginningOpacity, lessThan(1));
+      final incomingRect = tester.getRect(artFor(drills[3]));
+      final incomingOpacityElement = tester.element(replenishing);
+      final incomingArtElement = tester.element(artFor(drills[3]));
+      final incomingMediaElement = tester.element(
+        find.descendant(
+          of: artFor(drills[3]),
+          matching: find.byType(trainer.TrainingLibraryActionArt),
+        ),
+      );
+
+      moveCard(drag, -width * .97);
+      await tester.pump();
+      expect(frontId(tester), drills.first.id);
+      expect(tester.widget<Opacity>(replenishing).opacity, 1);
+      expect(tester.getRect(artFor(drills[3])), incomingRect);
+      expect(tester.getRect(artFor(drills[2])), isNot(previousBottom));
+      // The incoming artwork is already in its final bottom position. Committing
+      // the turn must keep that pose rather than suddenly adding another card.
+      drag.onHorizontalDragEnd!(
+        DragEndDetails(
+          velocity: const Velocity(pixelsPerSecond: Offset(-800, 0)),
+          primaryVelocity: -800,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills[1].id);
+      expect(replenishing, findsOneWidget);
+      expect(tester.element(replenishing), same(incomingOpacityElement));
+      expect(tester.element(artFor(drills[3])), same(incomingArtElement));
+      expect(
+        tester.element(
+          find.descendant(
+            of: artFor(drills[3]),
+            matching: find.byType(trainer.TrainingLibraryActionArt),
+          ),
+        ),
+        same(incomingMediaElement),
+      );
+      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      final settledRect = tester.getRect(artFor(drills[3]));
+      expect(settledRect.left, closeTo(incomingRect.left, .01));
+      expect(settledRect.top, closeTo(incomingRect.top, .01));
+      expect(settledRect.right, closeTo(incomingRect.right, .01));
+      expect(settledRect.bottom, closeTo(incomingRect.bottom, .01));
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('cancelled drags withdraw the new bottom card in both directions', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester);
+    await tester.pumpAndSettle();
+    final replenishing = find.byKey(const ValueKey('home-deck-opacity-3'));
+    final width = tester
+        .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
+        .width!;
+    final rest = tester.getRect(artFor(drills[2]));
+    for (final direction in [-1, 1]) {
+      final drag = deckDrag(tester);
+      drag.onHorizontalDragStart!(DragStartDetails());
+      moveCard(drag, direction * width * .15);
+      await tester.pump();
+      expect(replenishing, findsOneWidget);
+      expect(find.byType(HipDrillArt), findsNWidgets(4));
+      drag.onHorizontalDragCancel!();
+      await tester.pumpAndSettle();
+      expect(position(tester), '01');
+      expect(frontId(tester), drills.first.id);
+      expect(replenishing, findsNothing);
+      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      // The rightward preview uses the reverse ordered stack. It may remain
+      // ordered that way after cancellation, but the next left drag must restore
+      // the same card geometry and never leave an extra card mounted.
+      if (direction == -1) expect(tester.getRect(artFor(drills[2])), rest);
+      expect(tester.takeException(), isNull);
+    }
+    expect(fixture.requested, isEmpty);
+  });
+
+  testWidgets(
+    'two and three action loops replenish without duplicate card keys',
+    (tester) async {
+      phone(tester);
+      for (final count in [2, 3]) {
+        final items = drills.take(count).toList();
+        await showDeck(tester, identity: 'short/$count', items: items);
+        await tester.pumpAndSettle();
+        var expectedIndex = 0;
+        for (final direction in [1, 1, -1, -1]) {
+          final width = tester
+              .widget<Positioned>(
+                find.byKey(ValueKey('home-deck-card-$expectedIndex')),
+              )
+              .width!;
+          final drag = deckDrag(tester);
+          drag.onHorizontalDragStart!(DragStartDetails());
+          moveCard(drag, -direction * width * 1.05);
+          await tester.pump();
+          final reserve = find.byKey(
+            ValueKey('home-deck-card-$expectedIndex-reserve'),
+          );
+          expect(reserve, findsOneWidget);
+          expect(find.byType(HipDrillArt), findsNWidgets(count + 1));
+          expect(tester.takeException(), isNull);
+          drag.onHorizontalDragEnd!(
+            DragEndDetails(
+              velocity: Velocity(
+                pixelsPerSecond: Offset(-direction * 800.0, 0),
+              ),
+              primaryVelocity: -direction * 800.0,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expectedIndex = (expectedIndex + direction) % count;
+          expect(frontId(tester), items[expectedIndex].id);
+          expect(position(tester), '0${expectedIndex + 1}');
+          expect(find.byType(HipDrillArt), findsNWidgets(count));
+          expect(reserve, findsNothing);
+          expect(tester.takeException(), isNull);
+        }
+      }
+      expect(fixture.requested, isEmpty);
     },
   );
 

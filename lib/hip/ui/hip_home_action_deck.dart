@@ -130,21 +130,33 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     }
   }
 
-  void _returnCard([double velocity = 0]) {
+  Future<void> _returnCard([double velocity = 0]) async {
     if (_committing) return;
     if (_reduced) {
       _position.value = 0;
       return;
     }
-    _position.animateWith(
-      SpringSimulation(
-        const SpringDescription(mass: 1, stiffness: 310, damping: 29),
-        _position.value,
-        0,
-        velocity.clamp(-1800.0, 1800.0),
-        tolerance: const Tolerance(distance: .2, velocity: 2),
-      ),
-    );
+    final generation = ++_generation;
+    try {
+      await _position
+          .animateWith(
+            SpringSimulation(
+              const SpringDescription(mass: 1, stiffness: 310, damping: 29),
+              _position.value,
+              0,
+              velocity.clamp(-1800.0, 1800.0),
+              tolerance: const Tolerance(distance: .2, velocity: 2),
+            ),
+          )
+          .orCancel;
+    } on TickerCanceled {
+      return;
+    }
+    // A spring stops within tolerance, not necessarily at zero. Finish exactly
+    // at rest so the hidden reserve is removed after a cancelled drag.
+    if (mounted && generation == _generation && !_committing) {
+      _position.value = 0;
+    }
   }
 
   Future<void> _turn(int direction, {double velocity = 0}) async {
@@ -280,6 +292,20 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       clipBehavior: Clip.none,
       fit: StackFit.expand,
       children: [
+        // Replenish underneath the last card while the stack advances. Starting
+        // at that card's resting pose lets its movement uncover the new face;
+        // the final pose is already correct when the front index commits.
+        if (count > 1 && progress > 0)
+          _card(
+            _at(count * _toward),
+            (count - 1).toDouble(),
+            width,
+            height,
+            offset: 0,
+            front: false,
+            replenishing: true,
+            opacity: Curves.easeOut.transform((progress / .3).clamp(0, 1)),
+          ),
         for (var layer = count - 1; layer >= 0; layer--)
           _card(
             _at(layer * _toward),
@@ -300,6 +326,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double height, {
     required double offset,
     required bool front,
+    bool replenishing = false,
+    double opacity = 1,
   }) {
     final travel = (offset / _cardWidth).clamp(-1.5, 1.5);
     final lift = front ? math.sin(travel.abs().clamp(0, 1) * math.pi) : 0.0;
@@ -311,80 +339,87 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       ..rotateX(.018 + lift * .035)
       ..rotateY(-.10 + (front ? travel * .19 : 0));
     return Positioned(
-      key: ValueKey('home-deck-card-$index'),
+      key: ValueKey(
+        'home-deck-card-$index'
+        '${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
+      ),
       left: (width - _cardWidth) / 2 - 18 + depth * 16 + offset,
       top: 74 - depth * 26 - lift * 18,
       width: _cardWidth,
       height: height,
-      child: Transform.rotate(
-        key: front ? const ValueKey('home-deck-front') : null,
-        alignment: const Alignment(0, .8),
-        angle: angle,
-        child: Transform(
+      child: Opacity(
+        key: ValueKey('home-deck-opacity-$index'),
+        opacity: opacity,
+        child: Transform.rotate(
+          key: front ? const ValueKey('home-deck-front') : null,
           alignment: const Alignment(0, .8),
-          transform: tilt,
-          child: Transform.scale(
-            scale: (1 - depth * .045) * (1 + lift * .018),
+          angle: angle,
+          child: Transform(
             alignment: const Alignment(0, .8),
-            child: ExcludeSemantics(
-              excluding: !front,
-              child: IgnorePointer(
-                ignoring: !front,
-                child: RepaintBoundary(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    fit: StackFit.expand,
-                    children: [
-                      // A quiet contact shadow, without a painted grey ledge.
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22),
-                            boxShadow: HipColors.shadows([
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                  alpha: dark ? .32 : .085,
+            transform: tilt,
+            child: Transform.scale(
+              scale: (1 - depth * .045) * (1 + lift * .018),
+              alignment: const Alignment(0, .8),
+              child: ExcludeSemantics(
+                excluding: !front,
+                child: IgnorePointer(
+                  ignoring: !front,
+                  child: RepaintBoundary(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      fit: StackFit.expand,
+                      children: [
+                        // A quiet contact shadow, without a painted grey ledge.
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              boxShadow: HipColors.shadows([
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: dark ? .32 : .085,
+                                  ),
+                                  blurRadius: front ? 20 + lift * 10 : 12,
+                                  offset: Offset(0, front ? 7 + lift * 6 : 4),
                                 ),
-                                blurRadius: front ? 20 + lift * 10 : 12,
-                                offset: Offset(0, front ? 7 + lift * 6 : 4),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                  alpha: dark ? .2 : .035,
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: dark ? .2 : .035,
+                                  ),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
                                 ),
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
-                              ),
-                            ]),
-                          ),
-                        ),
-                      ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: HipColors.mediaBackdrop,
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(22),
-                          child: _poster(index, front: front),
-                        ),
-                      ),
-                      IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22),
-                            border: Border.all(
-                              color: high
-                                  ? HipColors.text
-                                  : Colors.white.withValues(
-                                      alpha: dark ? .13 : .8,
-                                    ),
-                              width: high ? 1.5 : 1,
+                              ]),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: HipColors.mediaBackdrop,
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(22),
+                            child: _poster(index, front: front),
+                          ),
+                        ),
+                        IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: high
+                                    ? HipColors.text
+                                    : Colors.white.withValues(
+                                        alpha: dark ? .13 : .8,
+                                      ),
+                                width: high ? 1.5 : 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
