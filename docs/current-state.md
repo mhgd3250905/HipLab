@@ -1,5 +1,23 @@
 # 当前状态
 
+## 2026-11-05：UI 顶栏改造分支 `feat/ui-detail-polish`（+35，本轮已提交）
+
+用户逐屏确认顶栏与状态栏背景设计（"完美！"），设计已固化为 [UI 设计规范](ui-design-standard.md)。本轮是**开发分支上的真机调试**，不是交付版本。
+
+| 对象 | 当前事实 |
+|---|---|
+| 分支 / 基线 | `feat/ui-detail-polish`，基线提交 `97cecb1`；本轮 UI 改动与文档已作为一次提交保存在分支上，具体哈希以 `git log` 为准，未 push |
+| 版本 | `1.1.0+35`（沿用分支既有版本号，本轮未再递增）；仅 debug 包，无 release 产物 |
+| 改动文件 | `lib/hip/ui/hip_page_kit.dart`（HipNavBar/玻璃/胶囊、`kHipNavFade=24`、`hipNavInset`）、`hip_app.dart`、`hip_more_page.dart`、`hip_privacy_page.dart`、`hip_records_page.dart`；新增 `docs/ui-design-standard.md`；`docs/README.md` 索引 |
+| 顶栏形制 | 带高 = 状态栏 + 44 行 + 24 过渡；页面背景色渐变（顶 α1 → 60% 处 .86 → 抛物线归零）+ σ34/20/9 三层模糊；返回胶囊 44pt/字形 32，平整磨砂玻璃（浅色填充 `white @ .38`、深色 `white @ .12` + σ12 真实模糊 + 0.75pt 细边，无渐变、无投影） |
+| 内容穿透 | `bodyScrollsUnderBar` 已开：更多、设置、训练记录、隐私政策；视口顶到 y=0，页面用 `hipNavInset(context)` 留状态栏 + 44 |
+| 未接入 | 动作详情、套路详情、组编辑×2、安全提示、自测结果（仍是旧 `HipNavBar`，无穿透/过渡） |
+| 真机 | Pixel 8 `38011FDJH00940` 与 2602BRT18C `QSG6Q8IFDMDELVGQ` 均已覆盖安装 debug +35；最终胶囊版本在小米机多次 `-r` 升级，浅色与深色均已截图，未清数据 |
+| 验证 | 最终 `flutter analyze --no-pub` 为 0；受影响测试最近一次 42/42 通过（顶栏几何定稿前），其后曲线与胶囊材质改动未重跑；**全量测试按用户要求暂缓** |
+| 未做 | 仅本地提交；未 push、未合 main、未做 release 构建、5 个页面接入、版本递增、深色主题全页检查和商店/手机发布动作 |
+
+下方 2026-11-04 及更早段落保留历史快照，不作为本分支状态。
+
 ## 2026-11-04：QA v3 / +34 主线对齐与版本收束
 
 本轮文档收束前，`E:/AII-3D/3D-Hip` 的 main 与 origin/main 已对齐到功能集成点 `2400b344183e1d57636412309899b4a1481966a7`，即 PR #30 合并点。后续本次提交只更新文档，具体文档 HEAD 以 Git 为准。

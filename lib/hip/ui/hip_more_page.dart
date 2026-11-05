@@ -42,6 +42,7 @@ class HipMorePage extends StatelessWidget {
   Widget build(BuildContext context) => HipNavPage(
     title: '更多',
     leadingKey: const ValueKey('more-back'),
+    bodyScrollsUnderBar: true,
     backdrop: HipGlassBackdrop(
       image: cover == null ? null : HipMediaVariants.themed(cover!),
     ),
@@ -127,7 +128,12 @@ class HipMorePage extends StatelessWidget {
     ];
     return ListView(
       key: const ValueKey('more-list'),
-      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 0, kHipPageEdge, 24),
+      padding: EdgeInsets.fromLTRB(
+        kHipPageEdge,
+        hipNavInset(context),
+        kHipPageEdge,
+        24,
+      ),
       children: [
         for (final (i, w) in items.indexed) HipCalmStagger(index: i, child: w),
       ],
@@ -152,6 +158,7 @@ class HipMorePage extends StatelessWidget {
     context,
     HipNavPage(
       title: title,
+      bodyScrollsUnderBar: true,
       // A pushed route is not rebuilt by the app root: follow the store
       // here so switches and choices show their new state.
       body: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),

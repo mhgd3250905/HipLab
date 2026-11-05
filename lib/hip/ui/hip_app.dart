@@ -1222,7 +1222,7 @@ class HipProgressPage extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(
         20,
-        section == HipProgressSection.settings ? 0 : 12,
+        hipNavInset(context) + (section == HipProgressSection.settings ? 0 : 12),
         20,
         24,
       ),
@@ -1393,6 +1393,7 @@ class HipSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => HipNavPage(
     title: '设置',
+    bodyScrollsUnderBar: true,
     // A pushed route is not rebuilt by the app root: follow the store so
     // switches and choices show their new state.
     body: ListenableBuilder(

@@ -111,6 +111,7 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 | [第一轮 Android 集成验证](android-round1-integration-2026-10-17.md) | 原三阶段构建、真机及当时待合并边界；最新进展见当前状态 | 保留原阶段证据 |
 | [Google Play 送审](play-store-release-2026-10-17.md) | 0.2.0+4 / Submission 1 的历史回执 | Console 实际变化后 |
 | [Pose-Hub 接入](pose-hub-adoption.md) | v0.2.0 冻结同步、保留素材及两端边界 | 素材发布或同步时 |
+| [UI 设计规范](ui-design-standard.md) | 顶栏/状态栏材质、几何、透明度曲线与页面接入方式；界面按标准实现，改标准先改这里 | 设计标准变化时 |
 | [当前状态](current-state.md) | 当前 App、分支、PR、环境与完成边界 | 状态实际改变后 |
 | [版本管理说明](version-management.md) | 版本来源、构建/安装/合并/推送/发布状态及台账维护规则 | 版本管理约定变化时 |
 | [版本交付台账](version-ledger.md) | 每次构建、安装、发布的版本和产物身份 | 产生可交付版本时追加 |
