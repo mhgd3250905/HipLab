@@ -9,6 +9,9 @@ import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+import 'hip_card_snapshot.dart';
+
+const _cardHandoffEpsilon = 1e-7;
 
 /// Brings one action card closer without turning it into a full-screen page.
 /// The existing SDK continues to own the video, its cache and its decoder.
@@ -20,6 +23,8 @@ Future<void> showHipHomeActionCard(
   String dose = '',
   String cue = '',
   String description = '',
+  HipCardSnapshot? sourceSnapshot,
+  VoidCallback? onSourceRestored,
 }) async {
   final videoEnabled = HipMediaPolicy.of(context);
   final reduced = MediaQuery.disableAnimationsOf(context);
@@ -41,14 +46,44 @@ Future<void> showHipHomeActionCard(
       description: description,
       policy: policy,
       videoEnabled: videoEnabled,
+      sourceSnapshot: sourceSnapshot,
     ),
     // The card animates its own rect; a route-wide fade would dim the artwork.
     transitionBuilder: (context, animation, secondaryAnimation, child) => child,
   );
-  await Navigator.of(context, rootNavigator: true).push(route);
-  // A route's pop result arrives before its reverse animation is over. The
-  // source deck must stay hidden until this surface has actually detached.
-  await route.completed;
+  var restored = false;
+  void restore() {
+    if (restored) return;
+    restored = true;
+    onSourceRestored?.call();
+  }
+
+  void statusChanged(AnimationStatus status) {
+    // Dismissal runs in the animation tick, before this frame's build/paint.
+    // Restore the retained source in that frame, not after Overlay disposal.
+    if (status == AnimationStatus.dismissed) restore();
+  }
+
+  final popped = Navigator.of(context, rootNavigator: true).push(route);
+  final animation = route.animation!;
+  void handoffAtRest() {
+    // At duration the controller can reach zero one tick before dismissed.
+    if (animation.status == AnimationStatus.reverse &&
+        animation.value <= _cardHandoffEpsilon) {
+      restore();
+    }
+  }
+
+  animation.addStatusListener(statusChanged);
+  animation.addListener(handoffAtRest);
+  try {
+    await popped;
+    await route.completed;
+  } finally {
+    animation.removeStatusListener(statusChanged);
+    animation.removeListener(handoffAtRest);
+    restore();
+  }
 }
 
 class _ActionCardInspect extends StatefulWidget {
@@ -61,6 +96,7 @@ class _ActionCardInspect extends StatefulWidget {
     required this.description,
     required this.policy,
     required this.videoEnabled,
+    required this.sourceSnapshot,
   });
 
   final Rect sourceRect;
@@ -69,6 +105,7 @@ class _ActionCardInspect extends StatefulWidget {
   final String dose, cue, description;
   final trainer.TrainingMediaPolicy? policy;
   final bool videoEnabled;
+  final HipCardSnapshot? sourceSnapshot;
 
   @override
   State<_ActionCardInspect> createState() => _ActionCardInspectState();
@@ -118,6 +155,19 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
     super.dispose();
   }
 
+  // Matrix4Tween decomposes/recomposes and loses the card's perspective terms.
+  // Keep the exact painted source matrix and interpolate all of its elements.
+  Matrix4 _pose(Matrix4 source, Matrix4 target, double t) {
+    if (t <= 0) return Matrix4.copy(source);
+    if (t >= 1) return Matrix4.copy(target);
+    final result = Matrix4.zero();
+    for (var i = 0; i < 16; i++) {
+      result.storage[i] =
+          source.storage[i] + (target.storage[i] - source.storage[i]) * t;
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     final view = MediaQuery.of(context);
@@ -138,12 +188,41 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
       child: _surface(),
       builder: (context, child) {
         final t = Curves.easeOutCubic.transform(_animation!.value);
-        final rect = Rect.lerp(widget.sourceRect, target, t)!;
-        final tilt = Matrix4.identity()
-          ..setEntry(3, 2, .0012)
-          ..rotateX(.018 * (1 - t))
-          ..rotateY(-.10 * (1 - t))
-          ..rotateZ(-.025 * (1 - t));
+        final snapshot = widget.sourceSnapshot;
+        final size = snapshot?.size ?? widget.sourceRect.size;
+        final source =
+            snapshot?.transform ??
+            Matrix4.translationValues(
+              widget.sourceRect.left,
+              widget.sourceRect.top,
+              0,
+            );
+        final destination =
+            Matrix4.translationValues(target.left, target.top, 0)..multiply(
+              Matrix4.diagonal3Values(
+                target.width / size.width,
+                target.height / size.height,
+                1,
+              ),
+            );
+        final pose = _pose(source, destination, t);
+        final detailPose = Matrix4.copy(pose)
+          ..multiply(
+            Matrix4.diagonal3Values(
+              size.width / target.width,
+              size.height / target.height,
+              1,
+            ),
+          );
+        final handedOff =
+            _animation!.status == AnimationStatus.dismissed ||
+            (_animation!.status == AnimationStatus.reverse &&
+                _animation!.value <= _cardHandoffEpsilon);
+        final detailOpacity = handedOff
+            ? 0.0
+            : snapshot == null
+            ? 1.0
+            : const Interval(.35, .8, curve: Curves.easeInOut).transform(t);
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -162,28 +241,66 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
                 ),
               ),
             ),
-            Positioned.fromRect(
-              rect: rect,
-              child: Transform(
-                alignment: Alignment.center,
-                transform: tilt,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: HipColors.shadows([
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: (HipColors.isDark ? .35 : .14) * t,
+            Positioned(
+              left: 0,
+              top: 0,
+              width: target.width,
+              height: target.height,
+              child: Opacity(
+                key: const ValueKey('home-deck-expanded-opacity'),
+                opacity: detailOpacity,
+                child: Transform(
+                  alignment: Alignment.topLeft,
+                  transform: detailPose,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: HipColors.shadows([
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: (HipColors.isDark ? .35 : .14) * t,
+                          ),
+                          blurRadius: 32,
+                          offset: const Offset(0, 16),
                         ),
-                        blurRadius: 32,
-                        offset: const Offset(0, 16),
-                      ),
-                    ]),
+                      ]),
+                    ),
+                    child: child,
                   ),
-                  child: child,
                 ),
               ),
             ),
+            if (snapshot != null)
+              Positioned(
+                left: 0,
+                top: 0,
+                width: snapshot.paddedSize.width,
+                height: snapshot.paddedSize.height,
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: Opacity(
+                      key: const ValueKey('home-deck-closing-stand-in'),
+                      opacity: handedOff ? 0 : 1 - detailOpacity,
+                      child: Transform(
+                        key: const ValueKey('home-deck-snapshot-transform'),
+                        alignment: Alignment.topLeft,
+                        transform: Matrix4.copy(pose)
+                          ..multiply(
+                            Matrix4.translationValues(
+                              -snapshot.padding,
+                              -snapshot.padding,
+                              0,
+                            ),
+                          ),
+                        child: RawImage(
+                          image: snapshot.image,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },

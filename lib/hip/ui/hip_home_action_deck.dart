@@ -9,6 +9,7 @@ import 'package:flutter/scheduler.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_home_action_inspect.dart';
+import 'hip_card_snapshot.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -42,6 +43,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   final _frontAnchor = GlobalKey();
   bool _floating = false;
   bool _expanded = false;
+  bool _opening = false;
+  int _inspectionGeneration = 0;
   int _index = 0;
   int _toward = 1;
   int _generation = 0;
@@ -133,7 +136,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   Future<void> _openCard([TapUpDetails? details]) async {
-    if (_expanded || _floating || _position.isAnimating) return;
+    if (_expanded || _opening || _floating || _position.isAnimating) return;
     final box = _frontAnchor.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
     final rect = MatrixUtils.transformRect(
@@ -142,8 +145,41 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     );
     if (details != null && !rect.contains(details.globalPosition)) return;
     final index = _index;
-    setState(() => _expanded = true);
+    final generation = _generation;
+    final inspection = ++_inspectionGeneration;
+    final overlayContext = Overlay.of(context, rootOverlay: true).context;
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    _opening = true;
+    HipCardSnapshot? snapshot;
+    void restoreSource() {
+      if (mounted && inspection == _inspectionGeneration && _expanded) {
+        setState(() => _expanded = false);
+      }
+    }
+
     try {
+      snapshot = HipCardSnapshotBoundary.captureFrom(
+        _frontAnchor.currentContext!,
+        overlayContext,
+        pixelRatio: pixelRatio,
+      );
+      if (snapshot == null) {
+        // An image completing its first paint can dirty the boundary on tap.
+        // Keep the live card visible while waiting for that paint to finish.
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted || generation != _generation || index != _index) return;
+        final anchor = _frontAnchor.currentContext;
+        if (anchor != null && anchor.mounted && overlayContext.mounted) {
+          snapshot = HipCardSnapshotBoundary.captureFrom(
+            anchor,
+            overlayContext,
+            pixelRatio: pixelRatio,
+          );
+        }
+      }
+      if (!mounted || generation != _generation || index != _index) return;
+      _opening = false;
+      setState(() => _expanded = true);
       await showHipHomeActionCard(
         context,
         sourceRect: rect,
@@ -152,14 +188,18 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         dose: widget.doses.elementAtOrNull(index) ?? '',
         cue: widget.cues.elementAtOrNull(index) ?? '',
         description: widget.descriptions.elementAtOrNull(index) ?? '',
+        sourceSnapshot: snapshot,
+        onSourceRestored: restoreSource,
       );
     } finally {
-      if (mounted) setState(() => _expanded = false);
+      if (inspection == _inspectionGeneration) _opening = false;
+      snapshot?.dispose();
+      restoreSource();
     }
   }
 
   void _dragStart(DragStartDetails details) {
-    if (_committing || _expanded) return;
+    if (_committing || _expanded || _opening) return;
     // Catch a returning card where it is, rather than jumping it to rest.
     _generation++;
     _position.stop();
@@ -168,7 +208,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   void _dragUpdate(DragUpdateDetails details) {
-    if (_committing || _expanded) return;
+    if (_committing || _expanded || _opening) return;
     final next = _position.value + details.delta.dx;
     final nextVertical = _vertical.value + details.delta.dy;
     // Small sideways drift while lifting vertically must not swap the rear
@@ -260,7 +300,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   Future<void> _turn(int direction, {double velocity = 0}) async {
-    if (!_multiple || _committing) return;
+    if (!_multiple || _committing || _opening || _expanded) return;
     _toward = direction;
     final generation = ++_generation;
     _position.stop();
@@ -520,7 +560,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                 excluding: !front || floatingCopy,
                 child: IgnorePointer(
                   ignoring: !front,
-                  child: RepaintBoundary(
+                  child: HipCardSnapshotBoundary(
                     key: front && !floatingCopy ? _frontAnchor : null,
                     child: Stack(
                       clipBehavior: Clip.none,

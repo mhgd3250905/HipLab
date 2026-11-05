@@ -1,6 +1,5 @@
-import 'dart:ui' show SemanticsAction;
-
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
@@ -128,6 +127,85 @@ void main() {
     return floating.evaluate().isEmpty
         ? find.byKey(const ValueKey('home-deck-front'))
         : floating;
+  }
+
+  double keyedOpacity(WidgetTester tester, String key) {
+    final finder = find.byKey(ValueKey(key));
+    return finder.evaluate().isEmpty
+        ? 0
+        : tester.widget<Opacity>(finder).opacity;
+  }
+
+  void expectCardPainted(WidgetTester tester) {
+    final source = keyedOpacity(tester, 'home-deck-opacity-0');
+    final snapshot = keyedOpacity(tester, 'home-deck-closing-stand-in');
+    final expanded = keyedOpacity(tester, 'home-deck-expanded-opacity');
+    // A route can exist while painting nothing. Check the actual three visual
+    // surfaces, including the dismissal frame before the next rebuild.
+    expect(
+      source >= .99 || snapshot + expanded >= .99,
+      isTrue,
+      reason:
+          'No complete card face is painted: source=$source, '
+          'snapshot=$snapshot, expanded=$expanded',
+    );
+    if (snapshot > 0) {
+      final image = find.descendant(
+        of: find.byKey(const ValueKey('home-deck-closing-stand-in')),
+        matching: find.byType(RawImage),
+      );
+      expect(image, findsOneWidget);
+      expect(tester.widget<RawImage>(image).image, isNotNull);
+    }
+  }
+
+  Future<void> openActionCard(WidgetTester tester) async {
+    await tester.tapAt(
+      tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+    );
+    await tester.pump();
+  }
+
+  Future<void> dismissActionCard(WidgetTester tester, String method) async {
+    if (method == 'close') {
+      await tester.tap(arrow('收起动作卡片'));
+    } else if (method == 'barrier') {
+      final rect = tester.getRect(
+        find.byKey(const ValueKey('home-deck-expanded')),
+      );
+      await tester.tapAt(Offset(3, rect.center.dy));
+    } else {
+      await tester.binding.handlePopRoute();
+    }
+  }
+
+  Future<void> expectFrameSafeDismissal(WidgetTester tester) async {
+    await tester.pump();
+    expectCardPainted(tester);
+    for (var elapsed = 0; elapsed < 448; elapsed += 16) {
+      await tester.pump(const Duration(milliseconds: 16));
+      expectCardPainted(tester);
+      // In the final compact frames the expanded layout and its close glyph
+      // must no longer be painted over the source card.
+      if (elapsed >= 368) {
+        expect(
+          keyedOpacity(tester, 'home-deck-expanded-opacity'),
+          lessThan(.01),
+        );
+      }
+    }
+    for (var i = 0; i < 2; i++) {
+      await tester.pump();
+      expectCardPainted(tester);
+    }
+    expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+    expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('home-deck-closing-stand-in')),
+      findsNothing,
+    );
+    expect(position(tester), '01');
+    expect(tester.takeException(), isNull);
   }
 
   testWidgets('three visible action cards cycle through every ordered action', (
@@ -682,6 +760,184 @@ void main() {
       expect(fixture.requested, isEmpty);
     },
   );
+
+  testWidgets(
+    'close, barrier and system back keep a card painted through every dismissal frame',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final sourceElement = tester.element(
+        find.byKey(const ValueKey('home-hero')),
+      );
+      for (final method in ['close', 'barrier', 'back']) {
+        await openActionCard(tester);
+        await tester.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('home-deck-expanded')),
+          findsOneWidget,
+        );
+        expectCardPainted(tester);
+        await dismissActionCard(tester, method);
+        await expectFrameSafeDismissal(tester);
+        expect(
+          tester.element(find.byKey(const ValueKey('home-hero'))),
+          same(sourceElement),
+        );
+      }
+      expect(fixture.requested, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'the closing snapshot keeps the original compact artwork and projected pose',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final boundaryFinder = find
+          .descendant(
+            of: find.byKey(const ValueKey('home-deck-front')),
+            matching: find.byElementPredicate(
+              (element) =>
+                  element is RenderObjectElement &&
+                  element.renderObject is RenderRepaintBoundary,
+            ),
+          )
+          .first;
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        boundaryFinder,
+      );
+      final size = boundary.size;
+      final localCorners = [
+        Offset.zero,
+        Offset(size.width, 0),
+        Offset(0, size.height),
+        Offset(size.width, size.height),
+      ];
+      final compactCorners = [
+        for (final corner in localCorners) boundary.localToGlobal(corner),
+      ];
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      final standIn = find.byKey(const ValueKey('home-deck-closing-stand-in'));
+      final imageFinder = find.descendant(
+        of: standIn,
+        matching: find.byType(RawImage),
+      );
+      expect(imageFinder, findsOneWidget);
+      final snapshot = tester.widget<RawImage>(imageFinder).image;
+      expect(snapshot, isNotNull);
+      final imageBox = tester.renderObject<RenderBox>(imageFinder);
+      expect(imageBox.size.width, closeTo(size.width + 96, .01));
+      expect(imageBox.size.height, closeTo(size.height + 96, .01));
+
+      await dismissActionCard(tester, 'close');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 378));
+      for (var lastMillisecond = 0; lastMillisecond < 2; lastMillisecond++) {
+        expectCardPainted(tester);
+        expect(
+          keyedOpacity(tester, 'home-deck-expanded-opacity'),
+          lessThan(.01),
+        );
+        expect(tester.widget<RawImage>(imageFinder).image, same(snapshot));
+        final box = tester.renderObject<RenderBox>(imageFinder);
+        for (var i = 0; i < localCorners.length; i++) {
+          // The 48pt capture padding includes the real source shadow, while
+          // its content corners must converge to the source's full transform.
+          final projected = box.localToGlobal(
+            localCorners[i] + const Offset(48, 48),
+          );
+          expect((projected - compactCorners[i]).distance, lessThan(4));
+        }
+        await tester.pump(const Duration(milliseconds: 1));
+      }
+      // At dismissed, the source is restored in this very frame; it cannot wait
+      // for a later route.completed callback or another frame's rebuild.
+      expectCardPainted(tester);
+      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+      for (var i = 0; i < localCorners.length; i++) {
+        expect(
+          (boundary.localToGlobal(localCorners[i]) - compactCorners[i])
+              .distance,
+          lessThan(.01),
+        );
+      }
+      await tester.pump();
+      expectCardPainted(tester);
+      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+      // Zero value can precede dismissed by one ticker step. The source is
+      // already visible; route disposal itself waits for an advancing frame.
+      await tester.pump(const Duration(milliseconds: 16));
+      expectCardPainted(tester);
+      expect(standIn, findsNothing);
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'quick and repeated close hands the same card back and can reopen',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final sourceElement = tester.element(
+        find.byKey(const ValueKey('home-hero')),
+      );
+      await openActionCard(tester);
+      await tester.pump(const Duration(milliseconds: 32));
+      final close = tester
+          .widget<HipCircleButton>(
+            find.byKey(const ValueKey('home-deck-expanded-close')),
+          )
+          .onPressed!;
+      close();
+      close();
+      await expectFrameSafeDismissal(tester);
+      expect(
+        tester.element(find.byKey(const ValueKey('home-hero'))),
+        same(sourceElement),
+      );
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      await dismissActionCard(tester, 'back');
+      await expectFrameSafeDismissal(tester);
+      expect(
+        tester.element(find.byKey(const ValueKey('home-hero'))),
+        same(sourceElement),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('reduced motion restores the compact card for every close path', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester, reduced: true);
+    await tester.pumpAndSettle();
+    for (final method in ['close', 'barrier', 'back']) {
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expectCardPainted(tester);
+      await dismissActionCard(tester, method);
+      await tester.pump();
+      expectCardPainted(tester);
+      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+      await tester.pump(const Duration(milliseconds: 16));
+      expectCardPainted(tester);
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('home-deck-closing-stand-in')),
+        findsNothing,
+      );
+      expect(position(tester), '01');
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
     'tapping a card opens a bounded action preview that pauses without rebuilding media',
