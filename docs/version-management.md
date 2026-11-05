@@ -1,5 +1,11 @@
 # 版本管理说明
 
+## 2026-11-05：UI r4 全界面补全 / +36 真机包
+
+运行/构建源 `6e247aaa7349b9d5cd8c2e626fe3e4a86faba9e3`，分支 `codex/ui-r4-completion-20261105`；`1.1.0+36` / arm64 split `2036`，SDK仍固定 `97eb66d`，lock、媒体及原生配置未改。
+
+本次递增共用build号35→36，用于区分基线UI debug、诊断WIP与完成补全后的内部release。最终包SHA/证书/回读见[版本台账](version-ledger.md)。main及release/1.0未随本候选推进，不将候选+36说成已进入main或商店。
+
 ## 2026-11-04：QA v3 / +34 已入主线
 
 PR #30 的功能集成点是 `2400b344183e1d57636412309899b4a1481966a7`。当前共用版本 **1.1.0+34**，arm64 split **2034**；SDK 四个实际包及 coach override 完整 pin 为 `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`（用户对齐口径为 v0.7.2 内容）。App 继续使用 SDK 聊天页与 qaV2 入口，由固定 SDK 承载问答 v3；SDK pin、App 版本和每个 Dart 包自身版本分别记录。

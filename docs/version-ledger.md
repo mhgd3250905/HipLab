@@ -1,5 +1,23 @@
 # 版本交付台账
 
+## 2026-11-05：UI r4 全界面补全 / +36 真机包
+
+运行/构建源 `6e247aaa7349b9d5cd8c2e626fe3e4a86faba9e3`，分支 `codex/ui-r4-completion-20261105`；`1.1.0+36` / arm64 split `2036`，SDK仍固定 `97eb66d`，lock、媒体及原生配置未改。
+
+| 项目 | 实际事实 |
+|---|---|
+| 包 | com.ugk.hiplab / 1.1.0 / 2036 / release / arm64-v8a / 非debuggable |
+| 内部安装APK | `E:/AII-3D/hiplab-releases/ui-r4-completion-6e247aa-36-20261105/hiplab-1.1.0+36-6e247aa-internal-arm64-release.apk` |
+| 字节数 / SHA256 | 47628200 / `24b769b5ca5f67186f082d9da0bb58a58f2723e08038585dd122ac7c2ae63000` |
+| 证书SHA256 | `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，与当前+35开发包一致 |
+| 原上传签名APK | 同目录`hiplab-1.1.0+36-6e247aa-upload-signed.apk`，仅归档，未上传 |
+| 资源 | r2-v1目录249、授权209、封面209、未审AI标签209、0内置MP4；stable |
+| 安装 | 2026-11-05 23:32:13设备时钟，小米2602BRT18C，`install -r` Success；本次+36升级未清数据 |
+| 回读/冷启 | versionCode2036 / versionName1.1.0 / Status ok / 226ms |
+| 配置 | Flutter3.44.7，原私有测试配置经外部临时define文件提供；临时文件已删，凭据/密钥/包不入Git |
+
+本会话此前+35 UI基线是用户自行卸载旧签名包后全新安装；用户明确开发数据不必保留，之后以合成UI数据审查。本轮不声称旧历史数据恢复成功。+36只继承当前开发状态；没有商店、tag、release/1.0或main集成动作。软件与真机范围见[本轮报告](ui-r4-completion-2026-11-05.md)，同目录`release-apk.json`和`installation-receipt.json`是本地回执。
+
 ## 2026-11-05：UI r4 / PR #32 审核补记（无新包）
 
 本轮切换 `feat/ui-detail-polish`，审核并修复返回胶囊覆盖状态，版本保持 `1.1.0+35`、SDK `97eb66d`，不生成 APK 或执行安装。源码/检查与合并身份见[审核报告](ui-r4-pr32-review-2026-11-05.md)。下方远程 debug 打磨中的“尚未提交/未 push”属于当时快照，最终远程源为 `cb0f063`；本轮另有审核补丁，不能沿用旧 debug 包宣称该补丁真机通过。

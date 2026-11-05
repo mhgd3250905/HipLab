@@ -1,5 +1,11 @@
 # HipLab · 开胯训练助手
 
+## 2026-11-05：UI r4 全界面补全 / +36 真机包
+
+保留已确认的仿iOS主体设计，完成页面与交互状态补全、冗余旧界面整理，修复公共训练组导致助手打不开的问题。源码`6e247aa`，独立分支`codex/ui-r4-completion-20261105`，+36/2036内部release已安装连接的小米机。
+
+[本轮审核与验证](docs/ui-r4-completion-2026-11-05.md) · [当前状态](docs/current-state.md) · [包与签名](docs/version-ledger.md)。main/PR31集成另行处理，下方为历史阶段。
+
 ## 2026-11-04：SDK 问答 v3 / +34 已入 main
 
 [PR #30](https://github.com/mhgd3250905/HipLab/pull/30) 已合并，功能集成点 `2400b34`；共用版本 **1.1.0+34 / arm64 2034**，SDK 固定 `f7b8a8e`（v0.7.2 内容）。App 沿用 SDK 聊天页，只传入 209 条未审 AI 标签，模型 deepseek-v4.1-flash / max；不增加问答适配层，Coach 211、动作库/组选项 210 与原安全/保存门禁保持。
