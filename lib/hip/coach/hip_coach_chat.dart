@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/services.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
@@ -117,7 +118,18 @@ class HipCoachChat {
         throw StateError('Coach host is closed');
       }
       final result = await chat.start();
-      if (!result.ok) throw StateError('SDK coach restoration failed');
+      if (!result.ok) {
+        if (kDebugMode) {
+          final cause = result.error;
+          debugPrint('HipLab SDK coach start: ${cause.runtimeType}');
+          if (cause is Error && cause.stackTrace != null) {
+            debugPrint(
+              cause.stackTrace.toString().split('\n').take(8).join('\n'),
+            );
+          }
+        }
+        throw StateError('SDK coach restoration failed');
+      }
       return chat;
     } on Object {
       await _controller?.close();

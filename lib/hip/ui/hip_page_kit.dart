@@ -40,18 +40,14 @@ const double kHipRowTextInset = kHipRowPad + 30 + 12;
 /// hard edge.
 const double kHipNavFade = 24;
 
-/// Top inset a page's scrollable must add when [HipNavPage.bodyScrollsUnderBar]
-/// is on: the body then starts at the top of the screen (iOS behaviour), so the
-/// content itself has to clear the bar row — the equivalent of a table view's
-/// top content inset.
-const double kHipNavInset = HipNavBar.height + kHipNavFade;
-
 /// What a page's scrollable really has to clear when the body scrolls under
 /// the bar: the status bar, the row, and the transition strip. Content at rest
 /// must start below the strip, otherwise the first line sits in the fading
 /// glass and reads as blurred (开哥 2026-11-05, routine detail).
-double hipNavInset(BuildContext context) =>
-    MediaQuery.paddingOf(context).top + HipNavBar.height + kHipNavFade;
+double hipNavInset(BuildContext context, {bool hasSubtitle = false}) =>
+    MediaQuery.paddingOf(context).top +
+    (hasSubtitle ? HipNavBar.heightWithSubtitle : HipNavBar.height) +
+    kHipNavFade;
 
 enum HipNavLeading { back, close, none }
 
@@ -124,35 +120,37 @@ class HipNavBar extends StatelessWidget {
               height: row,
               // Like a system bar, the title caps its text growth so title
               // + subtitle always fit the row.
-              child: MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.3,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 17,
-                          height: 1.2,
-                          fontWeight: FontWeight.w600,
-                          color: HipColors.text,
-                        ),
-                      ),
-                      if (subtitle != null)
+              child: IgnorePointer(
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.3,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Text(
-                          subtitle!,
+                          title!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
-                            height: 1.25,
-                            color: HipColors.muted,
+                            fontSize: 17,
+                            height: 1.2,
+                            fontWeight: FontWeight.w600,
+                            color: HipColors.text,
                           ),
                         ),
-                    ],
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.25,
+                              color: HipColors.muted,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -429,7 +427,7 @@ class HipNavPage extends StatefulWidget {
   /// iOS behaviour: the body's viewport starts at the top of the safe area and
   /// the bar floats over it, so content is visible through the glass while it
   /// scrolls past. The page's own scrollable must then start its content
-  /// [kHipNavInset] down; otherwise the first rows sit behind the bar.
+  /// [hipNavInset] down; otherwise the first rows sit behind the bar.
   final bool bodyScrollsUnderBar;
 
   /// Fixed action bar under the content (library footers). Owns the bottom
@@ -444,6 +442,33 @@ class HipNavPage extends StatefulWidget {
 }
 
 class _HipNavPageState extends State<HipNavPage> {
+  CurvedAnimation? _curve;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    final parent =
+        route is HipRoute && route.transition == HipTransition.content
+        ? route.animation
+        : null;
+    if (identical(_curve?.parent, parent)) return;
+    _curve?.dispose();
+    _curve = parent == null
+        ? null
+        : CurvedAnimation(
+            parent: parent,
+            curve: HipMotion.enter,
+            reverseCurve: HipMotion.exit.flipped,
+          );
+  }
+
+  @override
+  void dispose() {
+    _curve?.dispose();
+    super.dispose();
+  }
+
   /// A shared-bar route keeps only the back chip still: the whole page
   /// surface — backdrop, body, footer, and the bar's glass/title/trailing —
   /// slides in horizontally, so the page underneath is revealed on pop
@@ -468,13 +493,7 @@ class _HipNavPageState extends State<HipNavPage> {
         ? null
         : route is HipRoute && route.popGestureInProgress
         ? anim
-        : CurvedAnimation(
-            parent: anim,
-            // Same easing as every other page move: a gentle first frame,
-            // then a long soft landing instead of an ease-out snap.
-            curve: HipMotion.enter,
-            reverseCurve: HipMotion.exit.flipped,
-          );
+        : _curve;
     Widget content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -505,7 +524,17 @@ class _HipNavPageState extends State<HipNavPage> {
         backdrop,
         Scaffold(
           backgroundColor: Colors.transparent,
-          bottomNavigationBar: widget.bottomBar,
+          // Scaffold resizes its body for the keyboard, but leaves a bottom
+          // navigation bar at the screen edge. Lift that shared action area
+          // here; pages still own only their ordinary bottom SafeArea.
+          bottomNavigationBar: widget.bottomBar == null
+              ? null
+              : Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.viewInsetsOf(context).bottom,
+                  ),
+                  child: widget.bottomBar,
+                ),
           // No SafeArea here: with the bar floating over the body the
           // viewport has to reach the very top of the screen, so the content
           // slides under the status bar too (Gemini-style, 开哥 2026-11-05).
@@ -774,17 +803,19 @@ class HipListRow extends StatelessWidget {
 /// The iOS switch: a 51×31 capsule with a 27pt white knob, jade when on and
 /// system grey when off. Flat track, one tight knob shadow — the row's own
 /// material carries the surface, the switch does not add another layer.
-class HipSwitch extends StatelessWidget {
+class HipSwitch extends StatefulWidget {
   const HipSwitch({
     super.key,
     required this.value,
     required this.onChanged,
     this.semanticLabel,
+    this.focusNode,
   });
 
   final bool value;
   final ValueChanged<bool> onChanged;
   final String? semanticLabel;
+  final FocusNode? focusNode;
 
   static const double width = 51;
   static const double height = 31;
@@ -793,56 +824,97 @@ class HipSwitch extends StatelessWidget {
   static const Duration _slide = Duration(milliseconds: 200);
 
   @override
+  State<HipSwitch> createState() => _HipSwitchState();
+}
+
+class _HipSwitchState extends State<HipSwitch> {
+  bool _showFocus = false;
+
+  void _activate() {
+    HapticFeedback.selectionClick();
+    widget.onChanged(!widget.value);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final track = value
+    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final duration = reduce ? Duration.zero : HipSwitch._slide;
+    final track = widget.value
         ? HipColors.jade
         : (HipColors.isDark
               ? const Color(0xFF39393D)
               : const Color(0xFFE9E9EA));
     return Semantics(
       container: true,
-      toggled: value,
-      label: semanticLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onChanged(!value);
+      toggled: widget.value,
+      enabled: true,
+      label: widget.semanticLabel,
+      onTap: _activate,
+      child: FocusableActionDetector(
+        focusNode: widget.focusNode,
+        onShowFocusHighlight: (show) => setState(() => _showFocus = show),
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
         },
-        // 51×44 touch target; the capsule stays 51×31 and centred.
-        child: SizedBox(
-          width: width,
-          height: 44,
-          child: Center(
-            child: AnimatedContainer(
-              duration: _slide,
-              curve: Curves.easeOutCubic,
-              width: width,
-              height: height,
-              padding: const EdgeInsets.all(_inset),
-              decoration: BoxDecoration(
-                color: track,
-                borderRadius: BorderRadius.circular(height / 2),
-              ),
-              child: AnimatedAlign(
-                duration: _slide,
-                curve: Curves.easeOutCubic,
-                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: _knob,
-                  height: _knob,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _activate();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          behavior: HitTestBehavior.opaque,
+          onTap: _activate,
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              border: _showFocus
+                  ? Border.all(color: HipColors.jadeText, width: 2)
+                  : null,
+            ),
+            // 51×44 touch target; the capsule stays 51×31 and centred.
+            child: SizedBox(
+              width: HipSwitch.width,
+              height: 44,
+              child: Center(
+                child: AnimatedContainer(
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  width: HipSwitch.width,
+                  height: HipSwitch.height,
+                  padding: const EdgeInsets.all(HipSwitch._inset),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: HipColors.isDark ? .32 : .16,
-                        ),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1.5),
+                    color: track,
+                    borderRadius: BorderRadius.circular(HipSwitch.height / 2),
+                  ),
+                  child: AnimatedAlign(
+                    duration: duration,
+                    curve: Curves.easeOutCubic,
+                    alignment: widget.value
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      width: HipSwitch._knob,
+                      height: HipSwitch._knob,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: HipColors.isDark ? .32 : .16,
+                            ),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1.5),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -954,7 +1026,9 @@ Future<bool?> showHipConfirmDialog(
   barrierDismissible: true,
   barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
   barrierColor: Colors.black.withValues(alpha: .36),
-  transitionDuration: const Duration(milliseconds: 180),
+  transitionDuration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+      ? Duration.zero
+      : const Duration(milliseconds: 180),
   pageBuilder: (_, _, _) => _HipConfirmDialog(
     title: title,
     message: message,
@@ -965,7 +1039,8 @@ Future<bool?> showHipConfirmDialog(
     cancelKey: cancelKey,
     confirmKey: confirmKey,
   ),
-  transitionBuilder: (_, animation, _, child) {
+  transitionBuilder: (context, animation, _, child) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return child;
     final t = Curves.easeOutCubic.transform(animation.value);
     return FadeTransition(
       opacity: animation,

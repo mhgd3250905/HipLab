@@ -17,9 +17,6 @@ import 'lib_text.dart';
 import 'library_actions.dart';
 import 'library_widgets.dart';
 
-String routineShortName(HipRoutine r) =>
-    r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), '');
-
 class RoutineDetailPage extends StatelessWidget {
   RoutineDetailPage({
     super.key,
@@ -53,7 +50,12 @@ class RoutineDetailPage extends StatelessWidget {
       subtitle: '${t.routine} · ${t.scene(r.scene)}',
       bodyScrollsUnderBar: true,
       body: ListView(
-        padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          hipNavInset(context, hasSubtitle: true) + 4,
+          20,
+          20,
+        ),
         children: [
           Text(
             r.audience,
@@ -66,9 +68,17 @@ class RoutineDetailPage extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              _stat('${plan.minutes}', t.statMinutes),
+              _stat(
+                '${plan.minutes}',
+                t.statMinutes,
+                key: const ValueKey('routine-minutes'),
+              ),
               const SizedBox(width: 10),
-              _stat('${plan.steps.length}', t.statMoves),
+              _stat(
+                '${plan.steps.length}',
+                t.statMoves,
+                key: const ValueKey('routine-moves'),
+              ),
               const SizedBox(width: 10),
               _stat('${plan.transitionSeconds}', t.statRest),
             ],
@@ -147,13 +157,14 @@ class RoutineDetailPage extends StatelessWidget {
       at: store.now(),
     );
     Navigator.of(context).push(
-      HipRoute.rise<void>(
+      HipRoute.content<void>(
         (_) => GroupEditorPage(actions: actions, initial: group, isNew: true),
       ),
     );
   }
 
-  Widget _stat(String v, String unit) => Expanded(
+  Widget _stat(String v, String unit, {Key? key}) => Expanded(
+    key: key,
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(

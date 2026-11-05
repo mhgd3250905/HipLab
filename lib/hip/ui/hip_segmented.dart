@@ -204,11 +204,17 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
               onHorizontalDragCancel: _release,
               child: TweenAnimationBuilder<double>(
                 tween: Tween(end: pressed ? 1.0 : 0.0),
-                duration: pressed ? HipMotion.press : HipMotion.release,
+                duration: reduceMotion
+                    ? Duration.zero
+                    : pressed
+                    ? HipMotion.press
+                    : HipMotion.release,
                 curve: pressed ? Curves.easeOut : Curves.easeOutCubic,
                 builder: (context, press, _) => TweenAnimationBuilder<double>(
                   tween: Tween(end: index.toDouble()),
-                  duration: widget.duration ?? HipMotion.segment,
+                  duration: reduceMotion
+                      ? Duration.zero
+                      : widget.duration ?? HipMotion.segment,
                   curve: widget.curve ?? HipMotion.spring,
                   builder: (context, pos, _) => Stack(
                     children: [

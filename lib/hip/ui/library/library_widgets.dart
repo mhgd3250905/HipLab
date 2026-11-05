@@ -14,6 +14,9 @@ import 'lib_text.dart';
 
 // ───────────────────────── names ─────────────────────────
 
+String routineShortName(HipRoutine r) =>
+    r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), '');
+
 Map<String, dynamic>? _display(HipContent c, String id) {
   final d = c.kit(id)?.raw['display'];
   return d is Map ? Map<String, dynamic>.from(d) : null;
@@ -110,59 +113,6 @@ class LibraryFilter {
 
 Color tintOf(Color c) => c.withValues(alpha: HipColors.isDark ? .18 : .12);
 
-/// Flat filter chip: tinted jade when on, surface + hairline when off.
-class LibChip extends StatelessWidget {
-  const LibChip(
-    this.label, {
-    super.key,
-    this.on = false,
-    this.icon,
-    required this.onTap,
-  });
-  final String label;
-  final bool on;
-  final HipGlyph? icon;
-  final VoidCallback? onTap;
-  @override
-  Widget build(BuildContext context) => HipPressable(
-    semanticLabel: label,
-    selected: on,
-    onTap: onTap,
-    scale: .96,
-    child: Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 11),
-      decoration: BoxDecoration(
-        // m3: fill-based selection, no outline.
-        color: on ? tintOf(HipColors.jade) : HipColors.track,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            HipIcon(
-              icon!,
-              size: 14,
-              color: on ? HipColors.jadeText : HipColors.text,
-            ),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.5,
-              height: 1.2,
-              fontWeight: on ? FontWeight.w600 : FontWeight.w400,
-              color: on ? HipColors.jadeText : HipColors.text,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 /// Small tinted label ("为你推荐", "左右各做").
 Widget tintTag(String text, {Color? color}) {
   final c = color ?? HipColors.jadeText;
@@ -219,11 +169,13 @@ class LibPill extends StatelessWidget {
     super.key,
     required this.label,
     required this.onTap,
+    this.semanticLabel,
     this.icon,
     this.height = 28,
     this.radius = 14,
   });
   final String label;
+  final String? semanticLabel;
   final HipGlyph? icon;
   final VoidCallback? onTap;
 
@@ -235,7 +187,7 @@ class LibPill extends StatelessWidget {
     final on = onTap != null;
     final fg = on ? HipColors.jadeText : HipColors.faint;
     return HipPressable(
-      semanticLabel: label,
+      semanticLabel: semanticLabel ?? label,
       onTap: onTap,
       scale: .95,
       child: Container(
@@ -328,266 +280,6 @@ class LibSearchField extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 练哪里 chips (scroll) + the 筛选 chip that opens the sheet.
-class LibFilterRow extends StatelessWidget {
-  const LibFilterRow({
-    super.key,
-    required this.filter,
-    required this.onDirection,
-    required this.onSheet,
-  });
-  final LibraryFilter filter;
-  final ValueChanged<HipDirection?> onDirection;
-  final VoidCallback onSheet;
-  @override
-  Widget build(BuildContext context) {
-    final t = LibText.of(context);
-    final n = filter.sheetCount;
-    return SizedBox(
-      height: 28,
-      child: Row(
-        children: [
-          Expanded(
-            child: ShaderMask(
-              shaderCallback: (r) => const LinearGradient(
-                colors: [Colors.white, Colors.white, Colors.transparent],
-                stops: [0, .9, 1],
-              ).createShader(r),
-              blendMode: BlendMode.dstIn,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  LibChip(
-                    t.all,
-                    key: const ValueKey('lib-dir-all'),
-                    on: filter.direction == null,
-                    onTap: () => onDirection(null),
-                  ),
-                  for (final d in HipDirection.values) ...[
-                    const SizedBox(width: 8),
-                    LibChip(
-                      t.areaChip(d),
-                      key: ValueKey('lib-dir-${d.id}'),
-                      on: d == filter.direction,
-                      onTap: () => onDirection(d),
-                    ),
-                  ],
-                  const SizedBox(width: 16),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          LibChip(
-            t.filterN(n),
-            key: const ValueKey('lib-filter'),
-            icon: HipGlyph.filter,
-            on: n > 0,
-            onTap: onSheet,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ───────────────────────── drill card + grid ─────────────────────────
-
-/// Two-column poster card: themed cover, area pill, 进阶 / 椅子 badges,
-/// name and dose. [check] null = browse; true/false = pick mode.
-class LibDrillCard extends StatelessWidget {
-  const LibDrillCard({
-    super.key,
-    required this.content,
-    required this.drill,
-    required this.dose,
-    required this.onTap,
-    this.check,
-    this.inGroup = false,
-  });
-  final HipContent content;
-  final HipDrill drill;
-  final String dose;
-  final ValueChanged<BuildContext> onTap;
-  final bool? check;
-  final bool inGroup;
-
-  static const double _radius = 12;
-  static const double _edge = 2;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = LibText.of(context);
-    final on = check == true;
-    final name = drillName(content, drill, t.lang);
-    final large = libLargeText(context);
-    const nameStyle = TextStyle(
-      fontSize: 14,
-      height: 1.33,
-      fontWeight: FontWeight.w600,
-    );
-    return Builder(
-      builder: (cardContext) => HipPressable(
-        semanticLabel: name,
-        selected: check == null ? null : on,
-        scale: .97,
-        onTap: () => onTap(cardContext),
-        child: RepaintBoundary(
-          // m3: flat tile, small corners; an outline only marks a selected
-          // card while picking. UI r2 #3: the art is clipped to the inner
-          // radius and the outline is painted on top of it (foregroundDecoration),
-          // so the picture never covers the rounded border.
-          child: Container(
-            foregroundDecoration: on
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(_radius),
-                    border: Border.all(color: HipColors.jade, width: _edge),
-                  )
-                : null,
-            decoration: BoxDecoration(
-              color: HipColors.surface,
-              borderRadius: BorderRadius.circular(_radius),
-            ),
-            // No inset padding, so selecting does not shift the art; the
-            // outline (on top) covers the clipped corner exactly.
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(_radius),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AspectRatio(
-                    aspectRatio: 1.08,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ColoredBox(
-                          color: HipColors.mediaBackdrop,
-                          child: HipDrillArt(
-                            drill: drill,
-                            showPendingLabel: false,
-                          ),
-                        ),
-                        Positioned(
-                          left: 8,
-                          bottom: 8,
-                          right: 8,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: mediaPill(
-                              t.area(drill.directions.first),
-                              dot: HipPalette.dark.glow,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 8,
-                          top: 8,
-                          child: Row(
-                            children: [
-                              if (drill.advanced)
-                                mediaPill(
-                                  t.advanced,
-                                  color: HipPalette.dark.tight,
-                                ),
-                              if (drill.advanced &&
-                                  drill.scenes.contains(HipScene.chair))
-                                const SizedBox(width: 4),
-                              if (drill.scenes.contains(HipScene.chair))
-                                mediaPill(t.chair, icon: HipGlyph.chair),
-                            ],
-                          ),
-                        ),
-                        if (check != null)
-                          Positioned(
-                            // Inset from the outline, never on it.
-                            right: on ? 6 : 8,
-                            top: on ? 6 : 8,
-                            child: _checkDot(on),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (large)
-                          Text(name, style: nameStyle)
-                        else
-                          SizedBox(
-                            height: MediaQuery.textScalerOf(context).scale(38),
-                            child: Text(
-                              name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: nameStyle,
-                            ),
-                          ),
-                        const SizedBox(height: 3),
-                        Text(
-                          inGroup ? t.inGroup(dose) : dose,
-                          maxLines: large ? null : 1,
-                          overflow: large ? null : TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.3,
-                            color: inGroup ? HipColors.faint : HipColors.muted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _checkDot(bool on) => Container(
-    width: 28,
-    height: 28,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: on ? HipPalette.dark.jade : Colors.black.withValues(alpha: .35),
-      border: Border.all(
-        color: on ? HipPalette.dark.jade : Colors.white.withValues(alpha: .85),
-        width: 1.6,
-      ),
-    ),
-    alignment: Alignment.center,
-    child: on
-        ? HipIcon(
-            HipGlyph.check,
-            size: 18,
-            strokeWidth: 2.6,
-            color: HipPalette.dark.onJade,
-          )
-        : null,
-  );
-}
-
-/// Two columns of [LibDrillCard]s as one widget (inside a ListView).
-class LibDrillGrid extends StatelessWidget {
-  const LibDrillGrid({super.key, required this.children});
-  final List<Widget> children;
-  @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) {
-      // One card per row under very large text, so names are not cut.
-      final w = libLargeText(context) ? box.maxWidth : (box.maxWidth - 12) / 2;
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [for (final c in children) SizedBox(width: w, child: c)],
-      );
-    },
-  );
 }
 
 // ───────────────────────── notices / footer / thumbs ─────────────────────

@@ -233,6 +233,8 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
+    // Show the same adapted plan as the detail page, including its timing.
+    final plan = actions.store.planner.planFor([r], actions.store.profile);
     final nameStyle = TextStyle(
       fontSize: 16,
       height: 1.25,
@@ -240,7 +242,7 @@ class _PracticePageState extends State<PracticePage> {
       color: HipColors.text,
     );
     final minutes = Text(
-      t.minutes(r.minutes),
+      t.minutes(plan.minutes),
       style: TextStyle(fontSize: 14, color: HipColors.faint),
     );
     return HipPressable(
@@ -282,7 +284,7 @@ class _PracticePageState extends State<PracticePage> {
               ),
             const SizedBox(height: 4),
             Text(
-              '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
+              '${t.scene(r.scene)} · ${t.movesCount(plan.steps.length)} · '
               '${r.audience.split('；').first}',
               style: TextStyle(
                 fontSize: 13,
@@ -305,7 +307,7 @@ class _PracticePageState extends State<PracticePage> {
             LibThumbStrip(
               size: 32,
               gap: 8,
-              drills: [for (final s in r.steps) content.drill(s.drillId)],
+              drills: [for (final s in plan.steps) s.drill],
             ),
           ],
         ),
@@ -435,6 +437,7 @@ class GroupCard extends StatelessWidget {
     return HipPressable(
       key: ValueKey('group-card-${g.id}'),
       semanticLabel: g.name,
+      preserveChildSemantics: true,
       scale: .98,
       onTap: () => g.coachPlan != null && actions.coach != null
           ? openHipSavedCoachPlan(context, actions, g)
@@ -457,49 +460,51 @@ class GroupCard extends StatelessWidget {
                 Flexible(
                   flex: large ? 0 : 1,
                   fit: FlexFit.tight,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        g.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                          color: HipColors.text,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.3,
-                          color: HipColors.muted,
-                        ),
-                      ),
-                      if (from != null)
+                  child: ExcludeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          t.fromRoutine(routineShortName(from)),
+                          g.name,
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.25,
+                            fontWeight: FontWeight.w600,
+                            color: HipColors.text,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 13,
                             height: 1.3,
-                            color: HipColors.faint,
+                            color: HipColors.muted,
                           ),
                         ),
-                      if (g.removed > 0)
-                        Text(
-                          t.delisted(g.removed),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: HipColors.tight,
+                        if (from != null)
+                          Text(
+                            t.fromRoutine(routineShortName(from)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.3,
+                              color: HipColors.faint,
+                            ),
                           ),
-                        ),
-                    ],
+                        if (g.removed > 0)
+                          Text(
+                            t.delisted(g.removed),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: HipColors.tight,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8, height: 10),
@@ -509,6 +514,7 @@ class GroupCard extends StatelessWidget {
                     child: LibPill(
                       key: ValueKey('group-start-${g.id}'),
                       label: t.start,
+                      semanticLabel: '${t.start} ${g.name}',
                       icon: HipGlyph.play,
                       height: 32,
                       radius: 8,
@@ -526,7 +532,9 @@ class GroupCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            LibThumbStrip(drills: drills, size: 32, gap: 8),
+            ExcludeSemantics(
+              child: LibThumbStrip(drills: drills, size: 32, gap: 8),
+            ),
           ],
         ),
       ),
@@ -625,13 +633,9 @@ class _AssessmentIntroPageState extends State<AssessmentIntroPage> {
   }
 
   @override
-  Widget build(BuildContext context) => HipNavPage(
-    title: '髋部自测',
-    leadingKey: const ValueKey('intro-back'),
-    body: HipAssessmentIntro(
-      store: widget.actions.store,
-      startKey: _startKey,
-      onStart: _start,
-    ),
+  Widget build(BuildContext context) => HipAssessmentIntro(
+    store: widget.actions.store,
+    startKey: _startKey,
+    onStart: _start,
   );
 }

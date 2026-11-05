@@ -6,7 +6,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
-import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
@@ -15,7 +14,6 @@ import '../data/hip_shared_library.dart';
 import '../data/hip_action_scope.dart';
 import '../coach/hip_coach_profile.dart' show loadHipCoachCatalog;
 import '../domain/hip_models.dart';
-import '../domain/hip_progress.dart';
 import '../domain/hip_session.dart';
 import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
@@ -1246,6 +1244,7 @@ class HipProgressPage extends StatelessWidget {
                         : '时间已记下，暂不推送系统通知',
                     trailing: HipSwitch(
                       key: const ValueKey('reminder-switch'),
+                      semanticLabel: '久坐提醒',
                       value: reminder.enabled,
                       onChanged: (v) =>
                           store.setReminder(reminder.copyWith(enabled: v)),
@@ -1343,38 +1342,6 @@ class HipProgressPage extends StatelessWidget {
   }
 }
 
-/// 设置 ·「AI 定制用量」: calls and tokens on this device (usage.jsonl).
-class HipCoachUsagePanel extends StatefulWidget {
-  const HipCoachUsagePanel({super.key, required this.usage});
-  final CoachUsageStore usage;
-  @override
-  State<HipCoachUsagePanel> createState() => _HipCoachUsagePanelState();
-}
-
-class _HipCoachUsagePanelState extends State<HipCoachUsagePanel> {
-  late final Future<void> _loaded = widget.usage.load();
-  @override
-  Widget build(BuildContext context) => FutureBuilder<void>(
-    future: _loaded,
-    builder: (context, _) {
-      final t = widget.usage.totals;
-      return HipPanel(
-        key: const ValueKey('coach-usage'),
-        padding: EdgeInsets.zero,
-        child: ListTile(
-          leading: HipIcon(HipGlyph.bolt, color: HipColors.jade),
-          title: const Text('AI 定制用量'),
-          subtitle: Text(
-            t.calls == 0
-                ? '本机还没有调用过 AI'
-                : '本机累计调用 ${t.calls} 次 · 输入 ${t.promptTokens} / 输出 ${t.completionTokens} token',
-          ),
-        ),
-      );
-    },
-  );
-}
-
 /// 设置 as its own page (UI r2): [HipNavBar] + the grouped settings list.
 /// Opened from 更多 and from the AI coach.
 class HipSettingsPage extends StatelessWidget {
@@ -1393,9 +1360,6 @@ class HipSettingsPage extends StatelessWidget {
     ),
   );
 }
-
-String reminderLabel(ReminderSettings r) =>
-    r.enabled ? '每 ${r.intervalMinutes} 分钟' : '关闭';
 
 // ───────────────────────── settings: voice + appearance ─────────────────────
 
@@ -1423,6 +1387,7 @@ class HipVoiceSettingsPanel extends StatelessWidget {
               subtitle: '动作预告、倒数、换边、要点提醒',
               trailing: HipSwitch(
                 key: const ValueKey('voice-switch'),
+                semanticLabel: '人声口令',
                 value: v.voice,
                 onChanged: (x) => store.setVoice(v.copyWith(voice: x)),
               ),
@@ -1433,6 +1398,7 @@ class HipVoiceSettingsPanel extends StatelessWidget {
               subtitle: '开始、结束和倒数的“滴”声',
               trailing: HipSwitch(
                 key: const ValueKey('chime-switch'),
+                semanticLabel: '提示音',
                 value: v.chimes,
                 onChanged: (x) => store.setVoice(v.copyWith(chimes: x)),
               ),

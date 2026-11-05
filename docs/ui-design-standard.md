@@ -22,7 +22,7 @@
 ```
 
 - 条带总高 = 状态栏 + 标题行 + `kHipNavFade`（24）。
-- 内容视口从 **屏幕 y = 0** 开始，列表一直滚到状态栏下面（对齐 Gemini / iOS 的行为）；页面自己在滚动内容顶部留出 `hipNavInset(context)` = 状态栏 + 44（有副标题 + 52）+ **24 过渡段**。静止时首行必须在渐变带以下，否则会被磨砂压暗、看不清。
+- 内容视口从 **屏幕 y = 0** 开始，列表一直滚到状态栏下面（对齐 Gemini / iOS 的行为）；页面自己在滚动内容顶部留出 `hipNavInset(context)` = 状态栏 + 44 + **24 过渡段**；有副标题时显式调用 `hipNavInset(context, hasSubtitle: true)` = 状态栏 + **52 + 24**。静止时首行必须在渐变带以下，否则会被磨砂压暗、看不清。
 - 条带是**浮层**：`IgnorePointer`，不拦截滚动；只有返回胶囊和右侧操作可点。
 - 无分割线、无投影、无圆角。
 
@@ -74,17 +74,19 @@ HipNavPage(
 )
 ```
 
-- `bodyScrollsUnderBar: true` 时必须用 `hipNavInset(context)` 给内容留出顶部 inset；该值已包含 `kHipNavFade`，不要再用裸的状态栏 + 44。
+- `bodyScrollsUnderBar: true` 时必须用 `hipNavInset(context)` 给内容留出顶部 inset；有真实副标题的动作/套路详情、加动作选择器和自测结果传 `hasSubtitle: true`。该值已包含 `kHipNavFade`，不要再用裸的状态栏 + 44。
 - `bodyScrollsUnderBar: false` 用于固定头部/表单页：内容从条底开始，条带不向下延伸（`fade = 0`）。
-- 带底部操作条的页面通过 `bottomBar` 传入，底部安全区由操作条自己负责，页面内容区不再重复留底。
+- 带底部操作条的页面通过 `bottomBar` 传入，底部安全区由操作条自己负责，页面内容区不再重复留底。键盘的 `viewInsets.bottom` 由 `HipNavPage` 在 `bottomBar` 外统一补一次，页面或 `LibFooter` 不再重复补键盘高度；按钮必须保持在键盘上方。
 - 评估页结果、编辑页等复杂页面允许使用 `bottomBar` 固定操作区；滚动内容仍走 `body`。
 
-当前全部页面已使用 `HipNavPage`，不再直接使用 `HipNavBar`：
+下列常规页面使用 `HipNavPage`，不直接拼接 `HipNavBar`：
 
 | 模式 | 页面 |
 |---|---|
-| 内容穿透（true） | 更多、设置、训练记录、隐私政策、动作详情、套路详情、加动作选择器、自测结果 |
-| 固定头部（false） | 组编辑（名称/休息固定区）、安全提示复审、Coach 加载壳 |
+| 内容穿透（true） | 更多、设置、训练记录、隐私政策、动作详情、套路详情、加动作选择器、自测说明、自测结果 |
+| 固定头部（false） | 动作库/训练组（搜索或分段保持固定头部）、组编辑（名称/休息固定区）、安全提示复审、Coach 加载/错误壳 |
+
+自测说明由 `HipAssessmentIntro` 持有唯一页面骨架，正文为可滚动列表、顶部 `hipNavInset + 12`，开始/重测操作放入 `LibFooter`。自测题目保留沉浸式单屏布局和原判断，仅用 `HipTopBar.leading` 接入 `HipNavBackChip(leading: HipNavLeading.close)`，不套浮动标题栏。首页、首次引导和 SDK 训练/聊天保持各自已确认边界。
 
 ### 1.5 路由过渡
 
@@ -94,8 +96,8 @@ HipNavPage(
 - 缓动与其它页面一致：进入用 `HipMotion.enter`、返回用 `HipMotion.exit.flipped`（400 / 340ms），不再用前段过快的 ease-out；iOS 边缘返回拖动时按手指 1:1，不套曲线。
 - 下层页面以 -28% 视差左移并轻微压暗，跟随上层页面一起进退。
 - iOS 左缘右滑返回保留；Android 系统返回手势照常 pop。
-- `HipRoute.push` 只用于没有共用顶栏的沉浸页（自测题目、训练、加载壳等）；`rise`/`expandFrom` 仍用于训练与容器变换。
-- 系统开启"移除动画"时直接落到终态，不做位移与淡入。
+- `HipRoute.push` 只用于没有共用顶栏的沉浸页；`rise`/`expandFrom` 仍用于训练与容器变换，自测从开始按钮展开的流程保持。
+- 系统开启"移除动画"时直接落到终态，不做位移与淡入；开关、分段、按压、状态切换和确认弹窗也不留下过渡动画。iOS 左缘返回手势仍可用，拖动不移动页面表面，结束时以零时长完成或取消返回。
 
 ```dart
 Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()));
@@ -126,7 +128,11 @@ Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()
 | 分段使用范围 | 设置页全部、练习页"我的/推荐套路"、组编辑休息间隔；首页玻璃场景选择器保持玻璃胶囊，不套用本表 |
 | `HipPrimaryButton` | 高 **50** / 圆角 **14** / 17pt w600；jade 填充、无渐变、无投影；禁用为 surfaceHigh + muted |
 | `HipSecondaryButton` | 高 **50** / 圆角 **14** / 17pt w500；浅色 `HipColors.track`、深色 white @ .10；SDK 内嵌位保留 56 / 18 胶囊 |
+| 首页小玻璃图标按钮 | “换一套”保留 **32pt 视觉尺寸**；`HipGlassRoundButton` 点击布局至少 **44×44**，视觉居中，不放大原图形 |
 | 确认弹窗 | `showHipConfirmDialog`：最大宽 320、圆角 14、surface 底 + 柔和投影；标题 17 w600 居中，正文 14 muted；操作行高 50，由 0.5pt 细线分隔；取消为正文色 w400，确认为 jadeText，破坏性操作为 pain；遮罩 black @ .36，180ms 淡入 + 0.96→1 缩放 |
+
+- 开关提供独立名称、开关状态、语义点击和键盘 Enter/Space 激活；保持当前视觉数值。
+- 卡片内有独立开始按钮时，仅该复合卡片开启 `HipPressable(preserveChildSemantics: true)`。卡片编辑与“开始 + 组名”分别导出可执行焦点，父级不合并或屏蔽开始动作；普通按钮默认合并行为保持。
 
 ---
 
@@ -154,6 +160,10 @@ Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()
 - [ ] 内容穿透页面静止时首行/首卡完全在渐变带下方
 - [ ] 主/次按钮 50 高、圆角 14、17pt；确认弹窗无 Material 默认样式残留
 - [ ] 前后页都有返回胶囊时只有胶囊固定；从无返回键页面进入时胶囊随页面滑入，顶栏玻璃/标题/操作始终随页面滑动，无双重胶囊或空背景闪烁
+- [ ] 有副标题页面按 52 + 24 留白；自测说明滚动与固定底按钮互不遮挡
+- [ ] 键盘出现后操作条仅上移一份键盘高度，保存/添加仍可点击
+- [ ] 复合卡片的编辑与开始均可独立读屏激活；32pt 小玻璃按钮保持至少 44×44 热区
+- [ ] 移除动画时无残留运动，iOS 左缘返回仍能完成或取消
 
 ---
 
@@ -168,3 +178,4 @@ Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()
 | 2026-11-05 | 新增共用返回胶囊过渡：`HipRoute.content` 下整页（含顶栏玻璃、标题、操作）横向滑入/滑出，仅返回胶囊固定，消除两个返回胶囊横穿和返回空背景闪烁；全部 `HipNavPage` 目的页已切换 |
 | 2026-11-05 | 转场手感调整：改用 `HipMotion.enter/exit` 缓动、下层 -28% 视差、被覆盖页隐藏胶囊，边缘拖动线性跟手，消除 snap 感 |
 | 2026-11-05 | 返回胶囊固定改为按两侧是否存在：首页等无返回键页面用 `pinLeading: false`，胶囊随页面滑入/滑出，不再点击瞬间先出现在左上角 |
+| 2026-11-05 | 补齐副标题 52 + 24 inset、自测说明滚动骨架/底操作条、自测题页关闭胶囊、键盘操作条上移、32pt 视觉/44pt 热区、复合卡片独立开始语义及移除动画下 iOS 边缘返回；保留 Practice 固定头部 |

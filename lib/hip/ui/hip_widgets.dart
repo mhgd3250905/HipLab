@@ -379,6 +379,7 @@ class HipTopBar extends StatelessWidget {
     this.subtitle,
     this.center,
     this.trailing,
+    this.leading,
     this.onClose,
     this.icon = HipGlyph.close,
     this.tooltip = '关闭',
@@ -389,6 +390,9 @@ class HipTopBar extends StatelessWidget {
   /// Centred content instead of a title (e.g. progress dots).
   final Widget? center;
   final Widget? trailing;
+
+  /// Optional leading control for immersive pages with a custom header.
+  final Widget? leading;
   final VoidCallback? onClose;
   final HipGlyph icon;
   final String tooltip;
@@ -400,11 +404,12 @@ class HipTopBar extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         children: [
-          HipCircleButton(
-            icon: icon,
-            tooltip: tooltip,
-            onPressed: onClose ?? () => Navigator.of(context).maybePop(),
-          ),
+          leading ??
+              HipCircleButton(
+                icon: icon,
+                tooltip: tooltip,
+                onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+              ),
           const SizedBox(width: 12),
           Expanded(
             child:
@@ -473,27 +478,30 @@ class HipFadeSwitcher extends StatelessWidget {
   final bool expand;
 
   @override
-  Widget build(BuildContext context) => AnimatedSwitcher(
-    duration: duration,
-    switchInCurve: HipMotion.curve,
-    switchOutCurve: Curves.easeIn,
-    layoutBuilder: (current, previous) => Stack(
-      alignment: alignment,
-      fit: expand ? StackFit.expand : StackFit.loose,
-      children: [...previous, ?current],
-    ),
-    transitionBuilder: (child, animation) => FadeTransition(
-      opacity: animation,
-      child: SlideTransition(
-        position: Tween(
-          begin: Offset(0, offset),
-          end: Offset.zero,
-        ).animate(animation),
-        child: child,
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return child;
+    return AnimatedSwitcher(
+      duration: duration,
+      switchInCurve: HipMotion.curve,
+      switchOutCurve: Curves.easeIn,
+      layoutBuilder: (current, previous) => Stack(
+        alignment: alignment,
+        fit: expand ? StackFit.expand : StackFit.loose,
+        children: [...previous, ?current],
       ),
-    ),
-    child: child,
-  );
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween(
+            begin: Offset(0, offset),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
 }
 
 /// The six-direction hip radar. Axis order follows the prototype:
@@ -923,6 +931,7 @@ class HipPressable extends StatefulWidget {
     this.scale = HipMotion.pressScale,
     this.focusNode,
     this.semanticLabel,
+    this.preserveChildSemantics = false,
     this.selected,
     this.inMutuallyExclusiveGroup = false,
     this.onPressChanged,
@@ -932,6 +941,10 @@ class HipPressable extends StatefulWidget {
   final double scale;
   final FocusNode? focusNode;
   final String? semanticLabel;
+
+  /// Keep independently actionable children (for example a card's Start
+  /// button) visible to accessibility instead of folding them into this tap.
+  final bool preserveChildSemantics;
   final bool? selected;
   final bool inMutuallyExclusiveGroup;
 
@@ -954,52 +967,59 @@ class _HipPressableState extends State<HipPressable> {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    return MergeSemantics(
-      child: Semantics(
-        container: true,
-        button: true,
+    final semantics = Semantics(
+      container: true,
+      explicitChildNodes: widget.preserveChildSemantics,
+      button: true,
+      enabled: widget.onTap != null,
+      label: widget.semanticLabel,
+      selected: widget.selected,
+      inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup,
+      onTap: widget.onTap,
+      child: FocusableActionDetector(
+        focusNode: widget.focusNode,
         enabled: widget.onTap != null,
-        label: widget.semanticLabel,
-        selected: widget.selected,
-        inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup,
-        onTap: widget.onTap,
-        child: FocusableActionDetector(
-          focusNode: widget.focusNode,
-          enabled: widget.onTap != null,
-          shortcuts: const {
-            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          },
-          actions: {
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                widget.onTap?.call();
-                return null;
-              },
-            ),
-          },
-          child: GestureDetector(
-            excludeFromSemantics: true,
-            behavior: HitTestBehavior.opaque,
-            onTapDown: widget.onTap == null ? null : (_) => _set(true),
-            onTapUp: widget.onTap == null ? null : (_) => _set(false),
-            onTapCancel: () => _set(false),
-            onTap: widget.onTap,
-            child: AnimatedScale(
-              scale: _down && !reduceMotion ? widget.scale : 1,
-              duration: _down ? HipMotion.press : HipMotion.release,
-              curve: _down ? Curves.easeOut : Curves.easeOutCubic,
-              child: HipPressedScope(
-                pressed: _down,
-                child: widget.semanticLabel == null
-                    ? widget.child
-                    : ExcludeSemantics(child: widget.child),
-              ),
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          behavior: HitTestBehavior.opaque,
+          onTapDown: widget.onTap == null ? null : (_) => _set(true),
+          onTapUp: widget.onTap == null ? null : (_) => _set(false),
+          onTapCancel: () => _set(false),
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _down && !reduceMotion ? widget.scale : 1,
+            duration: reduceMotion
+                ? Duration.zero
+                : _down
+                ? HipMotion.press
+                : HipMotion.release,
+            curve: _down ? Curves.easeOut : Curves.easeOutCubic,
+            child: HipPressedScope(
+              pressed: _down,
+              child:
+                  widget.semanticLabel == null || widget.preserveChildSemantics
+                  ? widget.child
+                  : ExcludeSemantics(child: widget.child),
             ),
           ),
         ),
       ),
     );
+    return widget.preserveChildSemantics
+        ? semantics
+        : MergeSemantics(child: semantics);
   }
 }
 

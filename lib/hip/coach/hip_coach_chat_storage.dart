@@ -27,8 +27,8 @@ class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
         updatedAt: routine.updatedAt,
       );
 
-  /// Existing SDK saves carry the complete original plan. Ordinary legacy
-  /// groups need only a structural import of their authored dose and rest.
+  /// Existing SDK saves carry the complete original plan. Ordinary groups
+  /// need only a structural import of their authored dose and rest.
   coach.TrainingPlan planFor(CustomRoutine routine) {
     if (routine.coachPlan case final raw?) {
       final decoded = const coach.PlanCodec().decodeStrict(raw);
@@ -40,6 +40,35 @@ class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
         'Stored group references an unavailable action',
       );
     }
+    coach.PlanItem itemFor(CustomStep step) {
+      if (isSdkGroupStep(store.content, step.kitId)) {
+        // The editor/player already project SDK-only defaults and overrides.
+        // These public actions have no legacy action kit to dereference.
+        final item = step.planItem(store.content);
+        if (item != null) {
+          return item.copyWith(restSeconds: routine.restSeconds);
+        }
+      }
+      final drill = catalog[step.kitId]!;
+      final kit = store.content.kit(step.kitId);
+      if (kit == null) {
+        throw const FormatException('Stored group has no training definition');
+      }
+      return coach.PlanItem(
+        exerciseId: step.kitId,
+        mode: drill.defaultDose.mode,
+        sets: step.sets ?? 1,
+        reps: drill.defaultDose.mode == coach.DoseMode.reps
+            ? step.reps ?? kit.defaultReps
+            : null,
+        workSeconds: drill.defaultDose.mode == coach.DoseMode.time
+            ? DoseRules.setSeconds(kit, step.dose(kit), single: false)
+            : null,
+        perSide: drill.unilateral,
+        restSeconds: routine.restSeconds,
+      );
+    }
+
     final drills = [for (final step in routine.steps) catalog[step.kitId]!];
     return coach.TrainingPlan(
       id: 'ext:${routine.id}',
@@ -55,28 +84,7 @@ class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
           id: 'saved',
           name: routine.name,
           type: coach.BlockType.main,
-          items: [
-            for (final step in routine.steps)
-              coach.PlanItem(
-                exerciseId: step.kitId,
-                mode: catalog[step.kitId]!.defaultDose.mode,
-                sets: step.sets ?? 1,
-                reps:
-                    catalog[step.kitId]!.defaultDose.mode == coach.DoseMode.reps
-                    ? step.reps ?? store.content.kit(step.kitId)!.defaultReps
-                    : null,
-                workSeconds:
-                    catalog[step.kitId]!.defaultDose.mode == coach.DoseMode.time
-                    ? DoseRules.setSeconds(
-                        store.content.kit(step.kitId)!,
-                        step.dose(store.content.kit(step.kitId)!),
-                        single: false,
-                      )
-                    : null,
-                perSide: catalog[step.kitId]!.unilateral,
-                restSeconds: routine.restSeconds,
-              ),
-          ],
+          items: [for (final step in routine.steps) itemFor(step)],
         ),
       ],
     );

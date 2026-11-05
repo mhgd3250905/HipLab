@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import '../../data/hip_shared_library.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
@@ -41,7 +42,21 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loading ??= loadHipChat(context, widget.actions);
+    _loading ??= _load();
+  }
+
+  Future<CoachChatController> _load() async {
+    try {
+      return await loadHipChat(context, widget.actions);
+    } on Object catch (error, stack) {
+      // Diagnosable in a development build without logging user content,
+      // credentials or the exception's potentially sensitive message.
+      if (kDebugMode) {
+        debugPrint('HipLab coach initialization: ${error.runtimeType}');
+        debugPrint(stack.toString().split('\n').take(8).join('\n'));
+      }
+      Error.throwWithStackTrace(error, stack);
+    }
   }
 
   @override
@@ -51,19 +66,67 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
       if (snapshot.data case final chat?) {
         return CoachChatPage(controller: chat);
       }
+      final failed =
+          snapshot.connectionState == ConnectionState.done && snapshot.hasError;
       // UI r2: HipLab's own loading/error shell uses HipNavBar; the chat
       // itself is the SDK's CoachChatPage.
       return HipNavPage(
         title: 'HipLab 训练助手',
         body: Center(
-          child: snapshot.hasError
-              ? TextButton(
-                  onPressed: () => setState(() {
-                    _loading = loadHipChat(context, widget.actions);
-                  }),
-                  child: const Text('对话恢复失败，点击重试'),
-                )
-              : CircularProgressIndicator(color: HipColors.jade),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: HipPanel(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (failed)
+                      HipIcon(HipGlyph.info, size: 32, color: HipColors.muted)
+                    else
+                      SizedBox.square(
+                        dimension: 28,
+                        child: CircularProgressIndicator(
+                          color: HipColors.jade,
+                          strokeWidth: 2,
+                          semanticsLabel: '正在准备训练助手',
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Text(
+                      failed ? '训练助手暂时无法打开' : '正在准备训练助手',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: HipColors.text,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      failed ? '请重试。你也可以返回动作库或训练组，继续安排训练。' : '正在读取动作目录和对话记录',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: HipColors.muted,
+                      ),
+                    ),
+                    if (failed) ...[
+                      const SizedBox(height: 24),
+                      HipPrimaryButton(
+                        label: '重试',
+                        onPressed: () => setState(() {
+                          _loading = _load();
+                        }),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       );
     },

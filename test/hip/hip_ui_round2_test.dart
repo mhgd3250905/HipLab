@@ -532,7 +532,8 @@ void main() {
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
       // Back out cleanly into the list.
-      await tester.tap(find.byType(HipCircleButton).first);
+      expect(find.byType(HipNavBackChip), findsOneWidget);
+      await tester.tap(find.byType(HipNavBackChip));
       await tester.pumpAndSettle();
       expect(
         find.byKey(const ValueKey('intro-item-butterfly')),

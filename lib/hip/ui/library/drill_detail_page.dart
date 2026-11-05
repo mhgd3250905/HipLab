@@ -147,7 +147,12 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
       bodyScrollsUnderBar: true,
       body: ListView(
         key: const ValueKey('detail-list'),
-        padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          hipNavInset(context, hasSubtitle: true) + 4,
+          20,
+          20,
+        ),
         children: [
           SizedBox(
             height: 232,
@@ -358,7 +363,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     if (picked == null || !mounted) return;
     if (picked.isEmpty) {
       await Navigator.of(this.context).push(
-        HipRoute.rise<void>(
+        HipRoute.content<void>(
           (_) => GroupEditorPage(
             actions: widget.actions,
             initial: CustomRoutine(

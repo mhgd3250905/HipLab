@@ -27,7 +27,7 @@ class HipPrivacyPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '开发者：Bboy Ug1yk\n更新日期：2026 年 10 月 24 日',
+          '开发者：Bboy Ug1yk\n更新日期：2026 年 11 月 5 日',
           style: TextStyle(color: HipColors.muted, height: 1.6),
         ),
         const SizedBox(height: 20),
@@ -74,9 +74,9 @@ class HipPrivacyPage extends StatelessWidget {
         _PolicySection(
           title: '视频、网络与权限',
           body:
-              '动作视频随应用内置，可以离线播放。'
-              '${Theme.of(context).platform == TargetPlatform.iOS ? 'iOS 播放器使用 ' : 'Android 的网络权限用于 '}'
-              '127.0.0.1 本机媒体服务，让播放器读取内置素材。'
+              '动作目录与封面随应用提供。动作视频从公共素材服务按需下载并缓存在设备上；'
+              '开始训练前可能需要联网准备视频，尚未缓存的视频在离线时可能无法播放。'
+              '网络也用于检查公共动作目录和素材更新。'
               '${CoachConfig.fromEnvironment.configured ? '网络权限也用于你主动使用的 AI 定制请求。' : ''}'
               '应用不访问相机、麦克风、联系人或位置。',
         ),

@@ -850,7 +850,12 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
           ]);
           return ListView.builder(
             key: const ValueKey('picker-list'),
-            padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              hipNavInset(context, hasSubtitle: true) + 4,
+              20,
+              20,
+            ),
             itemCount: header.length + rows.length,
             itemBuilder: (context, i) =>
                 i < header.length ? header[i] : rows.row(i - header.length),
@@ -920,111 +925,4 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
       ),
     );
   }
-}
-
-/// ①b 筛选面板: 在哪做 / 怎么练 / 难度; OR within a group, AND across;
-/// the button shows the live result count.
-Future<LibraryFilter?> showFilterSheet(
-  BuildContext context,
-  HipContent content,
-  LibraryFilter initial,
-) {
-  final t = LibText.of(context);
-  final all = libraryDrills(content);
-  var f = initial;
-  Set<T> toggle<T>(Set<T> s, T v) =>
-      s.contains(v) ? ({...s}..remove(v)) : {...s, v};
-  return showLibSheet<LibraryFilter>(
-    context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setSheet) {
-        final n = f.apply(content, all).length;
-        Widget section(String title, List<Widget> chips) => Padding(
-          padding: const EdgeInsets.only(bottom: 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: HipColors.muted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(spacing: 8, runSpacing: 8, children: chips),
-            ],
-          ),
-        );
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            sheetTitle(
-              t.filter,
-              trailing: HipPressable(
-                key: const ValueKey('filter-reset'),
-                semanticLabel: t.reset,
-                onTap: () => setSheet(() => f = f.withoutSheet),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Text(
-                    t.reset,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: HipColors.jadeText,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            section(t.sceneTitle, [
-              for (final s in [HipScene.chair, HipScene.home])
-                LibChip(
-                  t.scene(s),
-                  key: ValueKey('filter-scene-${s.id}'),
-                  on: f.scenes.contains(s),
-                  onTap: () => setSheet(
-                    () => f = f.copyWith(scenes: toggle(f.scenes, s)),
-                  ),
-                ),
-            ]),
-            section(t.methodTitle, [
-              for (final m in HipMethod.values)
-                LibChip(
-                  t.method(m),
-                  key: ValueKey('filter-method-${m.id}'),
-                  on: f.methods.contains(m),
-                  onTap: () => setSheet(
-                    () => f = f.copyWith(methods: toggle(f.methods, m)),
-                  ),
-                ),
-            ]),
-            section(t.levelTitle, [
-              for (final (adv, label) in [
-                (false, t.starter),
-                (true, t.advancedLevel),
-              ])
-                LibChip(
-                  label,
-                  key: ValueKey('filter-level-$adv'),
-                  on: f.levels.contains(adv),
-                  onTap: () => setSheet(
-                    () => f = f.copyWith(levels: toggle(f.levels, adv)),
-                  ),
-                ),
-            ]),
-            HipPrimaryButton(
-              key: const ValueKey('filter-apply'),
-              label: t.showN(n),
-              onPressed: () => Navigator.of(context).pop(f),
-            ),
-          ],
-        );
-      },
-    ),
-  );
 }
