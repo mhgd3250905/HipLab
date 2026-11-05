@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-11-06：动作牌 / +40最终内部包
+
+运行/构建源 `ba40e38a783975f17fcd682606e8b5bd092b7b25`，独立分支 `codex/home-action-deck-20261105`；`1.1.0+40` / arm64 `2040`。SDK仍固定97eb66d，lock、资源和原生配置未改。
+
+最终包 `E:/AII-3D/hiplab-releases/home-action-floating-ba40e38-40-20261106/hiplab-1.1.0+40-ba40e38-internal-arm64-release.apk`，47628200字节，SHA256 `6b96e88dbf4495762f1ed049fa29f1be9c5f25d9b4194c130c23bb6959e85b46`；证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7` 与+39一致。install-r Success、2040/1.1.0回读，未清数据。原上传签名包只归档、未上传。
+
++37/cf46dce、+38/70e1929、+39/3c5ef15均为本轮此前已安装的内部候选；+38有用户确认，+39主体证据与+40最终证据分目录保留，见[最终报告](home-action-floating-2026-11-06.md)和[+38报告](home-action-deck-2026-11-06.md)。
+
 ## 2026-11-05：UI r4 全界面补全 / +36 真机包
 
 运行/构建源 `6e247aaa7349b9d5cd8c2e626fe3e4a86faba9e3`，分支 `codex/ui-r4-completion-20261105`；`1.1.0+36` / arm64 split `2036`，SDK仍固定 `97eb66d`，lock、媒体及原生配置未改。
