@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-11-06：二级转场优化 / +41最终内部release
+
+运行/构建源 `58aa468c2707361e917cea2b75fc4561a23b4473`，独立分支 `codex/navigation-transition-perf-20261106`；`1.1.0+41` / arm64 `2041`。继承+40动作牌，SDK97eb66d、lock、资源与原生配置不变。
+
+包 `E:/AII-3D/hiplab-releases/navigation-58aa468-41-20261106/hiplab-1.1.0+41-58aa468-internal-arm64-release.apk`，47628200字节，SHA256 `b3e96c61334e77a1e82ee3b45d6d199356b4fc19e68990c231865c37d98bb13f`，证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；同签覆盖Success、回读2041/1.1.0、冷启动191ms。验包/资源/运行负载通过，正式libapp.so无诊断入口。
+
+最终+41 release同签名覆盖成功，回读2041/1.1.0，冷启动Status ok/191ms。浅色五路径进退、深色设置/隐私及内容滚过顶栏已检查；已恢复原浅色选择、回到首页。按用户要求锁屏，系统回读keyguard showing=true、inputRestricted=true，电源为Dozing（设备常亮显示状态）；不再操作手机。 profile计时制品与最终release分别归属，完整[量化、包身份和现场记录](navigation-jank-2026-11-06.md)。
+
 ## 2026-11-06：动作牌 / +40最终内部包
 
 运行/构建源 `ba40e38a783975f17fcd682606e8b5bd092b7b25`，独立分支 `codex/home-action-deck-20261105`；`1.1.0+40` / arm64 `2040`。SDK仍固定97eb66d，lock、资源和原生配置未改。
