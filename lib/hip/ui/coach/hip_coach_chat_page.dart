@@ -18,6 +18,7 @@ import '../hip_page_kit.dart';
 import '../hip_player_page.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
+import '../hip_text.dart';
 import '../hip_widgets.dart';
 import '../library/drill_detail_page.dart';
 import '../library/group_editor_page.dart';
@@ -26,8 +27,7 @@ import '../library/practice_page.dart';
 
 bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
     (configured ?? CoachConfig.fromEnvironment.configured) &&
-    Theme.of(context).platform != TargetPlatform.iOS &&
-    (Localizations.maybeLocaleOf(context)?.languageCode ?? 'zh') == 'zh';
+    Theme.of(context).platform != TargetPlatform.iOS;
 
 /// Only the route, lifecycle and dependency lookup belong to HipLab.
 class HipCoachChatPage extends StatefulWidget {
@@ -42,7 +42,7 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loading ??= _load();
+    _loading = _load();
   }
 
   Future<CoachChatController> _load() async {
@@ -71,7 +71,7 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
       // UI r2: HipLab's own loading/error shell uses HipNavBar; the chat
       // itself is the SDK's CoachChatPage.
       return HipNavPage(
-        title: 'HipLab 训练助手',
+        title: HipText.of(context).pick('HipLab 训练助手', 'HipLab Coach'),
         body: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -90,12 +90,20 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
                         child: CircularProgressIndicator(
                           color: HipColors.jade,
                           strokeWidth: 2,
-                          semanticsLabel: '正在准备训练助手',
+                          semanticsLabel: HipText.of(
+                            context,
+                          ).pick('正在准备训练助手', 'Preparing your coach'),
                         ),
                       ),
                     const SizedBox(height: 20),
                     Text(
-                      failed ? '训练助手暂时无法打开' : '正在准备训练助手',
+                      failed
+                          ? HipText.of(
+                              context,
+                            ).pick('训练助手暂时无法打开', 'Coach is unavailable')
+                          : HipText.of(
+                              context,
+                            ).pick('正在准备训练助手', 'Preparing your coach'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 17,
@@ -105,7 +113,15 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      failed ? '请重试。你也可以返回动作库或训练组，继续安排训练。' : '正在读取动作目录和对话记录',
+                      failed
+                          ? HipText.of(context).pick(
+                              '请重试。你也可以返回动作库或训练组，继续安排训练。',
+                              'Try again, or return to your move library or saved groups.',
+                            )
+                          : HipText.of(context).pick(
+                              '正在读取动作目录和对话记录',
+                              'Loading moves and conversation history',
+                            ),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -116,7 +132,7 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
                     if (failed) ...[
                       const SizedBox(height: 24),
                       HipPrimaryButton(
-                        label: '重试',
+                        label: HipText.of(context).pick('重试', 'Retry'),
                         onPressed: () => setState(() {
                           _loading = _load();
                         }),
@@ -145,7 +161,9 @@ Future<CoachChatController> loadHipChat(
     // for both SDK admission timing and the player's phase construction.
     switchSecondsFor: (item, rhythm, side) => HipSessionScript(
       lib: voice.lib,
-      lang: voice.lang,
+      lang: voice.settings.language.resolveClipLanguage(
+        actions.coach!.languageTag,
+      ),
       steps: const [],
       kits: store.content.kits,
       useSdkPhases: true,
@@ -153,6 +171,7 @@ Future<CoachChatController> loadHipChat(
   );
   return actions.coach!.load(
     builder: builder,
+    languageTag: HipText.of(context).languageTag,
     actions: CoachChatHostActions(
       onStartTraining: (context, request) async {
         final plan = TrainingPlanner(store.content, sdkBuilder: builder)
@@ -231,7 +250,7 @@ Future<void> _pushPractice(
       trailing: segment == 2
           ? HipPressable(
               key: const ValueKey('practice-compose'),
-              semanticLabel: '去排一套',
+              semanticLabel: HipText.of(context).pick('去排一套', 'Create a plan'),
               scale: .95,
               onTap: () {
                 Navigator.of(pageContext).pop();
@@ -243,7 +262,7 @@ Future<void> _pushPractice(
                   vertical: 12,
                 ),
                 child: Text(
-                  '去排一套',
+                  HipText.of(context).pick('去排一套', 'Create plan'),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -280,9 +299,16 @@ Future<void> openHipSavedCoachPlan(
   final prepared = chat.prepareSavedPlanDetails(selection);
   if (!context.mounted) return;
   if (!prepared.ok) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('计划不符合当前动作范围或训练条件，原计划已保留。')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          HipText.of(context).pick(
+            '计划不符合当前动作范围或训练条件，原计划已保留。',
+            'This plan does not meet the current move scope or training requirements. Your original plan is unchanged.',
+          ),
+        ),
+      ),
+    );
     return;
   }
   await _push(
@@ -325,8 +351,11 @@ class HipCoachChatEntryCard extends StatelessWidget {
     // UI r2: a normal row in 训练组's first group, not a big card.
     key: const ValueKey('practice-ai-coach'),
     glyph: HipGlyph.bolt,
-    title: 'AI 定制训练',
-    subtitle: '说说想拉伸哪里，用髋部动作排一套训练',
+    title: HipText.of(context).pick('AI 定制训练', 'AI training coach'),
+    subtitle: HipText.of(context).pick(
+      '说说想拉伸哪里，用髋部动作排一套训练',
+      'Tell us your goals and build a guided workout',
+    ),
     onTap: () => _push(context, HipCoachChatPage(actions: actions)),
   );
 }

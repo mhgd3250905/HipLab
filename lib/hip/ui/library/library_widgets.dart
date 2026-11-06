@@ -8,14 +8,16 @@ import 'package:flutter/services.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../hip_icons.dart';
+import '../hip_content_text.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import 'lib_text.dart';
 
 // ───────────────────────── names ─────────────────────────
 
-String routineShortName(HipRoutine r) =>
-    r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), '');
+String routineShortName(HipRoutine r, [String lang = 'zh']) => lang == 'en'
+    ? HipContentText.en.routineName(r)
+    : r.name.replaceAll(RegExp(r'\s*\d+\s*分钟$'), '');
 
 Map<String, dynamic>? _display(HipContent c, String id) {
   final d = c.kit(id)?.raw['display'];
@@ -29,7 +31,7 @@ String _pick(Object? m, String lang) =>
 String drillName(HipContent c, HipDrill d, String lang) {
   if (lang == 'zh') return d.name;
   final n = _pick(_display(c, d.id)?['name'], lang);
-  return n.isEmpty ? d.name : n;
+  return n.isEmpty ? HipContentText(lang).drillName(d) : n;
 }
 
 /// The other language's name (shown small under the title).

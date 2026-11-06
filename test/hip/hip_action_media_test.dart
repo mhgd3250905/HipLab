@@ -46,20 +46,24 @@ void main() {
     final config = File('.dart_tool/package_config.json');
     final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
     final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
-    final sdkRoot = config.uri.resolve(sdk['rootUri'] as String);
+    final sdkRoot = Directory.fromUri(
+      config.uri.resolve(sdk['rootUri'] as String),
+    ).uri;
     final standing = sdkRoot.resolve(
       'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v1/standing/',
     );
-    final bundled = Directory('assets/public_posters')
-        .listSync()
-        .whereType<File>()
-        .map((f) => f.uri.pathSegments.last)
-        .toSet();
-    expect(bundled, {for (final id in hiplabCoachAuthorizedActionIds) '$id.webp'});
+    final bundled = Directory(
+      'assets/public_posters',
+    ).listSync().whereType<File>().map((f) => f.uri.pathSegments.last).toSet();
+    expect(bundled, {
+      for (final id in hiplabCoachAuthorizedActionIds) '$id.webp',
+    });
     for (final id in hiplabCoachAuthorizedActionIds) {
       final path = 'assets/public_posters/$id.webp';
       final bytes = File(path).readAsBytesSync();
-      final source = File.fromUri(standing.resolve('$id.webp')).readAsBytesSync();
+      final source = File.fromUri(
+        standing.resolve('$id.webp'),
+      ).readAsBytesSync();
       expect(bytes.length, source.length, reason: path);
       expect(_sha256Hex(bytes), _sha256Hex(source), reason: path);
       // RIFF/WEBP VP8X with the alpha flag set: transparent poster.

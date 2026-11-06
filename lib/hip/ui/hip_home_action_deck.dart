@@ -7,6 +7,7 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/hip_models.dart';
+import 'hip_content_text.dart';
 import 'hip_home_action_inspect.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipMediaPolicy;
@@ -495,12 +496,16 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       child: Semantics(
         container: true,
         explicitChildNodes: true,
-        label: '训练动作预览',
+        label: HipContentText.of(context).isEn
+            ? 'Workout move preview'
+            : '训练动作预览',
         onTap: _openCard,
         value: _description(_index),
         increasedValue: _multiple ? _description(_at(1)) : null,
         decreasedValue: _multiple ? _description(_at(-1)) : null,
-        hint: '轻点展开动作，向任意方向拖远翻牌',
+        hint: HipContentText.of(context).isEn
+            ? 'Tap to expand the move. Drag away in any direction to turn the card.'
+            : '轻点展开动作，向任意方向拖远翻牌',
         onIncrease: _multiple ? () => _turn(1) : null,
         onDecrease: _multiple ? () => _turn(-1) : null,
         child: FocusableActionDetector(
@@ -802,7 +807,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   );
 
   String _description(int index) {
+    final t = HipContentText.of(context);
     final dose = widget.doses.elementAtOrNull(index) ?? '';
+    if (t.isEn) {
+      return 'Move ${index + 1} of ${widget.drills.length}, ${t.drillName(widget.drills[index])}'
+          '${dose.isEmpty ? '' : ', ${t.text(dose)}'}';
+    }
     return '第 ${index + 1} 个，共 ${widget.drills.length} 个，${widget.drills[index].name}'
         '${dose.isEmpty ? '' : '，$dose'}';
   }

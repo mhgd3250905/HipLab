@@ -11,6 +11,7 @@ import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipPressable;
+import 'library/lib_text.dart';
 
 abstract final class _FolderPreview {
   // Paired corners: outer radius = art radius + the surrounding inset.
@@ -148,7 +149,7 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
     return PopScope(
       canPop: _route == null,
       child: HipPressable(
-        semanticLabel: '选择训练组',
+        semanticLabel: LibText.of(context).isEn ? 'Choose a workout' : '选择训练组',
         onTap: _route == null && widget.choices.isNotEmpty ? _open : null,
         scale: .95,
         child: SizedBox.square(
@@ -287,7 +288,9 @@ class _RoutineFolderRoute extends PopupRoute<String> {
             scopesRoute: true,
             namesRoute: true,
             explicitChildNodes: true,
-            label: '$sceneLabel推荐训练组',
+            label: LibText.of(context).isEn
+                ? 'Recommended $sceneLabel workouts'
+                : '$sceneLabel推荐训练组',
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final media = MediaQuery.of(context);
@@ -546,7 +549,9 @@ class _FolderPanel extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '$sceneLabel训练',
+                      LibText.of(context).isEn
+                          ? '$sceneLabel workouts'
+                          : '$sceneLabel训练',
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 21,
@@ -556,7 +561,9 @@ class _FolderPanel extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '推荐训练组',
+                      LibText.of(context).isEn
+                          ? 'RECOMMENDED WORKOUTS'
+                          : '推荐训练组',
                       style: TextStyle(
                         fontSize: 11,
                         height: 1.5,
@@ -569,7 +576,9 @@ class _FolderPanel extends StatelessWidget {
               ),
               HipGlassRoundButton(
                 key: const ValueKey('home-routine-folder-close'),
-                semanticLabel: '关闭训练组',
+                semanticLabel: LibText.of(context).isEn
+                    ? 'Close workouts'
+                    : '关闭训练组',
                 size: 32,
                 onTap: onClose,
                 child: HipIcon(HipGlyph.close, size: 17, color: HipColors.text),
@@ -596,8 +605,9 @@ class _FolderPanel extends StatelessWidget {
               final selected = choice.id == selectedId;
               return HipPressable(
                 key: ValueKey('home-routine-choice-${choice.id}'),
-                semanticLabel:
-                    '${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
+                semanticLabel: LibText.of(context).isEn
+                    ? '${choice.title}, ${LibText.of(context).minutes(choice.minutes)}, ${LibText.of(context).movesCount(choice.drills.length)}'
+                    : '${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
                 selected: selected,
                 inMutuallyExclusiveGroup: true,
                 onTap: () => onSelect(choice.id),
@@ -673,7 +683,7 @@ class _FolderPanel extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${choice.minutes} 分钟 · ${choice.drills.length} 个动作',
+                      '${LibText.of(context).minutes(choice.minutes)} · ${LibText.of(context).movesCount(choice.drills.length)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

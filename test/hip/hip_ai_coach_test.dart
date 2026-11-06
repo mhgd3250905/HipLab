@@ -210,7 +210,9 @@ void main() {
         await tester.pumpAndSettle();
         expect(
           available,
-          platform == TargetPlatform.android && language == 'zh',
+          platform == TargetPlatform.android,
+          reason:
+              'Configured Android coaching is available in both supported UI languages; iOS and missing configuration keep their existing restrictions.',
         );
       });
     }

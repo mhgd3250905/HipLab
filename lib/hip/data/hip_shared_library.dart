@@ -8,13 +8,17 @@ import '../trainer/hip_sdk_session_builder.dart';
 import '../ui/hip_theme.dart';
 import '../ui/library/library_actions.dart';
 import 'hip_public_media.dart';
+import 'hip_public_display.dart';
+import 'hip_public_text_en.dart';
 
-/// HipLab's app locale (MaterialApp `locale`); also picks SDK library strings.
+/// Compatibility fallback for SDK configs with no explicit language. The
+/// interface itself follows the saved language and Flutter's resolved locale.
 const hipAppLocale = Locale('zh');
 
 trainer.TrainingLibraryConfig hipSharedLibraryConfig(
   coach.CoachActionScopeManifest scope, {
   String? languageTag,
+  coach.Catalog? catalog,
 }) => trainer.TrainingLibraryConfig(
   scopeManifest: scope,
   strings: trainer.TrainingLibraryStrings.forLanguage(
@@ -23,10 +27,54 @@ trainer.TrainingLibraryConfig hipSharedLibraryConfig(
   brand: 'HipLab',
   categoryOrder: const ['拉伸放松', '力量'],
   showStartAction: true,
+  displayText: (languageTag ?? 'zh').split(RegExp('[-_]')).first == 'en'
+      ? hipEnglishPublicDisplay(catalog)
+      : null,
 );
+
+/// Shared by App routes and the Coach profile, which has no BuildContext.
+/// Translation is display-only and uses the same checked canonical catalogue.
+trainer.TrainingLibraryActionText? Function(String actionId)?
+hipEnglishPublicDisplay(coach.Catalog? catalog) {
+  if (catalog == null) return null;
+  final definitions = {for (final drill in catalog.drills) drill.id: drill};
+  return (id) {
+    final definition = definitions[id];
+    final copy = hipPublicTextEn[id];
+    if (definition == null || copy == null) return null;
+    return trainer.TrainingLibraryActionText(
+      name: definition.name.of('en'),
+      metadata: HipPublicDisplay.metadata(definition.raw),
+      muscles: HipPublicDisplay.muscleText(definition.raw),
+      cues: copy.cues,
+      cautions: [...copy.cautions, ...copy.contraindications],
+    );
+  };
+}
 
 abstract final class HipSharedLibrary {
   static trainer.TrainingLibraryConfig? current;
+
+  /// The scope stays shared; each presentation follows the active App locale.
+  static trainer.TrainingLibraryConfig localized(BuildContext context) {
+    final source = current!;
+    final english = Localizations.localeOf(context).languageCode == 'en';
+    return trainer.TrainingLibraryConfig(
+      scopeManifest: source.scopeManifest,
+      categoryOrder: source.categoryOrder,
+      brand: source.brand,
+      showStartAction: source.showStartAction,
+      searchNames: source.searchNames,
+      displayText: english
+          ? hipEnglishPublicDisplay(
+              HipPublicMedia.current?.catalog.toAiCatalog(),
+            )
+          : source.displayText,
+      strings: trainer.TrainingLibraryStrings.forLanguage(
+        Localizations.localeOf(context).languageCode,
+      ),
+    );
+  }
 
   static trainer.TrainerTheme theme(BuildContext context) {
     final p = Theme.of(context).brightness == Brightness.dark
@@ -152,7 +200,7 @@ abstract final class HipSharedLibrary {
     await trainer.TrainingLibraryDetails.open(
       context,
       actionId: id,
-      config: config,
+      config: localized(context),
       mediaPolicy: policy,
       theme: theme(context),
       canStart: (id) => canStart(actions, id),
@@ -175,7 +223,7 @@ class HipSharedLibraryPage extends StatelessWidget {
         ),
       Expanded(
         child: trainer.TrainingLibraryPage(
-          config: HipSharedLibrary.current!,
+          config: HipSharedLibrary.localized(context),
           mediaPolicy: HipPublicMedia.current!,
           theme: HipSharedLibrary.theme(context),
           embedded: true,

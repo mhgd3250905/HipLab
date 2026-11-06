@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hiplab/hip/ui/hip_home_routine_folder.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
@@ -55,6 +56,14 @@ class _FolderHostState extends State<_FolderHost> {
   Widget build(BuildContext context) => RepaintBoundary(
     key: _shot,
     child: MaterialApp(
+      // These geometry/selection fixtures use authored Chinese copy.
+      locale: const Locale('zh'),
+      supportedLocales: const [Locale('zh')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       navigatorKey: widget.navigatorKey,
       theme: hipTheme(HipColors.palette),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hiplab/hip/coach/hip_coach_chat.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/trainer/hip_sdk_session_builder.dart';
@@ -120,6 +121,46 @@ void main() {
     settings = settings.copyWith(language: VoiceLanguage.en);
     expect(host.controller, same(chat));
     expect(verifyTiming(7), chineseSeconds + 1);
+
+    final history = chat.messages
+        .map((message) => (message.id, message.text))
+        .toList();
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: HipVoiceScope(
+          voice: voice,
+          child: Builder(
+            builder: (context) {
+              hostContext = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final english = (await tester.runAsync(
+      () => loadHipChat(hostContext, actions),
+    ))!;
+    expect(english, same(chat));
+    expect(english.context.language, 'en');
+    expect(english.profile.strings.sendLabel, 'Send');
+    expect(english.profile.conversationPolicy.languageTag, 'en');
+    expect(
+      english.messages.map((message) => (message.id, message.text)).toList(),
+      history,
+    );
+    expect(
+      english.profile.library!.displayText!('s-figure4')!.cues,
+      isNotEmpty,
+    );
     await tester.pumpWidget(const SizedBox());
   });
 }

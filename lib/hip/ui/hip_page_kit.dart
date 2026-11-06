@@ -24,6 +24,7 @@ import 'hip_icons.dart';
 import 'hip_routes.dart';
 import 'hip_row_icons.dart';
 import 'hip_theme.dart';
+import 'hip_text.dart';
 import 'hip_widgets.dart';
 
 export 'hip_row_icons.dart' show HipRowSymbol;
@@ -210,7 +211,9 @@ class HipNavBackChip extends StatelessWidget {
   Widget build(BuildContext context) {
     if (leading == HipNavLeading.none) return const SizedBox.shrink();
     final close = leading == HipNavLeading.close;
-    final label = close ? '关闭' : '返回';
+    final label = close
+        ? HipText.of(context).pick('关闭', 'Close')
+        : HipText.of(context).pick('返回', 'Back');
     return SizedBox.square(
       dimension: 44,
       child: Tooltip(
@@ -751,7 +754,7 @@ class HipListRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    maxLines: 1,
+                    maxLines: HipText.of(context).isEn ? 2 : 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 17,
@@ -778,7 +781,9 @@ class HipListRow extends StatelessWidget {
             ),
             if (meta != null && meta!.isNotEmpty)
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 140),
+                constraints: BoxConstraints(
+                  maxWidth: HipText.of(context).isEn ? 105 : 140,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8, right: 4),
                   child: Text(

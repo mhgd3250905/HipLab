@@ -15,9 +15,16 @@ enum VoiceLanguage {
   static VoiceLanguage byId(String? id) =>
       values.where((v) => v.id == id).firstOrNull ?? app;
 
-  /// The clip folder to use. The app UI is Chinese only for now, so
-  /// "follow the app" resolves to zh.
-  String get clipLanguage => this == en ? 'en' : 'zh';
+  /// Retained Chinese default for timeline callers without an App locale.
+  String get clipLanguage => resolveClipLanguage('zh');
+
+  /// Resolve the follow-App choice at the host boundary, without global state.
+  String resolveClipLanguage(String appLanguageTag) =>
+      this == en ||
+          (this == app &&
+              appLanguageTag.toLowerCase().split(RegExp('[-_]')).first == 'en')
+      ? 'en'
+      : 'zh';
 }
 
 /// Read-only view of `assets/voice/manifest.json` (written by

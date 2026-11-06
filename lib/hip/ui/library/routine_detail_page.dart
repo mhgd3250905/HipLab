@@ -7,6 +7,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_content_text.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -46,7 +47,7 @@ class RoutineDetailPage extends StatelessWidget {
     final blocked = profile.blocked;
     return HipNavPage(
       leadingKey: const ValueKey('routine-back'),
-      title: routineShortName(r),
+      title: routineShortName(r, t.lang),
       subtitle: '${t.routine} · ${t.scene(r.scene)}',
       bodyScrollsUnderBar: true,
       body: ListView(
@@ -58,7 +59,7 @@ class RoutineDetailPage extends StatelessWidget {
         ),
         children: [
           Text(
-            r.audience,
+            HipContentText(t.lang).routineAudience(r),
             style: TextStyle(
               fontSize: 13,
               height: 1.45,
@@ -153,7 +154,7 @@ class RoutineDetailPage extends StatelessWidget {
       r,
       store.content,
       id: store.newCustomId(),
-      name: t.copiedName(routineShortName(r)),
+      name: t.copiedName(routineShortName(r, t.lang)),
       at: store.now(),
     );
     Navigator.of(context).push(
@@ -259,7 +260,9 @@ class RoutineDetailPage extends StatelessWidget {
                             t.lang,
                           ),
                         )
-                      : s.dose.replaceAll(RegExp(r'（.*?）'), ''),
+                      : HipContentText(
+                          t.lang,
+                        ).text(s.dose).replaceAll(RegExp(r'（.*?）'), ''),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

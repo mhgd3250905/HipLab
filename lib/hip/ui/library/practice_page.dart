@@ -11,6 +11,7 @@ import '../../domain/hip_models.dart';
 import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
+import '../hip_content_text.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
@@ -247,7 +248,7 @@ class _PracticePageState extends State<PracticePage> {
     );
     return HipPressable(
       key: ValueKey('routine-card-${r.id}'),
-      semanticLabel: routineShortName(r),
+      semanticLabel: routineShortName(r, t.lang),
       scale: .98,
       onTap: () async => _applyJump(
         await Navigator.of(context).push<Object?>(
@@ -263,7 +264,7 @@ class _PracticePageState extends State<PracticePage> {
             // Very large text: name on its own line, tag + minutes under it
             // (side by side the name was squeezed to one character a line).
             if (libLargeText(context)) ...[
-              Text(routineShortName(r), style: nameStyle),
+              Text(routineShortName(r, t.lang), style: nameStyle),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,
@@ -274,7 +275,9 @@ class _PracticePageState extends State<PracticePage> {
             ] else
               Row(
                 children: [
-                  Expanded(child: Text(routineShortName(r), style: nameStyle)),
+                  Expanded(
+                    child: Text(routineShortName(r, t.lang), style: nameStyle),
+                  ),
                   if (rec) ...[
                     tintTag(t.recommended),
                     const SizedBox(width: 8),
@@ -285,7 +288,7 @@ class _PracticePageState extends State<PracticePage> {
             const SizedBox(height: 4),
             Text(
               '${t.scene(r.scene)} · ${t.movesCount(plan.steps.length)} · '
-              '${r.audience.split('；').first}',
+              '${HipContentText(t.lang).routineAudience(r).split(t.isEn ? '. ' : '；').first}',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.3,
@@ -352,7 +355,7 @@ class _PracticePageState extends State<PracticePage> {
     final store = actions.store;
     final draft = CustomRoutine(
       id: store.newCustomId(),
-      name: store.nextCustomName(),
+      name: store.nextCustomName(language: LibText.of(context).lang),
       steps: const [],
     );
     // 新建 goes straight to picking moves, then the editor.
@@ -486,7 +489,7 @@ class GroupCard extends StatelessWidget {
                         ),
                         if (from != null)
                           Text(
-                            t.fromRoutine(routineShortName(from)),
+                            t.fromRoutine(routineShortName(from, t.lang)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

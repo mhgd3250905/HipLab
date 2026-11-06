@@ -7,6 +7,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_content_text.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -181,11 +182,13 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
           ),
           for (final n in notices) ...[const SizedBox(height: 12), n],
           const SizedBox(height: 16),
-          Text(
-            drillAltName(content, d, t.lang),
-            style: TextStyle(fontSize: 12.5, color: HipColors.faint),
-          ),
-          const SizedBox(height: 4),
+          if (!t.isEn) ...[
+            Text(
+              drillAltName(content, d, t.lang),
+              style: TextStyle(fontSize: 12.5, color: HipColors.faint),
+            ),
+            const SizedBox(height: 4),
+          ],
           if (point.isNotEmpty)
             Text(
               point,
@@ -205,7 +208,10 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
               for (final s in d.scenes) _tag(t.scene(s), null),
               _tag(d.advanced ? t.advancedLevel : t.starter, null),
               if (d.cautions.isNotEmpty)
-                _tag('${t.cautions}：${d.cautions.join('、')}', HipColors.pain),
+                _tag(
+                  '${t.cautions}${t.isEn ? ': ' : '：'}${d.cautions.map(HipContentText(t.lang).text).join(t.isEn ? ', ' : '、')}',
+                  HipColors.pain,
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -368,7 +374,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
             actions: widget.actions,
             initial: CustomRoutine(
               id: store.newCustomId(),
-              name: store.nextCustomName(),
+              name: store.nextCustomName(language: t.lang),
               steps: [step],
             ),
             isNew: true,

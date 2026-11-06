@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
@@ -72,6 +73,15 @@ void main() {
     HipColors.palette = palette;
     await tester.pumpWidget(
       MaterialApp(
+        // This suite asserts the original Chinese captions and accessibility
+        // actions; the App's English presentation has separate coverage.
+        locale: const Locale('zh'),
+        supportedLocales: const [Locale('zh')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: hipTheme(palette),
         themeAnimationDuration: Duration.zero,
         builder: (context, child) => MediaQuery(

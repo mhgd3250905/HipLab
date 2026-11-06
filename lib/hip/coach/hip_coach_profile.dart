@@ -47,6 +47,8 @@ CoachAppProfile hiplabCoachAppProfile({
   required coach.PlanExecutionTimingCallback executionTiming,
   required HipContent content,
   Map<String, Map<String, Object?>> aiTags = const {},
+  String languageTag = 'zh',
+  String Function()? languageTagOf,
 }) => CoachAppProfile(
   agentMode: CoachChatAgentMode.qaV2,
   aiTags: aiTags,
@@ -54,32 +56,48 @@ CoachAppProfile hiplabCoachAppProfile({
   mediaPolicy: HipPublicMedia.current,
   library: hipSharedLibraryConfig(
     hipActionScope(content.publicCatalog ?? catalog),
+    languageTag: languageTag,
+    catalog: content.publicCatalog ?? catalog,
   ),
   revision: 'chat-sdk-full-1',
   scopeManifest: hipActionScope(content.publicCatalog ?? catalog),
   coachProfile: coachProfile,
   conversationPolicy: coach.CoachScopeConversationPolicy(
-    specialty: 'HipLab 提供全身力量、核心、有氧、灵活性和拉伸训练，保留开胯与髋部训练特色。',
-    suggestions: const ['在家拉伸髋部 10 分钟', '推荐几个拉大腿内侧的动作', '来一套 5 分钟全身训练'],
+    languageTag: languageTag,
+    specialty: languageTag == 'en'
+        ? 'HipLab offers full-body strength, core, cardio, mobility and stretching, with a focus on hip mobility.'
+        : 'HipLab 提供全身力量、核心、有氧、灵活性和拉伸训练，保留开胯与髋部训练特色。',
+    suggestions: languageTag == 'en'
+        ? const [
+            'Stretch my hips at home for 10 minutes',
+            'Suggest some inner-thigh stretches',
+            'Build a 5-minute full-body workout',
+          ]
+        : const ['在家拉伸髋部 10 分钟', '推荐几个拉大腿内侧的动作', '来一套 5 分钟全身训练'],
   ),
   executionTiming: executionTiming,
-  strings: const CoachChatStrings(
-    invitation: '今天想练哪里？',
-    returningInvitation: '欢迎回来，今天想练哪里？',
-    inputHint: '说说想练哪里、在哪儿、有多久…',
-    libraryLabel: '练习库',
-    defaultSuggestions: [
-      '在家拉伸髋部 10 分钟',
-      '推荐几个拉大腿内侧的动作',
-      '久坐后放松髋部 5 分钟',
-      '在家练一下胸肌',
-    ],
-    safetyIntro:
-        '你好，我是 HipLab 训练助手。\n告诉我想练哪里、在哪儿、有多少时间，'
-        '我帮你安排能直接跟练的训练。',
-  ),
+  strings: hiplabCoachStrings(languageTag),
   visual: hipCoachChatVisuals(
     content,
     catalog: content.publicCatalog ?? catalog,
+    languageTagOf: languageTagOf ?? () => languageTag,
   ),
 );
+
+CoachChatStrings hiplabCoachStrings(String languageTag) => languageTag == 'en'
+    ? const CoachChatStrings.english()
+    : const CoachChatStrings(
+        invitation: '今天想练哪里？',
+        returningInvitation: '欢迎回来，今天想练哪里？',
+        inputHint: '说说想练哪里、在哪儿、有多久…',
+        libraryLabel: '练习库',
+        defaultSuggestions: [
+          '在家拉伸髋部 10 分钟',
+          '推荐几个拉大腿内侧的动作',
+          '久坐后放松髋部 5 分钟',
+          '在家练一下胸肌',
+        ],
+        safetyIntro:
+            '你好，我是 HipLab 训练助手。\n告诉我想练哪里、在哪儿、有多少时间，'
+            '我帮你安排能直接跟练的训练。',
+      );

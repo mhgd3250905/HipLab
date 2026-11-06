@@ -10,3 +10,16 @@ enum HipThemeChoice {
   static HipThemeChoice byId(String? id) =>
       values.where((v) => v.id == id).firstOrNull ?? system;
 }
+
+/// Separate from the voice-clip language. Older installs remain Chinese until
+/// the user explicitly changes their interface language.
+enum HipLanguage {
+  system('system'),
+  zh('zh'),
+  en('en');
+
+  const HipLanguage(this.id);
+  final String id;
+  static HipLanguage byId(String? id) =>
+      values.where((value) => value.id == id).firstOrNull ?? zh;
+}

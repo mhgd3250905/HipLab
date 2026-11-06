@@ -16,6 +16,7 @@ import 'hip_icons.dart';
 import 'hip_tactile.dart';
 import 'hip_glass.dart';
 import 'hip_theme.dart';
+import 'hip_text.dart';
 
 export 'hip_tactile.dart';
 
@@ -298,7 +299,11 @@ class _HipDrillArtState extends State<HipDrillArt> {
   Widget build(BuildContext context) {
     final policy = HipPublicMedia.current;
     if (policy == null || policy.actionFor(widget.drill.id) == null) {
-      return HipPendingArt(label: widget.showPendingLabel ? '暂无公共动作示范' : null);
+      return HipPendingArt(
+        label: widget.showPendingLabel
+            ? HipText.of(context).pick('暂无公共动作示范', 'Demonstration unavailable')
+            : null,
+      );
     }
     final config = HipSharedLibrary.current;
     if (!widget.holdVideo && config != null) {
@@ -432,7 +437,9 @@ class HipTopBar extends StatelessWidget {
                 leading ??
                 HipCircleButton(
                   icon: icon,
-                  tooltip: tooltip,
+                  tooltip: tooltip == '关闭'
+                      ? HipText.of(context).pick('关闭', 'Close')
+                      : tooltip,
                   onPressed: onClose ?? () => Navigator.of(context).maybePop(),
                 ),
           ),
@@ -582,12 +589,22 @@ class HipRadar extends StatelessWidget {
         height: 1.2,
       );
       final scaler = MediaQuery.textScalerOf(context);
+      String directionLabel(HipDirection d) => HipText.of(context).isEn
+          ? switch (d) {
+              HipDirection.flexion => 'Flexion',
+              HipDirection.extension => 'Extension',
+              HipDirection.abduction => 'Abduction',
+              HipDirection.adduction => 'Adduction',
+              HipDirection.internalRotation => 'Int. rot.',
+              HipDirection.externalRotation => 'Ext. rot.',
+            }
+          : d.zh;
       final dir = Directionality.of(context);
       // Measure every label at the current text scale (bold = widest).
       Size measure(HipDirection d) {
         final tp = TextPainter(
           text: TextSpan(
-            text: d.zh,
+            text: directionLabel(d),
             style: labelStyle.copyWith(fontWeight: FontWeight.w700),
           ),
           textDirection: dir,
@@ -663,7 +680,7 @@ class HipRadar extends StatelessWidget {
                       top: top,
                       width: ls.width + 1,
                       child: Text(
-                        d.zh,
+                        directionLabel(d),
                         maxLines: 1,
                         softWrap: false,
                         textAlign: cx > .3
@@ -1322,6 +1339,9 @@ class HipStartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pill = width != null;
+    final label = this.label == '开始'
+        ? HipText.of(context).pick('开始', 'Start')
+        : this.label;
     final enabled = onTap != null;
     final fg = enabled ? stage.onJade : stage.faint;
     final glyph = HipIcon(

@@ -64,6 +64,8 @@ class HipStore extends ChangeNotifier {
   /// 外观: 跟随系统 / 浅色 / 深色 (#14).
   HipThemeChoice theme = HipThemeChoice.system;
 
+  HipLanguage language = HipLanguage.zh;
+
   /// 语音播报 (#13).
   VoiceSettings voice = const VoiceSettings();
 
@@ -224,6 +226,7 @@ class HipStore extends ChangeNotifier {
     scene = j['scene'] == 'chair' ? HipScene.chair : HipScene.home;
     sceneChosenAt = DateTime.tryParse(j['sceneChosenAt'] as String? ?? '');
     theme = HipThemeChoice.byId(j['theme'] as String?);
+    language = HipLanguage.byId(j['language'] as String?);
     if (j['voice'] is Map) {
       voice = VoiceSettings.fromJson(
         Map<String, dynamic>.from(j['voice'] as Map),
@@ -262,6 +265,7 @@ class HipStore extends ChangeNotifier {
     'scene': scene.id,
     'sceneChosenAt': sceneChosenAt?.toIso8601String(),
     'theme': theme.id,
+    'language': language.id,
     'voice': voice.toJson(),
     'customRoutines': CustomRoutinesCodec.encode(customRoutines),
     'sessions': [for (final r in sessions) r.toJson()],
@@ -452,6 +456,11 @@ class HipStore extends ChangeNotifier {
     return _save();
   }
 
+  Future<void> setLanguage(HipLanguage value) {
+    language = value;
+    return _save();
+  }
+
   // ── 我的训练组 ──
 
   CustomRoutine? customRoutine(String id) =>
@@ -470,9 +479,9 @@ class HipStore extends ChangeNotifier {
   }
 
   /// 我的训练组 N: the first number not taken.
-  String nextCustomName() {
+  String nextCustomName({String language = 'zh'}) {
     for (var n = customRoutines.length + 1; ; n++) {
-      final name = '我的训练组 $n';
+      final name = language == 'en' ? 'My group $n' : '我的训练组 $n';
       if (customRoutines.every((r) => r.name != name)) return name;
     }
   }

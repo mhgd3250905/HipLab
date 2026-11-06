@@ -5,12 +5,15 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import '../control/hip_store.dart';
 import '../domain/hip_pain.dart';
 import '../domain/hip_session.dart';
-import '../domain/hip_library.dart' show hipSdkDrill;
+import '../domain/hip_library.dart' show hipSdkDrill, LibraryDose, doseText;
 import '../data/hip_public_media.dart';
+import '../data/hip_public_text_en.dart';
 import '../trainer/hip_trainer_plan.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
 import 'hip_icons.dart';
+import 'hip_content_text.dart';
+import 'hip_text.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -39,6 +42,96 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   late coach.TrainingPlan? _activeSdkPlan = widget.plan.sdkPlan;
   final Map<int, double> _sdkWorkScale = {};
   String? _ladderCue;
+
+  String _cue(PainAction action) => HipText.of(context).pick(
+    action.cue,
+    switch (action.type) {
+      PainActionType.reduceAmplitude => 'Use a smaller range. Do not force it.',
+      PainActionType.substitute => 'Switch to an easier move. Do not force it.',
+      PainActionType.skipDirection =>
+        'Only gentle relaxation in this direction today. Do not force it.',
+      PainActionType.endSession => 'Stop here for today.',
+    },
+  );
+
+  String _drillName(String id) {
+    final t = HipText.of(context);
+    final definition = widget.store.content.publicCatalog?[id];
+    if (definition != null) return definition.name.of(t.languageTag);
+    final drill = widget.store.content.drills[id];
+    return drill == null ? id : HipContentText.of(context).drillName(drill);
+  }
+
+  coach.TrainingPlan _displayPlan() {
+    final original = toTrainerPlan(widget.plan);
+    if (!HipText.of(context).isEn || widget.plan.source == PlanSource.custom) {
+      return original;
+    }
+    final title = widget.plan.source == PlanSource.single
+        ? _drillName(widget.plan.refId ?? widget.plan.steps.first.drill.id)
+        : widget.plan.routines
+              .map(HipContentText.of(context).routineName)
+              .join(' + ');
+    if (title.isEmpty) return original;
+    return coach.TrainingPlan(
+      schemaVersion: original.schemaVersion,
+      id: original.id,
+      source: original.source,
+      templateId: original.templateId,
+      title: title,
+      summary: original.summary,
+      goal: original.goal,
+      scene: original.scene,
+      equipment: original.equipment,
+      level: original.level,
+      targetMinutes: original.targetMinutes,
+      blocks: [
+        for (final block in original.blocks)
+          coach.PlanBlock(
+            id: block.id,
+            name: block.name == original.title
+                ? title
+                : switch (block.name) {
+                    '热身' => 'Warm-up',
+                    '主体' => 'Main',
+                    '主训练' => 'Main',
+                    '放松' => 'Cool-down',
+                    '循环' => 'Circuit',
+                    _ => block.name,
+                  },
+            type: block.type,
+            rounds: block.rounds,
+            restBetweenRoundsSeconds: block.restBetweenRoundsSeconds,
+            items: block.items,
+          ),
+      ],
+      avoid: original.avoid,
+      notes: original.notes,
+      safetyNotes: original.safetyNotes,
+    );
+  }
+
+  String _dose(PlanStep step) {
+    if (!HipText.of(context).isEn) return step.dose;
+    final kit = widget.store.content.kit(step.drill.id);
+    if (kit != null) {
+      return doseText(
+        kit,
+        LibraryDose(
+          reps: step.kitDose.reps ?? kit.defaultReps,
+          seconds: step.kitDose.seconds ?? kit.defaultSeconds,
+          holdSeconds: step.kitDose.holdSeconds,
+          sets: step.sets,
+        ),
+        single: widget.plan.source == PlanSource.single,
+        lang: 'en',
+      );
+    }
+    final amount = step.kitDose.reps != null
+        ? '${step.kitDose.reps} reps${step.kitDose.holdSeconds == null ? '' : ' × ${step.kitDose.holdSeconds}s hold'}'
+        : '${step.kitDose.seconds ?? step.seconds}s';
+    return '${step.sided ? 'Each side: ' : ''}$amount${step.sets > 1 ? ' × ${step.sets} sets' : ''}';
+  }
 
   HipSessionScript _script() {
     final voice = HipVoice.of(context);
@@ -98,14 +191,27 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                '哪种疼？',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              Text(
+                HipText.of(context).pick('哪种疼？', 'What kind of pain?'),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 16),
               for (final (kind, icon, label) in [
-                (PainKind.pinch, HipGlyph.pinch, '关节夹着疼'),
-                (PainKind.nerve, HipGlyph.bolt, '麻、刺、往下窜'),
+                (
+                  PainKind.pinch,
+                  HipGlyph.pinch,
+                  HipText.of(context).pick('关节夹着疼', 'Pinching in the joint'),
+                ),
+                (
+                  PainKind.nerve,
+                  HipGlyph.bolt,
+                  HipText.of(
+                    context,
+                  ).pick('麻、刺、往下窜', 'Numbness, tingling or radiating pain'),
+                ),
               ])
                 ListTile(
                   key: ValueKey('pain-${kind.name}'),
@@ -139,11 +245,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         // persistence. A storage failure must never prevent the safety stop.
         debugPrint('HipLab nerve report awaits session save');
       }
-      _ladderCue = action.cue;
+      _ladderCue = _cue(action);
       return trainer.DiscomfortDecision(
         trainer.DiscomfortAction.end,
         note: 'nerve',
-        subtitle: action.cue,
+        subtitle: _cue(action),
         voiceClips: const ['p.stop'],
       );
     }
@@ -152,7 +258,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     } on Object {
       debugPrint('HipLab pain report awaits session save');
     }
-    _ladderCue = action.cue;
+    _ladderCue = _cue(action);
     var restart = at.resumePhase.itemIndex;
     var decision = trainer.DiscomfortAction.continueEasier;
     switch (action.type) {
@@ -163,7 +269,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           return trainer.DiscomfortDecision(
             trainer.DiscomfortAction.continueEasier,
             note: '${kind.name}:${action.type.name}',
-            subtitle: action.cue,
+            subtitle: _cue(action),
             voiceClips: const ['cue.half_range'],
           );
         } else {
@@ -244,7 +350,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       decision,
       substituteId: action.substituteId,
       note: '${kind.name}:${action.type.name}',
-      subtitle: action.cue,
+      subtitle: _cue(action),
       replacementPhases: _replacementPhases(),
       restartItemIndex: restart,
       withRest: at.afterExercise || _omitted.contains(index),
@@ -269,7 +375,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _felt.containsKey(index) ? '已记录' : '刚才感觉怎么样？',
+                  _felt.containsKey(index)
+                      ? HipText.of(context).pick('已记录', 'Recorded')
+                      : HipText.of(
+                          context,
+                        ).pick('刚才感觉怎么样？', 'How did that feel?'),
                   key: const ValueKey('feel-prompt'),
                   style: const TextStyle(
                     fontFamily: hipFontFamily,
@@ -280,9 +390,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     for (final (value, label) in [
-                      ('ok', '舒服'),
-                      ('tight', '有点紧'),
-                      ('pain', '疼'),
+                      ('ok', HipText.of(context).pick('舒服', 'Good')),
+                      ('tight', HipText.of(context).pick('有点紧', 'Tight')),
+                      ('pain', HipText.of(context).pick('疼', 'Pain')),
                     ])
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -352,17 +462,21 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     final voice = HipVoice.of(context);
     final script = _script();
     return trainer.TrainerPlayer(
-      plan: toTrainerPlan(widget.plan),
+      plan: _displayPlan(),
       sessionBuilder: _builder(script),
       prepSeconds: 15,
       transitionSeconds: widget.plan.transitionSeconds,
-      strings: trainer.TrainerStrings.zh(),
+      strings: HipText.of(context).isEn
+          ? trainer.TrainerStrings.en()
+          : trainer.TrainerStrings.zh(),
       theme: _theme,
       notificationIcon: 'mipmap/ic_launcher_monochrome',
       voice: trainer.TrainerVoice(
         source: script.source,
         output: voice.output,
-        settings: voice.settings.toTrainer(),
+        settings: voice.settings.toTrainer(
+          appLanguageTag: voice.appLanguageTag,
+        ),
         scriptBuilder: (_, _) => script,
       ),
       drillOf: (id) {
@@ -371,15 +485,34 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             widget.store.content.drills[id];
         if (drill == null) return null;
         final definition = widget.store.content.publicCatalog?[id];
+        final translated = HipText.of(context).isEn
+            ? hipPublicTextEn[id]
+            : null;
         final step = _steps.where((s) => s.drill.id == id).firstOrNull;
         return trainer.TrainerDrill(
           id: id,
-          name: drill.name,
-          cue: _ladderCue ?? step?.tip,
-          cues: definition?.cues['zh'] ?? const [],
+          name: _drillName(id),
+          cue:
+              _ladderCue ??
+              (translated != null
+                  ? translated.cues.elementAtOrNull(definition?.primaryCue ?? 0)
+                  : step == null
+                  ? null
+                  : HipContentText.of(context).text(step.tip)),
+          cues:
+              translated?.cues ??
+              definition?.cues[HipText.of(context).languageTag] ??
+              const [],
           precautions: [
-            ...?definition?.cautions,
-            ...?definition?.contraindications,
+            if (translated != null) ...[
+              ...translated.cautions,
+              ...translated.contraindications,
+            ] else
+              for (final precaution in [
+                ...?definition?.cautions,
+                ...?definition?.contraindications,
+              ])
+                HipContentText.of(context).text(precaution),
           ],
           media: trainer.DrillMedia(
             id: id,
@@ -394,7 +527,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       doseLabel: widget.plan.sdkPlan != null
           ? null
           : (phase) => phase.itemIndex >= 0 && phase.itemIndex < _steps.length
-                ? _steps[phase.itemIndex].dose
+                ? _dose(_steps[phase.itemIndex])
                 : null,
       // Public actions without HipLab direction metadata use the SDK's own
       // discomfort flow. Never invent hip directions for a full-body plan.
@@ -410,7 +543,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ? const SizedBox.shrink()
           : HipSecondaryButton(
               key: const ValueKey('player-again'),
-              label: '再来一组',
+              label: HipText.of(context).pick('再来一组', 'Another set'),
               sdkScale: true,
               onPressed:
                   !widget.store.sessions.any(
@@ -432,28 +565,40 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_ladder.ended) ...[
-            const Text('先停下来', style: TextStyle(fontSize: 24)),
-            const Text(
-              '麻、刺或往下窜的感觉不该出现在练习里。\n建议问问医生或专业人士。',
+            Text(
+              HipText.of(context).pick('先停下来', 'Stop and rest'),
+              style: const TextStyle(fontSize: 24),
+            ),
+            Text(
+              HipText.of(context).pick(
+                '麻、刺或往下窜的感觉不该出现在练习里。\n建议问问医生或专业人士。',
+                'Stop exercising if you feel numbness, tingling or radiating pain.\nConsult a qualified healthcare professional.',
+              ),
               textAlign: TextAlign.center,
             ),
           ] else
             Text(
               widget.plan.source == PlanSource.single
-                  ? '单练记入练习记录，不计连续天数'
-                  : '连续 ${widget.store.streak} 天',
+                  ? HipText.of(context).pick(
+                      '单练记入练习记录，不计连续天数',
+                      'Individual moves are logged without extending your streak',
+                    )
+                  : HipText.of(context).pick(
+                      '连续 ${widget.store.streak} 天',
+                      '${widget.store.streak}-day streak',
+                    ),
               key: const ValueKey('player-done-note'),
             ),
           if (_ladderCue != null) Text(_ladderCue!),
           if (_felt.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text('本次感受'),
+            Text(HipText.of(context).pick('本次感受', 'How you felt')),
             for (final entry in _felt.entries)
               Text(
-                '${_steps[entry.key].drill.name} · ${switch (entry.value) {
-                  'ok' => '舒服',
-                  'tight' => '有点紧',
-                  _ => '疼',
+                '${_drillName(_steps[entry.key].drill.id)} · ${switch (entry.value) {
+                  'ok' => HipText.of(context).pick('舒服', 'Good'),
+                  'tight' => HipText.of(context).pick('有点紧', 'Tight'),
+                  _ => HipText.of(context).pick('疼', 'Pain'),
                 }}',
               ),
           ],

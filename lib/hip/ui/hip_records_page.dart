@@ -14,8 +14,25 @@ import 'hip_icons.dart';
 import 'hip_page_kit.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+import 'hip_text.dart';
+import 'hip_content_text.dart';
 
 const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+const _englishWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _englishMonths = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 class HipRecordsView extends StatefulWidget {
   const HipRecordsView({
@@ -61,7 +78,10 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     final now = store.now();
     final today = DateTime(now.year, now.month, now.day);
     final done = store.doneDays;
-    final finished = [for (final s in store.sessions) if (s.completed) s];
+    final finished = [
+      for (final s in store.sessions)
+        if (s.completed) s,
+    ];
     final secondsByDay = <String, int>{};
     var seconds = 0;
     for (final s in finished) {
@@ -90,7 +110,7 @@ class _HipRecordsViewState extends State<HipRecordsView> {
         _Empty(onStart: widget.onStartPractice),
       ] else ...[
         HipSection(
-          '本周',
+          HipText.of(context).pick('本周', 'This week'),
           trailing: Text(
             '${_weekDone(done, today)}/7',
             key: const ValueKey('records-week-count'),
@@ -105,14 +125,12 @@ class _HipRecordsViewState extends State<HipRecordsView> {
         HipListGroup(
           children: [_Week(done: done, today: today)],
         ),
-        const HipSection('近 16 周'),
+        HipSection(HipText.of(context).pick('近 16 周', 'Last 16 weeks')),
         HipListGroup(
-          children: [
-            _Heatmap(done: done, minutes: minutesByDay, today: today),
-          ],
+          children: [_Heatmap(done: done, minutes: minutesByDay, today: today)],
         ),
       ],
-      const HipSection('里程碑'),
+      HipSection(HipText.of(context).pick('里程碑', 'Milestones')),
       HipListGroup(
         children: [
           _Milestones(
@@ -123,7 +141,7 @@ class _HipRecordsViewState extends State<HipRecordsView> {
         ],
       ),
       if (store.sessions.isNotEmpty) ...[
-        const HipSection('最近训练'),
+        HipSection(HipText.of(context).pick('最近训练', 'Recent training')),
         HipListGroup(
           key: const ValueKey('records-recent'),
           children: [
@@ -162,21 +180,36 @@ class _HipRecordsViewState extends State<HipRecordsView> {
   }
 
   Widget _recent(SessionRecord s, DateTime today) {
+    final t = HipText.of(context);
     final d = DateTime(s.at.year, s.at.month, s.at.day);
     final ago = today.difference(d).inDays;
     final day = ago == 0
-        ? '今天'
+        ? t.pick('今天', 'Today')
         : ago == 1
-        ? '昨天'
-        : '${s.at.month}月${s.at.day}日 周${_weekdays[s.at.weekday - 1]}';
+        ? t.pick('昨天', 'Yesterday')
+        : t.pick(
+            '${s.at.month}月${s.at.day}日 周${_weekdays[s.at.weekday - 1]}',
+            '${_englishWeekdays[s.at.weekday - 1]}, ${_englishMonths[s.at.month - 1]} ${s.at.day}',
+          );
     final time =
         '${s.at.hour.toString().padLeft(2, '0')}:${s.at.minute.toString().padLeft(2, '0')}';
     final mins = math.max(1, (s.seconds / 60).round());
+    final builtIn = s.source == PlanSource.routine
+        ? store.content.routines.where((r) => r.id == s.refId).firstOrNull
+        : null;
     return HipListRow(
       glyph: s.completed ? HipGlyph.checkCircle : HipGlyph.pause,
-      title: s.title.isEmpty ? '训练' : s.title,
-      subtitle: s.completed ? '$day $time' : '$day $time · 未完成',
-      meta: '$mins 分钟',
+      // Only a known built-in ID may supply a translated display name.
+      // Custom/AI names and ambiguous historical text are never rewritten.
+      title: t.isEn && builtIn != null
+          ? HipContentText.of(context).routineName(builtIn)
+          : s.title.isEmpty
+          ? t.pick('训练', 'Training')
+          : s.title,
+      subtitle: s.completed
+          ? '$day $time'
+          : t.pick('$day $time · 未完成', '$day $time · Unfinished'),
+      meta: t.pick('$mins 分钟', '$mins min'),
     );
   }
 }
@@ -199,18 +232,36 @@ class _Hero extends StatelessWidget {
   final int minutes;
   final bool hasHistory;
 
-  String get _line {
+  String _line(BuildContext context) {
+    final t = HipText.of(context);
     if (streak == 0) {
-      return hasHistory ? '歇了几天也没关系，今天练一次重新开始' : '练完第一次，连续天数就从 1 开始';
+      return hasHistory
+          ? t.pick(
+              '歇了几天也没关系，今天练一次重新开始',
+              'A few days off is fine. Train today to start again.',
+            )
+          : t.pick(
+              '练完第一次，连续天数就从 1 开始',
+              'Finish your first session to start a 1-day streak.',
+            );
     }
-    if (streakMilestones.contains(streak)) return '达成连续 $streak 天，真不容易！';
+    if (streakMilestones.contains(streak)) {
+      return t.pick('达成连续 $streak 天，真不容易！', 'A $streak-day streak. Well done!');
+    }
     final next = streakMilestones.firstWhere(
       (m) => m > streak,
       orElse: () => 0,
     );
-    final keep = trainedToday ? '' : '今天练一次就能续上，';
-    if (next == 0) return '$keep已经是长期习惯了';
-    return '$keep再坚持 ${next - streak} 天，解锁「$next 天」';
+    final keep = trainedToday
+        ? ''
+        : t.pick('今天练一次就能续上，', 'Train today to keep it going. ');
+    if (next == 0) {
+      return t.pick('$keep已经是长期习惯了', '${keep}You have built a lasting habit.');
+    }
+    return t.pick(
+      '$keep再坚持 ${next - streak} 天，解锁「$next 天」',
+      '$keep${t.plural(next - streak, 'more day')} to unlock $next days.',
+    );
   }
 
   @override
@@ -238,7 +289,7 @@ class _Hero extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                '天连续',
+                HipText.of(context).pick('天连续', 'day streak'),
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -249,16 +300,28 @@ class _Hero extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            _line,
+            _line(context),
             key: const ValueKey('records-cheer'),
             style: TextStyle(fontSize: 13, color: HipColors.muted, height: 1.4),
           ),
           const SizedBox(height: 18),
           Row(
             children: [
-              _stat('累计天数', '$totalDays', '天'),
-              _stat('累计次数', '$sessions', '次'),
-              _stat('累计时长', '$minutes', '分钟'),
+              _stat(
+                HipText.of(context).pick('累计天数', 'Total days'),
+                '$totalDays',
+                HipText.of(context).pick('天', totalDays == 1 ? 'day' : 'days'),
+              ),
+              _stat(
+                HipText.of(context).pick('累计次数', 'Sessions'),
+                '$sessions',
+                HipText.of(context).pick('次', ''),
+              ),
+              _stat(
+                HipText.of(context).pick('累计时长', 'Total time'),
+                '$minutes',
+                HipText.of(context).pick('分钟', 'min'),
+              ),
             ],
           ),
         ],
@@ -310,7 +373,7 @@ class _Empty extends StatelessWidget {
             HipIcon(HipGlyph.today, size: 32, color: HipColors.jadeText),
             const SizedBox(height: 12),
             Text(
-              '还没有训练记录',
+              HipText.of(context).pick('还没有训练记录', 'No training records yet'),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -319,7 +382,10 @@ class _Empty extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '每练完一次，这里会点亮一格，\n连续天数、打卡日历和里程碑都会慢慢长出来。',
+              HipText.of(context).pick(
+                '每练完一次，这里会点亮一格，\n连续天数、打卡日历和里程碑都会慢慢长出来。',
+                'Each completed session lights up a day.\nBuild your streak, check-in calendar and milestones over time.',
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -331,7 +397,9 @@ class _Empty extends StatelessWidget {
               const SizedBox(height: 18),
               HipPrimaryButton(
                 key: const ValueKey('records-start'),
-                label: '开始今天的训练',
+                label: HipText.of(
+                  context,
+                ).pick('开始今天的训练', 'Start today’s training'),
                 icon: HipGlyph.play,
                 onPressed: onStart,
               ),
@@ -391,15 +459,16 @@ class _Week extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        isToday ? '今天' : _weekdays[i],
+                        HipText.of(context).pick(
+                          isToday ? '今天' : _weekdays[i],
+                          isToday ? 'Today' : _englishWeekdays[i],
+                        ),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isToday
                               ? FontWeight.w600
                               : FontWeight.w400,
-                          color: isToday
-                              ? HipColors.jadeText
-                              : HipColors.faint,
+                          color: isToday ? HipColors.jadeText : HipColors.faint,
                         ),
                       ),
                     ],
@@ -430,7 +499,9 @@ class _Heatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final first = weekStart(today).subtract(const Duration(days: 7 * (weeks - 1)));
+    final first = weekStart(
+      today,
+    ).subtract(const Duration(days: 7 * (weeks - 1)));
     DateTime at(int w, int d) =>
         DateTime(first.year, first.month, first.day + w * 7 + d);
     final levels = [
@@ -459,7 +530,12 @@ class _Heatmap extends StatelessWidget {
             for (var d = 0; d < 7; d++) {
               final day = at(w, d);
               if (day.day == 1 && !day.isAfter(today)) {
-                months.add((w, '${day.month}月'));
+                months.add((
+                  w,
+                  HipText.of(
+                    context,
+                  ).pick('${day.month}月', _englishMonths[day.month - 1]),
+                ));
               }
             }
           }
@@ -473,8 +549,7 @@ class _Heatmap extends StatelessWidget {
                   children: [
                     for (final (w, t) in months)
                       Positioned(
-                        left:
-                            dayCol + math.min(w * (cell + gap), gridW - 30),
+                        left: dayCol + math.min(w * (cell + gap), gridW - 30),
                         child: Text(t, style: labelStyle),
                       ),
                   ],
@@ -493,7 +568,10 @@ class _Heatmap extends StatelessWidget {
                           Positioned(
                             top: d * (cell + gap) + (cell - 13) / 2,
                             child: Text(
-                              _weekdays[d],
+                              HipText.of(context).pick(
+                                _weekdays[d],
+                                ['M', 'T', 'W', 'T', 'F', 'S', 'S'][d],
+                              ),
                               style: labelStyle.copyWith(height: 1.2),
                             ),
                           ),
@@ -520,7 +598,10 @@ class _Heatmap extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text('少', style: labelStyle),
+                  Text(
+                    HipText.of(context).pick('少', 'Less'),
+                    style: labelStyle,
+                  ),
                   const SizedBox(width: 6),
                   for (var l = 0; l <= 4; l++) ...[
                     Container(
@@ -534,7 +615,10 @@ class _Heatmap extends StatelessWidget {
                     const SizedBox(width: 3),
                   ],
                   const SizedBox(width: 3),
-                  Text('多', style: labelStyle),
+                  Text(
+                    HipText.of(context).pick('多', 'More'),
+                    style: labelStyle,
+                  ),
                 ],
               ),
             ],
@@ -619,7 +703,9 @@ class _Milestones extends StatelessWidget {
                 key: ValueKey('milestone-$m'),
                 days: m,
                 earnedAt: earned[m],
-                progress: m == next ? (streak / m).clamp(0, 1).toDouble() : null,
+                progress: m == next
+                    ? (streak / m).clamp(0, 1).toDouble()
+                    : null,
                 remaining: m == next ? m - streak : null,
                 celebrate: m == celebrate,
               ),
@@ -653,11 +739,7 @@ class _Badge extends StatelessWidget {
       width: 46,
       height: 46,
       child: CustomPaint(
-        painter: _BadgePainter(
-          earned: earned,
-          progress: progress,
-          p: p,
-        ),
+        painter: _BadgePainter(earned: earned, progress: progress, p: p),
         child: Center(
           child: Text(
             '$days',
@@ -679,14 +761,14 @@ class _Badge extends StatelessWidget {
     final caption = earned
         ? '${earnedAt!.month}/${earnedAt!.day}'
         : remaining != null
-        ? '还差 $remaining 天'
-        : '未解锁';
+        ? HipText.of(context).pick('还差 $remaining 天', '$remaining left')
+        : HipText.of(context).pick('未解锁', 'Locked');
     return Column(
       children: [
         celebrate ? _Celebrate(child: medal) : medal,
         const SizedBox(height: 8),
         Text(
-          '$days 天',
+          HipText.of(context).pick('$days 天', '$days d'),
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -717,7 +799,11 @@ class _Badge extends StatelessWidget {
 /// Six-notch medal: earned = solid jade with a soft halo; next = a track
 /// ring filling with the current streak; locked = a dim disc.
 class _BadgePainter extends CustomPainter {
-  _BadgePainter({required this.earned, required this.progress, required this.p});
+  _BadgePainter({
+    required this.earned,
+    required this.progress,
+    required this.p,
+  });
   final bool earned;
   final double? progress;
   final HipPalette p;

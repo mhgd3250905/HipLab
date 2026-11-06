@@ -20,6 +20,58 @@ import 'library_widgets.dart';
 
 String _z(LibText t, String zh, String en) => t.lang == 'en' ? en : zh;
 
+/// Keep stable Chinese facet values for filtering; localize display only.
+String hipFacetLabel(LibText t, String value) => t.isEn
+    ? const <String, String>{
+            '臀部': 'Glutes',
+            '大腿后侧': 'Hamstrings',
+            '髋前侧': 'Hip front',
+            '大腿内侧': 'Inner thigh',
+            '髋外侧': 'Outer hip',
+            '大腿前侧': 'Quads',
+            '小腿': 'Calves',
+            '核心': 'Core',
+            '背': 'Back',
+            '肩': 'Shoulders',
+            '胸': 'Chest',
+            '手臂': 'Arms',
+            '徒手': 'Bodyweight',
+            '拉伸放松': 'Stretch & relax',
+            '力量': 'Strength',
+            '椅子可做': 'Chair-friendly',
+            '居家': 'Home',
+            '办公室': 'Office',
+            '健身房': 'Gym',
+            '瑜伽垫': 'Mat',
+            '椅子': 'Chair',
+            '弹力带': 'Resistance band',
+            '哑铃': 'Dumbbell',
+            '墙': 'Wall',
+            '绳索器械': 'Cable machine',
+            '瑜伽砖': 'Yoga block',
+            '单杠': 'Pull-up bar',
+            '俯卧撑架': 'Parallettes',
+            '双杠': 'Dip bars',
+            '滑盘': 'Slider',
+            '吊环': 'Rings',
+            '地雷杆': 'Landmine',
+            '健身球': 'Exercise ball',
+            '罗马椅': 'Roman chair',
+            '壶铃': 'Kettlebell',
+            '反向挺身机': 'Reverse hyper',
+            '臀腿训练器': 'GHD',
+            '髋外展机': 'Hip-abduction machine',
+            '腿屈伸机': 'Leg-extension machine',
+            '泡沫轴': 'Foam roller',
+            '毛巾': 'Towel',
+            '门框': 'Doorframe',
+            '训练凳': 'Bench',
+            '杠铃': 'Barbell',
+            '其他器械': 'Other equipment',
+          }[value] ??
+          value
+    : value;
+
 // ───────────────────────── facets ─────────────────────────
 
 /// HipLab body-part words for the SDK muscle groups (hip words first).
@@ -149,6 +201,11 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
   final List<Map<String, dynamic>> rows;
   final config = HipSharedLibrary.current;
   final policy = HipPublicMedia.current;
+  final canonical = policy?.catalog.toAiCatalog() ?? c.publicCatalog;
+  final canonicalNames = <String, Object?>{
+    for (final drill in canonical?.drills ?? const <coach.Drill>[])
+      drill.id: drill.raw['name'],
+  };
   if (config != null && policy != null) {
     rows = [
       for (final a in config.actions(policy.catalog))
@@ -170,12 +227,14 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
         !seen.add(id)) {
       continue;
     }
-    final names = raw['name'];
+    final names = raw['name'] ?? canonicalNames[id];
     final zh =
         raw['nameZh'] as String? ??
         (names is Map ? names['zh'] as String? : null) ??
         id;
-    final en = names is Map ? names['en'] as String? : null;
+    final en =
+        raw['nameEn'] as String? ??
+        (names is Map ? names['en'] as String? : null);
     final muscles = strings(raw['muscleGroups']);
     final tools = strings(raw['equipment']);
     final scenes = strings(raw['scenes']);
@@ -450,7 +509,7 @@ class ActionFilterBar extends StatelessWidget {
                       for (final p in quick) ...[
                         const SizedBox(width: 8),
                         HipFilterChip(
-                          p,
+                          hipFacetLabel(t, p),
                           key: ValueKey('action-part-$p'),
                           on: filter.parts.contains(p),
                           onTap: () => onChanged(
@@ -656,7 +715,7 @@ Future<ActionFilter?> showActionFilterSheet(
                           'part',
                           facets.parts,
                           f.parts,
-                          (v) => v,
+                          (v) => hipFacetLabel(t, v),
                           (s) => f.copyWith(parts: s),
                         ),
                       ),
@@ -668,7 +727,7 @@ Future<ActionFilter?> showActionFilterSheet(
                           'equipment',
                           facets.equipment,
                           f.equipment,
-                          (v) => v,
+                          (v) => hipFacetLabel(t, v),
                           (s) => f.copyWith(equipment: s),
                         ),
                       ),
@@ -680,7 +739,7 @@ Future<ActionFilter?> showActionFilterSheet(
                           'place',
                           facets.places,
                           f.places,
-                          (v) => v,
+                          (v) => hipFacetLabel(t, v),
                           (s) => f.copyWith(places: s),
                         ),
                       ),
@@ -692,7 +751,7 @@ Future<ActionFilter?> showActionFilterSheet(
                           'type',
                           facets.types,
                           f.types,
-                          (v) => v,
+                          (v) => hipFacetLabel(t, v),
                           (s) => f.copyWith(types: s),
                         ),
                       ),
@@ -815,7 +874,7 @@ class ActionCard extends StatelessWidget {
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: mediaPill(
-                                item.tag,
+                                hipFacetLabel(t, item.tag),
                                 dot: HipPalette.dark.glow,
                               ),
                             ),

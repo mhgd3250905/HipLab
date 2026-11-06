@@ -8,11 +8,26 @@ import 'voice_queue.dart';
 /// App-wide voice coaching service: the clip library, the audio output and
 /// the user's settings. Pages get it with [HipVoice.of].
 class HipVoice {
-  HipVoice({required this.lib, required this.output, required this.settingsOf});
+  HipVoice({
+    required this.lib,
+    required this.output,
+    required this.settingsOf,
+    this.appLanguageTag = 'zh',
+  });
 
   final VoiceLibrary lib;
   final VoiceOutput output;
   final VoiceSettings Function() settingsOf;
+  final String appLanguageTag;
+
+  /// A lightweight locale-bound view; the library, output and live preferences
+  /// are shared. No playback resources are created or disposed here.
+  HipVoice withAppLanguage(String languageTag) => HipVoice(
+    lib: lib,
+    output: output,
+    settingsOf: settingsOf,
+    appLanguageTag: languageTag,
+  );
 
   /// Off in widget tests / when no library loaded.
   static final silent = HipVoice(
@@ -22,12 +37,17 @@ class HipVoice {
   );
 
   VoiceSettings get settings => settingsOf();
-  String get lang => settings.language.clipLanguage;
+  String get lang => settings.language.resolveClipLanguage(appLanguageTag);
 
   VoiceQueue queue() {
     final s = settings;
     output.volume = s.volume;
-    return VoiceQueue(output: output, lib: lib, settings: s);
+    return VoiceQueue(
+      output: output,
+      lib: lib,
+      settings: s,
+      appLanguageTag: appLanguageTag,
+    );
   }
 
   SessionScript script({
@@ -42,9 +62,14 @@ class HipVoice {
     kits: kits,
   );
 
-  static HipVoice of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<HipVoiceScope>()?.voice ??
-      silent;
+  static HipVoice of(BuildContext context) {
+    final service =
+        context.dependOnInheritedWidgetOfExactType<HipVoiceScope>()?.voice ??
+        silent;
+    final language =
+        Localizations.maybeLocaleOf(context)?.toLanguageTag() ?? 'zh';
+    return service.withAppLanguage(language);
+  }
 }
 
 class HipVoiceScope extends InheritedWidget {

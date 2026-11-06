@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
+import 'hip_content_text.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -196,9 +197,13 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) {
       final drill = widget.drill;
+      final copy = HipContentText.of(context);
+      final displayName = copy.drillName(drill);
       final classification = [
-        drill.methods.map((method) => method.zh).join(' · '),
-        drill.directions.map((direction) => direction.zh).join(' / '),
+        drill.methods.map((method) => copy.text(method.zh)).join(' · '),
+        drill.directions
+            .map((direction) => copy.text(direction.zh))
+            .join(' / '),
       ].where((value) => value.isNotEmpty).join(' · ');
       final t = widget.expansion;
       final front = widget.front;
@@ -228,7 +233,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
         scaler.scale(16),
         scaler.scale(13),
         direction,
-        drill.name,
+        displayName,
         widget.dose,
         widget.cue,
       );
@@ -236,7 +241,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
         _types = _TypeMetrics(
           key,
           _measure(
-            drill.name,
+            displayName,
             _titleStyle(HipColors.text),
             typeWidth,
             2,
@@ -310,6 +315,8 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
       final description =
           (widget.description.trim().isNotEmpty
                   ? widget.description
+                  : copy.isEn
+                  ? ''
                   : drill.note)
               .trim();
       final body = description == widget.cue.trim() ? '' : description;
@@ -351,52 +358,63 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 right: 130 * t + inset * (1 - t),
                 top: lerpDouble(compact ? 8 : 20, 26, t)!,
                 height: 44,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _printedLabel(
-                          context,
-                          'masthead',
-                          'HIPLAB',
-                          TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 2.5,
-                            color: HipColors.jadeText,
+                child: LayoutBuilder(
+                  builder: (context, header) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: header.maxWidth,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _printedLabel(
+                                context,
+                                'masthead',
+                                'HIPLAB',
+                                TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 2.5,
+                                  color: HipColors.jadeText,
+                                ),
+                                lerpDouble(compact ? 8 : 10, 11, t)! / 11,
+                              ),
+                              SizedBox(width: 12 * t),
+                              Expanded(
+                                child: Opacity(
+                                  opacity: t,
+                                  child: Text(
+                                    copy.isEn ? 'MOVEMENT STUDY' : '动作研习',
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      letterSpacing: 1,
+                                      color: HipColors.muted,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          lerpDouble(compact ? 8 : 10, 11, t)! / 11,
-                        ),
-                        SizedBox(width: 12 * t),
-                        Expanded(
-                          child: Opacity(
-                            opacity: t,
-                            child: Text(
-                              '动作研习',
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontSize: 9,
-                                letterSpacing: 1,
-                                color: HipColors.muted,
+                          if (!compact)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: _printedLabel(
+                                context,
+                                'classification',
+                                classification.isEmpty
+                                    ? (copy.isEn ? 'Movement practice' : '动作练习')
+                                    : classification,
+                                TextStyle(fontSize: 11, color: HipColors.muted),
+                                lerpDouble(10, 11, t)! / 11,
                               ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (!compact)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: _printedLabel(
-                          context,
-                          'classification',
-                          classification.isEmpty ? '动作练习' : classification,
-                          TextStyle(fontSize: 11, color: HipColors.muted),
-                          lerpDouble(10, 11, t)! / 11,
-                        ),
+                        ],
                       ),
-                  ],
+                    ),
+                  ),
                 ),
               ),
               Positioned(
@@ -454,7 +472,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                 ? const ValueKey('home-deck-expanded-close')
                                 : null,
                             icon: HipGlyph.close,
-                            tooltip: '收起动作卡片',
+                            tooltip: copy.isEn ? 'Close move card' : '收起动作卡片',
                             onPressed: widget.onClose,
                           ),
                         ),
@@ -499,9 +517,15 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                           : ValueKey('back-art-${widget.number}')),
                   button: widget.expanded,
                   label: widget.expanded
-                      ? (widget.paused ? '播放动作示范' : '暂停动作示范')
-                      : drill.name,
-                  value: widget.paused || !widget.expanded ? '已暂停' : '自动循环播放',
+                      ? (widget.paused
+                            ? (copy.isEn ? 'Play move demonstration' : '播放动作示范')
+                            : (copy.isEn
+                                  ? 'Pause move demonstration'
+                                  : '暂停动作示范'))
+                      : displayName,
+                  value: widget.paused || !widget.expanded
+                      ? (copy.isEn ? 'Paused' : '已暂停')
+                      : (copy.isEn ? 'Looping automatically' : '自动循环播放'),
                   onTap: widget.expanded ? widget.onToggle : null,
                   child: GestureDetector(
                     key: front
@@ -573,7 +597,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 top: titleTop,
                 height: titleHeight,
                 child: _type(
-                  drill.name,
+                  displayName,
                   _titleStyle(HipColors.text),
                   typeWidth,
                   types.title,
@@ -654,7 +678,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                 children: [
                                   if (body.isNotEmpty) ...[
                                     Text(
-                                      '动作要领',
+                                      copy.isEn ? 'TECHNIQUE NOTES' : '动作要领',
                                       style: TextStyle(
                                         fontSize: 10,
                                         height: 1.4,
@@ -678,7 +702,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                     Container(height: .5, color: ruleColor),
                                     const SizedBox(height: 10),
                                     Text(
-                                      '留意 · ${drill.cautions.join('、')}',
+                                      '${copy.isEn ? 'Mind' : '留意'} · ${drill.cautions.map(copy.text).join(copy.isEn ? ', ' : '、')}',
                                       style: TextStyle(
                                         fontSize: 11,
                                         height: 1.5,

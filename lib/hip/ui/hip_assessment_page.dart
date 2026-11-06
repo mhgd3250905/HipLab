@@ -22,6 +22,9 @@ import 'hip_icons.dart';
 import 'hip_page_kit.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+import 'hip_text.dart';
+import 'hip_assessment_text.dart';
+import 'hip_content_text.dart';
 
 /// Subject framing of each item's comparison stills (fractions of the
 /// 540×540 renders, measured from the middle "一般" still) so thumbnails and
@@ -45,11 +48,14 @@ Widget _thumbArt(AssessmentItem item, String? still) => still == null
 Rect _focusOf(AssessmentItem item) =>
     hipAssessmentFocus[item.id] ?? const Rect.fromLTRB(.15, .15, .85, .85);
 
-String _measureLine(AssessmentItem item) {
+String _measureLine(BuildContext context, AssessmentItem item) {
+  final t = HipText.of(context);
+  final a = HipAssessmentText.of(context);
   final parts = <String>[
-    if (item.area.isNotEmpty) '看${item.area}',
-    '${item.seconds} 秒',
-    if (item.sided) '左右各一次',
+    if (item.area.isNotEmpty)
+      t.pick('看${item.area}', 'Checks ${a.text(item.area).toLowerCase()}'),
+    t.pick('${item.seconds} 秒', '${item.seconds} sec'),
+    if (item.sided) t.pick('左右各一次', 'Each side'),
   ];
   return parts.join(' · ');
 }
@@ -70,9 +76,11 @@ class HipAssessmentIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = HipText.of(context);
+    final a = HipAssessmentText.of(context);
     final items = store.content.rules.items;
     return HipNavPage(
-      title: '髋部自测',
+      title: t.pick('髋部自测', 'Hip check-up'),
       leadingKey: const ValueKey('intro-back'),
       bodyScrollsUnderBar: true,
       body: ListView(
@@ -80,16 +88,22 @@ class HipAssessmentIntro extends StatelessWidget {
         children: [
           // UI r2: the bar carries the title; one lead line here.
           Text(
-            '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
+            t.pick(
+              '6 个动作 · 约 3 分 30 秒 · 找出髋部哪个方向最紧',
+              '6 moves · About 3½ min · Find your tightest hip direction',
+            ),
             style: TextStyle(fontSize: 13, color: HipColors.muted, height: 1.4),
           ),
           if (_last(store) case final last?) ...[
             // UI r2 §1 / M4: the last result's radar lives here (moved
             // off 训练记录); 重测 is the button below.
             HipSection(
-              '上次结果',
+              t.pick('上次结果', 'Last result'),
               trailing: Text(
-                '${last.at.year}/${last.at.month}/${last.at.day}',
+                t.pick(
+                  '${last.at.year}/${last.at.month}/${last.at.day}',
+                  MaterialLocalizations.of(context).formatMediumDate(last.at),
+                ),
                 key: const ValueKey('intro-last-date'),
                 style: TextStyle(fontSize: 12, color: HipColors.faint),
               ),
@@ -102,7 +116,7 @@ class HipAssessmentIntro extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        '${last.result.level.name} · ${last.result.total}/12',
+                        '${a.text(last.result.level.name)} · ${last.result.total}/12',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -127,12 +141,12 @@ class HipAssessmentIntro extends StatelessWidget {
                 ),
               ],
             ),
-            const HipSection('自测内容'),
+            HipSection(t.pick('自测内容', 'Check-up moves')),
           ] else
             const SizedBox(height: 14),
           HipFlatGroup(
             indent: 60,
-            children: [for (final item in items) _row(item)],
+            children: [for (final item in items) _row(context, item)],
           ),
           const SizedBox(height: 14),
           Row(
@@ -141,7 +155,10 @@ class HipAssessmentIntro extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '做完得到：六方向雷达图 + 为你推荐的训练路线',
+                  t.pick(
+                    '做完得到：六方向雷达图 + 为你推荐的训练路线',
+                    'Get a six-direction mobility chart and a suggested training route.',
+                  ),
                   style: TextStyle(fontSize: 13, color: HipColors.muted),
                 ),
               ),
@@ -159,10 +176,10 @@ class HipAssessmentIntro extends StatelessWidget {
                 child: HipPrimaryButton(
                   key: const ValueKey('assessment-start'),
                   label: store.blocked
-                      ? '先问问医生再来'
+                      ? t.pick('先问问医生再来', 'Ask a doctor first')
                       : store.latestResult != null
-                      ? '重新自测'
-                      : '开始自测',
+                      ? t.pick('重新自测', 'Check again')
+                      : t.pick('开始自测', 'Start check-up'),
                   icon: HipGlyph.play,
                   onPressed: store.blocked ? null : onStart,
                 ),
@@ -180,7 +197,7 @@ class HipAssessmentIntro extends StatelessWidget {
     return (at: store.assessments.last.at, result: result);
   }
 
-  Widget _row(AssessmentItem item) {
+  Widget _row(BuildContext context, AssessmentItem item) {
     final still = item.options.length > 1 ? item.options[1].image : null;
     // m6: a flat row between hairlines (no card); the thumbnail is a clean
     // rounded crop, no frame of its own (round 2 #3).
@@ -214,8 +231,8 @@ class HipAssessmentIntro extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
-                  maxLines: 1,
+                  HipAssessmentText.of(context).text(item.title),
+                  maxLines: HipText.of(context).isEn ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 15,
@@ -225,7 +242,7 @@ class HipAssessmentIntro extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  _measureLine(item),
+                  _measureLine(context, item),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: HipColors.muted),
@@ -253,6 +270,8 @@ class HipAssessmentPage extends StatefulWidget {
 }
 
 class _HipAssessmentPageState extends State<HipAssessmentPage> {
+  HipText get _copy => HipText.of(context);
+  HipAssessmentText get _a => HipAssessmentText.of(context);
   final _answers = <String, ItemAnswer>{};
   int _index = 0;
   HipSide? _side;
@@ -537,7 +556,9 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           child: IgnorePointer(
             child: _pill(
               _demoPlaying ? HipGlyph.pause : HipGlyph.play,
-              _demoPlaying ? '点击暂停' : '点击播放',
+              _demoPlaying
+                  ? _copy.pick('点击暂停', 'Tap to pause')
+                  : _copy.pick('点击播放', 'Tap to play'),
             ),
           ),
         ),
@@ -546,7 +567,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         Positioned.fill(
           child: Semantics(
             button: true,
-            label: _demoPlaying ? '动作示范，点击暂停' : '动作示范已暂停，点击播放',
+            label: _demoPlaying
+                ? _copy.pick('动作示范，点击暂停', 'Exercise demo, tap to pause')
+                : _copy.pick(
+                    '动作示范已暂停，点击播放',
+                    'Exercise demo paused, tap to play',
+                  ),
             onTap: _toggleDemo,
             child: GestureDetector(
               key: const ValueKey('assessment-demo-toggle'),
@@ -572,7 +598,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 ),
                 demo.id,
               ),
-              child: const Text('动作详情'),
+              child: Text(_copy.pick('动作详情', 'Move details')),
             ),
           ),
         Positioned.fill(
@@ -600,7 +626,14 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   stage: HipColors.mediaBackdrop,
                 )
               : !scoped
-              ? const Center(child: Text('此动作暂无公共示范'))
+              ? Center(
+                  child: Text(
+                    _copy.pick(
+                      '此动作暂无公共示范',
+                      'No public demo is available for this move',
+                    ),
+                  ),
+                )
               : demo.mediaStatus != HipMediaStatus.pending
               ? HipDrillArt(
                   drill: demo,
@@ -613,7 +646,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   HipMediaVariants.themed(fallback),
                   fit: BoxFit.contain,
                 )
-              : const HipPendingArt(label: '动画待渲染'),
+              : HipPendingArt(label: _copy.pick('动画待渲染', 'Demo coming soon')),
         ),
       ),
     );
@@ -641,16 +674,16 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   size: 22,
                 ),
                 const SizedBox(width: 6),
-                const Text(
-                  '左边记好了',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                Text(
+                  _copy.pick('左边记好了', 'Left side saved'),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              '现在测右边',
-              style: TextStyle(
+            Text(
+              _copy.pick('现在测右边', 'Now check the right'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
@@ -694,7 +727,9 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   const SizedBox(width: 2),
                 ],
                 Text(
-                  s == HipSide.left ? '左边' : '右边',
+                  s == HipSide.left
+                      ? _copy.pick('左边', 'Left')
+                      : _copy.pick('右边', 'Right'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -732,7 +767,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         TextSpan(
           children: [
             TextSpan(
-              text: item.title,
+              text: _a.text(item.title),
               style: TextStyle(
                 color: HipColors.jadeText,
                 fontWeight: FontWeight.w700,
@@ -740,7 +775,9 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
             ),
             if (_side != null)
               TextSpan(
-                text: _side == HipSide.left ? ' · 左边' : ' · 右边',
+                text: _side == HipSide.left
+                    ? _copy.pick(' · 左边', ' · Left')
+                    : _copy.pick(' · 右边', ' · Right'),
                 style: TextStyle(
                   color: HipColors.jadeText,
                   fontWeight: FontWeight.w700,
@@ -754,7 +791,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
       ),
       const SizedBox(height: 3),
       Text(
-        _needsFollow ? item.followUpQuestion! : item.question,
+        _a.text(_needsFollow ? item.followUpQuestion! : item.question),
         key: const ValueKey('assessment-question'),
         textAlign: TextAlign.center,
         style: const TextStyle(
@@ -771,14 +808,16 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
     children: [
       if (item.aka != null) ...[
         Text(
-          item.aka!,
+          _a.text(item.aka!),
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12, color: HipColors.muted),
         ),
         const SizedBox(height: 3),
       ],
       Text(
-        _needsFollow ? '点一下翘起来的那条腿' : item.cue,
+        _needsFollow
+            ? _copy.pick('点一下翘起来的那条腿', 'Tap the leg whose knee lifts')
+            : _a.text(item.cue),
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 14, height: 1.5, color: HipColors.muted),
       ),
@@ -801,14 +840,17 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 key: const ValueKey('assessment-pain'),
                 onPressed: () => _record(const SideAnswer.pain()),
                 icon: HipIcon(HipGlyph.bolt, color: HipColors.pain, size: 18),
-                label: Text('做的时候疼', style: TextStyle(color: HipColors.pain)),
+                label: Text(
+                  _copy.pick('做的时候疼', 'This hurts'),
+                  style: TextStyle(color: HipColors.pain),
+                ),
               ),
               Text('·', style: TextStyle(color: HipColors.faint)),
               TextButton(
                 key: const ValueKey('assessment-skip'),
                 onPressed: _skipItem,
                 child: Text(
-                  '做不了 · 跳过',
+                  _copy.pick('做不了 · 跳过', 'Can’t do this · Skip'),
                   style: TextStyle(color: HipColors.muted),
                 ),
               ),
@@ -818,10 +860,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           HipPrimaryButton(
             key: const ValueKey('assessment-next'),
             label: _side == HipSide.left
-                ? '记下左边，测右边'
+                ? _copy.pick('记下左边，测右边', 'Save left, check right')
                 : last
-                ? '看结果'
-                : '下一项',
+                ? _copy.pick('看结果', 'See results')
+                : _copy.pick('下一项', 'Next move'),
             trailing: HipGlyph.chevronRight,
             onPressed: _canNext ? _next : null,
           ),
@@ -857,7 +899,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            o.label,
+                            _a.text(o.label),
                             maxLines: 1,
                             overflow: TextOverflow.fade,
                             softWrap: false,
@@ -872,7 +914,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                         ),
                       ],
                     ),
-                    semantic: '${o.label}：${o.description}',
+                    semantic: _copy.pick(
+                      '${o.label}：${o.description}',
+                      '${_a.text(o.label)}: ${_a.text(o.description)}',
+                    ),
                   ),
                 ),
               ],
@@ -897,8 +942,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                     image: o.image,
                     focus: _focusOf(item),
                     footer: Text(
-                      o.label,
-                      maxLines: 1,
+                      _a.text(o.label),
+                      maxLines: _copy.isEn ? 2 : 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 15,
@@ -907,7 +952,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                             : HipColors.text,
                       ),
                     ),
-                    semantic: o.label,
+                    semantic: _a.text(o.label),
                   ),
                 ),
               ],
@@ -977,7 +1022,9 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                 child: ColoredBox(
                   color: HipMediaVariants.stageFor(image),
                   child: image == null
-                      ? const HipPendingArt(label: '对比图待渲染')
+                      ? HipPendingArt(
+                          label: _copy.pick('对比图待渲染', 'Comparison coming soon'),
+                        )
                       : HipFocusImage(
                           asset: HipMediaVariants.themed(image),
                           focus: focus,
@@ -1013,8 +1060,8 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         ? null
         : store.planner.planFor([routine], store.profile);
     return HipNavPage(
-      title: '你的髋部',
-      subtitle: '自测完成',
+      title: _copy.pick('你的髋部', 'Your hips'),
+      subtitle: _copy.pick('自测完成', 'Check-up complete'),
       bodyScrollsUnderBar: true,
       body: ListView(
         padding: EdgeInsets.fromLTRB(
@@ -1042,26 +1089,44 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
               if (r.tightest.isNotEmpty)
                 _resultChip(
                   HipColors.tight,
-                  '最紧：${r.tightest.map((d) => d.zh).join(' · ')}',
+                  _copy.pick(
+                    '最紧：${r.tightest.map((d) => d.zh).join(' · ')}',
+                    'Tightest: ${r.tightest.map(_a.direction).join(' · ')}',
+                  ),
                 ),
               if (r.best != null)
-                _resultChip(HipColors.jade, '最好：${r.best!.zh}'),
+                _resultChip(
+                  HipColors.jade,
+                  _copy.pick(
+                    '最好：${r.best!.zh}',
+                    'Best: ${_a.direction(r.best!)}',
+                  ),
+                ),
               if (r.painDirections.isNotEmpty)
                 _resultChip(
                   HipColors.pain,
-                  '先别练这里：${r.painDirections.map((d) => d.zh).join(' · ')}',
+                  _copy.pick(
+                    '先别练这里：${r.painDirections.map((d) => d.zh).join(' · ')}',
+                    'Avoid for now: ${r.painDirections.map(_a.direction).join(' · ')}',
+                  ),
                 ),
               if (r.untestedDirections.isNotEmpty)
                 _resultChip(
                   HipColors.faint,
-                  '未测：${r.untestedDirections.map((d) => d.zh).join(' · ')}',
+                  _copy.pick(
+                    '未测：${r.untestedDirections.map((d) => d.zh).join(' · ')}',
+                    'Not checked: ${r.untestedDirections.map(_a.direction).join(' · ')}',
+                  ),
                 ),
             ],
           ),
           if (r.lowest != null) ...[
             const SizedBox(height: 10),
             Text(
-              '你的${_area(r.lowest!)}最紧，先从这里开始。',
+              _copy.pick(
+                '你的${_area(r.lowest!)}最紧，先从这里开始。',
+                'Your ${_a.area(r.lowest!).toLowerCase()} is tightest. Start here.',
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: HipColors.muted),
             ),
@@ -1071,7 +1136,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
             _routeCard(r.route!, routine, plan),
           if (r.dancerUnlocked) ...[
             const SizedBox(height: 10),
-            Center(child: _resultChip(HipColors.jade, '已解锁托马斯动作库')),
+            Center(
+              child: _resultChip(
+                HipColors.jade,
+                _copy.pick('已解锁托马斯动作库', 'Flare move library unlocked'),
+              ),
+            ),
           ],
         ],
       ),
@@ -1087,13 +1157,13 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                       key: const ValueKey('result-other'),
                       onPressed: _chooseOther,
                       child: Text(
-                        '换一条路线',
+                        _copy.pick('换一条路线', 'Choose another route'),
                         style: TextStyle(color: HipColors.muted),
                       ),
                     ),
                     HipPrimaryButton(
                       key: const ValueKey('result-start'),
-                      label: '开始这条路线',
+                      label: _copy.pick('开始这条路线', 'Start this route'),
                       icon: HipGlyph.play,
                       onPressed: () => _start(plan),
                     ),
@@ -1137,10 +1207,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            sheetTitle('换一条路线'),
+            sheetTitle(_copy.pick('换一条路线', 'Choose another route')),
             const SizedBox(height: 6),
             Text(
-              '选择路线后开始训练',
+              _copy.pick('选择路线后开始训练', 'Choose a route to begin training'),
               style: TextStyle(fontSize: 13, color: HipColors.muted),
             ),
             const SizedBox(height: 16),
@@ -1153,10 +1223,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                     ))
                       HipListRow(
                         key: ValueKey('result-route-${r.id}'),
-                        title: routineShortName(r),
-                        subtitle: r.audience,
-                        meta:
-                            '${store.planner.planFor([r], store.profile).minutes} 分钟',
+                        title: routineShortName(r, _copy.languageTag),
+                        subtitle: HipContentText.of(context).routineAudience(r),
+                        meta: _copy.pick(
+                          '${store.planner.planFor([r], store.profile).minutes} 分钟',
+                          '${store.planner.planFor([r], store.profile).minutes} min',
+                        ),
                         onTap: () => Navigator.of(context).pop(r),
                       ),
                   ],
@@ -1210,7 +1282,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
   Widget _routeCard(RouteSuggestion s, HipRoutine routine, TrainingPlan? plan) {
     final steps = plan?.steps ?? const <PlanStep>[];
     final hero = steps.where((p) => p.drill.poster != null).firstOrNull?.drill;
-    final (eyebrow, headline) = _splitRoute(s.route);
+    final (eyebrow, headline) = _splitRoute(_a.text(s.route));
     return DecoratedBox(
       key: const ValueKey('route-card'),
       decoration: BoxDecoration(
@@ -1232,7 +1304,12 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        eyebrow == null ? '为你推荐' : '为你推荐 · $eyebrow',
+                        eyebrow == null
+                            ? _copy.pick('为你推荐', 'Suggested for you')
+                            : _copy.pick(
+                                '为你推荐 · $eyebrow',
+                                'For you · $eyebrow',
+                              ),
                         style: TextStyle(
                           fontSize: 13,
                           color: HipColors.jadeText,
@@ -1250,7 +1327,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '${plan?.minutes ?? routine.seconds ~/ 60} 分钟 · ${steps.length} 个动作',
+                        _copy.pick(
+                          '${plan?.minutes ?? routine.seconds ~/ 60} 分钟 · ${steps.length} 个动作',
+                          '${plan?.minutes ?? routine.seconds ~/ 60} min · ${HipText.en.plural(steps.length, 'move')}',
+                        ),
                         style: TextStyle(fontSize: 13, color: HipColors.muted),
                       ),
                     ],

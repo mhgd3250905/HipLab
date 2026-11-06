@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
@@ -38,7 +39,11 @@ void main() {
     );
   }
 
-  Future<void> openPage(WidgetTester tester, Widget page) async {
+  Future<void> openPage(
+    WidgetTester tester,
+    Widget page, {
+    Locale locale = const Locale('zh'),
+  }) async {
     tester.view
       ..physicalSize = const Size(390, 844)
       ..devicePixelRatio = 1
@@ -47,6 +52,13 @@ void main() {
     installPublicMediaFixture();
     await tester.pumpWidget(
       MaterialApp(
+        locale: locale,
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: hipTheme(),
         builder: (_, child) =>
             HipMediaPolicy(videoEnabled: false, child: child!),
@@ -215,6 +227,7 @@ void main() {
           child: GroupCard(actions: a, group: group),
         ),
       ),
+      locale: const Locale('en'),
     );
     final edit = find.semantics.byLabel(RegExp(r'^Named group$'));
     final start = find.semantics.byLabel(RegExp(r'^Start Named group$'));
@@ -265,6 +278,7 @@ void main() {
           memory: PracticeMemory()..segment = 1,
           onStartAssessment: ({from, radius = 31, color}) {},
         ),
+        locale: const Locale('en'),
       );
       final card = find.byKey(ValueKey('routine-card-${routine.id}'));
       await tester.ensureVisible(card);

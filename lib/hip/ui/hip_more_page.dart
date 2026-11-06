@@ -11,6 +11,7 @@ import 'hip_icons.dart';
 import 'hip_page_kit.dart';
 import 'hip_routes.dart';
 import 'hip_theme.dart';
+import 'hip_text.dart';
 import 'hip_widgets.dart';
 import 'library/action_filter.dart';
 import 'library/lib_text.dart';
@@ -40,7 +41,7 @@ class HipMorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => HipNavPage(
-    title: '更多',
+    title: HipText.of(context).pick('更多', 'More'),
     leadingKey: const ValueKey('more-back'),
     bodyScrollsUnderBar: true,
     backdrop: HipGlassBackdrop(
@@ -53,6 +54,7 @@ class HipMorePage extends StatelessWidget {
   );
 
   Widget _list(BuildContext context) {
+    final t = HipText.of(context);
     final groups = store.customRoutines.length;
     // UI r2 M3: the same list 动作库 shows.
     final drills = hipActionItems(store.content, LibText.of(context)).length;
@@ -62,15 +64,17 @@ class HipMorePage extends StatelessWidget {
           HipListRow(
             key: const ValueKey('more-groups'),
             glyph: HipGlyph.grip,
-            title: '我的训练组',
-            meta: groups == 0 ? '还没有' : '$groups 组',
+            title: t.pick('我的训练组', 'My groups'),
+            meta: groups == 0
+                ? t.pick('还没有', 'None yet')
+                : t.pick('$groups 组', t.plural(groups, 'group')),
             onTap: () => _practice(context, 2),
           ),
           HipListRow(
             key: const ValueKey('more-practice'),
             glyph: HipGlyph.library,
-            title: '动作库',
-            meta: '$drills 个动作',
+            title: t.pick('动作库', 'Move library'),
+            meta: t.pick('$drills 个动作', t.plural(drills, 'move')),
             onTap: () => _practice(context, 0),
           ),
         ],
@@ -82,18 +86,20 @@ class HipMorePage extends StatelessWidget {
           HipListRow(
             key: const ValueKey('more-checkup'),
             glyph: HipGlyph.radar,
-            title: '髋部自测',
-            meta: '3 分半',
+            title: t.pick('髋部自测', 'Hip check-up'),
+            meta: t.pick('3 分半', '3½ min'),
             onTap: () => _push(context, AssessmentIntroPage(actions: actions)),
           ),
           HipListRow(
             key: const ValueKey('more-records'),
             glyph: HipGlyph.progress,
-            title: '训练记录',
-            meta: store.streak > 0 ? '连续 ${store.streak} 天' : null,
+            title: t.pick('训练记录', 'Training history'),
+            meta: store.streak > 0
+                ? t.pick('连续 ${store.streak} 天', '${store.streak}-day streak')
+                : null,
             onTap: () => _sub(
               context,
-              '训练记录',
+              (context) => HipText.of(context).pick('训练记录', 'Training history'),
               (_) => HipProgressPage(
                 store: store,
                 section: HipProgressSection.records,
@@ -113,15 +119,18 @@ class HipMorePage extends StatelessWidget {
             key: const ValueKey('more-settings'),
             glyph: HipGlyph.contrast,
             rowSymbol: HipRowSymbol.settings,
-            title: '设置',
-            meta: '提醒 · 语音 · 外观',
+            title: t.pick('设置', 'Settings'),
+            meta: t.pick('提醒 · 语音 · 外观', 'Preferences'),
             onTap: () => _push(context, HipSettingsPage(store: store)),
           ),
         ],
       ),
       const SizedBox(height: 28),
       Text(
-        '这是运动练习，不能替代医生的建议。',
+        t.pick(
+          '这是运动练习，不能替代医生的建议。',
+          'Exercise guidance is not a substitute for medical advice.',
+        ),
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 12, color: HipColors.faint),
       ),
@@ -154,14 +163,20 @@ class HipMorePage extends StatelessWidget {
     );
   }
 
-  void _sub(BuildContext context, String? title, WidgetBuilder body) => _push(
+  void _sub(
+    BuildContext context,
+    String Function(BuildContext) title,
+    WidgetBuilder body,
+  ) => _push(
     context,
-    HipNavPage(
-      title: title,
-      bodyScrollsUnderBar: true,
-      // A pushed route is not rebuilt by the app root: follow the store
-      // here so switches and choices show their new state.
-      body: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),
+    Builder(
+      builder: (context) => HipNavPage(
+        title: title(context),
+        bodyScrollsUnderBar: true,
+        // A pushed route is not rebuilt by the app root: follow the store
+        // here so switches and choices show their new state.
+        body: ListenableBuilder(listenable: store, builder: (c, _) => body(c)),
+      ),
     ),
   );
 
