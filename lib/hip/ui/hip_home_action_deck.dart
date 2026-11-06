@@ -7,10 +7,8 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/hip_models.dart';
-import 'hip_icons.dart';
 import 'hip_home_action_inspect.dart';
 import 'hip_theme.dart';
-import 'hip_widgets.dart';
 
 /// The ordered action deck with a persistent video front face.
 /// The local index never leaves this widget or changes a training plan.
@@ -572,6 +570,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                       ),
                                       drill: widget.drills[_index],
                                       number: _index + 1,
+                                      restingSize: Size(_cardWidth, height),
                                       expansion: t,
                                       expanded: _expanded,
                                       paused: _paused,
@@ -596,9 +595,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                         }
                                       },
                                       informationScroll: _informationScroll,
-                                      multiple: _multiple,
-                                      previous: _arrow(-1),
-                                      next: _arrow(1),
                                     ),
                                     if (_floating)
                                       const Positioned.fill(
@@ -648,23 +644,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         '${dose.isEmpty ? '' : '，$dose'}';
   }
 
-  Widget _arrow(int direction) => SizedBox.square(
-    dimension: 44,
-    child: _multiple
-        ? HipPressable(
-            semanticLabel: direction == 1 ? '下一个动作' : '上一个动作',
-            onTap: () => _turn(direction),
-            child: Center(
-              child: HipIcon(
-                direction == 1 ? HipGlyph.chevronRight : HipGlyph.back,
-                size: 15,
-                color: HipColors.muted,
-              ),
-            ),
-          )
-        : const SizedBox.shrink(),
-  );
-
   Widget _cards(double width, double height) {
     final raw = _position.value;
     final offset = _reduced ? 0.0 : raw;
@@ -683,21 +662,11 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
             (count - 1).toDouble(),
             width,
             height,
-            offset: 0,
-            front: false,
             replenishing: true,
             opacity: Curves.easeOut.transform((progress / .3).clamp(0, 1)),
           ),
         for (var layer = count - 1; layer >= 1; layer--)
-          _card(
-            _at(layer * _toward),
-            layer == 0 ? 0 : layer - progress,
-            width,
-            height,
-            offset: layer == 0 ? offset : 0,
-            front: layer == 0,
-            opacity: layer == 0 && (_floating || _expanded) ? 0 : 1,
-          ),
+          _card(_at(layer * _toward), layer - progress, width, height),
       ],
     );
   }
@@ -707,119 +676,48 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double depth,
     double width,
     double height, {
-    required double offset,
-    required bool front,
     bool replenishing = false,
     double opacity = 1,
-    bool floatingCopy = false,
   }) {
-    final travel = (offset / _cardWidth).clamp(-1.5, 1.5);
-    final vertical = _reduced ? 0.0 : _vertical.value;
-    final lift = front
-        ? math.sin(
-            (Offset(offset, vertical).distance / _cardWidth).clamp(0, 1) *
-                math.pi /
-                2,
-          )
-        : 0.0;
-    final angle = -.025 + depth * .105 + (front ? travel * .18 : 0);
-    final dark = HipColors.isDark;
-    final high = MediaQuery.highContrastOf(context);
     final tilt = Matrix4.identity()
       ..setEntry(3, 2, .0012)
-      ..rotateX(
-        .018 + (front ? (vertical / _cardWidth).clamp(-1, 1) * -.04 : 0),
-      )
-      ..rotateY(-.10 + (front ? travel * .19 : 0));
+      ..rotateX(.018)
+      ..rotateY(-.10);
     return Positioned(
       key: ValueKey(
-        '${floatingCopy ? 'home-deck-floating-card' : 'home-deck-card'}-$index'
-        '${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
+        'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
       ),
-      left: (width - _cardWidth) / 2 - 18 + depth * 16 + offset,
-      top: 74 - depth * 26 - lift * 18 + (front ? vertical : 0),
+      left: (width - _cardWidth) / 2 - 18 + depth * 16,
+      top: 74 - depth * 26,
       width: _cardWidth,
       height: height,
       child: Opacity(
-        key: floatingCopy
-            ? const ValueKey('home-deck-floating-front')
-            : ValueKey('home-deck-opacity-$index'),
+        key: ValueKey('home-deck-opacity-$index'),
         opacity: opacity,
         child: Transform.rotate(
-          key: front && !floatingCopy
-              ? const ValueKey('home-deck-front')
-              : null,
           alignment: const Alignment(0, .8),
-          angle: angle,
+          angle: -.025 + depth * .105,
           child: Transform(
             alignment: const Alignment(0, .8),
             transform: tilt,
             child: Transform.scale(
-              scale: (1 - depth * .045) * (1 + lift * .018),
               alignment: const Alignment(0, .8),
+              scale: 1 - depth * .045,
               child: ExcludeSemantics(
-                excluding: !front || floatingCopy,
                 child: IgnorePointer(
-                  ignoring: !front,
                   child: RepaintBoundary(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      fit: StackFit.expand,
-                      children: [
-                        // A quiet contact shadow, without a painted grey ledge.
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              boxShadow: HipColors.shadows([
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: dark ? .32 : .085,
-                                  ),
-                                  blurRadius: front ? 20 + lift * 10 : 12,
-                                  offset: Offset(0, front ? 7 + lift * 6 : 4),
-                                ),
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: dark ? .2 : .035,
-                                  ),
-                                  blurRadius: 3,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ]),
-                            ),
-                          ),
-                        ),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: HipColors.mediaBackdrop,
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(22),
-                            child: _poster(
-                              index,
-                              front: front,
-                              keyed: !floatingCopy,
-                            ),
-                          ),
-                        ),
-                        IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: high
-                                    ? HipColors.text
-                                    : Colors.white.withValues(
-                                        alpha: dark ? .13 : .8,
-                                      ),
-                                width: high ? 1.5 : 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: HipHomeActionFace(
+                      key: ValueKey('back-face-$index'),
+                      front: false,
+                      drill: widget.drills[index],
+                      number: index + 1,
+                      restingSize: Size(_cardWidth, height),
+                      stackDepth: depth,
+                      compact: height < 330,
+                      dose: widget.doses.elementAtOrNull(index) ?? '',
+                      cue: widget.cues.elementAtOrNull(index) ?? '',
+                      description:
+                          widget.descriptions.elementAtOrNull(index) ?? '',
                     ),
                   ),
                 ),
@@ -828,171 +726,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _poster(int index, {required bool front, bool keyed = true}) {
-    final drill = widget.drills[index];
-    final dose = widget.doses.elementAtOrNull(index) ?? '';
-    final cue = widget.cues.elementAtOrNull(index) ?? '';
-    return LayoutBuilder(
-      builder: (context, box) {
-        final compact = box.maxHeight < 330;
-        final inset = compact ? 10.0 : 22.0;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ExcludeSemantics(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  inset,
-                  compact ? 8 : 20,
-                  inset,
-                  compact ? 2 : 8,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'HIPLAB',
-                            style: TextStyle(
-                              fontSize: compact ? 8 : 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 2.4,
-                              color: HipColors.jadeText,
-                            ),
-                          ),
-                          if (!compact) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              drill.methods.firstOrNull?.zh ?? '动作练习',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: HipColors.muted,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    Text(
-                      (index + 1).toString().padLeft(2, '0'),
-                      key: front && keyed
-                          ? const ValueKey('home-deck-position')
-                          : null,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: compact ? 10 : 17,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: .5,
-                        color: HipColors.muted,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: ExcludeSemantics(
-                child: IgnorePointer(
-                  child: HipDrillArt(
-                    key: front && keyed ? const ValueKey('home-hero') : null,
-                    drill: drill,
-                    showPendingLabel: false,
-                  ),
-                ),
-              ),
-            ),
-            ExcludeSemantics(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(inset, compact ? 0 : 4, inset, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      drill.name,
-                      key: front && keyed
-                          ? const ValueKey('home-deck-caption')
-                          : null,
-                      maxLines: compact ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: compact ? 12 : 23,
-                        height: 1.22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -.3,
-                        color: HipColors.text,
-                      ),
-                    ),
-                    if (!compact && dose.isNotEmpty) ...[
-                      const SizedBox(height: 7),
-                      Text(
-                        dose,
-                        key: front && keyed
-                            ? const ValueKey('home-deck-dose')
-                            : null,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: HipColors.jadeText,
-                        ),
-                      ),
-                    ],
-                    if (!compact && cue.isNotEmpty) ...[
-                      const SizedBox(height: 5),
-                      Text(
-                        cue,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          height: 1.4,
-                          color: HipColors.muted,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            if (front && _multiple)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 10),
-                child: Row(
-                  children: [
-                    _arrow(-1),
-                    Expanded(
-                      child: ExcludeSemantics(
-                        child: Text(
-                          '左右翻阅',
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: compact ? 8 : 9,
-                            letterSpacing: 1.2,
-                            color: HipColors.muted,
-                          ),
-                        ),
-                      ),
-                    ),
-                    _arrow(1),
-                  ],
-                ),
-              )
-            else
-              SizedBox(height: _multiple ? 44 : (compact ? 8 : 18)),
-          ],
-        );
-      },
     );
   }
 }

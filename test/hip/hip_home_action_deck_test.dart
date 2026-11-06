@@ -89,8 +89,21 @@ void main() {
     (widget) => widget is HipPressable && widget.semanticLabel == label,
   );
 
+  void turnPreview(WidgetTester tester, int direction) {
+    final preview = tester.widget<Semantics>(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == '训练动作预览',
+      ),
+    );
+    final action = direction > 0
+        ? preview.properties.onIncrease
+        : preview.properties.onDecrease;
+    expect(action, isNotNull);
+    action!();
+  }
+
   Future<void> next(WidgetTester tester) async {
-    await tester.tap(arrow('下一个动作'));
+    turnPreview(tester, 1);
     await tester.pumpAndSettle();
   }
 
@@ -291,7 +304,7 @@ void main() {
       await next(tester);
     }
     expect(frontId(tester), drills.first.id);
-    await tester.tap(arrow('上一个动作'));
+    turnPreview(tester, -1);
     await tester.pumpAndSettle();
     expect(frontId(tester), drills.last.id);
     expect(fixture.requested, isEmpty);
@@ -421,6 +434,77 @@ void main() {
     },
   );
 
+  testWidgets(
+    'an arriving card keeps its media and title proportions when it becomes the front',
+    (tester) async {
+      phone(tester);
+      await showDeck(
+        tester,
+        doses: List.filled(drills.length, '每侧 40 秒'),
+        cues: List.filled(drills.length, '轻松呼吸，保持骨盆稳定'),
+      );
+      await tester.pumpAndSettle();
+      final incoming = find.byKey(const ValueKey('home-deck-card-1'));
+      final backArt = find.byKey(const ValueKey('back-art-2'));
+      final backTitle = find.byKey(const ValueKey('back-caption-2'));
+      Rect proportions(Finder card, Finder content) {
+        final boundary = find
+            .descendant(of: card, matching: find.byType(RepaintBoundary))
+            .first;
+        final face = tester.renderObject<RenderBox>(boundary);
+        final item = tester.renderObject<RenderBox>(content);
+        final localRect = MatrixUtils.transformRect(
+          item.getTransformTo(face),
+          Offset.zero & item.size,
+        );
+        final topLeft = localRect.topLeft;
+        final bottomRight = localRect.bottomRight;
+        return Rect.fromLTRB(
+          topLeft.dx / face.size.width,
+          topLeft.dy / face.size.height,
+          bottomRight.dx / face.size.width,
+          bottomRight.dy / face.size.height,
+        );
+      }
+
+      void sameProportions(Rect actual, Rect expected) {
+        expect(actual.left, closeTo(expected.left, .002));
+        expect(actual.top, closeTo(expected.top, .002));
+        expect(actual.width, closeTo(expected.width, .002));
+        expect(actual.height, closeTo(expected.height, .002));
+      }
+
+      final mediaBefore = proportions(incoming, backArt);
+      final titleBefore = proportions(incoming, backTitle);
+      final width = tester.widget<Positioned>(incoming).width!;
+      final drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      moveCard(drag, -width * 1.05);
+      await tester.pump();
+      // Compare in the paper's local coordinates, so fanning and perspective do
+      // not confuse a layout change with an axis-aligned bounding-box change.
+      final mediaAtTop = proportions(incoming, backArt);
+      final titleAtTop = proportions(incoming, backTitle);
+      sameProportions(mediaAtTop, mediaBefore);
+      sameProportions(titleAtTop, titleBefore);
+      expect(frontId(tester), drills.first.id);
+      drag.onPanEnd!(DragEndDetails());
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills[1].id);
+      final front = find.byKey(const ValueKey('home-deck-card-1'));
+      sameProportions(
+        proportions(front, find.byKey(const ValueKey('home-hero'))),
+        mediaAtTop,
+      );
+      sameProportions(
+        proportions(front, find.byKey(const ValueKey('home-deck-caption'))),
+        titleAtTop,
+      );
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('cancelled drags withdraw the new bottom card in both directions', (
     tester,
   ) async {
@@ -500,26 +584,31 @@ void main() {
     },
   );
 
-  testWidgets('named arrow actions are independently accessible at 44 points', (
-    tester,
-  ) async {
-    phone(tester);
-    final semantics = tester.ensureSemantics();
-    await showDeck(tester);
-    await tester.pumpAndSettle();
-    for (final label in ['上一个动作', '下一个动作']) {
-      expect(tester.getSize(arrow(label)), const Size(44, 44));
-      expect(find.semantics.byLabel(label), findsOneWidget);
-    }
-    tester.semantics.tap(find.semantics.byLabel('下一个动作'));
-    await tester.pumpAndSettle();
-    expect(frontId(tester), drills[1].id);
-    tester.semantics.tap(find.semantics.byLabel('上一个动作'));
-    await tester.pumpAndSettle();
-    expect(frontId(tester), drills.first.id);
-    expect(fixture.requested, isEmpty);
-    semantics.dispose();
-  });
+  testWidgets(
+    'the swipe-only deck keeps semantic adjustment without a navigation row',
+    (tester) async {
+      phone(tester);
+      final semantics = tester.ensureSemantics();
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      for (final label in ['上一个动作', '下一个动作']) {
+        expect(arrow(label), findsNothing);
+        expect(find.semantics.byLabel(label), findsNothing);
+      }
+      expect(find.text('左右翻阅'), findsNothing);
+      final preview = find.semantics.byLabel('训练动作预览');
+      tester.semantics.performAction(preview, SemanticsAction.increase);
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills[1].id);
+      expect(position(tester), '02');
+      tester.semantics.performAction(preview, SemanticsAction.decrease);
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills.first.id);
+      expect(position(tester), '01');
+      expect(fixture.requested, isEmpty);
+      semantics.dispose();
+    },
+  );
 
   testWidgets('empty and single-action plans have no navigable extra cards', (
     tester,
@@ -568,13 +657,14 @@ void main() {
   );
 
   testWidgets(
-    'a compact available hero height keeps its caption and controls within bounds',
+    'a compact available hero keeps its caption and semantic preview navigable',
     (tester) async {
       phone(tester);
       await showDeck(tester, height: 240);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('home-deck-caption')), findsOneWidget);
-      expect(tester.getSize(arrow('下一个动作')), const Size(44, 44));
+      expect(arrow('下一个动作'), findsNothing);
+      expect(find.text('左右翻阅'), findsNothing);
       await next(tester);
       expect(frontId(tester), drills[1].id);
       expect(tester.takeException(), isNull);
@@ -1074,7 +1164,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(dose).hitTestable(), findsOneWidget);
       expect(find.text(cue).hitTestable(), findsOneWidget);
-      expect(tester.widget<Text>(find.text(cue)).maxLines, isNull);
+      expect(tester.widget<Text>(find.text(cue)).maxLines, 2);
       expect(tester.widget<Text>(find.text(description)).maxLines, isNull);
       final information = find.byKey(
         const ValueKey('home-deck-expanded-description'),
@@ -1097,6 +1187,88 @@ void main() {
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       expect(caption.hitTestable(), findsOneWidget);
       expect(tester.widget<Text>(caption).data, drills.first.name);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'a normal small phone keeps a two-line title and cue above a readable article viewport',
+    (tester) async {
+      phone(tester);
+      tester.view
+        ..physicalSize = const Size(360, 740)
+        ..padding = const FakeViewPadding(top: 24, bottom: 24);
+      final longNames =
+          content.drills.values
+              .where(
+                (drill) =>
+                    fixture.policy.actionFor(drill.id) != null &&
+                    drill.name.runes.length >= 10 &&
+                    drill.name.runes.length <= 16,
+              )
+              .toList()
+            ..sort((a, b) => b.name.length.compareTo(a.name.length));
+      expect(longNames, isNotEmpty);
+      final drill = longNames.first;
+      const cue = '保持骨盆稳定，慢慢呼吸并放松肩膀，始终在舒适范围内停留。';
+      final description = List.generate(
+        14,
+        (i) => '练习说明 ${i + 1}：保持自然呼吸，缓慢完成动作，感受髋部舒适的活动范围。',
+      ).join('\n');
+      await showDeck(
+        tester,
+        items: [drill],
+        doses: ['每侧 40 秒'],
+        cues: [cue],
+        descriptions: [description],
+      );
+      await tester.pumpAndSettle();
+      final mediaState = tester.state(frontMedia());
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(tester.state(frontMedia()), same(mediaState));
+      final caption = find.byKey(const ValueKey('home-deck-caption'));
+      expect(tester.widget<Text>(caption).maxLines, 2);
+      final title = tester.renderObject<RenderParagraph>(caption);
+      expect(title.didExceedMaxLines, isFalse);
+      expect(
+        title
+            .getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: drill.name.length),
+            )
+            .map((box) => box.top)
+            .toSet(),
+        hasLength(2),
+      );
+      final cueParagraph = tester.renderObject<RenderParagraph>(find.text(cue));
+      expect(cueParagraph.didExceedMaxLines, isFalse);
+      expect(
+        cueParagraph
+            .getBoxesForSelection(
+              TextSelection(baseOffset: 0, extentOffset: cue.length),
+            )
+            .map((box) => box.top)
+            .toSet(),
+        hasLength(2),
+      );
+      final information = find.byKey(
+        const ValueKey('home-deck-expanded-description'),
+      );
+      expect(tester.getSize(information).height, greaterThanOrEqualTo(60));
+      expect(
+        tester
+            .widget<SingleChildScrollView>(information)
+            .controller!
+            .position
+            .maxScrollExtent,
+        greaterThan(0),
+      );
+      expect(tester.widget<Text>(find.text(description)).maxLines, isNull);
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
     },
@@ -1244,7 +1416,7 @@ void main() {
       phone(tester);
       await showDeck(tester);
       await tester.pumpAndSettle();
-      await tester.tap(arrow('下一个动作'));
+      turnPreview(tester, 1);
       await tester.pump(const Duration(milliseconds: 32));
       await showDeck(
         tester,
@@ -1256,7 +1428,7 @@ void main() {
       expect(position(tester), '01');
       await showDeck(tester, identity: 'another-plan');
       await tester.pumpAndSettle();
-      await tester.tap(arrow('下一个动作'));
+      turnPreview(tester, 1);
       await tester.pump(const Duration(milliseconds: 32));
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 2));
@@ -1286,7 +1458,7 @@ void main() {
       phone(tester);
       await showDeck(tester);
       await tester.pumpAndSettle();
-      await tester.tap(arrow('下一个动作'));
+      turnPreview(tester, 1);
       await tester.pump(const Duration(milliseconds: 32));
       expect(frontId(tester), drills.first.id);
       tester.view.physicalSize = const Size(360, 853);
@@ -1376,12 +1548,12 @@ void main() {
     phone(tester);
     await showDeck(tester);
     await tester.pumpAndSettle();
-    await tester.tap(arrow('下一个动作'));
+    turnPreview(tester, 1);
     await tester.pump(const Duration(milliseconds: 80));
     await showDeck(tester, reduced: true);
     await tester.pump();
     expect(frontId(tester), drills[1].id);
-    await tester.tap(arrow('下一个动作'));
+    turnPreview(tester, 1);
     await tester.pump();
     expect(frontId(tester), drills[2].id);
     expect(tester.takeException(), isNull);
