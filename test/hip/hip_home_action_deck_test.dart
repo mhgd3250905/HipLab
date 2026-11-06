@@ -10,6 +10,7 @@ import 'package:hiplab/hip/ui/hip_home_action_deck.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -2040,6 +2041,8 @@ void main() {
     WidgetTester tester,
     MemoryStorage storage, {
     DateTime Function()? clock,
+    bool videoEnabled = false,
+    trainer.TrainingMediaPolicy? mediaPolicy,
   }) async {
     phone(tester);
     final store = HipStore(
@@ -2055,12 +2058,112 @@ void main() {
       ..theme = HipThemeChoice.dark;
     await store.choose();
     await tester.pumpWidget(
-      HipApp(store: store, mediaPolicy: fixture.policy, videoEnabled: false),
+      HipApp(
+        store: store,
+        mediaPolicy: mediaPolicy ?? fixture.policy,
+        videoEnabled: videoEnabled,
+        voice: HipVoice.silent,
+      ),
     );
     await tester.pumpAndSettle();
     addTearDown(store.dispose);
     return store;
   }
+
+  testWidgets(
+    'opening More and Settings keeps the home card current frame throughout both route transitions',
+    (tester) async {
+      final repository = HomeDeckPlaybackRepository();
+      final platform = HomeDeckPlaybackPlatform(nativeRgba: true);
+      final previousFilter = trainer.UgkPackedAlphaVideo.debugFilterBuilder;
+      trainer.UgkPackedAlphaVideo.debugPlatform = platform;
+      trainer.UgkPackedAlphaVideo.debugFilterBuilder = (input) => input;
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        await platform.dispose();
+        repository.dispose();
+        trainer.UgkPackedAlphaVideo.debugFilterBuilder = previousFilter;
+      });
+      await showHome(
+        tester,
+        MemoryStorage(),
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      expect(platform.sources, hasLength(1));
+      expect(platform.nativeCreates, 1);
+      platform.emit(1, 'ready');
+      await tester.pump();
+      platform.emit(1, 'first-frame');
+      await tester.pumpAndSettle();
+      final hero = find.byKey(const ValueKey('home-hero'), skipOffstage: false);
+      final media = find.descendant(
+        of: hero,
+        matching: find.byType(trainer.TrainingActionMedia, skipOffstage: false),
+        skipOffstage: false,
+      );
+      final surface = find.byType(
+        trainer.UgkPackedAlphaVideo,
+        skipOffstage: false,
+      );
+      final mediaState = tester.state(media);
+      final surfaceElement = tester.element(surface);
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(surface)
+          .controller;
+      void sameHeldFrame() {
+        expect(tester.state(media), same(mediaState));
+        expect(tester.element(surface), same(surfaceElement));
+        expect(
+          tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
+          same(controller),
+        );
+        expect(controller.hasFrame, isTrue);
+        expect(
+          tester.widget<trainer.TrainingActionMedia>(media).paused,
+          isTrue,
+        );
+        final poster = find.descendant(
+          of: media,
+          matching: find.byKey(
+            const ValueKey('public-action-poster'),
+            skipOffstage: false,
+          ),
+          skipOffstage: false,
+        );
+        expect(tester.widget<AnimatedOpacity>(poster).opacity, 0);
+        expectNoDecoderChurn(platform);
+      }
+
+      Future<void> transition() async {
+        await tester.pump();
+        sameHeldFrame();
+        for (var i = 0; i < 28; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          sameHeldFrame();
+        }
+      }
+
+      sameHeldFrame();
+      await tester.tap(find.byKey(const ValueKey('home-more')));
+      await transition();
+      expect(find.byKey(const ValueKey('more-list')), findsOneWidget);
+      // A second covered route must not replace the retained paused surface.
+      await tester.tap(find.byKey(const ValueKey('more-settings')));
+      await transition();
+      await tester.binding.handlePopRoute();
+      await transition();
+      await tester.tap(find.byKey(const ValueKey('more-back')));
+      await transition();
+      expect(
+        find.byKey(const ValueKey('home-more')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'home clips cards at the real screen edges outside its 16 point padding',

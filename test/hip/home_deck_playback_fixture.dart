@@ -17,7 +17,10 @@ class HomeDeckPlaybackRepository extends PublicMediaFixture {
 }
 
 class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
-    implements trainer.PackedAlphaUriPlatform {
+    implements trainer.PackedAlphaUriPlatform, trainer.PackedAlphaRgbaPlatform {
+  HomeDeckPlaybackPlatform({this.nativeRgba = false});
+  final bool nativeRgba;
+  int nativeCreates = 0;
   final eventsController = StreamController<Map<Object?, Object?>>.broadcast(
     sync: true,
   );
@@ -26,6 +29,8 @@ class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
 
   @override
   bool get isSupported => true;
+  @override
+  bool get isRgbaSupported => nativeRgba;
   @override
   Stream<Map<Object?, Object?>> get events => eventsController.stream;
   @override
@@ -36,6 +41,15 @@ class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
     sources.add(source);
     final id = sources.length;
     return (playerId: id, textureId: id + 100);
+  }
+
+  @override
+  Future<({int playerId, int textureId})> createRgba({String? asset, Uri? sourceUri}) {
+    if (!nativeRgba || sourceUri == null) {
+      throw StateError('This fixture accepts enabled public RGBA sources only');
+    }
+    nativeCreates++;
+    return createUri(sourceUri);
   }
 
   void emit(int id, String type) =>

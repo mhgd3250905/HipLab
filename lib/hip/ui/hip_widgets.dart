@@ -317,6 +317,8 @@ class _HipDrillArtState extends State<HipDrillArt> {
       paused: !widget.play,
       prepareFirstFrame: widget.holdVideo,
       showLoadingIndicator: !widget.holdVideo,
+      retainPausedSurfaceWhileCovered: widget.holdVideo,
+      nativeAlpha: widget.holdVideo,
       mirrored: widget.mirror,
       radius: 0,
       stage: HipColors.mediaBackdrop,
