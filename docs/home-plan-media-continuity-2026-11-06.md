@@ -35,4 +35,3 @@ Impeller两项另串行通过，31个姿态×两帧共62组RGBA消费对照，RG
 用户重新连接手机并明确授权安装。已在`2602BRT18C`（`QSG6Q8IFDMDELVGQ`）执行`install -r --no-incremental`，回执Success；包管理器从2051更新为2052（1.1.0），设备lastUpdateTime为2026-11-06 22:12:14。未卸载、未清数据；原firstInstallTime仍为2026-11-05 22:11:33，未另核验业务数据。`com.ugk.hiplab/.MainActivity`冷启动Status ok；这里只确认安装与启动，卡片切换/展开/播放观感仍待用户使用反馈，不据此宣布视觉或性能验收。
 
 安装包仍为构建源`59ce2b8`，SHA256 `3bac5de8477199360cab68c74cfaa446c1c2f74d3f5117ba752b4a2a203692e9`；无重建、运行代码、SDK或版本变更。安装回执留`E:/AII-3D/hiplab-releases/home-plan-59ce2b8-52-20261106/device-install-20261106-221214.json`。下方交付时“未安装”保留为历史；当前状态以本条为准。
-
