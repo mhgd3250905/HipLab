@@ -643,12 +643,12 @@ void main() {
     expect(position(tester), '01');
     expect(arrow('上一个动作'), findsNothing);
     expect(arrow('下一个动作'), findsNothing);
-    await tester.drag(
-      find.byKey(const ValueKey('home-deck-gesture')),
-      const Offset(-220, 0),
-    );
-    await tester.pumpAndSettle();
-    expect(frontId(tester), drills.first.id);
+    for (final delta in [const Offset(-220, 0), const Offset(0, -220)]) {
+      await tester.drag(find.byKey(const ValueKey('home-hero')), delta);
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills.first.id);
+      expect(position(tester), '01');
+    }
     expect(fixture.requested, isEmpty);
     expect(tester.takeException(), isNull);
   });
@@ -808,7 +808,7 @@ void main() {
         greaterThan(rest.center.dy + 120),
       );
       expect(position(tester), '01');
-      drag.onPanEnd!(DragEndDetails());
+      drag.onPanCancel!();
       await tester.pumpAndSettle();
       expect(frontId(tester), drills.first.id);
       expect(floating, findsNothing);
@@ -877,7 +877,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('only the horizontal side regions commit a released card', (
+  testWidgets('crossing the radial threshold commits a released card', (
     tester,
   ) async {
     phone(tester);
@@ -905,37 +905,274 @@ void main() {
   });
 
   testWidgets(
-    'vertical-dominant releases return even after crossing a horizontal threshold',
+    'vertical exits unlock the next card as soon as the front clears the window',
     (tester) async {
       phone(tester);
-      await showDeck(tester);
-      await tester.pumpAndSettle();
-      final rest = tester.getRect(visualFront());
-      final floating = find.byKey(const ValueKey('home-deck-floating-front'));
-      for (final delta in [const Offset(130, 500), const Offset(-130, -500)]) {
+      for (final y in [-150.0, 150.0]) {
+        await showDeck(tester, identity: 'exit-$y');
+        await tester.pumpAndSettle();
+        final drag = deckDrag(tester);
+        drag.onPanStart!(DragStartDetails());
+        drag.onPanUpdate!(
+          DragUpdateDetails(globalPosition: Offset.zero, delta: Offset(0, y)),
+        );
+        await tester.pump();
+        drag.onPanEnd!(DragEndDetails());
+        await tester.pump();
+        var outsideFrames = 0;
+        var frames = 0;
+        while (position(tester) == '01' && frames++ < 60) {
+          final bounds = tester.getRect(visualFront());
+          if (!const Rect.fromLTWH(0, 0, 394, 853).overlaps(bounds)) {
+            outsideFrames++;
+          }
+          expect(outsideFrames, lessThanOrEqualTo(2));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        expect(position(tester), y < 0 ? '02' : '06');
+        expect(
+          find.byKey(const ValueKey('home-deck-floating-front')),
+          findsNothing,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'all eight drag directions continue outward and turn by the dominant axis',
+    (tester) async {
+      phone(tester);
+      final cases = [
+        (const Offset(-150, 0), 1),
+        (const Offset(150, 0), -1),
+        (const Offset(0, -150), 1),
+        (const Offset(0, 150), -1),
+        (const Offset(-130, -170), 1),
+        (const Offset(130, -170), 1),
+        (const Offset(-130, 170), -1),
+        (const Offset(170, 130), -1),
+      ];
+      for (var i = 0; i < cases.length; i++) {
+        final (delta, direction) = cases[i];
+        await showDeck(tester, identity: 'eight-directions/$i');
+        await tester.pumpAndSettle();
+        Offset pivot() {
+          final box = tester.renderObject<RenderBox>(visualFront());
+          return box.localToGlobal(
+            Offset(box.size.width / 2, box.size.height * .9),
+          );
+        }
+
+        final rest = pivot();
         final drag = deckDrag(tester);
         drag.onPanStart!(DragStartDetails());
         drag.onPanUpdate!(
           DragUpdateDetails(globalPosition: Offset.zero, delta: delta),
         );
         await tester.pump();
-        expect(floating, findsOneWidget);
         expect(position(tester), '01');
-        // Vertical drift must keep the same rear faces, including when the
-        // horizontal component exceeds the lateral switch threshold.
-        expect(find.byKey(const ValueKey('home-deck-card-1')), findsOneWidget);
-        expect(find.byKey(const ValueKey('home-deck-card-2')), findsOneWidget);
+        final beforeRelease = pivot();
+        // Replenishment is driven by total travel, including purely vertical
+        // movement; the incoming stack is present before releasing the finger.
+        expect(sourceCards(), findsNWidgets(4));
+        final nextIndex = direction > 0 ? 1 : drills.length - 1;
+        expect(
+          find.byKey(ValueKey('home-deck-card-$nextIndex')),
+          findsOneWidget,
+        );
         drag.onPanEnd!(DragEndDetails());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 32));
+        final afterRelease = pivot();
+        final continued = afterRelease - beforeRelease;
+        // The exit follows the original ray rather than turning an upward
+        // swipe into an abrupt leftward animation at pointer-up.
+        expect(
+          continued.dx * delta.dx + continued.dy * delta.dy,
+          greaterThan(0),
+        );
+        if (delta.dx == 0) {
+          expect(afterRelease.dx, closeTo(beforeRelease.dx, 2));
+        }
+        if (delta.dy == 0) {
+          expect(afterRelease.dy, closeTo(beforeRelease.dy, 2));
+        }
+        expect((beforeRelease - rest).distance, greaterThan(100));
         await tester.pumpAndSettle();
-        expect(frontId(tester), drills.first.id);
-        expect(position(tester), '01');
-        expect(floating, findsNothing);
-        final settled = tester.getRect(visualFront());
-        expect(settled.center.dx, closeTo(rest.center.dx, .5));
-        expect(settled.center.dy, closeTo(rest.center.dy, .5));
+        expect(frontId(tester), drills[nextIndex].id);
+        expect(position(tester), direction > 0 ? '02' : '06');
+        expect(
+          find.byKey(const ValueKey('home-deck-floating-front')),
+          findsNothing,
+        );
         expect(tester.takeException(), isNull);
       }
       expect(fixture.requested, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'a short tap expands immediately while video playback waits for the opening motion',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      final mediaState = tester.state(frontMedia());
+      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surfaceElement = tester.element(surface);
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      await finger.up();
+      await tester.pump();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isTrue,
+      );
+      expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(tester.element(surface), same(surfaceElement));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isFalse,
+      );
+      expectNoDecoderChurn(platform);
+      await dismissActionCard(tester, 'close');
+      await expectFrameSafeDismissal(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'holding a card lifts it without opening and release keeps the same paused video',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      final mediaState = tester.state(frontMedia());
+      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surfaceElement = tester.element(surface);
+      List<double> pose() => tester
+          .widget<Transform>(find.byKey(const ValueKey('home-deck-pose')))
+          .transform
+          .storage
+          .toList();
+      final rest = pose();
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pump(const Duration(milliseconds: 180));
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(position(tester), '01');
+      expect(pose(), isNot(orderedEquals(rest)));
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(tester.element(surface), same(surfaceElement));
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isTrue,
+      );
+      await finger.up();
+      await tester.pumpAndSettle();
+      expect(pose(), orderedEquals(rest));
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(tester.element(surface), same(surfaceElement));
+      expectNoDecoderChurn(platform);
+      // A completed hold must not leave a gesture latch blocking the next tap.
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      await dismissActionCard(tester, 'close');
+      await expectFrameSafeDismissal(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'a held card follows subsequent finger movement and cancels without a jump or tap',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      Offset pivot() {
+        final box = tester.renderObject<RenderBox>(visualFront());
+        return box.localToGlobal(
+          Offset(box.size.width / 2, box.size.height * .9),
+        );
+      }
+
+      final rest = pivot();
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pump(const Duration(milliseconds: 180));
+      final held = pivot();
+      await finger.moveBy(const Offset(25, -20));
+      await tester.pump(const Duration(milliseconds: 16));
+      final moved = pivot();
+      expect(moved.dx - held.dx, closeTo(25, 4));
+      expect(moved.dy - held.dy, closeTo(-20, 6));
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      await finger.cancel();
+      await tester.pumpAndSettle();
+      final settled = pivot();
+      expect(settled.dx, closeTo(rest.dx, .01));
+      expect(settled.dy, closeTo(rest.dy, .01));
+      expect(position(tester), '01');
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      // The hold recognizer owns this second gesture, so pointer-up must still
+      // commit a full upward drag rather than silently swallowing the turn.
+      final turning = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pump(const Duration(milliseconds: 320));
+      await turning.moveBy(const Offset(0, -150));
+      await tester.pump(const Duration(milliseconds: 16));
+      await turning.up();
+      await tester.pumpAndSettle();
+      expect(frontId(tester), drills[1].id);
+      expect(position(tester), '02');
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'vertical releases inside the center or flicked back toward the stack return',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      final before = tester.getRect(visualFront());
+      for (final (delta, velocity) in [
+        (const Offset(0, 75), const Offset(0, 2400)),
+        (const Offset(0, -150), const Offset(0, 1600)),
+      ]) {
+        final drag = deckDrag(tester);
+        drag.onPanStart!(DragStartDetails());
+        drag.onPanUpdate!(
+          DragUpdateDetails(globalPosition: Offset.zero, delta: delta),
+        );
+        await tester.pump();
+        drag.onPanEnd!(
+          DragEndDetails(velocity: Velocity(pixelsPerSecond: velocity)),
+        );
+        await tester.pumpAndSettle();
+        expect(frontId(tester), drills.first.id);
+        expect(position(tester), '01');
+        final after = tester.getRect(visualFront());
+        expect(after.left, closeTo(before.left, .01));
+        expect(after.top, closeTo(before.top, .01));
+        expect(sourceCards(), findsNWidgets(3));
+        expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      }
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -1228,6 +1465,89 @@ void main() {
       expect(tester.takeException(), isNull);
     }
   });
+
+  testWidgets(
+    'masthead and number keep one paragraph layout while normal and small cards scale',
+    (tester) async {
+      phone(tester);
+      for (final height in [600.0, 300.0]) {
+        await showDeck(tester, height: height, identity: 'printed-$height');
+        await tester.pumpAndSettle();
+        final face = find.byKey(const ValueKey('home-deck-live-face'));
+        final labels = [
+          find.byKey(const ValueKey('home-deck-position')),
+          find.descendant(of: face, matching: find.text('HIPLAB')),
+        ];
+        final paragraphs = labels
+            .map((label) => tester.renderObject<RenderParagraph>(label))
+            .toList();
+        final sizes = paragraphs.map((paragraph) => paragraph.size).toList();
+        final numberPlacement = find.descendant(
+          of: face,
+          matching: find.byKey(const ValueKey('face-number')),
+        );
+        (double?, double?, double?, double?) placement() {
+          final placed = tester.widget<Positioned>(numberPlacement);
+          return (placed.left, placed.top, placed.width, placed.height);
+        }
+
+        List<double> inspectPrintedLabels() {
+          expect(tester.widget<Text>(labels[0]).style!.fontSize, 46);
+          expect(tester.widget<Text>(labels[1]).style!.fontSize, 11);
+          final faceBox = tester.renderObject<RenderBox>(face);
+          final scales = <double>[];
+          for (var i = 0; i < labels.length; i++) {
+            final paragraph = tester.renderObject<RenderParagraph>(labels[i]);
+            expect(paragraph.size, sizes[i]);
+            // Measure inside the paper so its perspective pose does not
+            // disguise a paragraph relayout as changing printed size.
+            scales.add(paragraph.getTransformTo(faceBox).storage[0]);
+          }
+          return scales;
+        }
+
+        final restingPlacement = placement();
+        final restingScale = inspectPrintedLabels();
+        expect(restingPlacement.$2, height == 300 ? 8 : 24);
+        expect(restingPlacement.$3, 44);
+        expect(restingPlacement.$4, 28);
+        expect(restingScale[0], closeTo((height == 300 ? 10 : 17) / 46, 1e-8));
+        expect(restingScale[1], closeTo((height == 300 ? 8 : 10) / 11, 1e-8));
+
+        await openActionCard(tester);
+        var previousScale = restingScale;
+        for (var elapsed = 0; elapsed < 416; elapsed += 16) {
+          await tester.pump(const Duration(milliseconds: 16));
+          final scale = inspectPrintedLabels();
+          for (var i = 0; i < scale.length; i++) {
+            expect(scale[i], greaterThanOrEqualTo(previousScale[i] - 1e-8));
+          }
+          previousScale = scale;
+        }
+        for (final scale in previousScale) {
+          expect(scale, closeTo(1, 1e-8));
+        }
+        expect(placement(), (222.0, 21.0, 66.0, 56.0));
+
+        await dismissActionCard(tester, 'close');
+        await tester.pump();
+        for (var elapsed = 0; elapsed < 416; elapsed += 16) {
+          await tester.pump(const Duration(milliseconds: 16));
+          final scale = inspectPrintedLabels();
+          for (var i = 0; i < scale.length; i++) {
+            expect(scale[i], lessThanOrEqualTo(previousScale[i] + 1e-8));
+          }
+          previousScale = scale;
+        }
+        for (var i = 0; i < previousScale.length; i++) {
+          expect(previousScale[i], closeTo(restingScale[i], 1e-8));
+        }
+        expect(placement(), restingPlacement);
+        expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
 
   testWidgets(
     'a small source card expands complete information and resets its description scroll on close',
@@ -1608,17 +1928,26 @@ void main() {
   );
 
   testWidgets(
-    'reduced motion keeps cards still during drag and changes on release',
+    'reduced motion keeps holds and vertical drags still and changes on release',
     (tester) async {
       phone(tester);
       await showDeck(tester, reduced: true);
       await tester.pumpAndSettle();
       final front = find.byKey(const ValueKey('home-deck-front'));
       final before = tester.getRect(front);
+      final held = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('home-hero'))),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.getRect(front), before);
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      await held.up();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       final gesture = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-deck-gesture'))),
       );
-      await gesture.moveBy(const Offset(-220, 0));
+      await gesture.moveBy(const Offset(0, -220));
       await tester.pump(const Duration(milliseconds: 16));
       expect(tester.getRect(front), before);
       expect(frontId(tester), drills.first.id);

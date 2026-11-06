@@ -50,8 +50,15 @@ class _TypeMetrics {
   final double title, dose, cue;
 }
 
+class _LabelMetrics {
+  const _LabelMetrics(this.key, this.size);
+  final Object key;
+  final Size size;
+}
+
 class _HipHomeActionFaceState extends State<HipHomeActionFace> {
   _TypeMetrics? _types;
+  final _labels = <String, _LabelMetrics>{};
 
   static TextStyle _titleStyle(Color color) => TextStyle(
     fontFamily: hipFontFamily,
@@ -118,6 +125,64 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
       ),
     ),
   );
+
+  // Keep the printed glyphs at their final size, and scale their canvas rather
+  // than shaping another paragraph at every fractional animation font size.
+  Widget _printedLabel(
+    BuildContext context,
+    String slot,
+    String text,
+    TextStyle style,
+    double scale, {
+    Key? key,
+  }) {
+    final inheritedStyle = DefaultTextStyle.of(context).style.merge(style);
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final metricsKey = (
+      text,
+      inheritedStyle.copyWith(color: const Color(0xff000000)),
+      scaler,
+      direction,
+    );
+    var metrics = _labels[slot];
+    if (metrics?.key != metricsKey) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: inheritedStyle),
+        maxLines: 1,
+        textDirection: direction,
+        textScaler: scaler,
+      )..layout();
+      metrics = _LabelMetrics(metricsKey, painter.size);
+      _labels[slot] = metrics;
+      painter.dispose();
+    }
+    final size = metrics!.size;
+    return SizedBox(
+      width: size.width * scale,
+      height: size.height * scale,
+      child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.topLeft,
+          minWidth: size.width,
+          maxWidth: size.width,
+          minHeight: size.height,
+          maxHeight: size.height,
+          child: Transform.scale(
+            alignment: Alignment.topLeft,
+            scale: scale,
+            child: Text(
+              text,
+              key: key,
+              maxLines: 1,
+              softWrap: false,
+              style: style,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -283,14 +348,17 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   children: [
                     Row(
                       children: [
-                        Text(
+                        _printedLabel(
+                          context,
+                          'masthead',
                           'HIPLAB',
-                          style: TextStyle(
-                            fontSize: lerpDouble(compact ? 8 : 10, 11, t),
+                          TextStyle(
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 2.5,
                             color: HipColors.jadeText,
                           ),
+                          lerpDouble(compact ? 8 : 10, 11, t)! / 11,
                         ),
                         SizedBox(width: 12 * t),
                         Expanded(
@@ -312,13 +380,12 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                     if (!compact)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text(
+                        child: _printedLabel(
+                          context,
+                          'classification',
                           classification.isEmpty ? '动作练习' : classification,
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: lerpDouble(10, 11, t),
-                            color: HipColors.muted,
-                          ),
+                          TextStyle(fontSize: 11, color: HipColors.muted),
+                          lerpDouble(10, 11, t)! / 11,
                         ),
                       ),
                   ],
@@ -332,13 +399,12 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 height: lerpDouble(28, 56, t),
                 child: Align(
                   alignment: Alignment.topRight,
-                  child: Text(
+                  child: _printedLabel(
+                    context,
+                    'number',
                     widget.number.toString().padLeft(2, '0'),
-                    key: front
-                        ? const ValueKey('home-deck-position')
-                        : ValueKey('back-position-${widget.number}'),
-                    style: TextStyle(
-                      fontSize: lerpDouble(compact ? 10 : 17, 46, t),
+                    TextStyle(
+                      fontSize: 46,
                       height: 1,
                       fontWeight: FontWeight.w300,
                       letterSpacing: -.8,
@@ -349,6 +415,10 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                       ),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
+                    lerpDouble(compact ? 10 : 17, 46, t)! / 46,
+                    key: front
+                        ? const ValueKey('home-deck-position')
+                        : ValueKey('back-position-${widget.number}'),
                   ),
                 ),
               ),
@@ -623,27 +693,35 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   child: ExcludeSemantics(
                     child: Opacity(
                       opacity: t,
-                      child: Row(
-                        children: [
-                          Text(
-                            'HIPLAB / MOTION NOTES',
-                            style: TextStyle(
-                              fontSize: 8,
-                              letterSpacing: 1.1,
-                              color: HipColors.muted,
-                            ),
+                      child: FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: SizedBox(
+                          width: math.max(240, typeWidth),
+                          height: 17,
+                          child: Row(
+                            children: [
+                              Text(
+                                'HIPLAB / MOTION NOTES',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  letterSpacing: 1.1,
+                                  color: HipColors.muted,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(height: .5, color: ruleColor),
+                              ),
+                              const SizedBox(width: 10),
+                              Container(
+                                width: 4,
+                                height: 4,
+                                color: HipColors.jadeText,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Container(height: .5, color: ruleColor),
-                          ),
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            color: HipColors.jadeText,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
