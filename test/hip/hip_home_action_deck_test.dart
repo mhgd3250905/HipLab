@@ -140,14 +140,16 @@ void main() {
     final source = keyedOpacity(tester, 'home-deck-opacity-0');
     final snapshot = keyedOpacity(tester, 'home-deck-closing-stand-in');
     final expanded = keyedOpacity(tester, 'home-deck-expanded-opacity');
-    // A route can exist while painting nothing. Check the actual three visual
-    // surfaces, including the dismissal frame before the next rebuild.
+    final surface = keyedOpacity(tester, 'home-deck-flight-surface');
+    // Complementary face opacities alone still expose the background. Check
+    // their composited coverage together with the physical card surface.
+    final coverage = 1 - (1 - snapshot) * (1 - expanded) * (1 - surface);
     expect(
-      source >= .99 || snapshot + expanded >= .99,
+      source >= .99 || coverage >= .99,
       isTrue,
       reason:
           'No complete card face is painted: source=$source, '
-          'snapshot=$snapshot, expanded=$expanded',
+          'snapshot=$snapshot, expanded=$expanded, surface=$surface',
     );
     if (snapshot > 0) {
       final image = find.descendant(

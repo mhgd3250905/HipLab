@@ -241,6 +241,31 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
                 ),
               ),
             ),
+            // Two complementary opacities do not make an opaque surface when
+            // composited (at .5/.5 they cover only .75). Keep the physical card
+            // solid behind the two faces throughout the morph.
+            Positioned(
+              left: 0,
+              top: 0,
+              width: size.width,
+              height: size.height,
+              child: IgnorePointer(
+                child: Opacity(
+                  key: const ValueKey('home-deck-flight-surface'),
+                  opacity: handedOff ? 0 : 1,
+                  child: Transform(
+                    alignment: Alignment.topLeft,
+                    transform: pose,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: HipColors.mediaBackdrop,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Positioned(
               left: 0,
               top: 0,
