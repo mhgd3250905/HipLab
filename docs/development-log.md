@@ -1,5 +1,13 @@
 # 开发日志
 
+## 2026-11-06：首页暂停帧跨路由与原生RGBA输出 / +50
+
+运行/构建源 `981eeaf161c0b896e963d625f9525b69e9bf32b6`，候选分支 `codex/home-card-surface-stability-20261106`；`1.1.0+50` / arm64 `2050`。四个SDK包及coach override固定 `145e3195570f34536c948558e02306a3db5ec2e3`，hosted锁保持；日常目录 `feat/ui-detail-polish@25260b3` 保持。
+
+仅首页前牌启用暂停帧跨覆盖路由保留和原生单decoder RGBA输出：解决进入更多时回封面的明确路径，绕开上下离屏裁剪对packed透明取样的破坏。App相关96通过/14跳过，Impeller另2项通过（68组RGBA消费对照误差/黑残影0）；SDK相关49通过，双方分析0。+50 release及Android原生编译、验包/验签通过，同+49内部证书；Agent未安装，Android OES/SurfaceProducer及原机观感待用户远程确认。
+
+[定位、实现与交付](home-card-surface-stability-2026-11-06.md)。
+
 ## 2026-11-06：移除长按识别与改善竖向退场 / +49
 
 运行/构建源 `8475c71f2bdb2eb69456c7fe400fe4f594f1d7b0`，候选分支 `codex/home-card-exit-easing-20261106`；`1.1.0+49` / arm64 `2049`。SDK仍 `b4861c5215280c49bffe03b8c203074217dcf995`，lock保持；日常目录 `feat/ui-detail-polish@25260b3` 保持。
