@@ -10,6 +10,7 @@ import '../coach/usage_store.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
+import '../data/hip_public_catalog.dart';
 import '../data/hip_public_media.dart';
 import '../data/hip_shared_library.dart';
 import '../data/hip_action_scope.dart';
@@ -90,10 +91,16 @@ class _HipAppState extends State<HipApp> {
     } else if (!widget.videoEnabled) {
       voice = HipVoice.silent;
     } else {
+      final lib = await VoiceLibrary.load();
       voice = HipVoice(
-        lib: await VoiceLibrary.load(),
+        lib: lib,
         output: JustAudioVoiceOutput(),
         settingsOf: () => store.voice,
+        // SDK: online catalogue voice for actions HipLab has not recorded.
+        online: await trainer.withPoseHubCatalogVoice(
+          lib,
+          catalog: await loadHipPublicCatalog(),
+        ),
       );
     }
     return (store, voice);
