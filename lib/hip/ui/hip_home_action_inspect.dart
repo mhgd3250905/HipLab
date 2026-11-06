@@ -202,7 +202,18 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
       final classification = [
         drill.methods.map((method) => copy.text(method.zh)).join(' · '),
         drill.directions
-            .map((direction) => copy.text(direction.zh))
+            .map(
+              (direction) => copy.isEn
+                  ? switch (direction) {
+                      HipDirection.flexion => 'Flex',
+                      HipDirection.extension => 'Ext',
+                      HipDirection.abduction => 'Abd',
+                      HipDirection.adduction => 'Add',
+                      HipDirection.internalRotation => 'IR',
+                      HipDirection.externalRotation => 'ER',
+                    }
+                  : direction.zh,
+            )
             .join(' / '),
       ].where((value) => value.isNotEmpty).join(' · ');
       final t = widget.expansion;
