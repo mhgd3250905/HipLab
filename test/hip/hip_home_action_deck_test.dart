@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
@@ -125,10 +126,7 @@ void main() {
   );
 
   Finder visualFront() {
-    final floating = find.byKey(const ValueKey('home-deck-floating-front'));
-    return floating.evaluate().isEmpty
-        ? find.byKey(const ValueKey('home-deck-front'))
-        : floating;
+    return find.byKey(const ValueKey('home-deck-front'));
   }
 
   double keyedOpacity(WidgetTester tester, String key) {
@@ -139,28 +137,42 @@ void main() {
   }
 
   void expectCardPainted(WidgetTester tester) {
-    final source = keyedOpacity(tester, 'home-deck-opacity-0');
-    final snapshot = keyedOpacity(tester, 'home-deck-closing-stand-in');
-    final expanded = keyedOpacity(tester, 'home-deck-expanded-opacity');
-    final surface = keyedOpacity(tester, 'home-deck-flight-surface');
-    // Complementary face opacities alone still expose the background. Check
-    // their composited coverage together with the physical card surface.
-    final coverage = 1 - (1 - snapshot) * (1 - expanded) * (1 - surface);
+    final face = find.byKey(const ValueKey('home-deck-front'));
+    expect(face, findsOneWidget);
+    expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+    final rect = tester.getRect(face);
+    expect(rect.width, greaterThan(0));
+    expect(rect.height, greaterThan(0));
+  }
+
+  double closeOpacity(WidgetTester tester) {
+    final close = find.byKey(const ValueKey('home-deck-expanded-close'));
+    final opacity = find
+        .ancestor(of: close, matching: find.byType(Opacity))
+        .first;
+    return tester.widget<Opacity>(opacity).opacity;
+  }
+
+  Finder frontMedia() => find.descendant(
+    of: find.byKey(const ValueKey('home-hero')),
+    matching: find.byType(trainer.TrainingActionMedia),
+  );
+
+  void expectNoDecoderChurn(HomeDeckPlaybackPlatform platform) {
+    expect(platform.sources, hasLength(1));
     expect(
-      source >= .99 || coverage >= .99,
-      isTrue,
-      reason:
-          'No complete card face is painted: source=$source, '
-          'snapshot=$snapshot, expanded=$expanded, surface=$surface',
+      platform.commands.where((c) => c.$2 == 'prime-first-frame'),
+      hasLength(1),
     );
-    if (snapshot > 0) {
-      final image = find.descendant(
-        of: find.byKey(const ValueKey('home-deck-closing-stand-in')),
-        matching: find.byType(RawImage),
-      );
-      expect(image, findsOneWidget);
-      expect(tester.widget<RawImage>(image).image, isNotNull);
-    }
+    expect(
+      platform.commands.where(
+        (c) =>
+            c.$2 == 'dispose' ||
+            c.$2.contains('seek') ||
+            c.$2.contains('return-to-start'),
+      ),
+      isEmpty,
+    );
   }
 
   Future<void> openActionCard(WidgetTester tester) async {
@@ -170,7 +182,7 @@ void main() {
     await tester.pump();
   }
 
-  Future<HomeDeckPlaybackPlatform> openReadyPlaybackCard(
+  Future<HomeDeckPlaybackPlatform> readyCompactPlaybackCard(
     WidgetTester tester,
   ) async {
     final repository = HomeDeckPlaybackRepository();
@@ -187,12 +199,16 @@ void main() {
       trainer.UgkPackedAlphaVideo.debugFilterBuilder = previousFilter;
     });
     await showDeck(tester, videoEnabled: true);
-    await tester.pumpAndSettle();
-    await openActionCard(tester);
     await tester.pump();
     await tester.pump();
     expect(platform.sources, hasLength(1));
     platform.emit(1, 'ready');
+    await tester.pump();
+    await tester.pump();
+    expect(
+      platform.commands.where((c) => c.$2 == 'prime-first-frame'),
+      hasLength(1),
+    );
     platform.emit(1, 'first-frame');
     await tester.pump();
     await tester.pump();
@@ -203,6 +219,11 @@ void main() {
     );
     expect(surface.controller.ready, isTrue);
     expect(surface.controller.hasFrame, isTrue);
+    expect(
+      tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+      isTrue,
+    );
+    expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
     return platform;
   }
 
@@ -228,10 +249,7 @@ void main() {
       // In the final compact frames the expanded layout and its close glyph
       // must no longer be painted over the source card.
       if (elapsed >= 368) {
-        expect(
-          keyedOpacity(tester, 'home-deck-expanded-opacity'),
-          lessThan(.01),
-        );
+        expect(closeOpacity(tester), lessThan(.01));
       }
     }
     for (var i = 0; i < 2; i++) {
@@ -240,10 +258,8 @@ void main() {
     }
     expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
     expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
-    expect(
-      find.byKey(const ValueKey('home-deck-closing-stand-in')),
-      findsNothing,
-    );
+    expect(closeOpacity(tester), 0);
+    expect(arrow('收起动作卡片').hitTestable(), findsNothing);
     expect(position(tester), '01');
     expect(tester.takeException(), isNull);
   }
@@ -595,11 +611,20 @@ void main() {
     await first.cancel();
     await tester.pump(const Duration(milliseconds: 16));
     expect(position(tester), '01');
-    final returningCenter = tester.getRect(visualFront()).center;
+    // Measure the actual rotation pivot. The bounding-box center also moves
+    // when the card tilts, even with continuous screen-space translation.
+    Offset pivot() {
+      final box = tester.renderObject<RenderBox>(visualFront());
+      return box.localToGlobal(
+        Offset(box.size.width / 2, box.size.height * .9),
+      );
+    }
+
+    final returningCenter = pivot();
     final reverse = await tester.startGesture(tester.getCenter(area));
     await reverse.moveBy(const Offset(30, 0));
     await tester.pump(const Duration(milliseconds: 16));
-    final caughtCenter = tester.getRect(visualFront()).center;
+    final caughtCenter = pivot();
     expect((caughtCenter.dx - returningCenter.dx).abs(), lessThanOrEqualTo(32));
     await reverse.moveBy(const Offset(210, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -669,7 +694,7 @@ void main() {
       final floating = find.byKey(const ValueKey('home-deck-floating-front'));
       expect(floating, findsOneWidget);
       expect(
-        tester.getRect(floating).center.dy,
+        tester.getRect(visualFront()).center.dy,
         greaterThan(rest.center.dy + 120),
       );
       expect(position(tester), '01');
@@ -691,7 +716,7 @@ void main() {
         ),
       );
       await tester.pump();
-      final moved = tester.getRect(floating);
+      final moved = tester.getRect(visualFront());
       expect(moved.center.dx, greaterThan(rest.center.dx + 35));
       expect(moved.center.dy, lessThan(rest.center.dy - 90));
       diagonal.onPanCancel!();
@@ -709,7 +734,7 @@ void main() {
     await showDeck(tester, height: 360);
     await tester.pumpAndSettle();
     final deckBounds = tester.getRect(
-      find.byKey(const ValueKey('home-deck-gesture')),
+      find.byKey(const ValueKey('home-deck-stage')),
     );
     final floating = find.byKey(const ValueKey('home-deck-floating-front'));
     final drag = deckDrag(tester);
@@ -721,7 +746,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(tester.getRect(floating).top, lessThan(deckBounds.top));
+    expect(tester.getRect(visualFront()).top, lessThan(deckBounds.top));
     drag.onPanUpdate!(
       DragUpdateDetails(
         globalPosition: Offset.zero,
@@ -729,7 +754,10 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(tester.getRect(floating).bottom, greaterThan(deckBounds.bottom));
+    expect(
+      tester.getRect(visualFront()).bottom,
+      greaterThan(deckBounds.bottom),
+    );
     expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
     expect(find.byKey(const ValueKey('home-deck-position')), findsOneWidget);
     drag.onPanCancel!();
@@ -801,255 +829,109 @@ void main() {
     },
   );
 
+  testWidgets('the compact front primes one decoded frame and starts paused', (
+    tester,
+  ) async {
+    phone(tester);
+    final platform = await readyCompactPlaybackCard(tester);
+    final media = tester.widget<trainer.TrainingActionMedia>(frontMedia());
+    expect(media.playing, isTrue);
+    expect(media.paused, isTrue);
+    expect(media.prepareFirstFrame, isTrue);
+    expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+    await tester.pump(const Duration(milliseconds: 500));
+    expectNoDecoderChurn(platform);
+    expectCardPainted(tester);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
-    'a ready decoder finishes one return before the expanded route reverses',
+    'one painted video surface survives every frame of expanding and collapsing',
     (tester) async {
       phone(tester);
-      final platform = await openReadyPlaybackCard(tester);
-      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
-      final route = ModalRoute.of(tester.element(expanded))!;
-      final surface = find.byType(trainer.UgkPackedAlphaVideo);
-      final media = find.descendant(
-        of: find.byKey(const ValueKey('home-deck-expanded-media')),
-        matching: find.byType(trainer.TrainingActionMedia),
+      final platform = await readyCompactPlaybackCard(tester);
+      final mediaState = tester.state(frontMedia());
+      final artElement = tester.element(
+        find.byKey(const ValueKey('home-hero')),
       );
+      final surface = find.byType(trainer.UgkPackedAlphaVideo);
       final surfaceElement = tester.element(surface);
       final controller = tester
           .widget<trainer.UgkPackedAlphaVideo>(surface)
           .controller;
-      final close = tester
-          .widget<HipCircleButton>(
-            find.byKey(const ValueKey('home-deck-expanded-close')),
-          )
-          .onPressed!;
-      close();
-      close();
-      await tester.pump();
-      expect(platform.returns, hasLength(1));
-      expect(route.isCurrent, isTrue);
-      expect(route.animation!.status, AnimationStatus.completed);
-      await tester.pump(const Duration(milliseconds: 120));
-      expect(route.isCurrent, isTrue);
-      expect(tester.element(surface), same(surfaceElement));
-      expect(
-        platform.commands.where((c) => c.$2 == 'return-to-start'),
-        hasLength(1),
-      );
-      expect(
-        platform.commands.where((c) => c.$2 == 'cancel-return-to-start'),
-        isEmpty,
-      );
-      expect(platform.commands.where((c) => c.$2 == 'dispose'), isEmpty);
-
-      platform.returns.single.complete(true);
-      for (var frame = 0; frame < 4; frame++) {
-        await tester.pump();
+      final compactRect = tester.getRect(visualFront());
+      void sameSurface() {
+        expectCardPainted(tester);
+        expect(tester.state(frontMedia()), same(mediaState));
+        expect(
+          tester.element(find.byKey(const ValueKey('home-hero'))),
+          same(artElement),
+        );
+        expect(tester.element(surface), same(surfaceElement));
+        expect(
+          tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
+          same(controller),
+        );
+        expect(tester.widget<Texture>(find.byType(Texture)).textureId, 101);
+        expectNoDecoderChurn(platform);
       }
-      expect(route.animation!.status, AnimationStatus.reverse);
-      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
-      expect(tester.element(surface), same(surfaceElement));
-      expect(
-        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
-        same(controller),
-      );
-      await tester.pump(const Duration(milliseconds: 180));
-      expect(tester.element(surface), same(surfaceElement));
-      expect(platform.commands.where((c) => c.$2 == 'dispose'), isEmpty);
-      await tester.pumpAndSettle();
-      expect(expanded, findsNothing);
-      expect(surface, findsNothing);
-      expect(platform.sources, hasLength(1));
-      expect(platform.commands.where((c) => c.$2 == 'dispose').single.$1, 1);
-      expect(position(tester), '01');
-      expect(tester.takeException(), isNull);
-    },
-  );
 
-  testWidgets(
-    'closing a paused demonstration resumes before starting its return',
-    (tester) async {
-      phone(tester);
-      final platform = await openReadyPlaybackCard(tester);
-      final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
-      final media = find.descendant(
-        of: mediaTap,
-        matching: find.byType(trainer.TrainingActionMedia),
-      );
-      final mediaElement = tester.element(media);
-      final route = ModalRoute.of(tester.element(mediaTap))!;
-      await tester.tap(mediaTap);
-      await tester.pump();
-      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
-      final commandStart = platform.commands.length;
-      final close = tester
-          .widget<HipCircleButton>(
-            find.byKey(const ValueKey('home-deck-expanded-close')),
-          )
-          .onPressed!;
-      close();
-      expect(platform.returns, isEmpty);
-      await tester.pump();
-      await tester.pump();
-      expect(tester.element(media), same(mediaElement));
-      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isFalse);
-      expect(platform.returns, hasLength(1));
-      final closingCommands = platform.commands.skip(commandStart).toList();
-      final resumed = closingCommands.indexWhere((c) => c.$2 == 'play');
-      final returning = closingCommands.indexWhere(
-        (c) => c.$2 == 'return-to-start',
-      );
-      expect(resumed, greaterThanOrEqualTo(0));
-      expect(returning, greaterThan(resumed));
-      expect(
-        closingCommands.where((c) => c.$2 == 'cancel-return-to-start'),
-        isEmpty,
-      );
-      expect(route.isCurrent, isTrue);
-      platform.returns.single.complete(true);
-      for (var frame = 0; frame < 4; frame++) {
-        await tester.pump();
+      await openActionCard(tester);
+      for (var elapsed = 0; elapsed < 416; elapsed += 16) {
+        await tester.pump(const Duration(milliseconds: 16));
+        sameSurface();
       }
-      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isFalse,
+      );
+      await dismissActionCard(tester, 'close');
+      await tester.pump();
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isTrue,
+      );
+      for (var elapsed = 0; elapsed < 416; elapsed += 16) {
+        await tester.pump(const Duration(milliseconds: 16));
+        sameSurface();
+      }
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
-      expect(platform.sources, hasLength(1));
-      expect(
-        platform.commands.where((c) => c.$2 == 'return-to-start'),
-        hasLength(1),
-      );
-      expect(
-        platform.commands.where((c) => c.$2 == 'cancel-return-to-start'),
-        isEmpty,
-      );
-      expect(position(tester), '01');
+      expect(closeOpacity(tester), 0);
+      final restored = tester.getRect(visualFront());
+      expect(restored.left, closeTo(compactRect.left, .01));
+      expect(restored.top, closeTo(compactRect.top, .01));
+      expect(restored.width, closeTo(compactRect.width, .01));
+      expect(restored.height, closeTo(compactRect.height, .01));
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'close, barrier and system back keep a card painted through every dismissal frame',
+    'close, barrier, back and rapid reopening retain the same compact decoder',
     (tester) async {
       phone(tester);
-      await showDeck(tester);
-      await tester.pumpAndSettle();
-      final sourceElement = tester.element(
-        find.byKey(const ValueKey('home-hero')),
-      );
+      final platform = await readyCompactPlaybackCard(tester);
+      final mediaState = tester.state(frontMedia());
+      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surfaceElement = tester.element(surface);
       for (final method in ['close', 'barrier', 'back']) {
         await openActionCard(tester);
         await tester.pumpAndSettle();
         expect(
-          find.byKey(const ValueKey('home-deck-expanded')),
-          findsOneWidget,
+          tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+          isFalse,
         );
-        expectCardPainted(tester);
         await dismissActionCard(tester, method);
         await expectFrameSafeDismissal(tester);
+        expect(tester.state(frontMedia()), same(mediaState));
+        expect(tester.element(surface), same(surfaceElement));
         expect(
-          tester.element(find.byKey(const ValueKey('home-hero'))),
-          same(sourceElement),
+          tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+          isTrue,
         );
+        expectNoDecoderChurn(platform);
       }
-      expect(fixture.requested, isEmpty);
-    },
-  );
-
-  testWidgets(
-    'the closing snapshot keeps the original compact artwork and projected pose',
-    (tester) async {
-      phone(tester);
-      await showDeck(tester);
-      await tester.pumpAndSettle();
-      final boundaryFinder = find
-          .descendant(
-            of: find.byKey(const ValueKey('home-deck-front')),
-            matching: find.byElementPredicate(
-              (element) =>
-                  element is RenderObjectElement &&
-                  element.renderObject is RenderRepaintBoundary,
-            ),
-          )
-          .first;
-      final boundary = tester.renderObject<RenderRepaintBoundary>(
-        boundaryFinder,
-      );
-      final size = boundary.size;
-      final localCorners = [
-        Offset.zero,
-        Offset(size.width, 0),
-        Offset(0, size.height),
-        Offset(size.width, size.height),
-      ];
-      final compactCorners = [
-        for (final corner in localCorners) boundary.localToGlobal(corner),
-      ];
-      await openActionCard(tester);
-      await tester.pumpAndSettle();
-      final standIn = find.byKey(const ValueKey('home-deck-closing-stand-in'));
-      final imageFinder = find.descendant(
-        of: standIn,
-        matching: find.byType(RawImage),
-      );
-      expect(imageFinder, findsOneWidget);
-      final snapshot = tester.widget<RawImage>(imageFinder).image;
-      expect(snapshot, isNotNull);
-      final imageBox = tester.renderObject<RenderBox>(imageFinder);
-      expect(imageBox.size.width, closeTo(size.width + 96, .01));
-      expect(imageBox.size.height, closeTo(size.height + 96, .01));
-
-      await dismissActionCard(tester, 'close');
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 378));
-      for (var lastMillisecond = 0; lastMillisecond < 2; lastMillisecond++) {
-        expectCardPainted(tester);
-        expect(
-          keyedOpacity(tester, 'home-deck-expanded-opacity'),
-          lessThan(.01),
-        );
-        expect(tester.widget<RawImage>(imageFinder).image, same(snapshot));
-        final box = tester.renderObject<RenderBox>(imageFinder);
-        for (var i = 0; i < localCorners.length; i++) {
-          // The 48pt capture padding includes the real source shadow, while
-          // its content corners must converge to the source's full transform.
-          final projected = box.localToGlobal(
-            localCorners[i] + const Offset(48, 48),
-          );
-          expect((projected - compactCorners[i]).distance, lessThan(4));
-        }
-        await tester.pump(const Duration(milliseconds: 1));
-      }
-      // At dismissed, the source is restored in this very frame; it cannot wait
-      // for a later route.completed callback or another frame's rebuild.
-      expectCardPainted(tester);
-      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
-      for (var i = 0; i < localCorners.length; i++) {
-        expect(
-          (boundary.localToGlobal(localCorners[i]) - compactCorners[i])
-              .distance,
-          lessThan(.01),
-        );
-      }
-      await tester.pump();
-      expectCardPainted(tester);
-      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
-      // Zero value can precede dismissed by one ticker step. The source is
-      // already visible; route disposal itself waits for an advancing frame.
-      await tester.pump(const Duration(milliseconds: 16));
-      expectCardPainted(tester);
-      expect(standIn, findsNothing);
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'quick and repeated close hands the same card back and can reopen',
-    (tester) async {
-      phone(tester);
-      await showDeck(tester);
-      await tester.pumpAndSettle();
-      final sourceElement = tester.element(
-        find.byKey(const ValueKey('home-hero')),
-      );
       await openActionCard(tester);
       await tester.pump(const Duration(milliseconds: 32));
       final close = tester
@@ -1060,29 +942,66 @@ void main() {
       close();
       close();
       await expectFrameSafeDismissal(tester);
-      expect(
-        tester.element(find.byKey(const ValueKey('home-hero'))),
-        same(sourceElement),
-      );
       await openActionCard(tester);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(tester.element(surface), same(surfaceElement));
       await dismissActionCard(tester, 'back');
       await expectFrameSafeDismissal(tester);
-      expect(
-        tester.element(find.byKey(const ValueKey('home-hero'))),
-        same(sourceElement),
-      );
+      expectNoDecoderChurn(platform);
       expect(tester.takeException(), isNull);
     },
   );
 
-  testWidgets('reduced motion restores the compact card for every close path', (
+  testWidgets(
+    'closing a paused demonstration keeps its current decoder paused',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      final mediaState = tester.state(frontMedia());
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
+      await tester.tap(mediaTap);
+      await tester.pump();
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isTrue,
+      );
+      final commandStart = platform.commands.length;
+      await dismissActionCard(tester, 'close');
+      await expectFrameSafeDismissal(tester);
+      expect(tester.state(frontMedia()), same(mediaState));
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isTrue,
+      );
+      expect(
+        platform.commands.skip(commandStart).where((c) => c.$2 == 'play'),
+        isEmpty,
+      );
+      expectNoDecoderChurn(platform);
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+        isFalse,
+      );
+      expect(tester.state(frontMedia()), same(mediaState));
+      expectNoDecoderChurn(platform);
+      await dismissActionCard(tester, 'close');
+      await expectFrameSafeDismissal(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('reduced motion keeps the same card for every close path', (
     tester,
   ) async {
     phone(tester);
     await showDeck(tester, reduced: true);
     await tester.pumpAndSettle();
+    final artElement = tester.element(find.byKey(const ValueKey('home-hero')));
     for (final method in ['close', 'barrier', 'back']) {
       await openActionCard(tester);
       await tester.pumpAndSettle();
@@ -1090,18 +1009,102 @@ void main() {
       await dismissActionCard(tester, method);
       await tester.pump();
       expectCardPainted(tester);
-      expect(keyedOpacity(tester, 'home-deck-opacity-0'), 1);
+      expect(
+        tester.element(find.byKey(const ValueKey('home-hero'))),
+        same(artElement),
+      );
       await tester.pump(const Duration(milliseconds: 16));
       expectCardPainted(tester);
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
-      expect(
-        find.byKey(const ValueKey('home-deck-closing-stand-in')),
-        findsNothing,
-      );
+      expect(closeOpacity(tester), 0);
       expect(position(tester), '01');
       expect(tester.takeException(), isNull);
     }
   });
+
+  testWidgets(
+    'a small source card expands complete information and resets its description scroll on close',
+    (tester) async {
+      phone(tester);
+      const dose = '每侧 40 秒';
+      const cue = '动作提示：保持自然呼吸，不要耸肩。';
+      final description = List.generate(
+        24,
+        (i) => '动作说明 ${i + 1}：保持骨盆稳定，缓慢完成动作，在舒适的范围内停留。',
+      ).join('\n');
+      await showDeck(
+        tester,
+        height: 240,
+        doses: [dose],
+        cues: [cue],
+        descriptions: [description],
+      );
+      await tester.pumpAndSettle();
+      final caption = find.byKey(const ValueKey('home-deck-caption'));
+      expect(caption.hitTestable(), findsOneWidget);
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(find.text(dose).hitTestable(), findsOneWidget);
+      expect(find.text(cue).hitTestable(), findsOneWidget);
+      expect(tester.widget<Text>(find.text(cue)).maxLines, isNull);
+      expect(tester.widget<Text>(find.text(description)).maxLines, isNull);
+      final information = find.byKey(
+        const ValueKey('home-deck-expanded-description'),
+      );
+      final controller = tester
+          .widget<SingleChildScrollView>(information)
+          .controller!;
+      expect(controller.position.maxScrollExtent, greaterThan(0));
+      expect(
+        tester.getTopLeft(find.text(description)).dy,
+        lessThan(tester.getRect(information).bottom),
+      );
+      await tester.drag(information, const Offset(0, -220));
+      await tester.pumpAndSettle();
+      expect(controller.offset, greaterThan(0));
+      await dismissActionCard(tester, 'close');
+      await tester.pump();
+      expect(controller.offset, 0);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(caption.hitTestable(), findsOneWidget);
+      expect(tester.widget<Text>(caption).data, drills.first.name);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Escape and a second back during collapse keep Home and blank taps do not open a card',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      expect(expanded, findsNothing);
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(expanded, findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.binding.handlePopRoute();
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(find.byType(HipHomeActionDeck), findsOneWidget);
+      expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(expanded, findsNothing);
+      expect(closeOpacity(tester), 0);
+      expect(position(tester), '01');
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      expect(expanded, findsNothing);
+      expect(find.byType(HipHomeActionDeck), findsOneWidget);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'tapping a card opens a bounded action preview that pauses without rebuilding media',
@@ -1129,15 +1132,18 @@ void main() {
       expect(bounds.top, greaterThan(0));
       expect(bounds.bottom, lessThan(853));
       expect(
-        find.descendant(of: expanded, matching: find.text(description)),
+        find.descendant(of: visualFront(), matching: find.text(description)),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: expanded, matching: find.text(cue)),
+        find.descendant(of: visualFront(), matching: find.text(cue)),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: expanded, matching: find.text(drills.first.name)),
+        find.descendant(
+          of: visualFront(),
+          matching: find.text(drills.first.name),
+        ),
         findsOneWidget,
       );
       final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
@@ -1161,7 +1167,9 @@ void main() {
       await tester.tap(arrow('收起动作卡片'));
       await tester.pumpAndSettle();
       expect(expanded, findsNothing);
-      expect(mediaState.mounted, isFalse);
+      expect(mediaState.mounted, isTrue);
+      expect(tester.state(media), same(mediaState));
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
       expect(position(tester), '01');
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
@@ -1293,6 +1301,10 @@ void main() {
         expect(art.theme!.mediaStage, HipPalette.light.mediaBackdrop);
         expect(art.playing, isFalse);
       }
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(frontMedia()).stage,
+        HipPalette.light.mediaBackdrop,
+      );
       await showDeck(
         tester,
         items: drills.reversed.toList(),
@@ -1381,7 +1393,7 @@ void main() {
       expect(tester.getTopLeft(deck).dx, 16);
       final clipping = find
           .descendant(
-            of: find.byKey(const ValueKey('home-deck-gesture')),
+            of: find.byType(HipHomeActionDeck),
             matching: find.byWidgetPredicate(
               (widget) => widget is ClipRect && widget.clipper != null,
             ),

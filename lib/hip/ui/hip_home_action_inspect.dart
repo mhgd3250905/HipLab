@@ -1,558 +1,367 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
-import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
-import '../data/hip_public_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
-import 'hip_card_snapshot.dart';
 
-const _cardHandoffEpsilon = 1e-7;
-
-/// Brings one action card closer without turning it into a full-screen page.
-/// The existing SDK continues to own the video, its cache and its decoder.
-Future<void> showHipHomeActionCard(
-  BuildContext context, {
-  required Rect sourceRect,
-  required HipDrill drill,
-  required int number,
-  String dose = '',
-  String cue = '',
-  String description = '',
-  HipCardSnapshot? sourceSnapshot,
-  VoidCallback? onSourceRestored,
-}) async {
-  final videoEnabled = HipMediaPolicy.of(context);
-  final reduced = MediaQuery.disableAnimationsOf(context);
-  final policy = HipPublicMedia.current;
-  final route = RawDialogRoute<void>(
-    barrierDismissible: true,
-    barrierLabel: '关闭动作预览',
-    barrierColor: Colors.transparent,
-    transitionDuration: reduced
-        ? Duration.zero
-        : const Duration(milliseconds: 380),
-    settings: RouteSettings(name: 'home_action_card/${drill.id}'),
-    pageBuilder: (context, animation, secondaryAnimation) => _ActionCardInspect(
-      sourceRect: sourceRect,
-      drill: drill,
-      number: number,
-      dose: dose,
-      cue: cue,
-      description: description,
-      policy: policy,
-      videoEnabled: videoEnabled,
-      sourceSnapshot: sourceSnapshot,
-    ),
-    // The card animates its own rect; a route-wide fade would dim the artwork.
-    transitionBuilder: (context, animation, secondaryAnimation, child) => child,
-  );
-  var restored = false;
-  void restore() {
-    if (restored) return;
-    restored = true;
-    onSourceRestored?.call();
-  }
-
-  void statusChanged(AnimationStatus status) {
-    // Dismissal runs in the animation tick, before this frame's build/paint.
-    // Restore the retained source in that frame, not after Overlay disposal.
-    if (status == AnimationStatus.dismissed) restore();
-  }
-
-  final popped = Navigator.of(context, rootNavigator: true).push(route);
-  final animation = route.animation!;
-  void handoffAtRest() {
-    // At duration the controller can reach zero one tick before dismissed.
-    if (animation.status == AnimationStatus.reverse &&
-        animation.value <= _cardHandoffEpsilon) {
-      restore();
-    }
-  }
-
-  animation.addStatusListener(statusChanged);
-  animation.addListener(handoffAtRest);
-  try {
-    await popped;
-    await route.completed;
-  } finally {
-    animation.removeStatusListener(statusChanged);
-    animation.removeListener(handoffAtRest);
-    restore();
-  }
-}
-
-class _ActionCardInspect extends StatefulWidget {
-  const _ActionCardInspect({
-    required this.sourceRect,
+/// One physical face, including one video subtree, at every expansion value.
+/// Only geometry and playback intent change; no route, snapshot or media swap.
+class HipHomeActionFace extends StatelessWidget {
+  const HipHomeActionFace({
+    super.key,
     required this.drill,
     required this.number,
-    required this.dose,
-    required this.cue,
-    required this.description,
-    required this.policy,
-    required this.videoEnabled,
-    required this.sourceSnapshot,
+    required this.expansion,
+    required this.expanded,
+    required this.paused,
+    required this.onClose,
+    required this.onToggle,
+    required this.previous,
+    required this.informationScroll,
+    this.multiple = true,
+    required this.next,
+    this.compact = false,
+    this.dose = '',
+    this.cue = '',
+    this.description = '',
   });
 
-  final Rect sourceRect;
   final HipDrill drill;
   final int number;
+  final double expansion;
+  final bool expanded, paused, compact;
+  final bool multiple;
+  final ScrollController informationScroll;
+  final VoidCallback onClose, onToggle;
+  final Widget previous, next;
   final String dose, cue, description;
-  final trainer.TrainingMediaPolicy? policy;
-  final bool videoEnabled;
-  final HipCardSnapshot? sourceSnapshot;
 
   @override
-  State<_ActionCardInspect> createState() => _ActionCardInspectState();
-}
-
-class _ActionCardInspectState extends State<_ActionCardInspect> {
-  Animation<double>? _animation;
-  final _playbackControl = trainer.DrillMediaPlaybackControl();
-  bool _paused = false;
-  bool _closing = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final animation = ModalRoute.of(context)!.animation!;
-    if (!identical(animation, _animation)) {
-      _animation?.removeStatusListener(_statusChanged);
-      _animation = animation..addStatusListener(_statusChanged);
-    }
-  }
-
-  void _statusChanged(AnimationStatus status) {
-    // Also handles Android back and barrier dismissal, before the shrink starts.
-    if (status == AnimationStatus.reverse && !_closing && mounted) {
-      setState(() {
-        _closing = true;
-        _paused = true;
-      });
-    }
-  }
-
-  Future<void> _close() async {
-    if (_closing) return;
-    final wasPaused = _paused;
-    setState(() {
-      _closing = true;
-      _paused = false;
-    });
-    if (wasPaused) {
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-    }
-    // The route stays current until its decoder has naturally reached frame 0.
-    // Popping first would retire the SDK video before it can return to rest.
-    final returned = await _playbackControl.returnToStart(
-      duration: const Duration(milliseconds: 400),
-    );
-    if (!mounted) return;
-    setState(() => _paused = true);
-    if (returned) {
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) return;
-    }
-    Navigator.of(context).pop();
-  }
-
-  void _toggle() {
-    if (!_closing) setState(() => _paused = !_paused);
-  }
-
-  @override
-  void dispose() {
-    _animation?.removeStatusListener(_statusChanged);
-    _playbackControl.dispose();
-    super.dispose();
-  }
-
-  // Matrix4Tween decomposes/recomposes and loses the card's perspective terms.
-  // Keep the exact painted source matrix and interpolate all of its elements.
-  Matrix4 _pose(Matrix4 source, Matrix4 target, double t) {
-    if (t <= 0) return Matrix4.copy(source);
-    if (t >= 1) return Matrix4.copy(target);
-    final result = Matrix4.zero();
-    for (var i = 0; i < 16; i++) {
-      result.storage[i] =
-          source.storage[i] + (target.storage[i] - source.storage[i]) * t;
-    }
-    return result;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final view = MediaQuery.of(context);
-    final width = math.min(460.0, math.max(0.0, view.size.width - 40));
-    final availableHeight = math.max(
-      0.0,
-      view.size.height - view.padding.vertical - 48,
-    );
-    final height = math.min(720.0, availableHeight);
-    final target = Rect.fromLTWH(
-      (view.size.width - width) / 2,
-      view.padding.top + 24 + (availableHeight - height) / 2,
-      width,
-      height,
-    );
-    return PopScope<void>(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _close();
-      },
-      child: AnimatedBuilder(
-        animation: _animation!,
-        child: _surface(),
-        builder: (context, child) {
-          final t = Curves.easeOutCubic.transform(_animation!.value);
-          final snapshot = widget.sourceSnapshot;
-          final size = snapshot?.size ?? widget.sourceRect.size;
-          final source =
-              snapshot?.transform ??
-              Matrix4.translationValues(
-                widget.sourceRect.left,
-                widget.sourceRect.top,
-                0,
-              );
-          final destination =
-              Matrix4.translationValues(target.left, target.top, 0)..multiply(
-                Matrix4.diagonal3Values(
-                  target.width / size.width,
-                  target.height / size.height,
-                  1,
-                ),
-              );
-          final pose = _pose(source, destination, t);
-          final detailPose = Matrix4.copy(pose)
-            ..multiply(
-              Matrix4.diagonal3Values(
-                size.width / target.width,
-                size.height / target.height,
-                1,
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final t = expansion;
+      final w = box.maxWidth;
+      final h = box.maxHeight;
+      final inset = lerpDouble(compact ? 10 : 22, 24, t)!;
+      final header = lerpDouble(compact ? 28 : 60, 56, t)!;
+      final footer = compact ? 64.0 : 122.0 + (cue.isEmpty ? 0 : 20);
+      final compactMedia = Rect.fromLTWH(
+        0,
+        header,
+        w,
+        math.max(0, h - header - footer),
+      );
+      final largeMedia = Rect.fromLTWH(
+        0,
+        56,
+        w,
+        math.min(w * 1.05, math.max(0, h - 56) * .56),
+      );
+      final media = Rect.lerp(compactMedia, largeMedia, t)!;
+      final radius = lerpDouble(22, 28, t)!;
+      final active = expanded || t > 0;
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: HipColors.mediaBackdrop,
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: HipColors.shadows([
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: HipColors.isDark ? .32 : .085,
               ),
-            );
-          final handedOff =
-              _animation!.status == AnimationStatus.dismissed ||
-              (_animation!.status == AnimationStatus.reverse &&
-                  _animation!.value <= _cardHandoffEpsilon);
-          final detailOpacity = handedOff
-              ? 0.0
-              : snapshot == null
-              ? 1.0
-              : const Interval(.35, .8, curve: Curves.easeInOut).transform(t);
-          return Stack(
+              blurRadius: lerpDouble(20, 34, t)!,
+              offset: Offset(0, lerpDouble(7, 14, t)!),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .035),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ]),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Stack(
             fit: StackFit.expand,
             children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  excludeFromSemantics: true,
-                  onTap: _close,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 4 * t, sigmaY: 4 * t),
-                    child: ColoredBox(
-                      color: Colors.black.withValues(
-                        alpha: (HipColors.isDark ? .42 : .18) * t,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Two complementary opacities do not make an opaque surface when
-              // composited (at .5/.5 they cover only .75). Keep the physical card
-              // solid behind the two faces throughout the morph.
               Positioned(
-                left: 0,
-                top: 0,
-                width: size.width,
-                height: size.height,
-                child: IgnorePointer(
-                  child: Opacity(
-                    key: const ValueKey('home-deck-flight-surface'),
-                    opacity: handedOff ? 0 : 1,
-                    child: Transform(
-                      alignment: Alignment.topLeft,
-                      transform: pose,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: HipColors.mediaBackdrop,
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                top: 0,
-                width: target.width,
-                height: target.height,
-                child: Opacity(
-                  key: const ValueKey('home-deck-expanded-opacity'),
-                  opacity: detailOpacity,
-                  child: Transform(
-                    alignment: Alignment.topLeft,
-                    transform: detailPose,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: HipColors.shadows([
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: (HipColors.isDark ? .35 : .14) * t,
-                            ),
-                            blurRadius: 32,
-                            offset: const Offset(0, 16),
-                          ),
-                        ]),
-                      ),
-                      child: child,
-                    ),
-                  ),
-                ),
-              ),
-              if (snapshot != null)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  width: snapshot.paddedSize.width,
-                  height: snapshot.paddedSize.height,
-                  child: IgnorePointer(
-                    child: ExcludeSemantics(
-                      child: Opacity(
-                        key: const ValueKey('home-deck-closing-stand-in'),
-                        opacity: handedOff ? 0 : 1 - detailOpacity,
-                        child: Transform(
-                          key: const ValueKey('home-deck-snapshot-transform'),
-                          alignment: Alignment.topLeft,
-                          transform: Matrix4.copy(pose)
-                            ..multiply(
-                              Matrix4.translationValues(
-                                -snapshot.padding,
-                                -snapshot.padding,
-                                0,
-                              ),
-                            ),
-                          child: RawImage(
-                            image: snapshot.image,
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _surface() => Material(
-    key: const ValueKey('home-deck-expanded'),
-    color: HipColors.mediaBackdrop,
-    borderRadius: BorderRadius.circular(28),
-    clipBehavior: Clip.antiAlias,
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTap: () {},
-      child: LayoutBuilder(
-        builder: (context, box) {
-          final mediaHeight = math.min(
-            box.maxWidth * 1.05,
-            math.max(0.0, box.maxHeight - 56) * .56,
-          );
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 6, 8, 6),
+                key: const ValueKey('face-header'),
+                left: inset,
+                right: lerpDouble(inset, 8, t)!,
+                top: lerpDouble(compact ? 8 : 20, 6, t)!,
+                height: 44,
                 child: Row(
                   children: [
-                    Text(
-                      'HIPLAB',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 2.5,
-                        color: HipColors.jadeText,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'HIPLAB',
+                            style: TextStyle(
+                              fontSize: lerpDouble(compact ? 8 : 10, 11, t),
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 2.4,
+                              color: HipColors.jadeText,
+                            ),
+                          ),
+                          if (!compact)
+                            Opacity(
+                              opacity: 1 - t,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  drill.methods.firstOrNull?.zh ?? '动作练习',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: HipColors.muted,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const Spacer(),
                     Text(
-                      widget.number.toString().padLeft(2, '0'),
+                      number.toString().padLeft(2, '0'),
+                      key: const ValueKey('home-deck-position'),
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: compact ? 10 : 17,
                         fontWeight: FontWeight.w500,
+                        letterSpacing: .5,
                         color: HipColors.muted,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    HipCircleButton(
-                      key: const ValueKey('home-deck-expanded-close'),
-                      icon: HipGlyph.close,
-                      tooltip: '收起动作卡片',
-                      onPressed: _close,
+                    SizedBox(
+                      width: 52 * t,
+                      child: OverflowBox(
+                        alignment: Alignment.centerRight,
+                        minWidth: 44,
+                        maxWidth: 44,
+                        child: IgnorePointer(
+                          ignoring: !expanded,
+                          child: ExcludeSemantics(
+                            excluding: !expanded,
+                            child: Opacity(
+                              opacity: t,
+                              child: HipCircleButton(
+                                key: const ValueKey('home-deck-expanded-close'),
+                                icon: HipGlyph.close,
+                                tooltip: '收起动作卡片',
+                                onPressed: onClose,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: mediaHeight, child: _media()),
-              Expanded(
-                child: SingleChildScrollView(
-                  key: const ValueKey('home-deck-expanded-description'),
-                  padding: const EdgeInsets.fromLTRB(24, 14, 24, 24),
-                  child: _information(),
+              Positioned.fromRect(
+                key: const ValueKey('face-media'),
+                rect: media,
+                child: Semantics(
+                  button: expanded,
+                  label: expanded ? (paused ? '播放动作示范' : '暂停动作示范') : drill.name,
+                  value: paused || !expanded ? '已暂停' : '自动循环播放',
+                  onTap: expanded ? onToggle : null,
+                  child: GestureDetector(
+                    key: const ValueKey('home-deck-expanded-media'),
+                    behavior: HitTestBehavior.opaque,
+                    excludeFromSemantics: true,
+                    onTap: expanded ? onToggle : null,
+                    child: Center(
+                      child: SizedBox.square(
+                        dimension: math.min(media.width, media.height),
+                        child: HipDrillArt(
+                          key: const ValueKey('home-hero'),
+                          drill: drill,
+                          play: expanded && !paused,
+                          holdVideo: true,
+                          showPendingLabel: false,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-
-  Widget _media() => Semantics(
-    button: true,
-    label: _closing
-        ? '正在收起动作卡片'
-        : _paused
-        ? '播放动作示范'
-        : '暂停动作示范',
-    value: _closing
-        ? '动作回到起始姿态'
-        : _paused
-        ? '已暂停'
-        : '自动循环播放',
-    onTap: _toggle,
-    child: GestureDetector(
-      key: const ValueKey('home-deck-expanded-media'),
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTap: _toggle,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          trainer.TrainingActionMedia(
-            key: ValueKey('home-expanded-video-${widget.drill.id}'),
-            actionId: widget.drill.id,
-            policy: widget.policy,
-            playbackControl: _playbackControl,
-            playing: widget.videoEnabled,
-            paused: _paused,
-            retainSurfaceDuringRouteExit: true,
-            radius: 0,
-            stage: HipColors.mediaBackdrop,
-          ),
-          Positioned(
-            top: 8,
-            right: 20,
-            child: IgnorePointer(
-              child: ExcludeSemantics(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: HipColors.surface.withValues(alpha: .8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+              Positioned(
+                key: const ValueKey('face-information'),
+                left: inset,
+                right: inset,
+                top: media.bottom + lerpDouble(4, 14, t)!,
+                bottom: 44 * (1 - t) + 14 * t,
+                child: SingleChildScrollView(
+                  key: const ValueKey('home-deck-expanded-description'),
+                  controller: informationScroll,
+                  physics: expanded
+                      ? null
+                      : const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      HipIcon(
-                        _paused ? HipGlyph.play : HipGlyph.pause,
-                        size: 11,
-                        color: HipColors.muted,
-                      ),
-                      const SizedBox(width: 5),
                       Text(
-                        _paused ? '轻点继续' : '轻点暂停',
-                        style: TextStyle(fontSize: 10, color: HipColors.muted),
+                        drill.name,
+                        key: const ValueKey('home-deck-caption'),
+                        maxLines: expanded ? null : (compact ? 1 : 2),
+                        overflow: expanded ? null : TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: lerpDouble(compact ? 12 : 23, 28, t),
+                          height: 1.22,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -.3,
+                          color: HipColors.text,
+                        ),
+                      ),
+                      if (dose.isNotEmpty && (!compact || t > 0)) ...[
+                        const SizedBox(height: 7),
+                        Text(
+                          dose,
+                          key: const ValueKey('home-deck-dose'),
+                          style: TextStyle(
+                            fontSize: lerpDouble(13, 15, t),
+                            fontWeight: FontWeight.w500,
+                            color: HipColors.jadeText,
+                          ),
+                        ),
+                      ],
+                      if (cue.isNotEmpty && (!compact || t > 0)) ...[
+                        const SizedBox(height: 5),
+                        Text(
+                          cue,
+                          maxLines: expanded ? null : 1,
+                          overflow: expanded ? null : TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: lerpDouble(11, 13, t),
+                            height: 1.4,
+                            color: HipColors.muted,
+                          ),
+                        ),
+                      ],
+                      ExcludeSemantics(
+                        excluding: !expanded,
+                        child: Opacity(
+                          opacity: t,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              Text(
+                                [
+                                  drill.methods.map((m) => m.zh).join(' · '),
+                                  drill.directions.map((d) => d.zh).join(' / '),
+                                ].where((s) => s.isNotEmpty).join('  ·  '),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  height: 1.5,
+                                  color: HipColors.muted,
+                                ),
+                              ),
+                              if ((description.isNotEmpty
+                                      ? description
+                                      : drill.note)
+                                  .trim()
+                                  .isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                Text(
+                                  description.isNotEmpty
+                                      ? description
+                                      : drill.note,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.65,
+                                    color: HipColors.text,
+                                  ),
+                                ),
+                              ],
+                              if (drill.cautions.isNotEmpty) ...[
+                                const SizedBox(height: 14),
+                                Text(
+                                  '留意 · ${drill.cautions.join('、')}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 1.6,
+                                    color: HipColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
+              Positioned(
+                key: const ValueKey('face-navigation'),
+                left: compact ? 4 : 10,
+                right: compact ? 4 : 10,
+                bottom: 0,
+                height: 44,
+                child: IgnorePointer(
+                  ignoring: active,
+                  child: ExcludeSemantics(
+                    excluding: active,
+                    child: Opacity(
+                      opacity: 1 - t,
+                      child: Row(
+                        children: [
+                          previous,
+                          Expanded(
+                            child: Text(
+                              multiple ? '左右翻阅' : '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: compact ? 8 : 9,
+                                letterSpacing: 1.2,
+                                color: HipColors.muted,
+                              ),
+                            ),
+                          ),
+                          next,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                key: const ValueKey('face-border'),
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(radius),
+                      border: Border.all(
+                        color: MediaQuery.highContrastOf(context)
+                            ? HipColors.text
+                            : Colors.white.withValues(
+                                alpha: HipColors.isDark ? .13 : .8,
+                              ),
+                        width: MediaQuery.highContrastOf(context) ? 1.5 : 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (active)
+                const Positioned.fill(
+                  key: ValueKey('face-expanded-marker'),
+                  child: IgnorePointer(
+                    child: SizedBox(key: ValueKey('home-deck-expanded')),
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
-
-  Widget _information() {
-    final drill = widget.drill;
-    final description = [widget.description, drill.note, widget.cue]
-        .map((value) => value.trim())
-        .where((value) => value.isNotEmpty)
-        .firstOrNull;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          drill.name,
-          style: TextStyle(
-            fontSize: 28,
-            height: 1.2,
-            letterSpacing: -.5,
-            fontWeight: FontWeight.w700,
-            color: HipColors.text,
-          ),
-        ),
-        if (widget.dose.isNotEmpty) ...[
-          const SizedBox(height: 9),
-          Text(
-            widget.dose,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: HipColors.jadeText,
-            ),
-          ),
-        ],
-        const SizedBox(height: 16),
-        Text(
-          [
-            drill.methods.map((method) => method.zh).join(' · '),
-            drill.directions.map((direction) => direction.zh).join(' / '),
-          ].where((value) => value.isNotEmpty).join('  ·  '),
-          style: TextStyle(fontSize: 11, height: 1.5, color: HipColors.muted),
-        ),
-        if (description != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            description,
-            style: TextStyle(fontSize: 14, height: 1.65, color: HipColors.text),
-          ),
-        ],
-        if (widget.cue.trim().isNotEmpty &&
-            widget.cue.trim() != description) ...[
-          const SizedBox(height: 12),
-          Text(
-            widget.cue,
-            style: TextStyle(fontSize: 13, height: 1.6, color: HipColors.muted),
-          ),
-        ],
-        if (drill.cautions.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          Text(
-            '留意 · ${drill.cautions.join('、')}',
-            style: TextStyle(fontSize: 12, height: 1.6, color: HipColors.muted),
-          ),
-        ],
-      ],
-    );
-  }
 }

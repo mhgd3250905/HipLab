@@ -232,6 +232,7 @@ class HipDrillArt extends StatefulWidget {
     super.key,
     required this.drill,
     this.play = false,
+    this.holdVideo = false,
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
     this.alignment = Alignment.center,
@@ -244,6 +245,10 @@ class HipDrillArt extends StatefulWidget {
   /// Loop the clip (when the drill has one and video is enabled). Turning
   /// this off pauses on the current frame instead of tearing the view down.
   final bool play;
+
+  /// Keep one decoded, paused video surface between compact and expanded views.
+  /// Ordinary library artwork keeps its existing poster-only behavior.
+  final bool holdVideo;
   final BoxFit fit;
   final bool showPendingLabel;
   final Alignment alignment;
@@ -291,7 +296,8 @@ class _HipDrillArtState extends State<HipDrillArt> {
     if (policy == null || policy.actionFor(widget.drill.id) == null) {
       return HipPendingArt(label: widget.showPendingLabel ? '暂无公共动作示范' : null);
     }
-    if (HipSharedLibrary.current case final config?) {
+    final config = HipSharedLibrary.current;
+    if (!widget.holdVideo && config != null) {
       return trainer.TrainingLibraryActionArt(
         actionId: widget.drill.id,
         mirrored: widget.mirror,
@@ -304,8 +310,12 @@ class _HipDrillArtState extends State<HipDrillArt> {
     return trainer.TrainingActionMedia(
       actionId: widget.drill.id,
       policy: policy,
-      playing: widget.play && !_retired && HipMediaPolicy.of(context),
+      playing:
+          (widget.play || widget.holdVideo) &&
+          !_retired &&
+          HipMediaPolicy.of(context),
       paused: !widget.play,
+      prepareFirstFrame: widget.holdVideo,
       mirrored: widget.mirror,
       radius: 0,
       stage: HipColors.mediaBackdrop,

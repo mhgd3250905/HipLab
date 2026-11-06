@@ -23,7 +23,6 @@ class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
   );
   final sources = <Uri>[];
   final commands = <(int, String, Object?)>[];
-  final returns = <Completer<Object?>>[];
 
   @override
   bool get isSupported => true;
@@ -45,16 +44,7 @@ class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
   @override
   Future<Object?> command(int playerId, String type, [Object? value]) async {
     commands.add((playerId, type, value));
-    if (type == 'return-to-start') {
-      final pending = Completer<Object?>();
-      returns.add(pending);
-      return pending.future;
-    }
-    if (type == 'cancel-return-to-start') {
-      for (final pending in returns) {
-        if (!pending.isCompleted) pending.complete(false);
-      }
-    }
+    if (type == 'prime-first-frame') return true;
     return null;
   }
 

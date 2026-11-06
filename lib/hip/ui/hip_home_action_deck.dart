@@ -1,19 +1,18 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter, lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/scheduler.dart';
 
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_home_action_inspect.dart';
-import 'hip_card_snapshot.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
-/// A bounded, poster-only preview of the actual plan, in its original order.
+/// The ordered action deck with a persistent video front face.
 /// The local index never leaves this widget or changes a training plan.
 class HipHomeActionDeck extends StatefulWidget {
   const HipHomeActionDeck({
@@ -40,11 +39,16 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   late final AnimationController _position;
   late final AnimationController _vertical;
   final _overlay = OverlayPortalController();
-  final _frontAnchor = GlobalKey();
+  late final AnimationController _expansion;
+  Animation<double>? _covered;
+  LocalHistoryEntry? _history;
+  final _informationScroll = ScrollController();
+  final _cardFocus = FocusScopeNode(debugLabel: 'Home action card');
+  FocusNode? _previousFocus;
+  bool _paused = true;
+  bool _disposing = false;
   bool _floating = false;
   bool _expanded = false;
-  bool _opening = false;
-  int _inspectionGeneration = 0;
   int _index = 0;
   int _toward = 1;
   int _generation = 0;
@@ -62,11 +66,17 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     super.initState();
     _position = AnimationController.unbounded(vsync: this);
     _vertical = AnimationController.unbounded(vsync: this);
+    _expansion = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    )..addStatusListener(_inspectionStatus);
+    _overlay.show();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _covered = ModalRoute.of(context)?.secondaryAnimation;
     final viewport = MediaQuery.sizeOf(context);
     final resized = _viewport != null && _viewport != viewport;
     if ((_reduced && !_lastReduced) || resized) {
@@ -78,6 +88,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _position.value = 0;
       _vertical.value = 0;
       _finishFloating();
+      if (_reduced) _expansion.value = _expanded ? 1 : 0;
     }
     _lastReduced = _reduced;
     _viewport = viewport;
@@ -94,6 +105,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _position.value = 0;
       _vertical.value = 0;
       _finishFloating();
+      _resetInspection();
       _index = 0;
       _toward = 1;
       _committing = false;
@@ -106,7 +118,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
 
   @override
   void dispose() {
+    _disposing = true;
+    _resetInspection();
     _generation++;
+    _cardFocus.dispose();
+    _informationScroll.dispose();
+    _expansion.dispose();
     _position.dispose();
     _vertical.dispose();
     super.dispose();
@@ -117,89 +134,80 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   void _floatFront() {
     if (_reduced || _floating) return;
     setState(() => _floating = true);
-    _overlay.show();
   }
 
-  void _finishFloating() {
-    _floating = false;
-    if (!_overlay.isShowing) return;
-    if (SchedulerBinding.instance.schedulerPhase ==
-        SchedulerPhase.persistentCallbacks) {
-      // Identity/viewport changes arrive during build; the portal cannot be
-      // hidden in that phase. Its builder already paints nothing this frame.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_floating && _overlay.isShowing) _overlay.hide();
-      });
-    } else {
-      _overlay.hide();
+  void _finishFloating() => _floating = false;
+
+  void _inspectionStatus(AnimationStatus status) {
+    if (!_disposing &&
+        mounted &&
+        (status == AnimationStatus.dismissed ||
+            status == AnimationStatus.completed)) {
+      setState(() {});
     }
   }
 
-  Future<void> _openCard([TapUpDetails? details]) async {
-    if (_expanded || _opening || _floating || _position.isAnimating) return;
-    final box = _frontAnchor.currentContext?.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final rect = MatrixUtils.transformRect(
-      box.getTransformTo(null),
-      Offset.zero & box.size,
+  void _resetInspection() {
+    _expanded = false;
+    _paused = true;
+    final history = _history;
+    _history = null;
+    history?.remove();
+    _expansion.stop();
+    _expansion.value = 0;
+  }
+
+  void _openCard([TapUpDetails? details]) {
+    if (_expanded || _floating || _committing || _position.isAnimating) return;
+    _previousFocus = FocusManager.instance.primaryFocus;
+    _cardFocus.requestFocus();
+    setState(() {
+      _expanded = true;
+      _paused = false;
+    });
+    _history = LocalHistoryEntry(
+      impliesAppBarDismissal: false,
+      onRemove: () {
+        _history = null;
+        if (!_disposing && mounted && _expanded) _collapseCard();
+      },
     );
-    if (details != null && !rect.contains(details.globalPosition)) return;
-    final index = _index;
-    final generation = _generation;
-    final inspection = ++_inspectionGeneration;
-    final overlayContext = Overlay.of(context, rootOverlay: true).context;
-    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
-    _opening = true;
-    HipCardSnapshot? snapshot;
-    void restoreSource() {
-      if (mounted && inspection == _inspectionGeneration && _expanded) {
-        setState(() => _expanded = false);
-      }
+    ModalRoute.of(context)?.addLocalHistoryEntry(_history!);
+    if (_reduced) {
+      _expansion.value = 1;
+    } else {
+      _expansion.forward();
     }
+  }
 
-    try {
-      snapshot = HipCardSnapshotBoundary.captureFrom(
-        _frontAnchor.currentContext!,
-        overlayContext,
-        pixelRatio: pixelRatio,
-      );
-      if (snapshot == null) {
-        // An image completing its first paint can dirty the boundary on tap.
-        // Keep the live card visible while waiting for that paint to finish.
-        await WidgetsBinding.instance.endOfFrame;
-        if (!mounted || generation != _generation || index != _index) return;
-        final anchor = _frontAnchor.currentContext;
-        if (anchor != null && anchor.mounted && overlayContext.mounted) {
-          snapshot = HipCardSnapshotBoundary.captureFrom(
-            anchor,
-            overlayContext,
-            pixelRatio: pixelRatio,
-          );
-        }
-      }
-      if (!mounted || generation != _generation || index != _index) return;
-      _opening = false;
-      setState(() => _expanded = true);
-      await showHipHomeActionCard(
-        context,
-        sourceRect: rect,
-        drill: widget.drills[index],
-        number: index + 1,
-        dose: widget.doses.elementAtOrNull(index) ?? '',
-        cue: widget.cues.elementAtOrNull(index) ?? '',
-        description: widget.descriptions.elementAtOrNull(index) ?? '',
-        sourceSnapshot: snapshot,
-        onSourceRestored: restoreSource,
-      );
-    } finally {
-      if (inspection == _inspectionGeneration) _opening = false;
-      snapshot?.dispose();
-      restoreSource();
+  void _closeCard() {
+    if (!_expanded) return;
+    final history = _history;
+    if (history != null) {
+      history.remove();
+    } else {
+      _collapseCard();
+    }
+  }
+
+  void _collapseCard() {
+    // Reset only the description; keep the video subtree and its current pose.
+    if (_informationScroll.hasClients) _informationScroll.jumpTo(0);
+    if (_previousFocus?.context != null) _previousFocus?.requestFocus();
+    _previousFocus = null;
+    setState(() {
+      _expanded = false;
+      _paused = true;
+    });
+    if (_reduced) {
+      _expansion.value = 0;
+    } else {
+      _expansion.reverse();
     }
   }
 
   void _dragStart(DragStartDetails details) {
-    if (_committing || _expanded || _opening) return;
+    if (_committing || _expanded || _expansion.value > 0) return;
     // Catch a returning card where it is, rather than jumping it to rest.
     _generation++;
     _position.stop();
@@ -208,7 +216,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   void _dragUpdate(DragUpdateDetails details) {
-    if (_committing || _expanded || _opening) return;
+    if (_committing || _expanded || _expansion.value > 0) return;
     final next = _position.value + details.delta.dx;
     final nextVertical = _vertical.value + details.delta.dy;
     // Small sideways drift while lifting vertically must not swap the rear
@@ -300,7 +308,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   Future<void> _turn(int direction, {double velocity = 0}) async {
-    if (!_multiple || _committing || _opening || _expanded) return;
+    if (!_multiple || _committing || _expanded || _expansion.value > 0) return;
     _toward = direction;
     final generation = ++_generation;
     _position.stop();
@@ -336,110 +344,300 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   @override
   Widget build(BuildContext context) {
     if (widget.drills.isEmpty) return const SizedBox.shrink();
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      label: '训练动作预览',
-      onTap: _openCard,
-      value: _description(_index),
-      increasedValue: _multiple ? _description(_at(1)) : null,
-      decreasedValue: _multiple ? _description(_at(-1)) : null,
-      hint: '轻点展开动作，拖到左右区域切换，上下拖动松手回位',
-      onIncrease: _multiple ? () => _turn(1) : null,
-      onDecrease: _multiple ? () => _turn(-1) : null,
-      child: FocusableActionDetector(
-        shortcuts: const {
-          SingleActivator(LogicalKeyboardKey.arrowLeft): _DeckTurnIntent(-1),
-          SingleActivator(LogicalKeyboardKey.arrowRight): _DeckTurnIntent(1),
-        },
-        actions: {
-          _DeckTurnIntent: CallbackAction<_DeckTurnIntent>(
-            onInvoke: (intent) {
-              _turn(intent.direction);
-              return null;
-            },
-          ),
-        },
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final available = math.max(0.0, constraints.maxHeight - 110);
-            if (available < 110) return const SizedBox.shrink();
-            _cardWidth = math.min(
-              constraints.maxWidth * .78,
-              math.max(156, available / 1.62),
-            );
-            _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
-            _switchDistance = MediaQuery.sizeOf(context).width * .26;
-            final cardHeight = math.min(available, _cardWidth * 1.62);
-            return Align(
-              alignment: const Alignment(0, .2),
-              child: OverlayPortal.overlayChildLayoutBuilder(
-                controller: _overlay,
-                overlayLocation: OverlayChildLocation.rootOverlay,
-                overlayChildBuilder: (context, info) {
-                  if (!_floating) return const SizedBox.shrink();
-                  return Positioned.fromRect(
-                    rect: MatrixUtils.transformRect(
-                      info.childPaintTransform,
-                      Offset.zero & info.childSize,
-                    ),
-                    child: IgnorePointer(
-                      child: AnimatedBuilder(
-                        animation: Listenable.merge([_position, _vertical]),
-                        builder: (context, _) => Stack(
-                          clipBehavior: Clip.none,
-                          fit: StackFit.expand,
-                          children: [
-                            _card(
-                              _index,
-                              0,
-                              constraints.maxWidth,
-                              cardHeight,
-                              offset: _reduced ? 0 : _position.value,
-                              front: true,
-                              floatingCopy: true,
-                            ),
-                          ],
+    return PopScope<void>(
+      canPop: !_expanded && !_expansion.isAnimating,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _closeCard();
+      },
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        label: '训练动作预览',
+        onTap: _openCard,
+        value: _description(_index),
+        increasedValue: _multiple ? _description(_at(1)) : null,
+        decreasedValue: _multiple ? _description(_at(-1)) : null,
+        hint: '轻点展开动作，拖到左右区域切换，上下拖动松手回位',
+        onIncrease: _multiple ? () => _turn(1) : null,
+        onDecrease: _multiple ? () => _turn(-1) : null,
+        child: FocusableActionDetector(
+          shortcuts: const {
+            SingleActivator(LogicalKeyboardKey.arrowLeft): _DeckTurnIntent(-1),
+            SingleActivator(LogicalKeyboardKey.arrowRight): _DeckTurnIntent(1),
+          },
+          actions: {
+            _DeckTurnIntent: CallbackAction<_DeckTurnIntent>(
+              onInvoke: (intent) {
+                _turn(intent.direction);
+                return null;
+              },
+            ),
+          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final available = math.max(0.0, constraints.maxHeight - 110);
+              if (available < 110) return const SizedBox.shrink();
+              _cardWidth = math.min(
+                constraints.maxWidth * .78,
+                math.max(156, available / 1.62),
+              );
+              _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
+              _switchDistance = MediaQuery.sizeOf(context).width * .26;
+              final cardHeight = math.min(available, _cardWidth * 1.62);
+              return Align(
+                alignment: const Alignment(0, .2),
+                child: OverlayPortal.overlayChildLayoutBuilder(
+                  controller: _overlay,
+                  overlayLocation: OverlayChildLocation.rootOverlay,
+                  overlayChildBuilder: (context, info) => _liveFront(
+                    info.childPaintTransform,
+                    constraints.maxWidth,
+                    cardHeight,
+                  ),
+                  child: SizedBox(
+                    key: const ValueKey('home-deck-stage'),
+                    height: cardHeight + 100,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      dragStartBehavior: DragStartBehavior.down,
+                      onPanStart: _dragStart,
+                      onPanUpdate: _dragUpdate,
+                      onPanEnd: _dragEnd,
+                      onPanCancel: _returnCard,
+                      child: ClipRect(
+                        clipper: _DeckViewportClip(
+                          math.max(
+                            0,
+                            (MediaQuery.sizeOf(context).width -
+                                    constraints.maxWidth) /
+                                2,
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  height: cardHeight + 100,
-                  child: GestureDetector(
-                    key: const ValueKey('home-deck-gesture'),
-                    behavior: HitTestBehavior.opaque,
-                    dragStartBehavior: DragStartBehavior.down,
-                    onPanStart: _dragStart,
-                    onPanUpdate: _dragUpdate,
-                    onPanEnd: _dragEnd,
-                    onPanCancel: _returnCard,
-                    onTapUp: _openCard,
-                    child: ClipRect(
-                      clipper: _DeckViewportClip(
-                        math.max(
-                          0,
-                          (MediaQuery.sizeOf(context).width -
-                                  constraints.maxWidth) /
-                              2,
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([_position, _vertical]),
+                          builder: (context, _) =>
+                              _cards(constraints.maxWidth, cardHeight),
                         ),
-                      ),
-                      child: AnimatedBuilder(
-                        animation: Listenable.merge([_position, _vertical]),
-                        builder: (context, _) =>
-                            _cards(constraints.maxWidth, cardHeight),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
   }
+
+  Widget _liveFront(
+    Matrix4 anchor,
+    double width,
+    double height,
+  ) => AnimatedBuilder(
+    animation: Listenable.merge([
+      _position,
+      _vertical,
+      _expansion,
+      ?_covered,
+      Navigator.of(context).userGestureInProgressNotifier,
+    ]),
+    builder: (context, _) {
+      final t = Curves.easeOutCubic.transform(_expansion.value);
+      final active = _expanded || t > 0;
+      final x = _reduced ? 0.0 : _position.value;
+      final y = _reduced ? 0.0 : _vertical.value;
+      final travel = (x / _cardWidth).clamp(-1.5, 1.5);
+      final lift = math.sin(
+        (Offset(x, y).distance / _cardWidth).clamp(0, 1) * math.pi / 2,
+      );
+      final pivot = Offset(_cardWidth / 2, height * .9);
+      final source = Matrix4.copy(anchor)
+        ..translateByDouble(
+          (width - _cardWidth) / 2 - 18 + x,
+          74 - lift * 18 + y,
+          0,
+          1,
+        )
+        ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
+        ..rotateZ(-.025 + travel * .18)
+        ..multiply(Matrix4.identity()..setEntry(3, 2, .0012))
+        ..rotateX(.018 + (y / _cardWidth).clamp(-1, 1) * -.04)
+        ..rotateY(-.10 + travel * .19)
+        ..scaleByDouble(1 + lift * .018, 1 + lift * .018, 1, 1)
+        ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1);
+      final view = MediaQuery.of(context);
+      final targetWidth = math.min(460.0, math.max(0.0, view.size.width - 40));
+      final targetHeight = math.min(
+        720.0,
+        math.max(0.0, view.size.height - view.padding.vertical - 48),
+      );
+      final target = Matrix4.translationValues(
+        (view.size.width - targetWidth) / 2,
+        view.padding.top +
+            (view.size.height - view.padding.vertical - targetHeight) / 2,
+        0,
+      );
+      final pose = Matrix4.zero();
+      for (var i = 0; i < 16; i++) {
+        pose.storage[i] =
+            source.storage[i] + (target.storage[i] - source.storage[i]) * t;
+      }
+      final covered = _reduced ? 0.0 : (_covered?.value ?? 0);
+      // Recognize motion before the card's perspective transform, in screen
+      // coordinates. A recognizer inside the tilt would distort finger deltas.
+      return GestureDetector(
+        key: const ValueKey('home-deck-gesture'),
+        behavior: HitTestBehavior.deferToChild,
+        dragStartBehavior: DragStartBehavior.down,
+        onPanStart: _dragStart,
+        onPanUpdate: _dragUpdate,
+        onPanEnd: _dragEnd,
+        onPanCancel: _returnCard,
+        onTapUp: active ? null : _openCard,
+        child: BlockSemantics(
+          blocking: active,
+          child: FocusScope(
+            node: _cardFocus,
+            child: Shortcuts(
+              shortcuts: active
+                  ? const {
+                      SingleActivator(LogicalKeyboardKey.escape):
+                          DismissIntent(),
+                    }
+                  : const {},
+              child: Actions(
+                actions: {
+                  DismissIntent: CallbackAction<DismissIntent>(
+                    onInvoke: (_) {
+                      _closeCard();
+                      return null;
+                    },
+                  ),
+                },
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    if (active)
+                      Positioned.fill(
+                        child: GestureDetector(
+                          key: const ValueKey('home-deck-inspect-barrier'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _closeCard,
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: 4 * t,
+                              sigmaY: 4 * t,
+                            ),
+                            child: ColoredBox(
+                              color: Colors.black.withValues(
+                                alpha: (HipColors.isDark ? .42 : .18) * t,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      key: ValueKey('home-deck-card-$_index'),
+                      left: 0,
+                      top: 0,
+                      width: lerpDouble(_cardWidth, targetWidth, t),
+                      height: lerpDouble(height, targetHeight, t),
+                      child: Transform(
+                        key: const ValueKey('home-deck-pose'),
+                        alignment: Alignment.topLeft,
+                        transform: pose,
+                        child: IgnorePointer(
+                          ignoring:
+                              !(ModalRoute.isCurrentOf(context) ?? true) ||
+                              Navigator.of(context).userGestureInProgress,
+                          child: Opacity(
+                            key: ValueKey('home-deck-opacity-$_index'),
+                            opacity: 1,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              child: RepaintBoundary(
+                                key: const ValueKey('home-deck-front'),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    HipHomeActionFace(
+                                      key: const ValueKey(
+                                        'home-deck-live-face',
+                                      ),
+                                      drill: widget.drills[_index],
+                                      number: _index + 1,
+                                      expansion: t,
+                                      expanded: _expanded,
+                                      paused: _paused,
+                                      compact: height < 330,
+                                      dose:
+                                          widget.doses.elementAtOrNull(
+                                            _index,
+                                          ) ??
+                                          '',
+                                      cue:
+                                          widget.cues.elementAtOrNull(_index) ??
+                                          '',
+                                      description:
+                                          widget.descriptions.elementAtOrNull(
+                                            _index,
+                                          ) ??
+                                          '',
+                                      onClose: _closeCard,
+                                      onToggle: () {
+                                        if (_expanded) {
+                                          setState(() => _paused = !_paused);
+                                        }
+                                      },
+                                      informationScroll: _informationScroll,
+                                      multiple: _multiple,
+                                      previous: _arrow(-1),
+                                      next: _arrow(1),
+                                    ),
+                                    if (_floating)
+                                      const Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: SizedBox(
+                                            key: ValueKey(
+                                              'home-deck-floating-front',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    if (covered > 0)
+                                      Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: ColoredBox(
+                                            color: Colors.black.withValues(
+                                              alpha:
+                                                  (HipColors.isDark
+                                                      ? .32
+                                                      : .14) *
+                                                  covered,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 
   String _description(int index) {
     final dose = widget.doses.elementAtOrNull(index) ?? '';
@@ -487,7 +685,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
             replenishing: true,
             opacity: Curves.easeOut.transform((progress / .3).clamp(0, 1)),
           ),
-        for (var layer = count - 1; layer >= 0; layer--)
+        for (var layer = count - 1; layer >= 1; layer--)
           _card(
             _at(layer * _toward),
             layer == 0 ? 0 : layer - progress,
@@ -560,8 +758,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                 excluding: !front || floatingCopy,
                 child: IgnorePointer(
                   ignoring: !front,
-                  child: HipCardSnapshotBoundary(
-                    key: front && !floatingCopy ? _frontAnchor : null,
+                  child: RepaintBoundary(
                     child: Stack(
                       clipBehavior: Clip.none,
                       fit: StackFit.expand,
