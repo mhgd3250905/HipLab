@@ -548,6 +548,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                         key: const ValueKey('home-deck-pose'),
                         alignment: Alignment.topLeft,
                         transform: pose,
+                        // Unpack RGB/alpha in the video's local coordinates,
+                        // then transform the composed card as one GPU image.
+                        filterQuality: FilterQuality.low,
                         child: IgnorePointer(
                           ignoring:
                               !(ModalRoute.isCurrentOf(context) ?? true) ||

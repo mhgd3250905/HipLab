@@ -860,6 +860,19 @@ void main() {
           .widget<trainer.UgkPackedAlphaVideo>(surface)
           .controller;
       final compactRect = tester.getRect(visualFront());
+      Iterable<Layer> descendantLayers(Layer layer) sync* {
+        yield layer;
+        if (layer is ContainerLayer) {
+          for (
+            Layer? child = layer.firstChild;
+            child != null;
+            child = child.nextSibling
+          ) {
+            yield* descendantLayers(child);
+          }
+        }
+      }
+
       void sameSurface() {
         expectCardPainted(tester);
         expect(tester.state(frontMedia()), same(mediaState));
@@ -873,9 +886,24 @@ void main() {
           same(controller),
         );
         expect(tester.widget<Texture>(find.byType(Texture)).textureId, 101);
+        // Inspect the painted layer tree, not only Transform.filterQuality.
+        // The card's pose must wrap the composed texture in a matrix filter,
+        // keeping its perspective out of the packed RGB/alpha input space.
+        final pose = tester.renderObject<RenderTransform>(
+          find.byKey(const ValueKey('home-deck-pose')),
+        );
+        expect(pose.debugLayer, isA<ImageFilterLayer>());
+        final poseLayer = pose.debugLayer! as ImageFilterLayer;
+        expect(poseLayer.attached, isTrue);
+        final textureLayer = descendantLayers(
+          poseLayer,
+        ).whereType<TextureLayer>().where((layer) => layer.textureId == 101);
+        expect(textureLayer, hasLength(1));
+        expect(textureLayer.single.attached, isTrue);
         expectNoDecoderChurn(platform);
       }
 
+      sameSurface();
       await openActionCard(tester);
       for (var elapsed = 0; elapsed < 416; elapsed += 16) {
         await tester.pump(const Duration(milliseconds: 16));
