@@ -12,6 +12,22 @@ import 'hip_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipPressable;
 
+abstract final class _FolderPreview {
+  // Paired corners: outer radius = art radius + the surrounding inset.
+  static const radius = 14.0;
+  static const artRadius = 8.0;
+
+  static Rect cell(int index, int count) {
+    final loneInRow = count.isOdd && index == count - 1;
+    return Rect.fromLTWH(
+      loneInRow ? 20 : 6 + (index % 2) * 28,
+      count <= 2 ? 20 : 6 + (index ~/ 2) * 28,
+      24,
+      24,
+    );
+  }
+}
+
 @immutable
 class HipHomeRoutineChoice {
   const HipHomeRoutineChoice({
@@ -65,23 +81,10 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
     super.dispose();
   }
 
-  List<HipDrill> get _miniatures {
-    final result = <HipDrill>[];
-    // One representative per group first. With two office groups, their next
-    // actions fill the other two preview cells without inventing more groups.
-    for (var step = 0; result.length < 4; step++) {
-      var added = false;
-      for (final choice in widget.choices) {
-        if (step < choice.drills.length) {
-          result.add(choice.drills[step]);
-          added = true;
-          if (result.length == 4) break;
-        }
-      }
-      if (!added) break;
-    }
-    return result;
-  }
+  List<HipDrill?> get _miniatures => [
+    // One group, one preview. Never imply extra groups with later actions.
+    for (final choice in widget.choices.take(4)) choice.drills.firstOrNull,
+  ];
 
   @override
   void didUpdateWidget(HipHomeRoutineFolder oldWidget) {
@@ -146,64 +149,58 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: _route == null,
-    child: HipPressable(
-      semanticLabel: '选择训练组',
-      onTap: _route == null && widget.choices.isNotEmpty ? _open : null,
-      scale: .95,
-      child: SizedBox.square(
-        dimension: 64,
-        child: AnimatedBuilder(
-          animation:
-              _route?.animation ?? const AlwaysStoppedAnimation<double>(0),
-          builder: (context, child) => Opacity(
-            key: const ValueKey('home-routine-folder-source'),
-            // Restore in the same frame that the reverse reaches its source,
-            // before overlay disposal completes in a later microtask.
-            opacity:
-                _route == null ||
-                    (_route!.closingCovers != null &&
-                        _route!.animation!.status == AnimationStatus.dismissed)
-                ? 1
-                : 0,
-            child: child,
-          ),
-          child: _FolderSurface(
-            key: _face,
-            radius: 19,
-            child: Padding(
-              padding: const EdgeInsets.all(6),
-              child: Column(
-                children: [
-                  for (var row = 0; row < 2; row++) ...[
-                    if (row != 0) const SizedBox(height: 4),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          for (var col = 0; col < 2; col++) ...[
-                            if (col != 0) const SizedBox(width: 4),
-                            Expanded(
-                              child: _FolderArtwork(
-                                drill: _miniatures.elementAtOrNull(
-                                  row * 2 + col,
-                                ),
-                                radius: 6,
-                              ),
-                            ),
-                          ],
-                        ],
+  Widget build(BuildContext context) {
+    final miniatures = _miniatures;
+    return PopScope(
+      canPop: _route == null,
+      child: HipPressable(
+        semanticLabel: '选择训练组',
+        onTap: _route == null && widget.choices.isNotEmpty ? _open : null,
+        scale: .95,
+        child: SizedBox.square(
+          dimension: 64,
+          child: AnimatedBuilder(
+            animation:
+                _route?.animation ?? const AlwaysStoppedAnimation<double>(0),
+            builder: (context, child) => Opacity(
+              key: const ValueKey('home-routine-folder-source'),
+              // Restore in the same frame that the reverse reaches its source,
+              // before overlay disposal completes in a later microtask.
+              opacity:
+                  _route == null ||
+                      (_route!.closingCovers != null &&
+                          _route!.animation!.status ==
+                              AnimationStatus.dismissed)
+                  ? 1
+                  : 0,
+              child: child,
+            ),
+            child: _FolderSurface(
+              key: _face,
+              radius: _FolderPreview.radius,
+              child: SizedBox.expand(
+                child: Stack(
+                  children: [
+                    for (var i = 0; i < miniatures.length; i++)
+                      Positioned.fromRect(
+                        rect: _FolderPreview.cell(i, miniatures.length),
+                        child: _FolderArtwork(
+                          key: ValueKey(
+                            'home-routine-preview-${widget.choices[i].id}',
+                          ),
+                          drill: miniatures[i],
+                          radius: _FolderPreview.artRadius,
+                        ),
                       ),
-                    ),
                   ],
-                ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _RoutineFolderRoute extends PopupRoute<String> {
@@ -219,7 +216,7 @@ class _RoutineFolderRoute extends PopupRoute<String> {
 
   final Rect origin;
   final List<HipHomeRoutineChoice> choices;
-  final List<HipDrill> miniatures;
+  final List<HipDrill?> miniatures;
   final List<GlobalKey> coverKeys;
   final viewportKey = GlobalKey();
   final String selectedId;
@@ -377,13 +374,13 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                           rect: current,
                           child: _FolderSurface(
                             key: const ValueKey('home-routine-folder-surface'),
-                            radius: lerpDouble(19, 32, t)!,
+                            radius: lerpDouble(_FolderPreview.radius, 32, t)!,
                           ),
                         ),
                         ClipRRect(
                           clipper: _FolderRevealClip(
                             current,
-                            lerpDouble(19, 32, t)!,
+                            lerpDouble(_FolderPreview.radius, 32, t)!,
                           ),
                           child: SizedBox.expand(
                             child: Stack(
@@ -407,21 +404,15 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                         for (var i = 0; i < miniatures.length; i++)
                           Positioned.fromRect(
                             rect: Rect.lerp(
-                              Rect.fromLTWH(
-                                origin.left + 6 + (i % 2) * 28,
-                                origin.top + 6 + (i ~/ 2) * 28,
-                                24,
-                                24,
-                              ),
-                              closingCovers != null &&
-                                      (i >= choices.length ||
-                                          closingCovers![i] == null)
-                                  ? Rect.fromLTWH(
-                                      origin.left + 6 + (i % 2) * 28,
-                                      origin.top + 6 + (i ~/ 2) * 28,
-                                      24,
-                                      24,
-                                    )
+                              _FolderPreview.cell(
+                                i,
+                                miniatures.length,
+                              ).shift(origin.topLeft),
+                              closingCovers != null && closingCovers![i] == null
+                                  ? _FolderPreview.cell(
+                                      i,
+                                      miniatures.length,
+                                    ).shift(origin.topLeft)
                                   : closingCovers?.elementAtOrNull(i) ??
                                         Rect.fromLTWH(
                                           target.left +
@@ -440,15 +431,19 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                                 child: Opacity(
                                   opacity:
                                       closingCovers != null &&
-                                          (i >= choices.length ||
-                                              closingCovers![i] == null)
+                                          closingCovers![i] == null
                                       ? 1 - const Interval(0, .4).transform(t)
-                                      : i < choices.length
-                                      ? 1 - handover
-                                      : 1 - const Interval(0, .4).transform(t),
+                                      : 1 - handover,
                                   child: _FolderArtwork(
+                                    key: ValueKey(
+                                      'home-routine-flying-${choices[i].id}',
+                                    ),
                                     drill: miniatures[i],
-                                    radius: lerpDouble(6, 18, t)!,
+                                    radius: lerpDouble(
+                                      _FolderPreview.artRadius,
+                                      18,
+                                      t,
+                                    )!,
                                   ),
                                 ),
                               ),
@@ -494,7 +489,7 @@ class _FolderSurface extends StatelessWidget {
 }
 
 class _FolderArtwork extends StatelessWidget {
-  const _FolderArtwork({required this.drill, required this.radius});
+  const _FolderArtwork({super.key, required this.drill, required this.radius});
   final HipDrill? drill;
   final double radius;
   @override

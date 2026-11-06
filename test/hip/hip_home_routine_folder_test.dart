@@ -259,22 +259,107 @@ void main() {
   }
 
   testWidgets(
-    'closed folder has four real poster miniatures and no video node',
+    'closed folder previews only the first action of each real group up to four',
     (tester) async {
-      await mount(tester, items: choices.take(2).toList());
-      expect(tester.getSize(find.byKey(_entry)), const Size.square(64));
-      expect(find.byType(trainer.TrainerPoster), findsNWidgets(4));
-      final posters = tester
-          .widgetList<trainer.TrainerPoster>(find.byType(trainer.TrainerPoster))
-          .map((poster) => poster.asset);
-      final expected = [
-        for (var step = 0; step < 2; step++)
-          for (final choice in choices.take(2))
-            fixture.policy.posterAssetFor(choice.drills[step].id),
-      ];
-      expect(posters, expected);
+      for (var count = 1; count <= 5; count++) {
+        final items = choices.take(count).toList();
+        await mount(tester, items: items);
+        final source = tester.getRect(find.byKey(_entry));
+        expect(source.size, const Size.square(64));
+        final shown = items.take(4).toList();
+        expect(find.byType(trainer.TrainerPoster), findsNWidgets(shown.length));
+        final posters = tester
+            .widgetList<trainer.TrainerPoster>(
+              find.byType(trainer.TrainerPoster),
+            )
+            .map((poster) => poster.asset);
+        expect(posters, [
+          for (final choice in shown)
+            fixture.policy.posterAssetFor(choice.drills.first.id),
+        ]);
+        final cells = [
+          for (final choice in shown)
+            find.byKey(ValueKey('home-routine-preview-${choice.id}')),
+        ];
+        for (final cell in cells) {
+          expect(cell, findsOneWidget);
+        }
+        for (final absent in choices.skip(shown.length)) {
+          expect(
+            find.byKey(ValueKey('home-routine-preview-${absent.id}')),
+            findsNothing,
+          );
+        }
+        if (count == 1) {
+          expect(tester.getRect(cells.single).center, source.center);
+        } else if (count == 2) {
+          final left = tester.getRect(cells[0]);
+          final right = tester.getRect(cells[1]);
+          expect(left.size, right.size);
+          expect(left.center.dy, closeTo(source.center.dy, .01));
+          expect(right.center.dy, closeTo(source.center.dy, .01));
+          expect(
+            (left.center.dx + right.center.dx) / 2,
+            closeTo(source.center.dx, .01),
+          );
+          expect(left.right, lessThan(right.left));
+          expect(
+            left.left - source.left,
+            closeTo(source.right - right.right, .01),
+          );
+          await exportExpanded(tester, 'folder-two-closed');
+        } else if (count == 3) {
+          final bottom = tester.getRect(cells[2]);
+          expect(bottom.center.dx, closeTo(source.center.dx, .01));
+          expect(bottom.top, greaterThan(tester.getRect(cells[0]).bottom));
+        } else if (count == 4) {
+          await exportExpanded(tester, 'folder-four-closed');
+        }
+        expect(find.byType(trainer.TrainingActionMedia), findsNothing);
+        expect(find.byType(trainer.UgkPackedAlphaVideo), findsNothing);
+        expect(fixture.requested, isEmpty);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      }
+    },
+  );
+
+  testWidgets(
+    'changing two groups to four and back replaces preview cells without stale actions',
+    (tester) async {
+      final two = choices.take(2).toList();
+      final (host, _, selected) = await mount(tester, items: two);
+      final folder = tester.state(find.byType(HipHomeRoutineFolder));
+      final original = tester.getRect(find.byKey(_entry));
+      for (final items in [choices.take(4).toList(), two]) {
+        host.currentState!.change(choices: items);
+        await tester.pumpAndSettle();
+        expect(tester.state(find.byType(HipHomeRoutineFolder)), same(folder));
+        expect(tester.getRect(find.byKey(_entry)), original);
+        expect(find.byType(trainer.TrainerPoster), findsNWidgets(items.length));
+        expect(
+          tester
+              .widgetList<trainer.TrainerPoster>(
+                find.byType(trainer.TrainerPoster),
+              )
+              .map((poster) => poster.asset),
+          [
+            for (final choice in items)
+              fixture.policy.posterAssetFor(choice.drills.first.id),
+          ],
+        );
+        for (final item in choices) {
+          expect(
+            find.byKey(ValueKey('home-routine-preview-${item.id}')),
+            items.any((choice) => choice.id == item.id)
+                ? findsOneWidget
+                : findsNothing,
+          );
+        }
+      }
       expect(find.byType(trainer.TrainingActionMedia), findsNothing);
       expect(find.byType(trainer.UgkPackedAlphaVideo), findsNothing);
+      expect(selected, isEmpty);
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
     },
@@ -283,13 +368,26 @@ void main() {
   testWidgets(
     'folder keeps its source bottom-right fixed while opening up-left and closing along the same path',
     (tester) async {
-      for (final size in [
-        const Size(320, 700),
-        const Size(394, 853),
-        const Size(740, 360),
+      for (final scenario in [
+        (const Size(320, 700), 5),
+        (const Size(394, 853), 5),
+        (const Size(740, 360), 5),
+        (const Size(394, 853), 2),
       ]) {
-        final (_, navigator, selected) = await mount(tester, size: size);
+        final (size, count) = scenario;
+        final items = choices.take(count).toList();
+        final (_, navigator, selected) = await mount(
+          tester,
+          size: size,
+          items: items,
+        );
         final origin = tester.getRect(find.byKey(_entry));
+        final closedCells = {
+          for (final choice in items.take(4))
+            choice.id: tester.getRect(
+              find.byKey(ValueKey('home-routine-preview-${choice.id}')),
+            ),
+        };
         final anchor = origin.bottomRight;
         expect(origin.size, const Size.square(64));
 
@@ -302,7 +400,7 @@ void main() {
           expect(rect.bottom, lessThan(size.height));
         }
 
-        if (size.width == 394) {
+        if (size.width == 394 && count == 5) {
           await exportExpanded(tester, 'folder-anchor-closed');
         }
         await tester.tap(find.byKey(_entry));
@@ -313,6 +411,14 @@ void main() {
         anchored(gridLayout);
         var previous = tester.getRect(find.byKey(_surface));
         expect(previous, origin);
+        for (final entry in closedCells.entries) {
+          expect(
+            tester.getRect(
+              find.byKey(ValueKey('home-routine-flying-${entry.key}')),
+            ),
+            entry.value,
+          );
+        }
         expect(sourceOpacity(tester), 0);
         for (var frame = 0; frame < 24; frame++) {
           await tester.pump(const Duration(milliseconds: 16));
@@ -324,13 +430,13 @@ void main() {
           expect(current.top, lessThanOrEqualTo(previous.top + .01));
           expect(tester.getRect(find.byKey(_panel)), gridLayout);
           previous = current;
-          if (size.width == 394 && frame == 7) {
+          if (size.width == 394 && count == 5 && frame == 7) {
             await exportExpanded(tester, 'folder-anchor-opening-128ms');
           }
         }
         expect(previous, gridLayout);
         expect(selected, isEmpty);
-        if (size.width == 394) {
+        if (size.width == 394 && count == 5) {
           await exportExpanded(tester, 'folder-anchor-open');
         }
 
@@ -351,9 +457,23 @@ void main() {
           if (route.animation!.status == AnimationStatus.dismissed ||
               floating.evaluate().isEmpty) {
             expect(sourceOpacity(tester), 1);
+            for (final entry in closedCells.entries) {
+              expect(
+                tester.getRect(
+                  find.byKey(ValueKey('home-routine-preview-${entry.key}')),
+                ),
+                entry.value,
+              );
+              final flying = find.byKey(
+                ValueKey('home-routine-flying-${entry.key}'),
+              );
+              if (flying.evaluate().isNotEmpty) {
+                expect(tester.getRect(flying), entry.value);
+              }
+            }
           }
           previous = current;
-          if (size.width == 394 && frame == 7) {
+          if (size.width == 394 && count == 5 && frame == 7) {
             await exportExpanded(tester, 'folder-anchor-closing-128ms');
           }
         }
