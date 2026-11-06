@@ -249,7 +249,10 @@ void main() {
                 alignment: Alignment.topCenter,
                 child: HipTopBar(
                   leading: const HipNavBackChip(leading: HipNavLeading.close),
-                  center: SizedBox(height: centerHeight),
+                  center: SizedBox(
+                    key: const ValueKey('immersive-center'),
+                    height: centerHeight,
+                  ),
                   trailing: const SizedBox.square(dimension: 20, key: action),
                 ),
               ),
@@ -257,6 +260,13 @@ void main() {
             top: top,
           );
           expectChip(tester, top: top + 10);
+          expect(
+            tester
+                .getSize(find.byKey(const ValueKey('immersive-center')))
+                .width,
+            phone.width - 32 - 44 - 12 - 12 - 44,
+            reason: 'Question heading keeps the full original middle column',
+          );
           expect(tester.getCenter(find.byKey(action)).dy, top + 8 + 24);
           expect(
             tester.getSize(find.byType(HipTopBar)).height,

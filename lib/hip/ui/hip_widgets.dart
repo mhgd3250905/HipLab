@@ -443,38 +443,43 @@ class HipTopBar extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 heightFactor: 1,
-                child:
-                    center ??
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (subtitle != null)
-                          Text(
-                            subtitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              height: 1.2,
-                              color: HipColors.jadeText,
-                              fontWeight: FontWeight.w600,
+                // The question heading still owns the full middle column,
+                // so its internally centred labels do not drift left.
+                child: SizedBox(
+                  width: double.infinity,
+                  child:
+                      center ??
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (subtitle != null)
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.2,
+                                color: HipColors.jadeText,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        if (title != null)
-                          Text(
-                            title!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              height: 1.25,
-                              fontWeight: FontWeight.w600,
+                          if (title != null)
+                            Text(
+                              title!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                height: 1.25,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
+                        ],
+                      ),
+                ),
               ),
             ),
           ),
