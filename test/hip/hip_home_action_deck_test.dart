@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_home_action_deck.dart';
@@ -11,6 +12,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_deck_playback_fixture.dart';
 import 'public_media_fixture.dart';
 import 'trainer_test_pump.dart';
 
@@ -166,6 +168,42 @@ void main() {
       tester.getCenter(find.byKey(const ValueKey('home-hero'))),
     );
     await tester.pump();
+  }
+
+  Future<HomeDeckPlaybackPlatform> openReadyPlaybackCard(
+    WidgetTester tester,
+  ) async {
+    final repository = HomeDeckPlaybackRepository();
+    final platform = HomeDeckPlaybackPlatform();
+    final previousFilter = trainer.UgkPackedAlphaVideo.debugFilterBuilder;
+    HipPublicMedia.current = repository.policy;
+    trainer.UgkPackedAlphaVideo.debugPlatform = platform;
+    trainer.UgkPackedAlphaVideo.debugFilterBuilder = (input) => input;
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await platform.dispose();
+      repository.dispose();
+      trainer.UgkPackedAlphaVideo.debugFilterBuilder = previousFilter;
+    });
+    await showDeck(tester, videoEnabled: true);
+    await tester.pumpAndSettle();
+    await openActionCard(tester);
+    await tester.pump();
+    await tester.pump();
+    expect(platform.sources, hasLength(1));
+    platform.emit(1, 'ready');
+    platform.emit(1, 'first-frame');
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump();
+    final surface = tester.widget<trainer.UgkPackedAlphaVideo>(
+      find.byType(trainer.UgkPackedAlphaVideo),
+    );
+    expect(surface.controller.ready, isTrue);
+    expect(surface.controller.hasFrame, isTrue);
+    return platform;
   }
 
   Future<void> dismissActionCard(WidgetTester tester, String method) async {
@@ -760,6 +798,130 @@ void main() {
         expect(tester.takeException(), isNull);
       }
       expect(fixture.requested, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'a ready decoder finishes one return before the expanded route reverses',
+    (tester) async {
+      phone(tester);
+      final platform = await openReadyPlaybackCard(tester);
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      final route = ModalRoute.of(tester.element(expanded))!;
+      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final media = find.descendant(
+        of: find.byKey(const ValueKey('home-deck-expanded-media')),
+        matching: find.byType(trainer.TrainingActionMedia),
+      );
+      final surfaceElement = tester.element(surface);
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(surface)
+          .controller;
+      final close = tester
+          .widget<HipCircleButton>(
+            find.byKey(const ValueKey('home-deck-expanded-close')),
+          )
+          .onPressed!;
+      close();
+      close();
+      await tester.pump();
+      expect(platform.returns, hasLength(1));
+      expect(route.isCurrent, isTrue);
+      expect(route.animation!.status, AnimationStatus.completed);
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(route.isCurrent, isTrue);
+      expect(tester.element(surface), same(surfaceElement));
+      expect(
+        platform.commands.where((c) => c.$2 == 'return-to-start'),
+        hasLength(1),
+      );
+      expect(
+        platform.commands.where((c) => c.$2 == 'cancel-return-to-start'),
+        isEmpty,
+      );
+      expect(platform.commands.where((c) => c.$2 == 'dispose'), isEmpty);
+
+      platform.returns.single.complete(true);
+      for (var frame = 0; frame < 4; frame++) {
+        await tester.pump();
+      }
+      expect(route.animation!.status, AnimationStatus.reverse);
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
+      expect(tester.element(surface), same(surfaceElement));
+      expect(
+        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
+        same(controller),
+      );
+      await tester.pump(const Duration(milliseconds: 180));
+      expect(tester.element(surface), same(surfaceElement));
+      expect(platform.commands.where((c) => c.$2 == 'dispose'), isEmpty);
+      await tester.pumpAndSettle();
+      expect(expanded, findsNothing);
+      expect(surface, findsNothing);
+      expect(platform.sources, hasLength(1));
+      expect(platform.commands.where((c) => c.$2 == 'dispose').single.$1, 1);
+      expect(position(tester), '01');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'closing a paused demonstration resumes before starting its return',
+    (tester) async {
+      phone(tester);
+      final platform = await openReadyPlaybackCard(tester);
+      final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
+      final media = find.descendant(
+        of: mediaTap,
+        matching: find.byType(trainer.TrainingActionMedia),
+      );
+      final mediaElement = tester.element(media);
+      final route = ModalRoute.of(tester.element(mediaTap))!;
+      await tester.tap(mediaTap);
+      await tester.pump();
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isTrue);
+      final commandStart = platform.commands.length;
+      final close = tester
+          .widget<HipCircleButton>(
+            find.byKey(const ValueKey('home-deck-expanded-close')),
+          )
+          .onPressed!;
+      close();
+      expect(platform.returns, isEmpty);
+      await tester.pump();
+      await tester.pump();
+      expect(tester.element(media), same(mediaElement));
+      expect(tester.widget<trainer.TrainingActionMedia>(media).paused, isFalse);
+      expect(platform.returns, hasLength(1));
+      final closingCommands = platform.commands.skip(commandStart).toList();
+      final resumed = closingCommands.indexWhere((c) => c.$2 == 'play');
+      final returning = closingCommands.indexWhere(
+        (c) => c.$2 == 'return-to-start',
+      );
+      expect(resumed, greaterThanOrEqualTo(0));
+      expect(returning, greaterThan(resumed));
+      expect(
+        closingCommands.where((c) => c.$2 == 'cancel-return-to-start'),
+        isEmpty,
+      );
+      expect(route.isCurrent, isTrue);
+      platform.returns.single.complete(true);
+      for (var frame = 0; frame < 4; frame++) {
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(platform.sources, hasLength(1));
+      expect(
+        platform.commands.where((c) => c.$2 == 'return-to-start'),
+        hasLength(1),
+      );
+      expect(
+        platform.commands.where((c) => c.$2 == 'cancel-return-to-start'),
+        isEmpty,
+      );
+      expect(position(tester), '01');
+      expect(tester.takeException(), isNull);
     },
   );
 

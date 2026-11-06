@@ -113,6 +113,7 @@ class _ActionCardInspect extends StatefulWidget {
 
 class _ActionCardInspectState extends State<_ActionCardInspect> {
   Animation<double>? _animation;
+  final _playbackControl = trainer.DrillMediaPlaybackControl();
   bool _paused = false;
   bool _closing = false;
 
@@ -136,12 +137,28 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
     }
   }
 
-  void _close() {
+  Future<void> _close() async {
     if (_closing) return;
+    final wasPaused = _paused;
     setState(() {
       _closing = true;
-      _paused = true;
+      _paused = false;
     });
+    if (wasPaused) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+    }
+    // The route stays current until its decoder has naturally reached frame 0.
+    // Popping first would retire the SDK video before it can return to rest.
+    final returned = await _playbackControl.returnToStart(
+      duration: const Duration(milliseconds: 400),
+    );
+    if (!mounted) return;
+    setState(() => _paused = true);
+    if (returned) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+    }
     Navigator.of(context).pop();
   }
 
@@ -152,6 +169,7 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
   @override
   void dispose() {
     _animation?.removeStatusListener(_statusChanged);
+    _playbackControl.dispose();
     super.dispose();
   }
 
@@ -183,152 +201,158 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
       width,
       height,
     );
-    return AnimatedBuilder(
-      animation: _animation!,
-      child: _surface(),
-      builder: (context, child) {
-        final t = Curves.easeOutCubic.transform(_animation!.value);
-        final snapshot = widget.sourceSnapshot;
-        final size = snapshot?.size ?? widget.sourceRect.size;
-        final source =
-            snapshot?.transform ??
-            Matrix4.translationValues(
-              widget.sourceRect.left,
-              widget.sourceRect.top,
-              0,
-            );
-        final destination =
-            Matrix4.translationValues(target.left, target.top, 0)..multiply(
+    return PopScope<void>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _close();
+      },
+      child: AnimatedBuilder(
+        animation: _animation!,
+        child: _surface(),
+        builder: (context, child) {
+          final t = Curves.easeOutCubic.transform(_animation!.value);
+          final snapshot = widget.sourceSnapshot;
+          final size = snapshot?.size ?? widget.sourceRect.size;
+          final source =
+              snapshot?.transform ??
+              Matrix4.translationValues(
+                widget.sourceRect.left,
+                widget.sourceRect.top,
+                0,
+              );
+          final destination =
+              Matrix4.translationValues(target.left, target.top, 0)..multiply(
+                Matrix4.diagonal3Values(
+                  target.width / size.width,
+                  target.height / size.height,
+                  1,
+                ),
+              );
+          final pose = _pose(source, destination, t);
+          final detailPose = Matrix4.copy(pose)
+            ..multiply(
               Matrix4.diagonal3Values(
-                target.width / size.width,
-                target.height / size.height,
+                size.width / target.width,
+                size.height / target.height,
                 1,
               ),
             );
-        final pose = _pose(source, destination, t);
-        final detailPose = Matrix4.copy(pose)
-          ..multiply(
-            Matrix4.diagonal3Values(
-              size.width / target.width,
-              size.height / target.height,
-              1,
-            ),
-          );
-        final handedOff =
-            _animation!.status == AnimationStatus.dismissed ||
-            (_animation!.status == AnimationStatus.reverse &&
-                _animation!.value <= _cardHandoffEpsilon);
-        final detailOpacity = handedOff
-            ? 0.0
-            : snapshot == null
-            ? 1.0
-            : const Interval(.35, .8, curve: Curves.easeInOut).transform(t);
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                excludeFromSemantics: true,
-                onTap: _close,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 4 * t, sigmaY: 4 * t),
-                  child: ColoredBox(
-                    color: Colors.black.withValues(
-                      alpha: (HipColors.isDark ? .42 : .18) * t,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Two complementary opacities do not make an opaque surface when
-            // composited (at .5/.5 they cover only .75). Keep the physical card
-            // solid behind the two faces throughout the morph.
-            Positioned(
-              left: 0,
-              top: 0,
-              width: size.width,
-              height: size.height,
-              child: IgnorePointer(
-                child: Opacity(
-                  key: const ValueKey('home-deck-flight-surface'),
-                  opacity: handedOff ? 0 : 1,
-                  child: Transform(
-                    alignment: Alignment.topLeft,
-                    transform: pose,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: HipColors.mediaBackdrop,
-                        borderRadius: BorderRadius.circular(22),
+          final handedOff =
+              _animation!.status == AnimationStatus.dismissed ||
+              (_animation!.status == AnimationStatus.reverse &&
+                  _animation!.value <= _cardHandoffEpsilon);
+          final detailOpacity = handedOff
+              ? 0.0
+              : snapshot == null
+              ? 1.0
+              : const Interval(.35, .8, curve: Curves.easeInOut).transform(t);
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  excludeFromSemantics: true,
+                  onTap: _close,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4 * t, sigmaY: 4 * t),
+                    child: ColoredBox(
+                      color: Colors.black.withValues(
+                        alpha: (HipColors.isDark ? .42 : .18) * t,
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              left: 0,
-              top: 0,
-              width: target.width,
-              height: target.height,
-              child: Opacity(
-                key: const ValueKey('home-deck-expanded-opacity'),
-                opacity: detailOpacity,
-                child: Transform(
-                  alignment: Alignment.topLeft,
-                  transform: detailPose,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: HipColors.shadows([
-                        BoxShadow(
-                          color: Colors.black.withValues(
-                            alpha: (HipColors.isDark ? .35 : .14) * t,
-                          ),
-                          blurRadius: 32,
-                          offset: const Offset(0, 16),
-                        ),
-                      ]),
-                    ),
-                    child: child,
-                  ),
-                ),
-              ),
-            ),
-            if (snapshot != null)
+              // Two complementary opacities do not make an opaque surface when
+              // composited (at .5/.5 they cover only .75). Keep the physical card
+              // solid behind the two faces throughout the morph.
               Positioned(
                 left: 0,
                 top: 0,
-                width: snapshot.paddedSize.width,
-                height: snapshot.paddedSize.height,
+                width: size.width,
+                height: size.height,
                 child: IgnorePointer(
-                  child: ExcludeSemantics(
-                    child: Opacity(
-                      key: const ValueKey('home-deck-closing-stand-in'),
-                      opacity: handedOff ? 0 : 1 - detailOpacity,
-                      child: Transform(
-                        key: const ValueKey('home-deck-snapshot-transform'),
-                        alignment: Alignment.topLeft,
-                        transform: Matrix4.copy(pose)
-                          ..multiply(
-                            Matrix4.translationValues(
-                              -snapshot.padding,
-                              -snapshot.padding,
-                              0,
-                            ),
-                          ),
-                        child: RawImage(
-                          image: snapshot.image,
-                          fit: BoxFit.fill,
+                  child: Opacity(
+                    key: const ValueKey('home-deck-flight-surface'),
+                    opacity: handedOff ? 0 : 1,
+                    child: Transform(
+                      alignment: Alignment.topLeft,
+                      transform: pose,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: HipColors.mediaBackdrop,
+                          borderRadius: BorderRadius.circular(22),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-          ],
-        );
-      },
+              Positioned(
+                left: 0,
+                top: 0,
+                width: target.width,
+                height: target.height,
+                child: Opacity(
+                  key: const ValueKey('home-deck-expanded-opacity'),
+                  opacity: detailOpacity,
+                  child: Transform(
+                    alignment: Alignment.topLeft,
+                    transform: detailPose,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: HipColors.shadows([
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: (HipColors.isDark ? .35 : .14) * t,
+                            ),
+                            blurRadius: 32,
+                            offset: const Offset(0, 16),
+                          ),
+                        ]),
+                      ),
+                      child: child,
+                    ),
+                  ),
+                ),
+              ),
+              if (snapshot != null)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  width: snapshot.paddedSize.width,
+                  height: snapshot.paddedSize.height,
+                  child: IgnorePointer(
+                    child: ExcludeSemantics(
+                      child: Opacity(
+                        key: const ValueKey('home-deck-closing-stand-in'),
+                        opacity: handedOff ? 0 : 1 - detailOpacity,
+                        child: Transform(
+                          key: const ValueKey('home-deck-snapshot-transform'),
+                          alignment: Alignment.topLeft,
+                          transform: Matrix4.copy(pose)
+                            ..multiply(
+                              Matrix4.translationValues(
+                                -snapshot.padding,
+                                -snapshot.padding,
+                                0,
+                              ),
+                            ),
+                          child: RawImage(
+                            image: snapshot.image,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -400,8 +424,16 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
 
   Widget _media() => Semantics(
     button: true,
-    label: _paused ? '播放动作示范' : '暂停动作示范',
-    value: _paused ? '已暂停' : '自动循环播放',
+    label: _closing
+        ? '正在收起动作卡片'
+        : _paused
+        ? '播放动作示范'
+        : '暂停动作示范',
+    value: _closing
+        ? '动作回到起始姿态'
+        : _paused
+        ? '已暂停'
+        : '自动循环播放',
     onTap: _toggle,
     child: GestureDetector(
       key: const ValueKey('home-deck-expanded-media'),
@@ -415,8 +447,10 @@ class _ActionCardInspectState extends State<_ActionCardInspect> {
             key: ValueKey('home-expanded-video-${widget.drill.id}'),
             actionId: widget.drill.id,
             policy: widget.policy,
+            playbackControl: _playbackControl,
             playing: widget.videoEnabled,
             paused: _paused,
+            retainSurfaceDuringRouteExit: true,
             radius: 0,
             stage: HipColors.mediaBackdrop,
           ),
