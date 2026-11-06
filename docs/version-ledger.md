@@ -1,5 +1,15 @@
 # 版本交付台账
 
+## 2026-11-06：动作牌视频回首 / +43待真机
+
+运行/构建源 `32ac1a76e12894f6aedb8218be0b35a591fd3461`，分支 `codex/home-card-return-fix-20261106`；`1.1.0+43` / arm64 `2043`，四个实际 SDK 包及 coach override 固定 `4b9b685788352415fbfce2d8a2651f7f9d207512`。日常目录保持 `feat/ui-detail-polish@25260b3`；本轮在既有 E 盘隔离副本开发。
+
+APK `E:/AII-3D/hiplab-releases/home-card-return-32ac1a7-43-20261106/hiplab-1.1.0+43-32ac1a7-internal-arm64-release.apk`，47628200字节，SHA256 `e44ef9447eab5f8f502d149b795ba04a954b62fb96907c1d5e7a7f67f6f1ce9c`，证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；release/非debuggable/仅arm64、包名/版本/签名/789资源项及重签负载校验通过。构建73.6秒。原上传签名包仅本地归档。
+
++42/2042（3c0a1a0）此前已安装并获用户“好多了”的有限反馈；+43含牌底和SDK回首新行为。最终+43包已构建并完成签名/资源校验，尚未安装。2026-11-06 08:13起本机ADB未列出设备，已请用户重连；视频快放、停在首帧后的真实Surface交付及最终缩牌仍待Android真机验证，组件/fake平台通过不等于原生观感验收。
+
+[实现与证据](home-card-return-2026-11-06.md)。
+
 ## 2026-11-06：二级转场优化 / +41最终内部release
 
 运行/构建源 `58aa468c2707361e917cea2b75fc4561a23b4473`，独立分支 `codex/navigation-transition-perf-20261106`；`1.1.0+41` / arm64 `2041`。继承+40动作牌，SDK97eb66d、lock、资源与原生配置不变。
