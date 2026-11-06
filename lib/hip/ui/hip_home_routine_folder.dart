@@ -120,7 +120,12 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
     final box = _face.currentContext?.findRenderObject();
     if (box is! RenderBox || !box.hasSize) return;
     final route = _RoutineFolderRoute(
-      origin: box.localToGlobal(Offset.zero) & box.size,
+      // The tap's press scale must not move the folder's resting anchor.
+      origin: Rect.fromCenter(
+        center: box.localToGlobal(box.size.center(Offset.zero)),
+        width: box.size.width,
+        height: box.size.height,
+      ),
       choices: List.of(widget.choices),
       miniatures: _miniatures,
       selectedId: widget.selectedId,
@@ -303,7 +308,24 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                       math.max(media.padding.bottom, media.viewInsets.bottom) -
                       20,
                 );
-                final width = math.min(420.0, available.width);
+                // Grow left/up from the original folder's bottom-right. Only
+                // clamp when a window/keyboard change puts that anchor outside
+                // the current safe bounds; never recenter a normal opening.
+                final anchor = Offset(
+                  origin.right.clamp(
+                    available.left + 64,
+                    constraints.maxWidth - media.padding.right,
+                  ),
+                  origin.bottom.clamp(
+                    available.top + 64,
+                    constraints.maxHeight -
+                        math.max(media.padding.bottom, media.viewInsets.bottom),
+                  ),
+                );
+                final width = math.min(
+                  420.0,
+                  math.min(available.width, anchor.dx - available.left),
+                );
                 final tileWidth = (width - 40 - 14) / 2;
                 final coverHeight = tileWidth / 1.2;
                 final tileHeight = coverHeight + 59;
@@ -314,12 +336,13 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                       rows * tileHeight +
                       math.max(0, rows - 1) * 14 +
                       20,
-                  available.height,
+                  anchor.dy - available.top,
                 );
-                final target = Rect.fromCenter(
-                  center: available.center,
-                  width: width,
-                  height: height,
+                final target = Rect.fromLTWH(
+                  anchor.dx - width,
+                  anchor.dy - height,
+                  width,
+                  height,
                 );
                 final panel = _FolderPanel(
                   choices: choices,

@@ -281,38 +281,91 @@ void main() {
   );
 
   testWidgets(
-    'folder surface unfolds in bounds while the grid keeps one layout',
+    'folder keeps its source bottom-right fixed while opening up-left and closing along the same path',
     (tester) async {
-      final (_, navigator, selected) = await mount(tester);
-      final origin = tester.getRect(find.byKey(_entry));
-      await tester.tap(find.byKey(_entry));
-      await tester.pump();
-      final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
-      expect(route.transitionDuration, const Duration(milliseconds: 360));
-      final gridLayout = tester.getRect(find.byKey(_panel));
-      var previous = tester.getRect(find.byKey(_surface));
-      expect(previous, origin);
-      expect(sourceOpacity(tester), 0);
-      for (var frame = 0; frame < 24; frame++) {
-        await tester.pump(const Duration(milliseconds: 16));
-        final current = tester.getRect(find.byKey(_surface));
-        expect(current.width, greaterThanOrEqualTo(previous.width - .01));
-        expect(current.height, greaterThanOrEqualTo(previous.height - .01));
-        expect(current.left, greaterThanOrEqualTo(0));
-        expect(current.top, greaterThanOrEqualTo(0));
-        expect(current.right, lessThanOrEqualTo(394));
-        expect(current.bottom, lessThanOrEqualTo(853));
-        expect(tester.getRect(find.byKey(_panel)), gridLayout);
-        previous = current;
+      for (final size in [
+        const Size(320, 700),
+        const Size(394, 853),
+        const Size(740, 360),
+      ]) {
+        final (_, navigator, selected) = await mount(tester, size: size);
+        final origin = tester.getRect(find.byKey(_entry));
+        final anchor = origin.bottomRight;
+        expect(origin.size, const Size.square(64));
+
+        void anchored(Rect rect) {
+          expect(rect.right, closeTo(anchor.dx, .01));
+          expect(rect.bottom, closeTo(anchor.dy, .01));
+          expect(rect.left, greaterThanOrEqualTo(20 - .01));
+          expect(rect.top, greaterThanOrEqualTo(44 - .01));
+          expect(rect.right, lessThan(size.width));
+          expect(rect.bottom, lessThan(size.height));
+        }
+
+        if (size.width == 394) {
+          await exportExpanded(tester, 'folder-anchor-closed');
+        }
+        await tester.tap(find.byKey(_entry));
+        await tester.pump();
+        final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+        expect(route.transitionDuration, const Duration(milliseconds: 360));
+        final gridLayout = tester.getRect(find.byKey(_panel));
+        anchored(gridLayout);
+        var previous = tester.getRect(find.byKey(_surface));
+        expect(previous, origin);
+        expect(sourceOpacity(tester), 0);
+        for (var frame = 0; frame < 24; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          final current = tester.getRect(find.byKey(_surface));
+          anchored(current);
+          expect(current.width, greaterThanOrEqualTo(previous.width - .01));
+          expect(current.height, greaterThanOrEqualTo(previous.height - .01));
+          expect(current.left, lessThanOrEqualTo(previous.left + .01));
+          expect(current.top, lessThanOrEqualTo(previous.top + .01));
+          expect(tester.getRect(find.byKey(_panel)), gridLayout);
+          previous = current;
+          if (size.width == 394 && frame == 7) {
+            await exportExpanded(tester, 'folder-anchor-opening-128ms');
+          }
+        }
+        expect(previous, gridLayout);
+        expect(selected, isEmpty);
+        if (size.width == 394) {
+          await exportExpanded(tester, 'folder-anchor-open');
+        }
+
+        await tester.tap(find.byKey(_close));
+        await tester.pump();
+        previous = gridLayout;
+        for (var frame = 0; frame < 24; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          final floating = find.byKey(_surface);
+          final current = floating.evaluate().isNotEmpty
+              ? tester.getRect(floating)
+              : tester.getRect(find.byKey(_entry));
+          anchored(current);
+          expect(current.width, lessThanOrEqualTo(previous.width + .01));
+          expect(current.height, lessThanOrEqualTo(previous.height + .01));
+          expect(current.left, greaterThanOrEqualTo(previous.left - .01));
+          expect(current.top, greaterThanOrEqualTo(previous.top - .01));
+          if (route.animation!.status == AnimationStatus.dismissed ||
+              floating.evaluate().isEmpty) {
+            expect(sourceOpacity(tester), 1);
+          }
+          previous = current;
+          if (size.width == 394 && frame == 7) {
+            await exportExpanded(tester, 'folder-anchor-closing-128ms');
+          }
+        }
+        await tester.pumpAndSettle();
+        expect(find.byKey(_panel), findsNothing);
+        expect(previous, origin);
+        expect(tester.getRect(find.byKey(_entry)), origin);
+        expect(sourceOpacity(tester), 1);
+        expect(navigator.currentState!.canPop(), isFalse);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
       }
-      expect(previous, gridLayout);
-      expect(previous.width, lessThan(394));
-      expect(previous.height, lessThan(853));
-      expect(selected, isEmpty);
-      await tester.tap(find.byKey(_close));
-      await closeFrames(tester, route);
-      expect(navigator.currentState!.canPop(), isFalse);
-      expect(tester.takeException(), isNull);
     },
   );
 
