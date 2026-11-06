@@ -140,7 +140,12 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     }
     return ListView(
       key: const ValueKey('records-list'),
-      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 32),
+      padding: EdgeInsets.fromLTRB(
+        kHipPageEdge,
+        hipNavInset(context) + 4,
+        kHipPageEdge,
+        32,
+      ),
       children: children,
     );
   }

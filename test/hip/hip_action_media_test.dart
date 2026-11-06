@@ -42,34 +42,29 @@ void main() {
     }
   });
 
-  test('public transparent posters match the pinned SDK frame-zero index', () {
+  test('public transparent posters are the pinned SDK r2-v1 posters', () {
     final config = File('.dart_tool/package_config.json');
     final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
     final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
     final sdkRoot = config.uri.resolve(sdk['rootUri'] as String);
-    final catalog =
-        jsonDecode(
-              File.fromUri(
-                sdkRoot.resolve(
-                  'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json',
-                ),
-              ).readAsStringSync(),
-            )
-            as Map<String, dynamic>;
-    final wanted = {...hiplabCoachAuthorizedActionIds, 'n-thomas-test'};
-    final covers = {
-      for (final action in catalog['actions'] as List)
-        if (wanted.contains(action['id']))
-          action['id'] as String: action as Map,
-    };
-    expect(covers.keys.toSet(), wanted);
-    for (final entry in covers.entries) {
-      final path = 'assets/public_posters/${entry.key}.webp';
+    final standing = sdkRoot.resolve(
+      'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v1/standing/',
+    );
+    final bundled = Directory('assets/public_posters')
+        .listSync()
+        .whereType<File>()
+        .map((f) => f.uri.pathSegments.last)
+        .toSet();
+    expect(bundled, {for (final id in hiplabCoachAuthorizedActionIds) '$id.webp'});
+    for (final id in hiplabCoachAuthorizedActionIds) {
+      final path = 'assets/public_posters/$id.webp';
       final bytes = File(path).readAsBytesSync();
-      expect(bytes.length, entry.value['bytes'], reason: path);
-      expect(_sha256Hex(bytes), entry.value['sha256'], reason: path);
-      expect(entry.value['alpha'], isTrue, reason: path);
-      expect(entry.value['sourceVideo']['frameIndex'], 0, reason: path);
+      final source = File.fromUri(standing.resolve('$id.webp')).readAsBytesSync();
+      expect(bytes.length, source.length, reason: path);
+      expect(_sha256Hex(bytes), _sha256Hex(source), reason: path);
+      // RIFF/WEBP VP8X with the alpha flag set: transparent poster.
+      expect(String.fromCharCodes(bytes.sublist(12, 16)), 'VP8X', reason: path);
+      expect(bytes[20] & 0x10, 0x10, reason: path);
     }
   });
 

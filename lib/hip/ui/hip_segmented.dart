@@ -42,6 +42,7 @@ class HipSegmented<T> extends StatefulWidget {
     this.glass = false,
     this.blur = false,
     this.bare = false,
+    this.ios = false,
     this.duration,
     this.curve,
   }) : assert(label != null || itemBuilder != null);
@@ -69,6 +70,11 @@ class HipSegmented<T> extends StatefulWidget {
   /// With [glass]: no track surface of its own — it sits inside a glass
   /// capsule that also holds other items (首页 dock, m3).
   final bool bare;
+
+  /// iOS system look: a system-grey track and a flat white / grey thumb with
+  /// one soft shadow, 13pt semibold selection. Used by the settings page;
+  /// the default stays the tactile family used elsewhere.
+  final bool ios;
 
   /// Thumb slide; defaults to [HipMotion.segment] on [HipMotion.spring].
   final Duration? duration;
@@ -108,29 +114,50 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
     if (inside != _pointerInside) setState(() => _pointerInside = inside);
   }
 
-  Color get _selectedFg => widget.glass
+  Color get _selectedFg => widget.glass || widget.ios
       ? HipColors.text
       : widget.standalone
       ? HipColors.jadeText
       : HipColors.text;
 
-  /// m3: a flat recessed fill — no outline, rim or shadow; the raised
-  /// thumb alone marks the selection.
+  /// Flat recessed fill: the app's track, or the iOS system fill when
+  /// [HipSegmented.ios] is on.
   BoxDecoration get _trackDecoration => BoxDecoration(
-    color: HipColors.track,
+    color: widget.ios
+        ? (HipColors.isDark ? const Color(0x3D767680) : const Color(0x1F767680))
+        : HipColors.track,
     borderRadius: BorderRadius.circular(widget.radius),
   );
 
-  /// The selection thumb is the reference tactile tile the app's buttons
-  /// were distilled from (button audit 2026-10-18): lit from above, a 1px
+  /// iOS: a flat white / grey tile with one soft shadow. Otherwise the
+  /// reference tactile tile (button audit 2026-10-18): lit from above, a 1px
   /// top light, a hairline edge and a tight contact shadow.
-  Widget _thumb(bool pressed) => widget.glass
-      ? HipGlassPill(radius: widget.thumbRadius)
-      : HipTactile(
-          style: HipTactileStyle.neutral(),
-          radius: widget.thumbRadius,
-          pressed: pressed,
-        );
+  Widget _thumb(bool pressed) {
+    if (widget.ios) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: HipColors.isDark ? const Color(0xFF636366) : Colors.white,
+          borderRadius: BorderRadius.circular(widget.thumbRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: HipColors.isDark ? .30 : .10,
+              ),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+      );
+    }
+    return widget.glass
+        ? HipGlassPill(radius: widget.thumbRadius)
+        : HipTactile(
+            style: HipTactileStyle.neutral(),
+            radius: widget.thumbRadius,
+            pressed: pressed,
+          );
+  }
 
   void _select(int i) {
     if (i < 0 ||
@@ -271,7 +298,9 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
                       softWrap: false,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isOn ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: widget.ios
+                            ? (isOn ? FontWeight.w600 : FontWeight.w400)
+                            : (isOn ? FontWeight.w700 : FontWeight.w500),
                         color: Color.lerp(idle, HipColors.text, t),
                       ),
                     ),

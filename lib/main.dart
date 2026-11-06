@@ -8,10 +8,15 @@ import 'package:flutter/material.dart';
 
 import 'hip/coach/coach_config.dart';
 import 'hip/coach/coach_device_id.dart';
+import 'hip/data/hip_public_catalog.dart';
+import 'hip/data/posehub_catalog_updates.dart';
 import 'hip/ui/hip_app.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Action-library hot update: open the verified cache before the first
+  // catalogue load, then check the channel pointer (launch + daily on resume).
+  await PoseHubCatalogUpdates.start(loadLocal: loadHipPublicCatalog);
   // Generate only for an AI-enabled build, before the AI page is opened. A coach
   // request awaits this same operation; storage errors keep offline use working
   // and can be retried before any network request sends a device ID.

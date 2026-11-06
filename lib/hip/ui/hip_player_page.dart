@@ -50,6 +50,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       routineIds: [for (final r in widget.plan.routines) r.id],
       restSeconds: widget.plan.transitionSeconds,
       useSdkPhases: widget.plan.sdkPlan != null,
+      online: voice.online,
     );
   }
 
@@ -59,6 +60,10 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             hipSdkSessionBuilder(
               widget.store.content,
               switchSecondsFor: script.switchSecondsFor,
+              // SDK: prep grows to fit the intro (name + key point).
+              prepSecondsFor: HipVoice.of(context).settings.voice
+                  ? script.prepSecondsFor
+                  : null,
               transitionSeconds: widget.plan.transitionSeconds,
             )
       : HipSessionBuilder(

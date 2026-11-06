@@ -111,9 +111,10 @@ class _PracticePageState extends State<PracticePage> {
         HipSegmented<int>(
           keyPrefix: 'practice',
           standalone: true,
-          height: 34,
+          height: 32,
           radius: 9,
-          inset: 3,
+          inset: 2,
+          ios: true,
           values: const [2, 1],
           selected: seg,
           onChanged: (v) => setState(() => mem.segment = v),
@@ -202,7 +203,7 @@ class _PracticePageState extends State<PracticePage> {
     }
     // 训练组 has no moves view: open 动作库 filtered.
     Navigator.of(context).push(
-      HipRoute.push<void>(
+      HipRoute.content<void>(
         (_) => PracticePage(
           actions: actions,
           library: true,
@@ -248,7 +249,7 @@ class _PracticePageState extends State<PracticePage> {
       scale: .98,
       onTap: () async => _applyJump(
         await Navigator.of(context).push<Object?>(
-          HipRoute.push<Object?>(
+          HipRoute.content<Object?>(
             (_) => RoutineDetailPage(actions: actions, routineId: r.id),
           ),
         ),
@@ -354,7 +355,7 @@ class _PracticePageState extends State<PracticePage> {
     );
     // 新建 goes straight to picking moves, then the editor.
     final ids = await Navigator.of(context).push<List<String>>(
-      HipRoute.push(
+      HipRoute.content(
         (_) => DrillPickerPage(
           actions: actions,
           groupName: draft.name,
@@ -364,7 +365,7 @@ class _PracticePageState extends State<PracticePage> {
     );
     if (ids == null || ids.isEmpty || !mounted) return;
     await Navigator.of(context).push(
-      HipRoute.push<void>(
+      HipRoute.content<void>(
         (_) => GroupEditorPage(
           actions: actions,
           initial: draft.copyWith(
@@ -438,7 +439,7 @@ class GroupCard extends StatelessWidget {
       onTap: () => g.coachPlan != null && actions.coach != null
           ? openHipSavedCoachPlan(context, actions, g)
           : Navigator.of(context).push(
-              HipRoute.push<void>(
+              HipRoute.content<void>(
                 (_) => GroupEditorPage(actions: actions, initial: g),
               ),
             ),
@@ -557,28 +558,17 @@ Future<void> startGroup(
         if (store.content.drills.containsKey(s.kitId))
           t.area(store.content.drill(s.kitId).directions.first),
     }.join('、');
-    final go = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Text(
-          plan.steps.isEmpty
-              ? t.allRelaxOnly
-              : t.lockedSkipped(areas, skipped.length),
-          key: const ValueKey('group-skip-note'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.cancel),
-          ),
-          if (plan.steps.isNotEmpty)
-            TextButton(
-              key: const ValueKey('group-start-anyway'),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(t.startAnyway),
-            ),
-        ],
-      ),
+    final go = await showHipConfirmDialog(
+      context,
+      message: plan.steps.isEmpty
+          ? t.allRelaxOnly
+          : t.lockedSkipped(areas, skipped.length),
+      messageKey: const ValueKey('group-skip-note'),
+      cancelLabel: t.cancel,
+      confirmLabel: plan.steps.isNotEmpty ? t.startAnyway : null,
+      confirmKey: plan.steps.isNotEmpty
+          ? const ValueKey('group-start-anyway')
+          : null,
     );
     if (go != true) return;
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import '../domain/action_kit.dart';
 import 'session_script.dart';
@@ -8,9 +9,18 @@ import 'voice_queue.dart';
 /// App-wide voice coaching service: the clip library, the audio output and
 /// the user's settings. Pages get it with [HipVoice.of].
 class HipVoice {
-  HipVoice({required this.lib, required this.output, required this.settingsOf});
+  HipVoice({
+    required this.lib,
+    required this.output,
+    required this.settingsOf,
+    this.online,
+  });
 
   final VoiceLibrary lib;
+
+  /// [lib] with the active Pose-Hub catalogue's recorded name / key point
+  /// behind it (SDK withPoseHubCatalogVoice); null: [lib] alone.
+  final trainer.VoiceSource? online;
   final VoiceOutput output;
   final VoiceSettings Function() settingsOf;
 

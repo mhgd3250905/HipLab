@@ -160,23 +160,14 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       return;
     }
     final t = LibText.of(context);
-    final leave = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(t.discardTitle),
-        actions: [
-          TextButton(
-            key: const ValueKey('editor-keep'),
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.keepEditing),
-          ),
-          TextButton(
-            key: const ValueKey('editor-discard'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t.discard),
-          ),
-        ],
-      ),
+    final leave = await showHipConfirmDialog(
+      context,
+      title: t.discardTitle,
+      cancelLabel: t.keepEditing,
+      confirmLabel: t.discard,
+      destructive: true,
+      cancelKey: const ValueKey('editor-keep'),
+      confirmKey: const ValueKey('editor-discard'),
     );
     if (leave == true && mounted) Navigator.of(context).pop();
   }
@@ -198,23 +189,14 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
 
   Future<void> _delete() async {
     final t = LibText.of(context);
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(t.deleteGroup),
-        content: Text(t.deleteGroupBody(widget.initial.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.cancel),
-          ),
-          TextButton(
-            key: const ValueKey('editor-delete-confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t.delete, style: TextStyle(color: HipColors.pain)),
-          ),
-        ],
-      ),
+    final yes = await showHipConfirmDialog(
+      context,
+      title: t.deleteGroup,
+      message: t.deleteGroupBody(widget.initial.name),
+      cancelLabel: t.cancel,
+      confirmLabel: t.delete,
+      destructive: true,
+      confirmKey: const ValueKey('editor-delete-confirm'),
     );
     if (yes != true) return;
     await widget.actions.store.deleteCustomRoutine(widget.initial.id);
@@ -223,7 +205,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
 
   Future<void> _addMoves() async {
     final ids = await Navigator.of(context).push<List<String>>(
-      HipRoute.push(
+      HipRoute.content(
         (_) => DrillPickerPage(
           actions: widget.actions,
           groupName: _name.text.trim().isEmpty
@@ -356,202 +338,196 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _close();
       },
-      child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              HipNavBar(
-                leading: HipNavLeading.close,
-                leadingKey: const ValueKey('editor-close'),
-                onLeading: _close,
-                title: t.editGroup,
-                trailing: widget.isNew
-                    ? null
-                    : Tooltip(
-                        message: t.deleteGroup,
-                        child: HipPressable(
-                          key: const ValueKey('editor-delete'),
-                          semanticLabel: t.deleteGroup,
-                          scale: .9,
-                          onTap: _delete,
-                          child: SizedBox.square(
-                            dimension: 44,
-                            child: Center(
-                              child: HipIcon(
-                                HipGlyph.trash,
-                                size: 20,
-                                color: HipColors.text,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // UI r2 §2: flat filled field, no outline; focus only
-                    // lifts the fill a touch (the caret is jade).
-                    AnimatedContainer(
-                      duration: HipMotion.fast,
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: _nameFocused
-                            ? HipColors.text.withValues(alpha: .10)
-                            : HipColors.text.withValues(alpha: .06),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            t.name,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: HipColors.muted,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextField(
-                              key: const ValueKey('editor-name'),
-                              controller: _name,
-                              focusNode: _nameFocus,
-                              cursorColor: HipColors.jade,
-                              onChanged: (_) => setState(() {}),
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(
-                                  CustomRoutine.maxName,
-                                ),
-                              ],
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                                color: HipColors.text,
-                              ),
-                              decoration: const InputDecoration(
-                                isCollapsed: true,
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${_name.text.runes.length}/${CustomRoutine.maxName}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: HipColors.faint,
-                            ),
-                          ),
-                        ],
+      child: HipNavPage(
+        leading: HipNavLeading.close,
+        leadingKey: const ValueKey('editor-close'),
+        onLeading: _close,
+        title: t.editGroup,
+        trailing: widget.isNew
+            ? null
+            : Tooltip(
+                message: t.deleteGroup,
+                child: HipPressable(
+                  key: const ValueKey('editor-delete'),
+                  semanticLabel: t.deleteGroup,
+                  scale: .9,
+                  onTap: _delete,
+                  child: SizedBox.square(
+                    dimension: 44,
+                    child: Center(
+                      child: HipIcon(
+                        HipGlyph.trash,
+                        size: 20,
+                        color: HipColors.text,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
+                  ),
+                ),
+              ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // UI r2 §2: flat filled field, no outline; focus only
+                  // lifts the fill a touch (the caret is jade).
+                  AnimatedContainer(
+                    duration: HipMotion.fast,
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: _nameFocused
+                          ? HipColors.text.withValues(alpha: .10)
+                          : HipColors.text.withValues(alpha: .06),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
                       children: [
                         Text(
-                          t.restBetween,
+                          t.name,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: HipColors.muted,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: HipSegmented<int>(
-                            keyPrefix: 'rest',
-                            standalone: true,
-                            height: 34,
-                            radius: 9,
-                            inset: 3,
-                            values: CustomRoutine.rests,
-                            selected: _rest,
-                            onChanged: (v) => setState(() => _rest = v),
-                            label: t.restValue,
+                          child: TextField(
+                            key: const ValueKey('editor-name'),
+                            controller: _name,
+                            focusNode: _nameFocus,
+                            cursorColor: HipColors.jade,
+                            onChanged: (_) => setState(() {}),
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(
+                                CustomRoutine.maxName,
+                              ),
+                            ],
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: HipColors.text,
+                            ),
+                            decoration: const InputDecoration(
+                              isCollapsed: true,
+                              border: InputBorder.none,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
                         Text(
-                          t.stepsCount(count),
+                          '${_name.text.runes.length}/${CustomRoutine.maxName}',
                           style: TextStyle(
-                            fontSize: 13,
-                            color: HipColors.muted,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            t.reorderHint,
-                            textAlign: TextAlign.end,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: HipColors.faint,
-                            ),
+                            fontSize: 12,
+                            color: HipColors.faint,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: _steps.isEmpty
-                    ? Center(
-                        child: Text(
-                          t.emptySteps,
-                          style: TextStyle(color: HipColors.muted),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Text(
+                        t.restBetween,
+                        style: TextStyle(fontSize: 14, color: HipColors.muted),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: HipSegmented<int>(
+                          keyPrefix: 'rest',
+                          standalone: true,
+                          height: 32,
+                          radius: 9,
+                          inset: 2,
+                          ios: true,
+                          values: CustomRoutine.rests,
+                          selected: _rest,
+                          onChanged: (v) => setState(() => _rest = v),
+                          label: t.restValue,
                         ),
-                      )
-                    : ReorderableListView.builder(
-                        key: const ValueKey('editor-steps'),
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        buildDefaultDragHandles: false,
-                        itemCount: _steps.length,
-                        footer: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            t.rowHint,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: HipColors.faint,
-                            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Text(
+                        t.stepsCount(count),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: HipColors.muted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          t.reorderHint,
+                          textAlign: TextAlign.end,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: HipColors.faint,
                           ),
                         ),
-                        onReorderItem: (from, to) => setState(
-                          () => _steps.insert(to, _steps.removeAt(from)),
-                        ),
-                        itemBuilder: (context, i) {
-                          final (key, s) = _steps[i];
-                          return Padding(
-                            key: ValueKey('step-$key'),
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Dismissible(
-                              key: ValueKey('dismiss-$key'),
-                              direction: DismissDirection.endToStart,
-                              background: _deleteBackground(t),
-                              onUpdate: (d) => _onSwipe(key, d.progress),
-                              confirmDismiss: (_) => _commitDelete(key),
-                              onDismissed: (_) => _finishDelete(key),
-                              child: _row(i, key, s, profile),
-                            ),
-                          );
-                        },
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: _steps.isEmpty
+                  ? Center(
+                      child: Text(
+                        t.emptySteps,
+                        style: TextStyle(color: HipColors.muted),
+                      ),
+                    )
+                  : ReorderableListView.builder(
+                      key: const ValueKey('editor-steps'),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      buildDefaultDragHandles: false,
+                      itemCount: _steps.length,
+                      footer: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          t.rowHint,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: HipColors.faint,
+                          ),
+                        ),
+                      ),
+                      onReorderItem: (from, to) => setState(
+                        () => _steps.insert(to, _steps.removeAt(from)),
+                      ),
+                      itemBuilder: (context, i) {
+                        final (key, s) = _steps[i];
+                        return Padding(
+                          key: ValueKey('step-$key'),
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Dismissible(
+                            key: ValueKey('dismiss-$key'),
+                            direction: DismissDirection.endToStart,
+                            background: _deleteBackground(t),
+                            onUpdate: (d) => _onSwipe(key, d.progress),
+                            confirmDismiss: (_) => _commitDelete(key),
+                            onDismissed: (_) => _finishDelete(key),
+                            child: _row(i, key, s, profile),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
-        bottomNavigationBar: LibFooter(
+        bottomBar: LibFooter(
           above: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
@@ -808,93 +784,80 @@ class _DrillPickerPageState extends State<DrillPickerPage> {
     final inGroup = widget.existing.toSet();
     final after = widget.existing.length + _picked.length;
     final over = after > CustomRoutine.maxSteps;
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HipNavBar(
-              leading: HipNavLeading.close,
-              leadingKey: const ValueKey('picker-close'),
-              onLeading: () => Navigator.of(context).pop(),
-              title: t.addMovesTitle,
-              subtitle: t.addTo(widget.groupName),
+    return HipNavPage(
+      leading: HipNavLeading.close,
+      leadingKey: const ValueKey('picker-close'),
+      onLeading: () => Navigator.of(context).pop(),
+      title: t.addMovesTitle,
+      subtitle: t.addTo(widget.groupName),
+      bodyScrollsUnderBar: true,
+      body: Builder(
+        builder: (context) {
+          final header = <Widget>[
+            ActionFilterBar(
+              all: all,
+              filter: _actions,
+              search: _search,
+              onChanged: (f) => setState(() => _actions = f),
             ),
-            Expanded(
-              child: Builder(
-                builder: (context) {
-                  final header = <Widget>[
-                    ActionFilterBar(
-                      all: all,
-                      filter: _actions,
-                      search: _search,
-                      onChanged: (f) => setState(() => _actions = f),
-                    ),
-                    const SizedBox(height: 14),
-                    if (shown.isEmpty)
-                      ActionEmpty(
-                        onReset: () => setState(() {
-                          _search.clear();
-                          _actions = const ActionFilter();
-                        }),
-                      ),
-                  ];
-                  final rows = ActionRows(context, [
-                    for (final a in shown)
-                      ActionCard(
-                        key: ValueKey('pick-${a.id}'),
-                        item: a,
-                        // Local kit drills show their group dose; SDK
-                        // actions their catalog default (M6).
-                        disabled: !a.canAddToGroup,
-                        dose:
-                            content.kit(a.id) != null &&
-                                inLibrary(content, a.id)
-                            ? doseText(
-                                content.kit(a.id)!,
-                                DoseRules.kitDefault(content.kit(a.id)!),
-                                single: false,
-                                lang: t.lang,
-                              )
-                            : null,
-                        check: _picked.contains(a.id),
-                        inGroup: inGroup.contains(a.id),
-                        onTap: (_) {
-                          if (!a.canAddToGroup) {
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    t.lang == 'en'
-                                        ? 'This move can be practised on its own, not in a group yet.'
-                                        : '这个动作暂时只能在动作库单独练，还不能加入训练组',
-                                  ),
-                                ),
-                              );
-                            return;
-                          }
-                          setState(() {
-                            if (!_picked.remove(a.id)) _picked.add(a.id);
-                          });
-                        },
-                      ),
-                  ]);
-                  return ListView.builder(
-                    key: const ValueKey('picker-list'),
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                    itemCount: header.length + rows.length,
-                    itemBuilder: (context, i) => i < header.length
-                        ? header[i]
-                        : rows.row(i - header.length),
-                  );
+            const SizedBox(height: 14),
+            if (shown.isEmpty)
+              ActionEmpty(
+                onReset: () => setState(() {
+                  _search.clear();
+                  _actions = const ActionFilter();
+                }),
+              ),
+          ];
+          final rows = ActionRows(context, [
+            for (final a in shown)
+              ActionCard(
+                key: ValueKey('pick-${a.id}'),
+                item: a,
+                // Local kit drills show their group dose; SDK
+                // actions their catalog default (M6).
+                disabled: !a.canAddToGroup,
+                dose: content.kit(a.id) != null && inLibrary(content, a.id)
+                    ? doseText(
+                        content.kit(a.id)!,
+                        DoseRules.kitDefault(content.kit(a.id)!),
+                        single: false,
+                        lang: t.lang,
+                      )
+                    : null,
+                check: _picked.contains(a.id),
+                inGroup: inGroup.contains(a.id),
+                onTap: (_) {
+                  if (!a.canAddToGroup) {
+                    ScaffoldMessenger.of(context)
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            t.lang == 'en'
+                                ? 'This move can be practised on its own, not in a group yet.'
+                                : '这个动作暂时只能在动作库单独练，还不能加入训练组',
+                          ),
+                        ),
+                      );
+                    return;
+                  }
+                  setState(() {
+                    if (!_picked.remove(a.id)) _picked.add(a.id);
+                  });
                 },
               ),
-            ),
-          ],
-        ),
+          ]);
+          return ListView.builder(
+            key: const ValueKey('picker-list'),
+            padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+            itemCount: header.length + rows.length,
+            itemBuilder: (context, i) =>
+                i < header.length ? header[i] : rows.row(i - header.length),
+          );
+        },
       ),
-      bottomNavigationBar: LibFooter(
+      bottomBar: LibFooter(
         above: Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(

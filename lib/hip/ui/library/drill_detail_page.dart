@@ -140,101 +140,84 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
         ),
     ];
     final point = drillPoint(content, d, t.lang);
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HipNavBar(
-              leadingKey: const ValueKey('drill-back'),
-              title: drillName(content, d, t.lang),
-              subtitle:
-                  '${t.area(dir)} · ${d.methods.map(t.method).join(' / ')}',
-            ),
-            Expanded(
-              child: ListView(
-                key: const ValueKey('detail-list'),
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-                children: [
-                  SizedBox(
-                    height: 232,
-                    child: HipMediaFrame(
-                      radius: 24,
-                      color: HipColors.mediaBackdrop,
-                      overlays: [
-                        Positioned(
-                          left: 12,
-                          top: 12,
-                          child: mediaPill(t.loopPlaying, icon: HipGlyph.loop),
-                        ),
-                        if (d.advanced)
-                          Positioned(
-                            right: 12,
-                            top: 12,
-                            child: mediaPill(
-                              t.advanced,
-                              color: HipPalette.dark.tight,
-                            ),
-                          ),
-                      ],
-                      child: HipDrillArt(
-                        drill: d,
-                        play: true,
-                        alignment: const Alignment(0, -.1),
-                      ),
-                    ),
+    return HipNavPage(
+      leadingKey: const ValueKey('drill-back'),
+      title: drillName(content, d, t.lang),
+      subtitle: '${t.area(dir)} · ${d.methods.map(t.method).join(' / ')}',
+      bodyScrollsUnderBar: true,
+      body: ListView(
+        key: const ValueKey('detail-list'),
+        padding: EdgeInsets.fromLTRB(20, hipNavInset(context) + 4, 20, 20),
+        children: [
+          SizedBox(
+            height: 232,
+            child: HipMediaFrame(
+              radius: 24,
+              color: HipColors.mediaBackdrop,
+              overlays: [
+                Positioned(
+                  left: 12,
+                  top: 12,
+                  child: mediaPill(t.loopPlaying, icon: HipGlyph.loop),
+                ),
+                if (d.advanced)
+                  Positioned(
+                    right: 12,
+                    top: 12,
+                    child: mediaPill(t.advanced, color: HipPalette.dark.tight),
                   ),
-                  for (final n in notices) ...[const SizedBox(height: 12), n],
-                  const SizedBox(height: 16),
-                  Text(
-                    drillAltName(content, d, t.lang),
-                    style: TextStyle(fontSize: 12.5, color: HipColors.faint),
-                  ),
-                  const SizedBox(height: 4),
-                  if (point.isNotEmpty)
-                    Text(
-                      point,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        height: 1.45,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final x in d.directions.take(3))
-                        _tag(t.area(x), HipColors.glow),
-                      for (final s in d.scenes) _tag(t.scene(s), null),
-                      _tag(d.advanced ? t.advancedLevel : t.starter, null),
-                      if (d.cautions.isNotEmpty)
-                        _tag(
-                          '${t.cautions}：${d.cautions.join('、')}',
-                          HipColors.pain,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  LibDosePanel(
-                    kit: kit,
-                    dose: _dose,
-                    single: true,
-                    onChanged: (v) => setState(() => _dose = v),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    t.singleNoStreak,
-                    style: TextStyle(fontSize: 12, color: HipColors.faint),
-                  ),
-                ],
+              ],
+              child: HipDrillArt(
+                drill: d,
+                play: true,
+                alignment: const Alignment(0, -.1),
               ),
             ),
-          ],
-        ),
+          ),
+          for (final n in notices) ...[const SizedBox(height: 12), n],
+          const SizedBox(height: 16),
+          Text(
+            drillAltName(content, d, t.lang),
+            style: TextStyle(fontSize: 12.5, color: HipColors.faint),
+          ),
+          const SizedBox(height: 4),
+          if (point.isNotEmpty)
+            Text(
+              point,
+              style: const TextStyle(
+                fontSize: 17,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final x in d.directions.take(3))
+                _tag(t.area(x), HipColors.glow),
+              for (final s in d.scenes) _tag(t.scene(s), null),
+              _tag(d.advanced ? t.advancedLevel : t.starter, null),
+              if (d.cautions.isNotEmpty)
+                _tag('${t.cautions}：${d.cautions.join('、')}', HipColors.pain),
+            ],
+          ),
+          const SizedBox(height: 16),
+          LibDosePanel(
+            kit: kit,
+            dose: _dose,
+            single: true,
+            onChanged: (v) => setState(() => _dose = v),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            t.singleNoStreak,
+            style: TextStyle(fontSize: 12, color: HipColors.faint),
+          ),
+        ],
       ),
-      bottomNavigationBar: LibFooter(
+      bottomBar: LibFooter(
         children: [
           Expanded(
             flex: 2,
@@ -303,7 +286,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
   /// replacement route would have ended that wait with null right away.
   Future<void> _openEasier(String id) async {
     final jump = await Navigator.of(context).push<Object?>(
-      HipRoute.push<Object?>(
+      HipRoute.content<Object?>(
         (_) => DrillDetailPage(actions: widget.actions, drillId: id),
       ),
     );

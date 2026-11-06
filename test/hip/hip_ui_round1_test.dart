@@ -248,9 +248,13 @@ void main() {
       await tester.pumpAndSettle();
     }
     final title = tester.getRect(find.text('你的髋部'));
-    // UI r2: the shared HipNavBar (title centred in the bar).
-    final close = tester.getRect(find.byType(HipNavBar).first);
-    expect(title.center.dy, closeTo(close.center.dy, 14));
+    // Floating bar: the title sits in the 44pt row below the status inset.
+    final page = tester.element(find.byType(HipNavPage).last);
+    final topInset = MediaQuery.paddingOf(page).top;
+    expect(
+      title.center.dy,
+      closeTo(topInset + HipNavBar.height / 2, 14),
+    );
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.
     final card = tester.getRect(find.byKey(const ValueKey('route-card')));

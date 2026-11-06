@@ -481,24 +481,48 @@ class SessionScript {
 }
 
 /// App-specific semantic source; lookup and durations remain in the package.
-class _HipSource extends trainer.VoiceSource {
-  _HipSource(this.lib, this.kits, {this.step, this.side});
+class _HipSource extends trainer.VoiceSource
+    implements trainer.PreparableVoiceSource {
+  _HipSource(this.lib, this.kits, {this.step, this.side, this.online});
   final VoiceLibrary lib;
   final Map<String, ActionKit> kits;
   final PlanStep? step;
   final HipSide? side;
+
+  /// [lib] layered over the SDK's online catalogue voice; clip lookups go
+  /// through it so actions without HipLab recordings get name + key point.
+  final trainer.VoiceSource? online;
+  trainer.VoiceSource get _clips => online ?? lib;
   @override
-  Set<String> get languages => lib.languages;
+  Set<String> get languages => _clips.languages;
   @override
-  bool has(String key, {required String lang}) => lib.has(key, lang: lang);
+  bool has(String key, {required String lang}) => _clips.has(key, lang: lang);
+  @override
+  bool expected(String key, {required String lang}) =>
+      _clips.expected(key, lang: lang);
   @override
   double seconds(String key, {required String lang}) =>
-      lib.seconds(key, lang: lang);
+      _clips.seconds(key, lang: lang);
   @override
   String asset(String key, {required String lang}) =>
-      lib.asset(key, lang: lang);
+      _clips.asset(key, lang: lang);
   @override
-  String? line(String key, {required String lang}) => lib.line(key, lang: lang);
+  String? line(String key, {required String lang}) =>
+      _clips.line(key, lang: lang);
+  @override
+  String? drillText(
+    String exerciseId,
+    trainer.DrillLine line, {
+    required String lang,
+  }) => _clips.drillText(exerciseId, line, lang: lang);
+  @override
+  Future<void> prepare(Iterable<String> exerciseIds, {required String lang}) {
+    final o = online;
+    return o is trainer.PreparableVoiceSource
+        ? (o as trainer.PreparableVoiceSource).prepare(exerciseIds, lang: lang)
+        : Future.value();
+  }
+
   @override
   String? call(trainer.VoiceCall c) => lib.call(c);
   @override
@@ -511,7 +535,7 @@ class _HipSource extends trainer.VoiceSource {
           : step!.drill.methods.first;
       return 'cue.${method.id}.1';
     }
-    return lib.drill(id, line);
+    return _clips.drill(id, line);
   }
 
   @override
@@ -554,7 +578,8 @@ class HipSessionScript extends trainer.SessionScript {
     this.routineIds = const [],
     this.restSeconds = 15,
     this.useSdkPhases = false,
-  }) : super(source: _HipSource(lib, kits));
+    trainer.VoiceSource? online,
+  }) : super(source: _HipSource(lib, kits, online: online));
   final VoiceLibrary lib;
   final List<PlanStep> steps;
   final Map<String, ActionKit> kits;
