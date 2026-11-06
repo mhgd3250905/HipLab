@@ -259,7 +259,7 @@ void main() {
   }
 
   testWidgets(
-    'closed folder previews only the first action of each real group up to four',
+    'closed folder previews real groups in fixed row-first slots without invented cells',
     (tester) async {
       for (var count = 1; count <= 5; count++) {
         final items = choices.take(count).toList();
@@ -281,8 +281,18 @@ void main() {
           for (final choice in shown)
             find.byKey(ValueKey('home-routine-preview-${choice.id}')),
         ];
-        for (final cell in cells) {
-          expect(cell, findsOneWidget);
+        for (var i = 0; i < cells.length; i++) {
+          expect(cells[i], findsOneWidget);
+          expect(
+            tester.getRect(cells[i]),
+            Rect.fromLTWH(
+              source.left + 6 + (i % 2) * 28,
+              source.top + 6 + (i ~/ 2) * 28,
+              24,
+              24,
+            ),
+            reason: 'group count must not recenter the fixed folder slots',
+          );
         }
         for (final absent in choices.skip(shown.length)) {
           expect(
@@ -290,28 +300,8 @@ void main() {
             findsNothing,
           );
         }
-        if (count == 1) {
-          expect(tester.getRect(cells.single).center, source.center);
-        } else if (count == 2) {
-          final left = tester.getRect(cells[0]);
-          final right = tester.getRect(cells[1]);
-          expect(left.size, right.size);
-          expect(left.center.dy, closeTo(source.center.dy, .01));
-          expect(right.center.dy, closeTo(source.center.dy, .01));
-          expect(
-            (left.center.dx + right.center.dx) / 2,
-            closeTo(source.center.dx, .01),
-          );
-          expect(left.right, lessThan(right.left));
-          expect(
-            left.left - source.left,
-            closeTo(source.right - right.right, .01),
-          );
+        if (count == 2) {
           await exportExpanded(tester, 'folder-two-closed');
-        } else if (count == 3) {
-          final bottom = tester.getRect(cells[2]);
-          expect(bottom.center.dx, closeTo(source.center.dx, .01));
-          expect(bottom.top, greaterThan(tester.getRect(cells[0]).bottom));
         } else if (count == 4) {
           await exportExpanded(tester, 'folder-four-closed');
         }
@@ -331,11 +321,25 @@ void main() {
       final (host, _, selected) = await mount(tester, items: two);
       final folder = tester.state(find.byType(HipHomeRoutineFolder));
       final original = tester.getRect(find.byKey(_entry));
+      final originalCells = {
+        for (final item in two)
+          item.id: tester.getRect(
+            find.byKey(ValueKey('home-routine-preview-${item.id}')),
+          ),
+      };
       for (final items in [choices.take(4).toList(), two]) {
         host.currentState!.change(choices: items);
         await tester.pumpAndSettle();
         expect(tester.state(find.byType(HipHomeRoutineFolder)), same(folder));
         expect(tester.getRect(find.byKey(_entry)), original);
+        for (final entry in originalCells.entries) {
+          expect(
+            tester.getRect(
+              find.byKey(ValueKey('home-routine-preview-${entry.key}')),
+            ),
+            entry.value,
+          );
+        }
         expect(find.byType(trainer.TrainerPoster), findsNWidgets(items.length));
         expect(
           tester

@@ -7,7 +7,9 @@ import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_home_action_deck.dart';
+import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
+import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
@@ -3172,6 +3174,237 @@ void main() {
         findsOneWidget,
       );
       expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'streak shortcut opens one records route and preserves the inspected second card through entry and return',
+    (tester) async {
+      final (repository, platform) = homePlayback(tester);
+      await showHome(
+        tester,
+        MemoryStorage(),
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      await nativeFrames(
+        tester,
+        platform,
+        Iterable.generate(platform.sources.length, (i) => i + 1),
+      );
+      await tester.pumpAndSettle();
+      final initiallyPrepared = platform.sources.length;
+      await next(tester);
+      // Turning exposes a new warm neighbor beyond the initially primed pool.
+      // Give it a real composed frame before asserting the whole ready pool
+      // stays retained; a cold covered neighbor may legitimately be released.
+      await nativeFrames(
+        tester,
+        platform,
+        Iterable.generate(
+          platform.sources.length - initiallyPrepared,
+          (i) => initiallyPrepared + i + 1,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      expect(position(tester), '02');
+      expect(posterOpacity(tester, frontMedia()), 0);
+
+      final hero = find.byKey(const ValueKey('home-hero'), skipOffstage: false);
+      final media = find.descendant(
+        of: hero,
+        matching: find.byType(trainer.TrainingActionMedia, skipOffstage: false),
+        skipOffstage: false,
+      );
+      final surface = frontSurface(skipOffstage: false);
+      final state = tester.state(media);
+      final element = tester.element(surface);
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(surface)
+          .controller;
+      final texture = find.descendant(
+        of: media,
+        matching: find.byType(Texture, skipOffstage: false),
+        skipOffstage: false,
+      );
+      final textureElement = tester.element(texture);
+      final textureId = tester.widget<Texture>(texture).textureId;
+      final creates = platform.sources.length;
+      final nativeCreates = platform.nativeCreates;
+      final commandStart = platform.commands.length;
+      final requested = repository.requested.length;
+      final records = find.byType(HipProgressPage, skipOffstage: false);
+
+      void sameHeldFrame() {
+        expect(tester.state(media), same(state));
+        expect(tester.element(surface), same(element));
+        expect(tester.element(texture), same(textureElement));
+        expect(tester.widget<Texture>(texture).textureId, textureId);
+        expect(
+          tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
+          same(controller),
+        );
+        expect(controller.hasFrame, isTrue);
+        expect(
+          tester.widget<trainer.TrainingActionMedia>(media).paused,
+          isTrue,
+        );
+        final poster = find.descendant(
+          of: media,
+          matching: find.byKey(
+            const ValueKey('public-action-poster'),
+            skipOffstage: false,
+          ),
+          skipOffstage: false,
+        );
+        expect(tester.widget<AnimatedOpacity>(poster).opacity, 0);
+        expect(
+          tester
+              .widget<Text>(
+                find.byKey(
+                  const ValueKey('home-deck-position'),
+                  skipOffstage: false,
+                ),
+              )
+              .data,
+          '02',
+        );
+        expect(platform.sources, hasLength(creates));
+        expect(platform.nativeCreates, nativeCreates);
+        expect(repository.requested, hasLength(requested));
+        expect(
+          platform.commands
+              .skip(commandStart)
+              .where((command) => command.$2 == 'play'),
+          isEmpty,
+        );
+      }
+
+      Future<void> transition(int frames) async {
+        await tester.pump();
+        sameHeldFrame();
+        for (var frame = 0; frame < frames; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          sameHeldFrame();
+        }
+      }
+
+      // Two queued activations before the first route frame exercise the
+      // double-tap guard without the second pointer hitting the entering page.
+      final activate = tester
+          .widget<HipPressable>(
+            find.byKey(const ValueKey('home-streak-button')),
+          )
+          .onTap!;
+      activate();
+      activate();
+      await transition(28);
+      expect(records, findsOneWidget);
+      expect(
+        tester.widget<HipProgressPage>(records).section,
+        HipProgressSection.records,
+      );
+      final route = ModalRoute.of(tester.element(records))! as HipRoute<void>;
+      expect(route.transition, HipTransition.content);
+      expect(route.pinLeading, isFalse);
+      final navPage = tester.widget<HipNavPage>(
+        find.ancestor(of: records, matching: find.byType(HipNavPage)),
+      );
+      expect(navPage.title, '训练记录');
+      expect(navPage.bodyScrollsUnderBar, isTrue);
+      expect(find.byType(HipPlayerPage), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('home-records-back')));
+      await transition(24);
+      expect(records, findsNothing);
+      expect(
+        find.byKey(const ValueKey('home-streak-button')).hitTestable(),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('home-streak-button')));
+      await transition(28);
+      expect(records, findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await transition(24);
+      expect(records, findsNothing);
+      expect(position(tester), '02');
+      sameHeldFrame();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'zero-day streak opens empty records whose start action uses the current folder selection',
+    (tester) async {
+      final store = await showHome(tester, MemoryStorage());
+      expect(store.doneDays, isEmpty);
+      expect(store.sessions, isEmpty);
+      expect(store.streak, 0);
+      final defaultPlan = store.todayPlan!;
+      final choices = store.sceneRoutines(store.scene);
+      final selected = choices
+          .skip(1)
+          .firstWhere((routine) => routine.id != defaultPlan.refId);
+      final expected = store.planForRoutine(selected)!;
+      expect(expected.refId, isNot(defaultPlan.refId));
+      await chooseHomeRoutine(tester, selected.id);
+      expect(
+        tester
+            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
+            .identity,
+        endsWith('/${selected.id}'),
+      );
+
+      final badge = find.byKey(const ValueKey('home-streak-button'));
+      expect(tester.getSize(badge).height, greaterThanOrEqualTo(44));
+      expect(
+        tester.getSize(find.byKey(const ValueKey('home-streak'))).height,
+        24,
+      );
+      final semantics = tester.ensureSemantics();
+      try {
+        await tester.pump();
+        expect(
+          tester.getSemantics(badge),
+          isSemantics(
+            isButton: true,
+            hasTapAction: true,
+            label: '连续打卡 0 天，查看训练记录',
+          ),
+        );
+      } finally {
+        semantics.dispose();
+      }
+      await tester.tap(badge);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('records-empty')), findsOneWidget);
+      expect(find.byType(HipPlayerPage), findsNothing);
+      final start = find.byKey(const ValueKey('records-start'));
+      await tester.ensureVisible(start);
+      await tester.pumpAndSettle();
+      await tester.tap(start);
+      await pumpTrainerReady(tester);
+      final player = tester.widget<HipPlayerPage>(
+        find.byType(HipPlayerPage, skipOffstage: false),
+      );
+      expect(player.plan.refId, expected.refId);
+      expect(
+        player.plan.routines.map((routine) => routine.id),
+        expected.routines.map((routine) => routine.id),
+      );
+      expect(
+        player.plan.steps.map((step) => step.drill.id),
+        expected.steps.map((step) => step.drill.id),
+      );
+      expect(player.plan.seconds, expected.seconds);
+      expect(fixture.requested, isEmpty);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
       expect(tester.takeException(), isNull);
     },
   );

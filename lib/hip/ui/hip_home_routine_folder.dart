@@ -14,17 +14,11 @@ import 'hip_widgets.dart' show HipPressable;
 
 abstract final class _FolderPreview {
   // Paired corners: outer radius = art radius + the surrounding inset.
-  static const radius = 14.0;
-  static const artRadius = 8.0;
+  static const radius = 12.0;
+  static const artRadius = 6.0;
 
-  static Rect cell(int index, int count) {
-    final loneInRow = count.isOdd && index == count - 1;
-    return Rect.fromLTWH(
-      loneInRow ? 20 : 6 + (index % 2) * 28,
-      count <= 2 ? 20 : 6 + (index ~/ 2) * 28,
-      24,
-      24,
-    );
+  static Rect cell(int index) {
+    return Rect.fromLTWH(6 + (index % 2) * 28, 6 + (index ~/ 2) * 28, 24, 24);
   }
 }
 
@@ -183,7 +177,7 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
                   children: [
                     for (var i = 0; i < miniatures.length; i++)
                       Positioned.fromRect(
-                        rect: _FolderPreview.cell(i, miniatures.length),
+                        rect: _FolderPreview.cell(i),
                         child: _FolderArtwork(
                           key: ValueKey(
                             'home-routine-preview-${widget.choices[i].id}',
@@ -404,15 +398,9 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                         for (var i = 0; i < miniatures.length; i++)
                           Positioned.fromRect(
                             rect: Rect.lerp(
-                              _FolderPreview.cell(
-                                i,
-                                miniatures.length,
-                              ).shift(origin.topLeft),
+                              _FolderPreview.cell(i).shift(origin.topLeft),
                               closingCovers != null && closingCovers![i] == null
-                                  ? _FolderPreview.cell(
-                                      i,
-                                      miniatures.length,
-                                    ).shift(origin.topLeft)
+                                  ? _FolderPreview.cell(i).shift(origin.topLeft)
                                   : closingCovers?.elementAtOrNull(i) ??
                                         Rect.fromLTWH(
                                           target.left +

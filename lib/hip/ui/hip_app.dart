@@ -587,6 +587,7 @@ const _homeCopy = <String, (String, String, String)>{
 
 class _HipHomeState extends State<HipHome> {
   final _startKey = GlobalKey();
+  bool _recordsOpening = false;
   HipStore get store => widget.store;
 
   /// Explicitly selected routine position per scene (this launch only).
@@ -696,6 +697,40 @@ class _HipHomeState extends State<HipHome> {
       pinLeading: false,
     ),
   );
+
+  Future<void> _openRecords() async {
+    if (_recordsOpening) return;
+    _recordsOpening = true;
+    final route = HipRoute.content<void>(
+      (_) => HipNavPage(
+        title: '训练记录',
+        leadingKey: const ValueKey('home-records-back'),
+        bodyScrollsUnderBar: true,
+        body: ListenableBuilder(
+          listenable: store,
+          builder: (context, _) {
+            final routine = _routine;
+            final plan = routine == null ? null : store.planForRoutine(routine);
+            return HipProgressPage(
+              store: store,
+              section: HipProgressSection.records,
+              onStartPractice: plan == null || plan.steps.isEmpty
+                  ? null
+                  : () => _startPlan(plan),
+            );
+          },
+        ),
+      ),
+      // Home has no back chip: the destination's chip enters with its page.
+      pinLeading: false,
+    );
+    try {
+      await Navigator.of(context).push<void>(route);
+      await route.completed;
+    } finally {
+      _recordsOpening = false;
+    }
+  }
 
   HipRoutine? get _routine {
     final list = store.sceneRoutines(store.scene);
@@ -930,41 +965,49 @@ class _HipHomeState extends State<HipHome> {
     ],
   );
 
-  /// 打卡: a tiny glass chip, not a panel.
-  Widget _streakChip() => Semantics(
-    label: '连续打卡 ${store.streak} 天',
-    child: ExcludeSemantics(
-      child: SizedBox(
-        height: 24,
-        child: HipGlass(
-          key: const ValueKey('home-streak'),
-          shape: HipGlassShape.capsule,
-          radius: 12,
-          blur: true,
-          sigma: 14,
-          shadow: false,
-          padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HipIcon(
-                HipGlyph.flame,
-                size: 12,
-                filled: true,
-                color: HipColors.tight,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '${store.streak} 天',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.2,
-                  fontWeight: FontWeight.w600,
-                  color: HipColors.text,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+  /// Keep the 24pt badge, with a full 44pt target for the records shortcut.
+  Widget _streakChip() => HipPressable(
+    key: const ValueKey('home-streak-button'),
+    semanticLabel: '连续打卡 ${store.streak} 天，查看训练记录',
+    onTap: _openRecords,
+    scale: .96,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: SizedBox(
+          height: 24,
+          child: HipGlass(
+            key: const ValueKey('home-streak'),
+            shape: HipGlassShape.capsule,
+            radius: 12,
+            blur: true,
+            sigma: 14,
+            shadow: false,
+            padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                HipIcon(
+                  HipGlyph.flame,
+                  size: 12,
+                  filled: true,
+                  color: HipColors.tight,
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                Text(
+                  '${store.streak} 天',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.2,
+                    fontWeight: FontWeight.w600,
+                    color: HipColors.text,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
