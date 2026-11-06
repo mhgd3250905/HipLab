@@ -1,5 +1,15 @@
 # 开发日志
 
+## 2026-11-06：共用牌面与杂志展开态 / +46
+
+运行/构建源 `21dd048940baef24a4e3d7186163ae626b062fcf`，独立分支 `codex/home-card-editorial-20261106`；`1.1.0+46` / arm64 `2046`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader、媒体与原生代码保持。日常目录 `feat/ui-detail-polish@25260b3` 保持。
+
+按用户两项反馈，移除“左右翻阅”及两侧箭头整个底行和预留；前后牌共用同一Face，标题/视频比例及材质不再在到顶时切换。展开态采用刊头细线、放大单序号、侧栏、强调标题、动作要领和页脚印记的杂志版式，保留原动作分类、方向、剂量和说明内容。
+
+相关10文件87通过/0失败/13跳过（12既有截图项+1需Impeller）；真实shader像素回归另以 --enable-impeller 1通过。fatal-infos分析0，严格锁解析不改lock。未重新跑全量App/SDK。 最终+46 release已构建、验签和资源校验，未由Agent安装，继续交用户远程覆盖测试。Noto字体浅深实际widget渲染已检查，组件逐帧与headless Impeller证据不替代原机滑动/展开观感及帧时长验收。
+
+[版式、连续性与交付](home-card-editorial-2026-11-06.md)。
+
 ## 2026-11-06：牌面透明视频局部合成 / +45
 
 运行/构建源 `9925e3c58afdea65768875f85ee3a4b60865a6f0`，分支 `codex/home-card-alpha-alignment-20261106`；`1.1.0+45` / arm64 `2045`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader/素材内容及原生代码保持；日常目录 `feat/ui-detail-polish@25260b3` 保持clean。

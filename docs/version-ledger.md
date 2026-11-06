@@ -1,5 +1,15 @@
 # 版本交付台账
 
+## 2026-11-06：杂志动作专页 / +46远程测试包
+
+运行/构建源 `21dd048940baef24a4e3d7186163ae626b062fcf`，独立分支 `codex/home-card-editorial-20261106`；`1.1.0+46` / arm64 `2046`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader、媒体与原生代码保持。日常目录 `feat/ui-detail-polish@25260b3` 保持。
+
+APK `E:/AII-3D/hiplab-releases/home-card-editorial-21dd048-46-20261106/hiplab-1.1.0+46-21dd048-internal-arm64-release.apk`，47628200字节，SHA256 `a4b0645993f452274618ac03d14401382d7b8add145345ae0024d7ef5badb796`，证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；与+45内部包同签。构建49.9秒，包身份、789资源项及重签runtime负载通过，原上传签名APK仅归档。
+
+最终+46 release已构建、验签和资源校验，未由Agent安装，继续交用户远程覆盖测试。Noto字体浅深实际widget渲染已检查，组件逐帧与headless Impeller证据不替代原机滑动/展开观感及帧时长验收。
+
+[版式与验证](home-card-editorial-2026-11-06.md)。
+
 ## 2026-11-06：透明视频取样修复 / +45远程测试包
 
 运行/构建源 `9925e3c58afdea65768875f85ee3a4b60865a6f0`，分支 `codex/home-card-alpha-alignment-20261106`；`1.1.0+45` / arm64 `2045`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader/素材内容及原生代码保持；日常目录 `feat/ui-detail-polish@25260b3` 保持clean。
