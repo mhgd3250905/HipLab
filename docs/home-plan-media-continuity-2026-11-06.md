@@ -1,5 +1,11 @@
 # 首页计划切换媒体连续性 · +52 · 2026-11-06
 
+## 当前验收结论
+
+用户在+52覆盖安装后明确回复“我已已经验收通过了”，当前`1.1.0+52`（arm64 `2052`，构建源`59ce2b8`）记为**用户真机验收通过**。本轮首页动作卡片及计划切换优化的用户验收项已收束；不另推定未报告的逐项测试或性能指标。安装回执与APK身份保持，未重建或改运行代码；候选分支仍为`codex/home-plan-media-continuity-20261106`，合并状态独立记录。
+
+用户确认回执：`E:/AII-3D/hiplab-releases/home-plan-59ce2b8-52-20261106/user-acceptance-20261106.json`。下方“待验收”保留为交付时历史，当前以本条为准。
+
 运行/构建源 `59ce2b8829d64eec401c743123d31c57e79d4a62`，分支 `codex/home-plan-media-continuity-20261106`，版本`1.1.0+52` / arm64 `2052`。四个实际SDK包及coach override保持`6fbd7de15dea62c7152eac43df1303b85d887a7c`。日常目录`feat/ui-detail-polish@25260b3`与SDK工作副本保持clean；无main、release、tag、商店或本地设备操作。
 
 ## 原因与统一修复
