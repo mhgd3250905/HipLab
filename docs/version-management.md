@@ -1,5 +1,13 @@
 # 版本管理说明
 
+## 2026-11-06：动作牌+51→+52
+
+运行/构建源 `59ce2b8829d64eec401c743123d31c57e79d4a62`，分支 `codex/home-plan-media-continuity-20261106`；`1.1.0+52` / arm64 `2052`。SDK仍固定 `6fbd7de15dea62c7152eac43df1303b85d887a7c`，hosted锁保持；日常目录 `feat/ui-detail-polish@25260b3` 未改。
+
+针对办公/居家首牌闪动，将冷牌保护统一覆盖初始首牌、场景/换一套/跨日/动作列表重置，以及关闭后迟到首帧。新牌保持封面，主动展开才揭示原视频；同一已就绪当前动作成为新首牌时保留State/controller/Texture与当前帧。提前解码两场景当前可选计划的首封面，精确匹配bundle和显示尺寸，不批量下载视频。新增6项回归；相关10文件106通过/0失败/14既有跳过，分析0；Impeller另2通过、62组RGBA消费对照误差/黑残影0。SDK/Android和+51运动参数未改，本轮未重复SDK测试。
+
++52 release验包/验签通过，与+51内部包同签。未安装、未跑全量/模型/iOS；远程手机观感待用户确认。[实现与交付](home-plan-media-continuity-2026-11-06.md)。
+
 ## 2026-11-06：动作牌+50→+51
 
 运行/构建源 `2087649d8c0dc8b34827c8458876886e55330662`，分支 `codex/home-card-handoff-motion-20261106`；`1.1.0+51` / arm64 `2051`。SDK固定 `6fbd7de15dea62c7152eac43df1303b85d887a7c`，hosted锁保持。日常目录 `feat/ui-detail-polish@25260b3` 保持。
