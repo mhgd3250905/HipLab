@@ -9,10 +9,17 @@ import '../ui/hip_theme.dart';
 import '../ui/library/library_actions.dart';
 import 'hip_public_media.dart';
 
+/// HipLab's app locale (MaterialApp `locale`); also picks SDK library strings.
+const hipAppLocale = Locale('zh');
+
 trainer.TrainingLibraryConfig hipSharedLibraryConfig(
-  coach.CoachActionScopeManifest scope,
-) => trainer.TrainingLibraryConfig(
+  coach.CoachActionScopeManifest scope, {
+  String? languageTag,
+}) => trainer.TrainingLibraryConfig(
   scopeManifest: scope,
+  strings: trainer.TrainingLibraryStrings.forLanguage(
+    languageTag ?? hipAppLocale.toLanguageTag(),
+  ),
   brand: 'HipLab',
   categoryOrder: const ['拉伸放松', '力量'],
   showStartAction: true,

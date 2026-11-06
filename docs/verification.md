@@ -1,5 +1,107 @@
 # 验证台账
 
+## 2026-11-04：QA v3 / +34 主线及版本文档收束
+
+### Preflight：范围、来源与归属
+
+- 收束scope：SDK问答接入、+31→+34版本/交付与PR #30合入的文档对齐；只改确定的当前摘要、版本/验证/事项/工作流，不改App/SDK/测试/锁，不增版、重建、安装或发布。
+- baseline：`4d610f50ee47f2d4de7c19517eb7e99220bb2204`，可核对ref `4d610f5^{commit}`；依据为本会话上一轮文档收束及本阶段建分支的main起点。`git rev-parse --verify`与`git merge-base --is-ancestor 4d610f5 HEAD`均成功。
+- 收束前HEAD：`2400b344183e1d57636412309899b4a1481966a7`，与origin/main回读一致，即PR #30合并点。
+- stage delta：`git log --oneline 4d610f5..HEAD`共7提交；`git diff --name-status 4d610f5..HEAD`共22路径：10文档、2标签资产、4App源文件、2pubspec、3测试、1probe。主题是SDK pin、qaV2入口/问答v3、模型/max、未审标签传入、版本/测试与交付记录。
+- 完整工作区：`git status --porcelain=v1 --untracked-files=all`为空；tracked变更、staged、unstaged、deleted、renamed、untracked各0，无未知归属。阶段差异均来自已提交的上述7提交；本次新增文档修改归本Agent。没有清理/stash/reset其他改动；原stash0fa5c25及候选副本保留。
+- GitHub只读回读：PR #30 merged=true，merge_commit_sha为2400b34；PR #29 OPEN/Draft，head447ca1c。release/1.0本地1f9a172、远端a20721e未动；不据此推断商店状态。
+
+Canonical发现从根AGENTS和README声明的一跳入口完成，docs/AGENTS.md不存在。实际核对如下；旧日期段只作history，不冒充当前来源，也未递归追查旧发布、外部项目或制品。
+
+| 路径 | 分类与判定 | 本阶段核对 |
+|---|---|---|
+| AGENTS.md、README.md | current项目入口；旧日期段history | 主线、版本、SDK、签名规则和授权边界 |
+| docs/README.md | current导航/新机流程；旧ZIP段history | +34、PR30、pub.dev、Git标签资产与来源入口 |
+| docs/current-state.md | current事实摘要；旧阶段表history | 功能集成点、自动证据、用户+32与待验范围 |
+| docs/version-management.md | current版本规则；旧候选段history | +34/2034、完整SDK pin、包/源码/安装状态分记 |
+| docs/version-ledger.md | current交付流水，各日期为当时记录 | 补+33未构建、+34实际包和+32签名/手机来源 |
+| docs/verification.md | current验证流水，各轮证据按源限定 | 此Preflight与同树复用、旧实模不外推 |
+| docs/development-roadmap.md | current事项索引，旧事项history | D-45代码已集成、设备验收待反馈；PR29/D-34保持 |
+| docs/development-log.md | current成果流水，旧日期history | PR30合入、+34交付和此次文档收束 |
+| docs/development-workflow.md | current操作规范；旧媒体/发布段history | +34/pin、官方源、签名失败条件及Mac素材准备 |
+
+确定findings：入口仍显示+30/+31/+32候选，缺+33未构建与+34包记录；SDK/依赖源和两个hosted版本变化未记入当前规则；README及工作流误写release缺签名自动回退；旧实模和手机状态需要来源分开。Alignment仅修这些确定文档问题，旧专题报告原文保留。
+
+### 运行验证证据与source state
+
+以下命令/结果来自本会话2026-11-04已返回回执，非本次closeout重跑，也未重新读取日志或APK。
+
+| 命令 | source state | 结果及适用性 |
+|---|---|---|
+| flutter pub get --enforce-lockfile | main2400b344183e1d57636412309899b4a1481966a7，干净工作树 | 成功，按提交内pub.dev保持lock；本次不改依赖 |
+| flutter analyze --no-pub --fatal-infos | 0f0882ede92b796ba53a03df1097f11232cb2d69 | 0问题，可按同树沿用到功能集成点 |
+| flutter test --no-pub --concurrency=2 --reporter=expanded（每批最多4文件） | 同上固定0f0882e；完整test/清单与源码哈希已核对 | 66文件/17批，461通过、0失败、68既有截图/导出条件跳过；无失败重跑或测试修补 |
+| flutter build apk --release --no-pub --target-platform=android-arm64 --split-per-abi | 同上固定0f0882e，外部测试配置 | +34/2034 arm64 release成功，49,680,947 bytes；构建证据仍归该源，不改写成当前文档HEAD重建 |
+| apksigner verify --verbose --print-certs（+32与+34固定APK）及aapt2 dump badging | +32包源c327a90；+34包源0f0882e | 签名通过、证书相同；+34包名com.ugk.hiplab、2034、arm64、非debuggable；SHA/路径见版本台账 |
+
+复用证明：`git rev-parse 0f0882e^{tree} 2400b34^{tree}`均为 `1fd1d1cb2d49d930d4367a1909de4aac71c80af7`，两者完整diff为空且0f0882e为祖先。因此运行源码/锁/测试/资源完全相同，分析和测试可沿用；本次收束提交只改上述十份Markdown，仍需以有限diff核对后提交，不创造新APK或新真机证据。
+
+相对4d610f5，本阶段还包含jni1.1.0→1.1.2、shared_preferences_android2.4.28→2.5.4与hosted源切换pub.dev；这些已包含在0f0882e的检查和构建内，本次不重锁。+31/SDK9dd93163的三段九轮18次实模与计划时长，以及+32/3e949ce的检查仅属于各自历史，不能替代当前f7b8a8e的实模或真机验收。
+
+用户确认+33未出包、手机为+32；本轮没有ADB安装/回读、对话失败日志或+34实机结果。+34仍待旧记录恢复/提示、即时气泡、三轮含排计划及杀进程重启续聊。UI r3 PR29及D-34历史锁屏失败不因文档收束而关闭。
+
+本次必要检查已通过：实际完整状态恰为上述10份Markdown修改，归本Agent，无新增未跟踪项；579个本地链接及71个锚点核对通过、错误0，`git diff --check`通过。运行源码、Android、资产、pubspec/lock、测试与工具的差异为0；原stash与release引用保持。上述确定findings已对齐，未重跑全量检查或构建。后续文档HEAD以本轮Git提交回执为准，下方旧段按历史保留。
+
+## 2026-11-04：SDK 3e949ce / +32 验证
+
+构建源 `c327a90e9946edfe7254075deec91edd749b604e`，分支 `codex/sdk-pin-v0.7.0` / [Draft PR #30](https://github.com/mhgd3250905/HipLab/pull/30)，SDK 固定 `3e949ce6ecd695aa954a012f33474942531324ef`（codex/qa-v2-fixes）。`flutter pub get` 成功且锁文件未变；严格 analyze 0，全部 66 个测试文件 461 通过 / 0 失败 / 68 既有条件跳过。
+
+APK 签名与 +31 一致，身份/负载校验通过；无真机，验收 1–4 待用户执行。本轮没有手机或新 SDK 真实对话结论；日志与命令保存在本地，见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
+
+## 2026-11-04：SDK 0.7.1 QA v2 验证
+
+运行源码 `2c13e8a119409c857508c6c3e79dc27241e8e702`，SDK9dd93163，Flutter3.44.7/Dart3.12.2。严格锁解析和analyze0；65文件分批458/0/68，加新增SDK端到端回归3/0/0，精确覆盖test/全部66文件，合计461通过/0失败/68既有条件跳过。真实生产Host→SDK控制器3段9轮18次请求，全为deepseek-v4.1-flash/max，单多选/编号/原门禁及计划保存通过。三个计划真实610/626/296s，卡片与phase求和一致。release构建/身份/2031/签名/CRC/资源和重签负载通过；未安装，真机由用户远程验收。新增回归/文档相对运行源无runtime变化，不重复已过检查。完整命令、工作树绑定、原文路径与有限边界见[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)；旧0.7.0直接Agent试跑不作为本轮证据。
+
+## 2026-11-04：近期文档收束与证据适用性
+
+### Preflight（只读）
+
+- 收束 scope：共享体验→211完整动作→首页/主题→UI r2/混合组→SDK0.6的已入主线成果，并补记UI r3候选及未验边界；只修文档。不含功能修改、SDK升级、候选合并、构建/手机/商店操作。第5批Coach是阶段前背景。
+- baseline：`0f507a3124436d29e8e3fbb7e2769a1d7d3c9018`（可核对引用`0f507a3^{commit}`），来源为根README及共享体验报告明确的main起点；`git rev-parse --verify`成功，`git merge-base --is-ancestor 0f507a3 HEAD`退出0。
+- HEAD：`0737e4e3e34cc7116e03554e977a0d8e65b39267`；fetch后等于origin/main。`git log 0f507a3..HEAD`为46提交；同基线diff为420路径：assets308、lib37、test43、test_screens7、tools7、docs14、android1、根README1、pubspec.yaml/lock各1。已核对SDK/版本、媒体/冷启动、页面/混合组/计时、测试与构建配置主题；Android已有`kotlin.incremental=false`用于跨盘依赖编译，本轮不改配置。
+- 完整工作区：`git status --porcelain=v1 --untracked-files=all`返回空；staged/unstaged/deleted/renamed/untracked均0，无未知归属。阶段delta是既有已提交来源；本次文档编辑归本Agent，原WIP stash和其他工作副本保留，不读取其内容。
+- GitHub只读回读：PR26/27/28均merged=true；PR29为open/draft，head447ca1c。远端release/1.0为a20721e；不以此推定商店状态。
+
+| 实际检查来源 | current / archive 判定与核对 |
+|---|---|
+| `AGENTS.md`、`README.md`、`docs/README.md` | current入口/规则；发现已合PR仍写候选、旧素材恢复仍被当默认流程 |
+| `docs/current-state.md` | current状态源；发现版本/安装/SDK/主线旧表未明确降为历史、缺PR29候选索引 |
+| `docs/version-management.md`、`docs/version-ledger.md` | current版本规则/交付源；发现0.3.9+17和旧SDK仍写当前、同号+30身份需区分 |
+| `docs/verification.md` | current验证源；补充454主线与434候选的source state适用性，不混用 |
+| `docs/development-roadmap.md`、`docs/development-log.md` | current事项/成果源；补齐已集成、待真机与候选状态 |
+| `docs/development-workflow.md` | current工作流；旧冻结ZIP恢复步骤与主线0MP4冲突，需标历史 |
+| `pubspec.yaml`、`pubspec.lock` | current配置；1.1.0+30、四个实际SDK包/override均693cbc02，lock ref/resolved-ref一致；本轮不改 |
+| `lib/hip/data/hip_action_scope.dart`、`hip_public_media.dart`、`hip_shared_library.dart` | current实现来源；211授权、按需媒体、UI locale zh；配置与报告一致 |
+| `assets/public_media/catalog.json`、`assets/public_media/catalog/catalog.json`、Git资源路径清单 | current元数据；目录含219定义但授权仍211、公共封面211、tracked MP4为0；目录数量不等于App可用数量 |
+| `docs/coach-chat-sdk-2026-11-02.md`、`sdk-shared-experience-completion-2026-11-02.md`、`full-action-scope-completion-2026-11-02.md`、`home-calm-r1-2026-11-02.md`、`ui-r2-pages-integration-2026-11-03.md`、`sdk-pin-v0.6.0-validation-2026-11-03.md` | archive/history专题证据，分别保留当时source/结果/包与验收；不作当前分支状态源 |
+| `origin/feat/ui-r2-pages:docs/ui-r2-r3-validation-2026-11-03.md` | 候选分支history证据；从已恢复relay明确指向的同仓库ref读取，不是main已验事实 |
+
+### 验证绑定
+
+| source state / 执行日期及来源 | 命令与结果 | 当前适用性 |
+|---|---|---|
+| `3a449c33be01dbef35c635a346f35eb26be1154a`；2026-11-03，[SDK报告](sdk-pin-v0.6.0-validation-2026-11-03.md) | `flutter pub get --offline --enforce-lockfile`通过；`flutter analyze --no-pub --fatal-infos`0；报告记录逐批`flutter test --no-pub`，64文件、4文件/批、concurrency=2：454通过/0失败/68条件跳过，重点24通过 | `git diff --name-status 3a449c3 HEAD`仅6份docs，无运行/依赖/资源/测试差异，故可沿用主线；不是本轮重跑。报告未提供精确执行时刻或完整分批shell，不补造 |
+| `00feee16ea049e636f3c43f900ce7a5902d10363`；2026-11-03，[候选报告](https://github.com/mhgd3250905/HipLab/blob/447ca1ca3471aa6504e43179cdedeaa1fb8120d0/docs/ui-r2-r3-validation-2026-11-03.md) | `flutter pub get --enforce-lockfile`通过；严格analyze0；`flutter test --no-pub --concurrency=2 --reporter=expanded test/hip`60文件434通过/0失败/68既有条件跳过 | 到候选447ca1c仅6份docs；不属于main祖先，不能写成main测试。非本轮重跑 |
+| `f4714c6630205afdd85fd4c4655bd51ee814b0b0`及更早来源 | 原命令/454与各阶段结果仍保留在日期报告 | f4714c6到当前HEAD有5个非docs路径变化，SDK已升级；更早测试均仅作各阶段历史，不叠加为当前全量 |
+| 本轮文档工作树（基于0737e4e） | 完整Git状态、来源/版本/PR核对；必要验证为`git diff --check`、本轮新增/修改本地链接与一致性检查 | 只改Markdown，主线运行源码仍等同3a449c3；无需重跑Flutter测试/构建，无真机新增结论 |
+
+68条件跳过在主线为12首页截图+55 r2截图+1可选语音导出，候选为67截图+1可选导出；保留原统计范围，不把434与454当同一次全量。SDK换侧3秒是预计余量，`phases/executionTiming`按真实阶段；不机械增加执行时长断言。App UI固定中文，语音切换不能作为动作库UI切换验收。旧D-34失败、混合组完整真机、数据保持与聊天返回键抽查仍未关闭。
+
+### Alignment
+
+确定finding为：已合PR的当前状态滞后、旧App/SDK版本和内置媒体恢复步骤仍作当前口径、同号包/候选与主线验证混用风险、UI r3候选缺当前索引。按已核对来源在入口、当前状态、版本/验证/事项/日志及工作流中修正，并明确历史边界；原报告/包SHA/历史失败保留。检查不读凭据、日志、构建产物，不扫描其他仓库。本次提交自身即为文档source state，最终commit SHA及push回读由Git和Cockpit回执记录。
+
+本轮完成结果（2026-11-04）：`git diff --check`退出0；Python只读校验通过53处新增/修改本地链接及锚点、版本/SDK pin/lock与source delta一致性；完整状态为10份明确Markdown未暂存、staged0/untracked0，无其他路径；独立只读复审无新增finding。改动全部归本Agent，确定alignment findings已清零。仅文档，未重复Flutter analyze/test、APK构建或设备检查。
+
+## 2026-11-03：SDK v0.6.0 候选测试与内部包完成
+
+`codex/sdk-pin-v0.6.0` / Draft PR #28 的测试与构建源 `3a449c3`，SDK pin `693cbc02`。严格 analyze 0；全量 64 文件分 16 批共 454 通过 / 0 失败 / 68 既有条件跳过，四个重点文件 24 通过，无代码修复。1.1.0+30/2030 arm64 内部包 47.64 MiB、同测试签名、0 MP4，文件名含 3a449c3，未安装。App 界面固定中文，语音语言切换不能验收动作库界面切换；聊天单返回键仅代码核对，真机由用户远程安装抽查。不合 main、不动 release/商店，日常 WIP 未操作。[完整回执](sdk-pin-v0.6.0-validation-2026-11-03.md)。以下保留历史阶段。
+
 ## 2026-11-03：PR #27 r2候选验证完成，待用户远程安装
 
 保留已确认的r2结构，仅修每日训练分钟重复取整，补混合组实际SDK阶段/组间休息/完成保存回归。验证构建源`f4714c6`；analyze0，64文件按4文件/批全部通过，含新增回归去重454通过/0失败/68条件跳过（opt-in截图/导出）。47.64MiB release候选保持+30/2030、同测试签名/0MP4，交用户远程安装验混合组和旧数据，本轮未安装。只正常字体，不合main、不升版、不动release/商店。[交付与APK身份](ui-r2-pages-integration-2026-11-03.md)。以下为历史阶段。

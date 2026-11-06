@@ -1,14 +1,20 @@
 # 主线开发工作流
 
+## 2026-11-04 当前主线和媒体准备
+
+日常目录main本次文档收束前为2400b34，已含PR26/27/28/30；当前1.1.0+34/2034、四SDK实际包及coach override固定f7b8a8e（v0.7.2内容），Flutter3.44.7。UI r3 Draft PR29仍在候选分支，与SDK问答v3是不同事项；未经真机反馈不按本轮文档整理推进该UI候选合并。
+
+当前新机器使用Git中的`assets/public_media/`、`assets/public_posters/`、`assets/coach/ai-tags/`和pubspec锁文件准备依赖，再按[文档入口](README.md#新机器拉素材mac--windows)执行严格锁解析，保持当前lock的pub.dev源。+34已验证源码0f0882e与功能集成点同树，本次只改文档，不重复测试/构建。0内置MP4，视频由SDK按需缓存；**下方v0.2.0 ZIP同步仅适用于旧分支，不在当前main执行回填**。本页旧版本、安装与工具默认路径描述均按其日期保留；实际操作先核对工作区与显式Flutter入口，不依据历史快照改动环境。
+
 ## 2026-10-24 Windows 固定工具入口
 
-本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。最新三个SDK正式tag及本轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
+本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。当时三个SDK正式tag及该轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
 
 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，本工作目录 `E:\AII-3D\3D-Hip` 用于后续 main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态。
 
 ## 主线基线与更新
 
-最新：2026-10-21，训练包及AI新入口已获准合入并推送两个main：HipLab集成点691ace2，SDK d193a70（coach0.1.3/trainer0.1.4）。当前共用版本与手机均为0.3.9+17，构建运行源79c172d，已保留数据安装；锁屏冻结仍已知失败，交用户后测。本次文档收束不重建/重测/操作手机。见[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)及[版本台账](version-ledger.md)。
+历史基线：2026-10-21，训练包及AI新入口已获准合入并推送两个main：HipLab集成点691ace2，SDK d193a70（coach0.1.3/trainer0.1.4）。当前共用版本与手机均为0.3.9+17，构建运行源79c172d，已保留数据安装；锁屏冻结仍已知失败，交用户后测。本次文档收束不重建/重测/操作手机。见[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)及[版本台账](version-ledger.md)。
 
 2026-10-20早间基线（历史）：main已合PR25，0.3.7+12 AI测试包当时仅构建未安装，手机当时为0.3.6+11；见[历史包身份](android-test-build-0.3.7-2026-10-20.md)。下列其他基线段落亦保留各自日期的历史。
 
@@ -43,7 +49,7 @@ flutter analyze --no-pub
 flutter test --no-pub --concurrency=1
 ```
 
-新环境先按 [README](README.md#新机器拉素材mac--windows) 恢复冻结媒体，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
+新环境先按 [README](README.md#新机器拉素材mac--windows) 核对当前公共元数据和封面，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
 
 提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。共用版本、产物来源和各类状态的登记方式见[版本管理说明](version-management.md)。
 
@@ -57,13 +63,13 @@ Codex 托管副本整理前，逐项核对对应任务与聊天附件、Git work
 
 ## 两端分工与授权
 
-Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器允许按 README 用 `--from-dir` 恢复冻结资源并 `--check`。禁止 force push，保留未提交工作与用户数据。
+Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器按 README 当前main流程准备Git元数据、封面和依赖；`--from-dir`恢复与`--check`仅用于需要旧内置视频布局的分支。禁止 force push，保留未提交工作与用户数据。
 
 ## 内容与素材
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-当前取用 Pose-Hub v0.2.0，冻结 lock / manifest 随 main 保存；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
+以下为旧内置媒体分支历史流程，不在当前 main 执行。旧版取用 Pose-Hub v0.2.0，冻结 lock / manifest 仍保留；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
 
 ```powershell
 python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --dry-run
@@ -105,4 +111,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核，iOS 构建与正式发布仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。
+debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 送 Alpha 是历史记录，iOS 与商店后续状态仍按发布记录维护。本仓库 Android release 缺少 `android/key.properties` 时构建失败，不自动回退 debug 签名；内部测试包须单独核对实际旧包证书（本轮+34基线为+32），不得标成商店上传包。

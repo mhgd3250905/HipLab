@@ -46,7 +46,10 @@ CoachAppProfile hiplabCoachAppProfile({
   required coach.CoachProfile coachProfile,
   required coach.PlanExecutionTimingCallback executionTiming,
   required HipContent content,
+  Map<String, Map<String, Object?>> aiTags = const {},
 }) => CoachAppProfile(
+  agentMode: CoachChatAgentMode.qaV2,
+  aiTags: aiTags,
   appId: 'hiplab',
   mediaPolicy: HipPublicMedia.current,
   library: hipSharedLibraryConfig(

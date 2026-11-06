@@ -1,5 +1,35 @@
 # HipLab 文档与开发台账
 
+## 2026-11-04：QA v3 / +34 主线与交付
+
+PR #30 已合入 main，功能集成点 `2400b34`，版本 **1.1.0+34 / 2034**，SDK `f7b8a8e`（v0.7.2 内容）。测试/构建源 `0f0882e` 与集成点同树，analyze 0、全部 66 文件 461/0/68；+34 已交付、未安装。本轮只做版本文档收束，复用有效证据，不增版或重建。
+
+用户确认 +33 未出包、手机现装 +32，+34 已与实际 +32 验签一致；包路径、文件/证书 SHA-256 见[版本台账](version-ledger.md)，同树证明和未验边界见[验证台账](verification.md)。旧 +31 的实模对话仅是旧 SDK 历史。下方 +32/+31 保留当时状态，不能用于判断当前 main 或手机。
+
+## 2026-11-04：AI 教练修复测试包 +32（历史）
+
+SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68。同 +31 签名测试包已备好，用户远程安装验坏记录恢复、三轮含排计划与重启续聊；本轮未安装，不合 main。详见 [sdk-qa-fixes-plus32-2026-11-04.md](sdk-qa-fixes-plus32-2026-11-04.md)。
+
+## 2026-11-04：SDK 0.7.1 QA v2 / +31 候选（历史）
+
+`codex/sdk-pin-v0.7.0` 已接正式SDK `9dd93163`：原SDK聊天页打开qaV2并传App的209条未审AI标签，模型deepseek-v4.1-flash/max；App无问答适配层，原211范围及保存/开练门禁保留。1.1.0+31/2031内部包构建源 `2c13e8a119409c857508c6c3e79dc27241e8e702`。严格analyze0，全部66个test文件461通过/0失败/68既有条件跳过；真实宿主3段9轮18次请求与计划保存通过。
+
+测试APK已备好，同签名、211封面/0MP4，交用户远程安装；本轮未安装，候选不合main、release/商店不动。两条缺标签按目录回退、无替换候选时保留原动作，详细边界见[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。当前main仍4d610f5，UIr3 PR29另行待验，下方main快照保留历史。
+
+## 2026-11-04：当前导航
+
+当前 main 已含 PR #26/#27/#28/#30，版本 **1.1.0+34 / 2034**、SDK pin `f7b8a8e`；UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，待用户真机反馈。旧“PR30 候选未合 main”等文字是当时快照。
+
+| 要查什么 | 当前来源 |
+|---|---|
+| 近期成果、分支与验收边界 | [当前状态](current-state.md) |
+| +34 交付、+33 未构建、用户报告 +32 与旧 UI r3 包的区别 | [版本台账](version-ledger.md) |
+| 主线同树沿用 461/0/68、旧 SDK 对话及候选 434/68 的适用范围 | [验证台账](verification.md) |
+| 已完成事项及剩余真机反馈 | [开发事项](development-roadmap.md) |
+| App/SDK 版本和媒体来源规则 | [版本管理](version-management.md)、[开发工作流](development-workflow.md) |
+
+本次只对齐文档并保存提交，不增版、不构建、不安装、不合并 UI r3。日期专题报告是历史证据，不能替代以上当前台账。
+
 ## 2026-11-03：PR #27 r2候选验证完成，待用户远程安装
 
 保留已确认的r2结构，仅修每日训练分钟重复取整，补混合组实际SDK阶段/组间休息/完成保存回归。验证构建源`f4714c6`；analyze0，64文件按4文件/批全部通过，含新增回归去重454通过/0失败/68条件跳过（opt-in截图/导出）。47.64MiB release候选保持+30/2030、同测试签名/0MP4，交用户远程安装验混合组和旧数据，本轮未安装。只正常字体，不合main、不升版、不动release/商店。[交付与APK身份](ui-r2-pages-integration-2026-11-03.md)。以下为历史阶段。
@@ -110,6 +140,16 @@
 逐条媒体来源以 [hip-media.json](../tools/hip_content/source/hip-media.json) 为准；[hip-content.json](../assets/hip/hip-content.json) 是生成结果。APK、截图、运行日志与设备数据备份在 Git 忽略目录内；文档中的本机路径不代表这些文件已备份到 GitHub。
 
 ## 新机器拉素材（Mac / Windows）
+
+### 当前 main：公共元数据、封面与 SDK 按需视频
+
+从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。公共目录/语义与 211 张封面、209 条未审 AI 标签随仓库保存；SDK 不自带 App 标签。`HipPublicMedia` 从这些元数据创建 SDK 媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。
+
+两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，保持锁文件当前的 `pub.dev` 源，已有解析时才用 `--no-pub` 验证；不要为使用旧镜像缓存重写 lock。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
+
+### 冻结 v0.2.0 ZIP 恢复（仅旧分支历史）
+
+以下保留旧内置视频版本的来源、校验及恢复命令，适用于需要该资源布局的旧提交；其中“当前包/main”均指当时版本。当前主线使用上节流程。
 
 先拉取 HipLab 的最新 `main`，以下命令均在仓库根目录执行。`pose-hub.lock.json` 和 `tools/pose-hub-manifest.json` 已随主线保存，固定 Pose-Hub **v0.2.0**；新机器直接使用这两个文件，不另取最新版 manifest。两端统一 **Flutter 3.44.7 stable**；Mac 不修改 lock、版本号或依赖，后续素材升级由 Windows 维护。
 

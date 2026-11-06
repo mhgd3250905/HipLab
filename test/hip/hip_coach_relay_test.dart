@@ -58,7 +58,9 @@ void main() {
     expect(config.appKey, isEmpty);
     expect(config.configured, isFalse);
     expect(config.baseUrl, 'https://api.uuugk.win/v1');
-    expect(config.model, 'deepseek-v4-flash-0731');
+    expect(config.model, 'deepseek-v4.1-flash');
+    expect(config.llmConfig.extraBody['reasoning_effort'], 'max');
+    expect(config.llmConfig.extraBody['thinking'], {'type': 'enabled'});
     expect(config.llmConfig.maxRetries, 0);
     const blank = CoachConfig(baseUrl: ' \t ', model: ' \n ');
     expect(blank.baseUrl, config.baseUrl);
