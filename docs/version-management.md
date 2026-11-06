@@ -1,5 +1,13 @@
 # 版本管理说明
 
+## 2026-11-06：动作牌+50→+51
+
+运行/构建源 `2087649d8c0dc8b34827c8458876886e55330662`，分支 `codex/home-card-handoff-motion-20261106`；`1.1.0+51` / arm64 `2051`。SDK固定 `6fbd7de15dea62c7152eac43df1303b85d887a7c`，hosted锁保持。日常目录 `feat/ui-detail-polish@25260b3` 保持。
+
+用户确认+50的更多闪帧/上下透明异常修复。新候选预备current±1最多3挂载暂停媒体，到顶按occurrence GlobalKey接管原State/controller/Texture；冷首帧迟到保持compact既有图，主动展开解除。上下仍用物理曲线，取消900硬限速、竖k70/ζ.82，水平原值保持。相关100通过/14跳过，强化甩速另1通过，Impeller另2通过/62组RGBA像素0误差；SDK54通过，双方分析0。+51 release验包/验签通过，与+50内部包同签；Agent未安装，新接牌及手感待用户远程确认。
+
+[实现、资源范围与交付](home-card-handoff-motion-2026-11-06.md)。
+
 ## 2026-11-06：动作牌+49→+50
 
 运行/构建源 `981eeaf161c0b896e963d625f9525b69e9bf32b6`，候选分支 `codex/home-card-surface-stability-20261106`；`1.1.0+50` / arm64 `2050`。四个SDK包及coach override固定 `145e3195570f34536c948558e02306a3db5ec2e3`，hosted锁保持；日常目录 `feat/ui-detail-polish@25260b3` 保持。
