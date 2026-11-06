@@ -73,6 +73,7 @@ class HipApp extends StatefulWidget {
 }
 
 class _HipAppState extends State<HipApp> {
+  HipLanguage _loadingLanguage = HipLanguage.zh;
   late Future<(HipStore, HipVoice)> _loading = _load();
 
   Future<(HipStore, HipVoice)> _load() async {
@@ -83,6 +84,7 @@ class _HipAppState extends State<HipApp> {
       // (home r1). Injected test stores keep the scene they were given.
       store.applyTimeScene();
     }
+    _loadingLanguage = store.language;
     HipMediaVariants.media = await loadHipActionMedia();
     HipPublicMedia.current = widget.mediaPolicy ?? await HipPublicMedia.load();
     HipSharedLibrary.current = hipSharedLibraryConfig(
@@ -120,19 +122,22 @@ class _HipAppState extends State<HipApp> {
         return _shell(
           ThemeMode.system,
           snap.hasError
-              ? Scaffold(
-                  body: Center(
-                    child: TextButton(
-                      onPressed: () => setState(() => _loading = _load()),
-                      child: Text(
-                        HipText.of(
-                          context,
-                        ).pick("读取失败，点一下重试", "Could not load. Tap to retry."),
+              ? Builder(
+                  builder: (errorContext) => Scaffold(
+                    body: Center(
+                      child: TextButton(
+                        onPressed: () => setState(() => _loading = _load()),
+                        child: Text(
+                          HipText.of(
+                            errorContext,
+                          ).pick("读取失败，点一下重试", "Could not load. Tap to retry."),
+                        ),
                       ),
                     ),
                   ),
                 )
               : const Scaffold(body: SizedBox.expand()),
+          language: widget.store?.language ?? _loadingLanguage,
         );
       }
       final (store, voice) = loaded;
