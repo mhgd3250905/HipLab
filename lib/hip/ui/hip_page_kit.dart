@@ -163,7 +163,9 @@ class HipNavBar extends StatelessWidget {
               // A 44pt hit target centred on the chip, so the whole left edge
               // is live the way the system back control is.
               left: chipEdge,
-              top: topInset + (row - 44) / 2,
+              // Subtitle height belongs to the title, not the controls:
+              // nested single/two-line pages share one vertical anchor.
+              top: topInset,
               child: _HipUncoveredLeading(
                 child: HipNavBackChip(
                   leading: leading,
@@ -176,7 +178,7 @@ class HipNavBar extends StatelessWidget {
             Positioned(
               right: chipEdge,
               top: topInset,
-              height: row,
+              height: chip,
               child: Center(child: trailing),
             ),
         ],
@@ -524,9 +526,6 @@ class _HipNavPageState extends State<HipNavPage> {
       ],
     );
     final topInset = MediaQuery.paddingOf(context).top;
-    final row = widget.subtitle == null
-        ? HipNavBar.height
-        : HipNavBar.heightWithSubtitle;
     Widget page = Stack(
       fit: StackFit.expand,
       children: [
@@ -596,7 +595,7 @@ class _HipNavPageState extends State<HipNavPage> {
         if (pin && chip != null)
           Positioned(
             left: HipNavBar.chipEdge,
-            top: topInset + (row - 44) / 2,
+            top: topInset,
             // The one fixed control: the bar's glass, title and trailing
             // action slide with their page, the chip stays put.
             child: _HipUncoveredLeading(child: chip),

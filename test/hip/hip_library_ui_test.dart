@@ -12,6 +12,7 @@ import 'package:hiplab/hip/domain/hip_pain.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
+import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
@@ -263,11 +264,16 @@ void main() {
       tester,
     ) async {
       final store = await pumpApp(tester);
+      tester.view.padding = const FakeViewPadding(top: 47, bottom: 34);
+      await tester.pumpAndSettle();
       await toPractice(tester, segment: 2);
+      final leadingRect = tester.getRect(find.byType(HipNavBackChip));
+      expect(leadingRect, const Rect.fromLTWH(16, 47, 44, 44));
       expect(find.byKey(const ValueKey('mine-empty')), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('new-group')));
       await tester.pumpAndSettle();
       expect(find.byType(DrillPickerPage), findsOneWidget);
+      expect(tester.getRect(find.byType(HipNavBackChip)), leadingRect);
       for (final id in ['h-9090-liftoff', 'h-adductor-rock']) {
         await tapCard(tester, ValueKey('pick-$id'));
         await tester.pump();
@@ -279,6 +285,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('picker-add')));
       await tester.pumpAndSettle();
       expect(find.byType(GroupEditorPage), findsOneWidget);
+      expect(tester.getRect(find.byType(HipNavBackChip)), leadingRect);
       await tester.tap(find.byKey(const ValueKey('rest-20')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('editor-save')));
@@ -291,6 +298,7 @@ void main() {
         'h-adductor-rock',
       ]);
       expect(find.byKey(ValueKey('group-card-${g.id}')), findsOneWidget);
+      expect(tester.getRect(find.byType(HipNavBackChip)), leadingRect);
       // Home r1: groups moved from 首页 to 更多 › 我的训练组.
       await openMore(tester);
       expect(

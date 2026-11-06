@@ -422,51 +422,66 @@ class HipTopBar extends StatelessWidget {
     child: ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          leading ??
-              HipCircleButton(
-                icon: icon,
-                tooltip: tooltip,
-                onPressed: onClose ?? () => Navigator.of(context).maybePop(),
-              ),
+          // Keep the immersive header's existing 48pt control rail. A tall
+          // question heading must not pull the close control down with it.
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child:
+                leading ??
+                HipCircleButton(
+                  icon: icon,
+                  tooltip: tooltip,
+                  onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+                ),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child:
-                center ??
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.2,
-                          color: HipColors.jadeText,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    if (title != null)
-                      Text(
-                        title!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
-                ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                heightFactor: 1,
+                child:
+                    center ??
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.2,
+                              color: HipColors.jadeText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        if (title != null)
+                          Text(
+                            title!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              height: 1.25,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
+                    ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 44,
+            height: 48,
             child: Align(
               alignment: Alignment.centerRight,
               child: trailing ?? const SizedBox(),
