@@ -411,15 +411,9 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
         radius: 18,
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: tintOf(HipColors.jade),
-              ),
-              child: HipIcon(icon, size: 20, color: HipColors.jadeText),
+            SizedBox.square(
+              dimension: 40,
+              child: Center(child: HipRowIcon(icon)),
             ),
             const SizedBox(width: 12),
             Expanded(

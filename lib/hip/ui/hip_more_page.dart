@@ -112,6 +112,7 @@ class HipMorePage extends StatelessWidget {
           HipListRow(
             key: const ValueKey('more-settings'),
             glyph: HipGlyph.contrast,
+            rowSymbol: HipRowSymbol.settings,
             title: '设置',
             meta: '提醒 · 语音 · 外观',
             onTap: () => _push(context, HipSettingsPage(store: store)),

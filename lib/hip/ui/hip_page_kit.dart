@@ -22,8 +22,11 @@ import 'package:flutter/services.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_routes.dart';
+import 'hip_row_icons.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
+
+export 'hip_row_icons.dart' show HipRowSymbol;
 
 /// Horizontal content edge of every kit page.
 const double kHipPageEdge = 20;
@@ -681,21 +684,23 @@ class HipListGroup extends StatelessWidget {
   );
 }
 
-/// The 30×30 tinted icon container of a row (iOS Settings icon step).
+/// A sculpted category miniature, keeping the row's established 30pt column.
 class HipRowIcon extends StatelessWidget {
-  const HipRowIcon(this.glyph, {super.key});
+  const HipRowIcon(this.glyph, {super.key, this.symbol});
   final HipGlyph glyph;
+  final HipRowSymbol? symbol;
   @override
-  Widget build(BuildContext context) => Container(
-    width: 30,
-    height: 30,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(7),
-      color: HipColors.jade.withValues(alpha: .14),
-    ),
-    child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
-  );
+  Widget build(BuildContext context) {
+    final mark = symbol ?? hipRowSymbolForGlyph(glyph);
+    return mark == null
+        ? SizedBox.square(
+            dimension: 30,
+            child: Center(
+              child: HipIcon(glyph, size: 18, color: HipColors.jadeText),
+            ),
+          )
+        : HipRowEmblem(symbol: mark);
+  }
 }
 
 class HipListRow extends StatelessWidget {
@@ -703,6 +708,7 @@ class HipListRow extends StatelessWidget {
     super.key,
     required this.title,
     this.glyph,
+    this.rowSymbol,
     this.subtitle,
     this.meta,
     this.trailing,
@@ -712,6 +718,7 @@ class HipListRow extends StatelessWidget {
   });
   final String title;
   final HipGlyph? glyph;
+  final HipRowSymbol? rowSymbol;
   final String? subtitle;
 
   /// Right grey text (14 faint), before the chevron.
@@ -735,7 +742,7 @@ class HipListRow extends StatelessWidget {
         child: Row(
           children: [
             if (glyph != null) ...[
-              HipRowIcon(glyph!),
+              HipRowIcon(glyph!, symbol: rowSymbol),
               const SizedBox(width: 12),
             ],
             Expanded(
