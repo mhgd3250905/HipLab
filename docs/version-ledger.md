@@ -1,5 +1,15 @@
 # 版本交付台账
 
+## 2026-11-06：透明视频取样修复 / +45远程测试包
+
+运行/构建源 `9925e3c58afdea65768875f85ee3a4b60865a6f0`，分支 `codex/home-card-alpha-alignment-20261106`；`1.1.0+45` / arm64 `2045`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader/素材内容及原生代码保持；日常目录 `feat/ui-detail-polish@25260b3` 保持clean。
+
+APK `E:/AII-3D/hiplab-releases/home-card-alpha-9925e3c-45-20261106/hiplab-1.1.0+45-9925e3c-internal-arm64-release.apk`，47628200字节，SHA256 `cab9c19e4b3fe17d1d3bc8f2d79f5cee28701cbd77e4f9bb7b54875fefb118d5`，证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；与+44内部包同签。构建56.4秒，包身份、789资源项和重签runtime负载通过。原上传签名APK仅归档。
+
+最终+45已构建、验签和资源校验，未由Agent安装。继续交由用户远程覆盖安装，原机视频取样、文字清晰度和帧时长仍待反馈；本机headless Impeller与合成图案不代替手机GPU/SurfaceProducer验收。
+
+[修复与验证](home-card-alpha-alignment-2026-11-06.md)。
+
 ## 2026-11-06：持久视频牌面 / +44远程测试包
 
 运行/构建源 `c0798ecc6a9ef5f91bfa0221cee5bb2c42dfad38`，独立分支 `codex/home-card-live-surface-20261106`；`1.1.0+44` / arm64 `2044`。四个实际SDK包及coach override固定 `1c082e9d3e22022f228888fdd1935b1d61371cb9`；hosted锁、Flutter3.44.7及素材内容保持。日常目录仍 `feat/ui-detail-polish@25260b3`，保持clean。

@@ -1,5 +1,15 @@
 # 当前状态
 
+## 2026-11-06：牌面黑轮廓修复 / +45待远程验收
+
+运行/构建源 `9925e3c58afdea65768875f85ee3a4b60865a6f0`，分支 `codex/home-card-alpha-alignment-20261106`；`1.1.0+45` / arm64 `2045`。SDK仍 `1c082e9d3e22022f228888fdd1935b1d61371cb9`，lock、shader/素材内容及原生代码保持；日常目录 `feat/ui-detail-polish@25260b3` 保持clean。
+
+用户+44截图显示坐姿后撑单膝内倒等前牌人物后缘有错位黑轮廓。+45为前牌姿态Transform设置非空filterQuality：先在局部坐标合成视频RGB/alpha，再将整张牌作为GPU滤镜结果做透视/旋转；保留同一直播Texture、当前帧暂停和展开/收起行为。
+
+常规10文件85通过/0失败/13跳过（12既有截图跳过，1项真实shader像素测试需Impeller）；该像素测试另以 --enable-impeller 单独运行1通过。新增像素和实际layer断言在旧路径先失败，修复后通过；fatal-infos分析0，严格锁解析不改lock。 最终+45已构建、验签和资源校验，未由Agent安装。继续交由用户远程覆盖安装，原机视频取样、文字清晰度和帧时长仍待反馈；本机headless Impeller与合成图案不代替手机GPU/SurfaceProducer验收。
+
+[定位、像素对照与交付](home-card-alpha-alignment-2026-11-06.md)。
+
 ## 2026-11-06：动作牌同一视频 / +44待远程验收
 
 运行/构建源 `c0798ecc6a9ef5f91bfa0221cee5bb2c42dfad38`，独立分支 `codex/home-card-live-surface-20261106`；`1.1.0+44` / arm64 `2044`。四个实际SDK包及coach override固定 `1c082e9d3e22022f228888fdd1935b1d61371cb9`；hosted锁、Flutter3.44.7及素材内容保持。日常目录仍 `feat/ui-detail-polish@25260b3`，保持clean。
