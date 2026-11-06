@@ -37,7 +37,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   late final AnimationController _position;
   late final AnimationController _vertical;
   late final AnimationController _flight;
-  late final AnimationController _contact;
   final _overlay = OverlayPortalController();
   late final AnimationController _expansion;
   Animation<double>? _covered;
@@ -53,9 +52,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   int _toward = 1;
   int _generation = 0;
   bool _committing = false;
-  bool _holding = false;
-  Offset _holdOrigin = Offset.zero;
   Offset _flightDirection = Offset.zero;
+  Rect? _frontBounds;
+  Offset _boundsOffset = Offset.zero;
   Rect? _paintedFlightBounds;
   int _paintedFlightGeneration = -1;
   double _cardWidth = 1;
@@ -88,11 +87,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
           _flight.stop(canceled: false);
         }
       });
-    _contact = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150),
-      reverseDuration: const Duration(milliseconds: 180),
-    );
     _expansion = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 380),
@@ -111,8 +105,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _position.stop();
       _vertical.stop();
       _flight.stop();
-      _holding = false;
-      _contact.value = 0;
       if (_committing) _index = _at(_toward);
       _committing = false;
       _position.value = 0;
@@ -133,8 +125,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _position.stop();
       _vertical.stop();
       _flight.stop();
-      _holding = false;
-      _contact.value = 0;
       _position.value = 0;
       _vertical.value = 0;
       _finishFloating();
@@ -160,7 +150,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     _position.dispose();
     _vertical.dispose();
     _flight.dispose();
-    _contact.dispose();
     super.dispose();
   }
 
@@ -253,33 +242,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     _vertical.stop();
     _flight.stop();
     _floatFront();
-  }
-
-  void _holdStart(LongPressStartDetails details) {
-    if (_committing || _expanded || _expansion.value > 0) return;
-    _dragStart(DragStartDetails());
-    _holding = true;
-    _holdOrigin = Offset(_position.value, _vertical.value);
-    if (!_reduced) _contact.forward();
-  }
-
-  void _holdMove(LongPressMoveUpdateDetails details) {
-    if (!_holding) return;
-    _setDragOffset(_holdOrigin + details.offsetFromOrigin);
-  }
-
-  void _holdEnd(LongPressEndDetails details) {
-    if (!_holding) return;
-    _holding = false;
-    _contact.reverse();
-    _dragEnd(DragEndDetails(velocity: details.velocity));
-  }
-
-  void _cancelHold() {
-    if (!_holding) return;
-    _holding = false;
-    _contact.reverse();
-    _returnCard();
   }
 
   int _directionFor(Offset offset) {
@@ -394,23 +356,41 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _flightDirection = exitDirection ?? Offset(-direction.toDouble(), 0);
       // Follow the release ray until the card has cleared a screen edge. Use
       // one scalar simulation for both axes so a diagonal never bends sideways.
+      final offset = Offset(_position.value, _vertical.value);
+      final bounds = _frontBounds?.shift(offset - _boundsOffset);
+      final view = MediaQuery.sizeOf(context);
       final horizontal = _flightDirection.dx.abs() < .001
           ? double.infinity
-          : _exitDistance / _flightDirection.dx.abs();
+          : bounds == null
+          ? _exitDistance / _flightDirection.dx.abs()
+          : (_flightDirection.dx < 0
+                    ? bounds.right + 48
+                    : view.width - bounds.left + 48) /
+                _flightDirection.dx.abs();
       final vertical = _flightDirection.dy.abs() < .001
           ? double.infinity
-          : (MediaQuery.sizeOf(context).height + _cardWidth * 1.62) /
+          : bounds == null
+          ? (view.height + _cardWidth * 1.62) / _flightDirection.dy.abs()
+          : (_flightDirection.dy < 0
+                    ? bounds.bottom + 48
+                    : view.height - bounds.top + 48) /
                 _flightDirection.dy.abs();
-      final exitDistance = math.min(horizontal, vertical);
-      _flight.value = Offset(_position.value, _vertical.value).distance;
+      // A far-off target gives a spring a much stronger initial pull on a tall
+      // screen. Aim just beyond the visible edge instead, and let a vertical
+      // release carry more weight than a horizontal turn.
+      final exitDistance =
+          offset.distance + math.max(0, math.min(horizontal, vertical));
+      final verticalWeight = _flightDirection.dy.abs();
+      _flight.value = offset.distance;
       try {
         await _flight
             .animateWith(
               _DeckExitSpring(
                 _flight.value,
-                exitDistance * 1.12,
-                velocity.clamp(-2400.0, 2400.0),
                 exitDistance,
+                velocity.clamp(0.0, lerpDouble(2400, 900, verticalWeight)!),
+                exitDistance,
+                stiffness: lerpDouble(240, 60, verticalWeight)!,
               ),
             )
             .orCancel;
@@ -444,7 +424,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         value: _description(_index),
         increasedValue: _multiple ? _description(_at(1)) : null,
         decreasedValue: _multiple ? _description(_at(-1)) : null,
-        hint: '轻点展开动作，长按轻抬卡片，向任意方向拖远翻牌',
+        hint: '轻点展开动作，向任意方向拖远翻牌',
         onIncrease: _multiple ? () => _turn(1) : null,
         onDecrease: _multiple ? () => _turn(-1) : null,
         child: FocusableActionDetector(
@@ -527,7 +507,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     animation: Listenable.merge([
       _position,
       _vertical,
-      _contact,
       _expansion,
       ?_covered,
       Navigator.of(context).userGestureInProgressNotifier,
@@ -538,7 +517,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       final x = _reduced ? 0.0 : _position.value;
       final y = _reduced ? 0.0 : _vertical.value;
       final travel = (x / _cardWidth).clamp(-1.5, 1.5);
-      final contact = Curves.easeOutCubic.transform(_contact.value);
       final lift = math.sin(
         (Offset(x, y).distance / _cardWidth).clamp(0, 1) * math.pi / 2,
       );
@@ -546,7 +524,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       final source = Matrix4.copy(anchor)
         ..translateByDouble(
           (width - _cardWidth) / 2 - 18 + x,
-          74 - lift * 18 - contact * 7 + y,
+          74 - lift * 18 + y,
           0,
           1,
         )
@@ -555,19 +533,16 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         ..multiply(Matrix4.identity()..setEntry(3, 2, .0012))
         ..rotateX(.018 + (y / _cardWidth).clamp(-1, 1) * -.04)
         ..rotateY(-.10 + travel * .19)
-        ..scaleByDouble(
-          1 + lift * .018 + contact * .024,
-          1 + lift * .018 + contact * .024,
-          1,
-          1,
-        )
+        ..scaleByDouble(1 + lift * .018, 1 + lift * .018, 1, 1)
         ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1);
       final view = MediaQuery.of(context);
+      _frontBounds = MatrixUtils.transformRect(
+        source,
+        Rect.fromLTWH(0, 0, _cardWidth, height),
+      );
+      _boundsOffset = Offset(x, y);
       if (_committing) {
-        _paintedFlightBounds = MatrixUtils.transformRect(
-          source,
-          Rect.fromLTWH(0, 0, _cardWidth, height),
-        );
+        _paintedFlightBounds = _frontBounds;
         _paintedFlightGeneration = _generation;
       }
       final targetWidth = math.min(460.0, math.max(0.0, view.size.width - 40));
@@ -589,157 +564,152 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       final covered = _reduced ? 0.0 : (_covered?.value ?? 0);
       // Recognize motion before the card's perspective transform, in screen
       // coordinates. A recognizer inside the tilt would distort finger deltas.
-      return _holdGesture(
-        active: active,
-        child: GestureDetector(
-          key: const ValueKey('home-deck-gesture'),
-          behavior: HitTestBehavior.deferToChild,
-          dragStartBehavior: DragStartBehavior.down,
-          onPanStart: _dragStart,
-          onPanUpdate: _dragUpdate,
-          onPanEnd: _dragEnd,
-          onPanCancel: _returnCard,
-          onTapUp: active ? null : _openCard,
-          child: BlockSemantics(
-            blocking: active,
-            child: FocusScope(
-              node: _cardFocus,
-              child: Shortcuts(
-                shortcuts: active
-                    ? const {
-                        SingleActivator(LogicalKeyboardKey.escape):
-                            DismissIntent(),
-                      }
-                    : const {},
-                child: Actions(
-                  actions: {
-                    DismissIntent: CallbackAction<DismissIntent>(
-                      onInvoke: (_) {
-                        _closeCard();
-                        return null;
-                      },
-                    ),
-                  },
-                  child: Stack(
-                    fit: StackFit.expand,
-                    clipBehavior: Clip.hardEdge,
-                    children: [
-                      if (active)
-                        Positioned.fill(
-                          child: GestureDetector(
-                            key: const ValueKey('home-deck-inspect-barrier'),
-                            behavior: HitTestBehavior.opaque,
-                            onTap: _closeCard,
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: 4 * t,
-                                sigmaY: 4 * t,
-                              ),
-                              child: ColoredBox(
-                                color: Colors.black.withValues(
-                                  alpha: (HipColors.isDark ? .42 : .18) * t,
-                                ),
+      return GestureDetector(
+        key: const ValueKey('home-deck-gesture'),
+        behavior: HitTestBehavior.deferToChild,
+        dragStartBehavior: DragStartBehavior.down,
+        onPanStart: _dragStart,
+        onPanUpdate: _dragUpdate,
+        onPanEnd: _dragEnd,
+        onPanCancel: _returnCard,
+        onTapUp: active ? null : _openCard,
+        child: BlockSemantics(
+          blocking: active,
+          child: FocusScope(
+            node: _cardFocus,
+            child: Shortcuts(
+              shortcuts: active
+                  ? const {
+                      SingleActivator(LogicalKeyboardKey.escape):
+                          DismissIntent(),
+                    }
+                  : const {},
+              child: Actions(
+                actions: {
+                  DismissIntent: CallbackAction<DismissIntent>(
+                    onInvoke: (_) {
+                      _closeCard();
+                      return null;
+                    },
+                  ),
+                },
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    if (active)
+                      Positioned.fill(
+                        child: GestureDetector(
+                          key: const ValueKey('home-deck-inspect-barrier'),
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _closeCard,
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: 4 * t,
+                              sigmaY: 4 * t,
+                            ),
+                            child: ColoredBox(
+                              color: Colors.black.withValues(
+                                alpha: (HipColors.isDark ? .42 : .18) * t,
                               ),
                             ),
                           ),
                         ),
-                      Positioned(
-                        key: ValueKey('home-deck-card-$_index'),
-                        left: 0,
-                        top: 0,
-                        width: lerpDouble(_cardWidth, targetWidth, t),
-                        height: lerpDouble(height, targetHeight, t),
-                        child: Transform(
-                          key: const ValueKey('home-deck-pose'),
-                          alignment: Alignment.topLeft,
-                          transform: pose,
-                          // Unpack RGB/alpha in the video's local coordinates,
-                          // then transform the composed card as one GPU image.
-                          filterQuality: FilterQuality.low,
-                          child: IgnorePointer(
-                            ignoring:
-                                !(ModalRoute.isCurrentOf(context) ?? true) ||
-                                Navigator.of(context).userGestureInProgress,
-                            child: Opacity(
-                              key: ValueKey('home-deck-opacity-$_index'),
-                              opacity: 1,
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                child: RepaintBoundary(
-                                  key: const ValueKey('home-deck-front'),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      HipHomeActionFace(
-                                        key: const ValueKey(
-                                          'home-deck-live-face',
-                                        ),
-                                        drill: widget.drills[_index],
-                                        number: _index + 1,
-                                        restingSize: Size(_cardWidth, height),
-                                        expansion: t,
-                                        expanded: _expanded,
-                                        paused: _paused,
-                                        compact: height < 330,
-                                        dose:
-                                            widget.doses.elementAtOrNull(
-                                              _index,
-                                            ) ??
-                                            '',
-                                        cue:
-                                            widget.cues.elementAtOrNull(
-                                              _index,
-                                            ) ??
-                                            '',
-                                        description:
-                                            widget.descriptions.elementAtOrNull(
-                                              _index,
-                                            ) ??
-                                            '',
-                                        onClose: _closeCard,
-                                        onToggle: () {
-                                          if (_expanded &&
-                                              !_expansion.isAnimating) {
-                                            setState(() => _paused = !_paused);
-                                          }
-                                        },
-                                        informationScroll: _informationScroll,
+                      ),
+                    Positioned(
+                      key: ValueKey('home-deck-card-$_index'),
+                      left: 0,
+                      top: 0,
+                      width: lerpDouble(_cardWidth, targetWidth, t),
+                      height: lerpDouble(height, targetHeight, t),
+                      child: Transform(
+                        key: const ValueKey('home-deck-pose'),
+                        alignment: Alignment.topLeft,
+                        transform: pose,
+                        // Unpack RGB/alpha in the video's local coordinates,
+                        // then transform the composed card as one GPU image.
+                        filterQuality: FilterQuality.low,
+                        child: IgnorePointer(
+                          ignoring:
+                              !(ModalRoute.isCurrentOf(context) ?? true) ||
+                              Navigator.of(context).userGestureInProgress,
+                          child: Opacity(
+                            key: ValueKey('home-deck-opacity-$_index'),
+                            opacity: 1,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              child: RepaintBoundary(
+                                key: const ValueKey('home-deck-front'),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    HipHomeActionFace(
+                                      key: const ValueKey(
+                                        'home-deck-live-face',
                                       ),
-                                      if (_floating)
-                                        const Positioned.fill(
-                                          child: IgnorePointer(
-                                            child: SizedBox(
-                                              key: ValueKey(
-                                                'home-deck-floating-front',
-                                              ),
+                                      drill: widget.drills[_index],
+                                      number: _index + 1,
+                                      restingSize: Size(_cardWidth, height),
+                                      expansion: t,
+                                      expanded: _expanded,
+                                      paused: _paused,
+                                      compact: height < 330,
+                                      dose:
+                                          widget.doses.elementAtOrNull(
+                                            _index,
+                                          ) ??
+                                          '',
+                                      cue:
+                                          widget.cues.elementAtOrNull(_index) ??
+                                          '',
+                                      description:
+                                          widget.descriptions.elementAtOrNull(
+                                            _index,
+                                          ) ??
+                                          '',
+                                      onClose: _closeCard,
+                                      onToggle: () {
+                                        if (_expanded &&
+                                            !_expansion.isAnimating) {
+                                          setState(() => _paused = !_paused);
+                                        }
+                                      },
+                                      informationScroll: _informationScroll,
+                                    ),
+                                    if (_floating)
+                                      const Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: SizedBox(
+                                            key: ValueKey(
+                                              'home-deck-floating-front',
                                             ),
                                           ),
                                         ),
-                                      if (covered > 0)
-                                        Positioned.fill(
-                                          child: IgnorePointer(
-                                            child: ColoredBox(
-                                              color: Colors.black.withValues(
-                                                alpha:
-                                                    (HipColors.isDark
-                                                        ? .32
-                                                        : .14) *
-                                                    covered,
-                                              ),
+                                      ),
+                                    if (covered > 0)
+                                      Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: ColoredBox(
+                                            color: Colors.black.withValues(
+                                              alpha:
+                                                  (HipColors.isDark
+                                                      ? .32
+                                                      : .14) *
+                                                  covered,
                                             ),
                                           ),
                                         ),
-                                    ],
-                                  ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -747,31 +717,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         ),
       );
     },
-  );
-
-  Widget _holdGesture({
-    required bool active,
-    required Widget child,
-  }) => Listener(
-    onPointerCancel: (_) => _cancelHold(),
-    child: RawGestureDetector(
-      excludeFromSemantics: true,
-      gestures: {
-        LongPressGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-              () => LongPressGestureRecognizer(
-                duration: const Duration(milliseconds: 300),
-                debugOwner: this,
-              ),
-              (recognizer) => recognizer
-                ..onLongPressStart = active ? null : _holdStart
-                ..onLongPressMoveUpdate = active ? null : _holdMove
-                ..onLongPressEnd = active ? null : _holdEnd
-                ..onLongPressCancel = _cancelHold,
-            ),
-      },
-      child: child,
-    ),
   );
 
   String _description(int index) {
@@ -874,14 +819,23 @@ class _DeckTurnIntent extends Intent {
 /// Commit as soon as the outgoing card is outside the viewport; waiting for
 /// an invisible spring tail would leave the caption and the next drag locked.
 class _DeckExitSpring extends SpringSimulation {
-  _DeckExitSpring(double start, double end, double velocity, this.exitDistance)
-    : super(
-        const SpringDescription(mass: 1, stiffness: 240, damping: 31),
-        start,
-        end,
-        velocity,
-        tolerance: const Tolerance(distance: .4, velocity: 3),
-      );
+  _DeckExitSpring(
+    double start,
+    double end,
+    double velocity,
+    this.exitDistance, {
+    required double stiffness,
+  }) : super(
+         SpringDescription(
+           mass: 1,
+           stiffness: stiffness,
+           damping: 2 * math.sqrt(stiffness),
+         ),
+         start,
+         end,
+         velocity,
+         tolerance: const Tolerance(distance: .4, velocity: 3),
+       );
 
   final double exitDistance;
 

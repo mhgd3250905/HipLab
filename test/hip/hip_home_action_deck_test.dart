@@ -922,7 +922,13 @@ void main() {
         var outsideFrames = 0;
         var frames = 0;
         while (position(tester) == '01' && frames++ < 60) {
-          final bounds = tester.getRect(visualFront());
+          final front = tester.renderObject<RenderBox>(visualFront());
+          // Include all four corners of the tilted paper; getRect's diagonal
+          // alone can leave a still-visible corner out of this pacing check.
+          final bounds = MatrixUtils.transformRect(
+            front.getTransformTo(null),
+            Offset.zero & front.size,
+          );
           if (!const Rect.fromLTWH(0, 0, 394, 853).overlaps(bounds)) {
             outsideFrames++;
           }
@@ -1049,7 +1055,7 @@ void main() {
   );
 
   testWidgets(
-    'holding a card lifts it without opening and release keeps the same paused video',
+    'holding still leaves the card at rest and release keeps the original tap to expand',
     (tester) async {
       phone(tester);
       final platform = await readyCompactPlaybackCard(tester);
@@ -1065,11 +1071,12 @@ void main() {
       final finger = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-hero'))),
       );
-      await tester.pump(const Duration(milliseconds: 320));
-      await tester.pump(const Duration(milliseconds: 180));
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      for (var elapsed = 0; elapsed < 500; elapsed += 100) {
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(pose(), orderedEquals(rest));
+        expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      }
       expect(position(tester), '01');
-      expect(pose(), isNot(orderedEquals(rest)));
       expect(tester.state(frontMedia()), same(mediaState));
       expect(tester.element(surface), same(surfaceElement));
       expect(
@@ -1077,24 +1084,21 @@ void main() {
         isTrue,
       );
       await finger.up();
+      await tester.pump();
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
       await tester.pumpAndSettle();
-      expect(pose(), orderedEquals(rest));
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       expect(tester.state(frontMedia()), same(mediaState));
       expect(tester.element(surface), same(surfaceElement));
       expectNoDecoderChurn(platform);
-      // A completed hold must not leave a gesture latch blocking the next tap.
-      await openActionCard(tester);
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
       await dismissActionCard(tester, 'close');
       await expectFrameSafeDismissal(tester);
+      expect(pose(), orderedEquals(rest));
       expect(tester.takeException(), isNull);
     },
   );
 
   testWidgets(
-    'a held card follows subsequent finger movement and cancels without a jump or tap',
+    'a finger held still can start an ordinary drag and cancel or turn without opening',
     (tester) async {
       phone(tester);
       await showDeck(tester);
@@ -1110,14 +1114,13 @@ void main() {
       final finger = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-hero'))),
       );
-      await tester.pump(const Duration(milliseconds: 320));
-      await tester.pump(const Duration(milliseconds: 180));
-      final held = pivot();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(pivot(), rest);
       await finger.moveBy(const Offset(25, -20));
       await tester.pump(const Duration(milliseconds: 16));
       final moved = pivot();
-      expect(moved.dx - held.dx, closeTo(25, 4));
-      expect(moved.dy - held.dy, closeTo(-20, 6));
+      expect(moved.dx - rest.dx, closeTo(25, 4));
+      expect(moved.dy - rest.dy, closeTo(-20, 6));
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       await finger.cancel();
       await tester.pumpAndSettle();
@@ -1126,12 +1129,10 @@ void main() {
       expect(settled.dy, closeTo(rest.dy, .01));
       expect(position(tester), '01');
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
-      // The hold recognizer owns this second gesture, so pointer-up must still
-      // commit a full upward drag rather than silently swallowing the turn.
       final turning = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-hero'))),
       );
-      await tester.pump(const Duration(milliseconds: 320));
+      await tester.pump(const Duration(milliseconds: 500));
       await turning.moveBy(const Offset(0, -150));
       await tester.pump(const Duration(milliseconds: 16));
       await turning.up();
@@ -1139,6 +1140,61 @@ void main() {
       expect(frontId(tester), drills[1].id);
       expect(position(tester), '02');
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'vertical release keeps a readable glide instead of accelerating out in the first frames',
+    (tester) async {
+      phone(tester);
+      for (final y in [-150.0, 150.0]) {
+        await showDeck(tester, identity: 'glide-$y');
+        await tester.pumpAndSettle();
+        Offset pivot() {
+          final box = tester.renderObject<RenderBox>(visualFront());
+          return box.localToGlobal(
+            Offset(box.size.width / 2, box.size.height * .9),
+          );
+        }
+
+        final drag = deckDrag(tester);
+        drag.onPanStart!(DragStartDetails());
+        drag.onPanUpdate!(
+          DragUpdateDetails(globalPosition: Offset.zero, delta: Offset(0, y)),
+        );
+        await tester.pump();
+        final release = pivot();
+        final sign = y.sign;
+        drag.onPanEnd!(DragEndDetails());
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 80));
+        final at80 = (pivot().dy - release.dy) * sign;
+        expect(at80, greaterThan(0));
+        expect(at80, lessThan(120));
+        expect(position(tester), '01');
+        await tester.pump(const Duration(milliseconds: 40));
+        final at120 = (pivot().dy - release.dy) * sign;
+        expect(at120, greaterThan(at80));
+        expect(at120, lessThan(180));
+        await tester.pump(const Duration(milliseconds: 80));
+        expect(position(tester), '01');
+        expect(
+          const Rect.fromLTWH(
+            0,
+            0,
+            394,
+            853,
+          ).overlaps(tester.getRect(visualFront())),
+          isTrue,
+        );
+        await tester.pumpAndSettle();
+        expect(position(tester), y < 0 ? '02' : '06');
+        expect(
+          find.byKey(const ValueKey('home-deck-floating-front')),
+          findsNothing,
+        );
+      }
       expect(tester.takeException(), isNull);
     },
   );
@@ -1928,7 +1984,7 @@ void main() {
   );
 
   testWidgets(
-    'reduced motion keeps holds and vertical drags still and changes on release',
+    'reduced motion keeps a resting touch still and vertical drags change on release',
     (tester) async {
       phone(tester);
       await showDeck(tester, reduced: true);
@@ -1943,7 +1999,10 @@ void main() {
       expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
       await held.up();
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+      expect(find.byKey(const ValueKey('home-deck-expanded')), findsOneWidget);
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      expect(tester.getRect(front), before);
       final gesture = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-deck-gesture'))),
       );
