@@ -25,6 +25,7 @@ import 'hip_calm.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_home_action_deck.dart';
+import 'hip_home_routine_folder.dart';
 import 'hip_more_page.dart';
 import 'hip_page_kit.dart';
 import 'hip_player_page.dart';
@@ -588,7 +589,7 @@ class _HipHomeState extends State<HipHome> {
   final _startKey = GlobalKey();
   HipStore get store => widget.store;
 
-  /// 「换一套」 position per scene (this launch only).
+  /// Explicitly selected routine position per scene (this launch only).
   final _pick = <HipScene, int>{};
 
   AssetBundle? _posterBundle;
@@ -712,9 +713,6 @@ class _HipHomeState extends State<HipHome> {
         ?.drill;
   }
 
-  void _rotate() =>
-      setState(() => _pick[store.scene] = (_pick[store.scene] ?? 0) + 1);
-
   static const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
   String _greeting(DateTime now) {
@@ -796,7 +794,7 @@ class _HipHomeState extends State<HipHome> {
                       Expanded(child: _headline(routine!, plan)),
                       if (canRotate) ...[
                         const SizedBox(width: 12),
-                        _rotateButton(),
+                        _routineFolder(),
                       ],
                     ],
                   ),
@@ -880,15 +878,35 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  /// 换一套: a 32pt glass icon button beside the title (m4: no label).
-  Widget _rotateButton() => HipGlassRoundButton(
-    key: const ValueKey('home-rotate'),
-    semanticLabel: '换一套',
-    blur: true,
-    size: 32,
-    onTap: _rotate,
-    child: HipIcon(HipGlyph.shuffle, size: 16, color: HipColors.text),
-  );
+  Widget _routineFolder() {
+    final scene = store.scene;
+    return HipHomeRoutineFolder(
+      key: const ValueKey('home-rotate'),
+      sceneLabel: scene == HipScene.chair ? '办公' : '居家',
+      selectedId: _routine!.id,
+      choices: [
+        for (final r in store.sceneRoutines(scene))
+          if (store.planForRoutine(r) case final plan?
+              when plan.steps.isNotEmpty)
+            HipHomeRoutineChoice(
+              id: r.id,
+              title: _homeCopy[r.id]?.$2 ?? plan.title,
+              subtitle: _homeCopy[r.id]?.$3 ?? r.audience,
+              minutes: plan.minutes,
+              drills: [for (final step in plan.steps) step.drill],
+            ),
+      ],
+      onSelected: (id) {
+        if (!mounted || store.scene != scene || _routine?.id == id) return;
+        final routines = store.sceneRoutines(scene);
+        final index = routines.indexWhere((r) => r.id == id);
+        if (index < 0) return;
+        final plan = store.planForRoutine(routines[index]);
+        if (plan == null || plan.steps.isEmpty) return;
+        setState(() => _pick[scene] = index);
+      },
+    );
+  }
 
   Widget _topBar() => Row(
     children: [

@@ -1,0 +1,532 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hiplab/hip/ui/hip_home_routine_folder.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
+
+import 'hip_domain_test.dart' show loadContent;
+import 'public_media_fixture.dart';
+
+const _shot = ValueKey('routine-folder-component-shot');
+const _entry = ValueKey('home-rotate');
+const _panel = ValueKey('home-routine-folder-panel');
+const _surface = ValueKey('home-routine-folder-surface');
+const _source = ValueKey('home-routine-folder-source');
+const _close = ValueKey('home-routine-folder-close');
+
+class _FolderHost extends StatefulWidget {
+  const _FolderHost({
+    super.key,
+    required this.choices,
+    required this.onSelected,
+    required this.navigatorKey,
+    this.reduced = false,
+  });
+  final List<HipHomeRoutineChoice> choices;
+  final ValueChanged<String> onSelected;
+  final GlobalKey<NavigatorState> navigatorKey;
+  final bool reduced;
+
+  @override
+  State<_FolderHost> createState() => _FolderHostState();
+}
+
+class _FolderHostState extends State<_FolderHost> {
+  late List<HipHomeRoutineChoice> choices = widget.choices;
+  String scene = '居家';
+  bool visible = true;
+
+  void change({
+    List<HipHomeRoutineChoice>? choices,
+    String? scene,
+    bool? visible,
+  }) => setState(() {
+    if (choices != null) this.choices = choices;
+    if (scene != null) this.scene = scene;
+    if (visible != null) this.visible = visible;
+  });
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
+    key: _shot,
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      navigatorKey: widget.navigatorKey,
+      theme: hipTheme(HipColors.palette),
+      themeAnimationDuration: Duration.zero,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(disableAnimations: widget.reduced),
+        child: child!,
+      ),
+      home: Scaffold(
+        backgroundColor: HipColors.background,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 14,
+                  left: 4,
+                  child: Text(
+                    '今天的训练',
+                    style: TextStyle(
+                      color: HipColors.text,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (visible)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: HipHomeRoutineFolder(
+                      key: _entry,
+                      choices: choices,
+                      selectedId: widget.choices.first.id,
+                      sceneLabel: scene,
+                      onSelected: widget.onSelected,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+void main() {
+  final content = loadContent();
+  late PublicMediaFixture fixture;
+  late List<HipHomeRoutineChoice> choices;
+
+  setUpAll(() async {
+    if (Platform.environment['HIPLAB_ROUTINE_FOLDER_ARTIFACT_DIR'] != null) {
+      final font = FontLoader(hipFontFamily)
+        ..addFont(rootBundle.load('assets/fonts/NotoSansSC.ttf'));
+      await font.load();
+    }
+  });
+
+  setUp(() {
+    final previous = HipColors.palette;
+    final previousShadows = HipColors.flatShadows;
+    // flutter_tester does not blur BoxShadow. These component exports omit
+    // shadows rather than presenting the tester's hard edge as device output.
+    if (Platform.environment['HIPLAB_ROUTINE_FOLDER_ARTIFACT_DIR'] != null) {
+      HipColors.flatShadows = true;
+    }
+    fixture = installPublicMediaFixture();
+    final drills = content.drills.values
+        .where((drill) => fixture.policy.actionFor(drill.id) != null)
+        .take(10)
+        .toList();
+    const names = ['睡前开胯', '晨起唤醒', '久坐解压', '训练前激活', '舞前准备'];
+    choices = [
+      for (var i = 0; i < names.length; i++)
+        HipHomeRoutineChoice(
+          id: 'group-$i',
+          title: names[i],
+          subtitle: '跟着动作慢慢练',
+          minutes: i + 5,
+          drills: drills.sublist(i * 2, i * 2 + 2),
+        ),
+    ];
+    addTearDown(() {
+      HipColors.palette = previous;
+      HipColors.flatShadows = previousShadows;
+    });
+  });
+
+  Future<(GlobalKey<_FolderHostState>, GlobalKey<NavigatorState>, List<String>)>
+  mount(
+    WidgetTester tester, {
+    Size size = const Size(394, 853),
+    HipPalette palette = HipPalette.dark,
+    bool reduced = false,
+    List<HipHomeRoutineChoice>? items,
+  }) async {
+    tester.view
+      ..physicalSize = size
+      ..devicePixelRatio = 1
+      ..padding = const FakeViewPadding(top: 24, bottom: 24);
+    addTearDown(tester.view.reset);
+    HipColors.palette = palette;
+    final host = GlobalKey<_FolderHostState>();
+    final navigator = GlobalKey<NavigatorState>();
+    final selected = <String>[];
+    await tester.pumpWidget(
+      _FolderHost(
+        key: host,
+        choices: items ?? choices,
+        navigatorKey: navigator,
+        reduced: reduced,
+        onSelected: selected.add,
+      ),
+    );
+    await tester.pumpAndSettle();
+    return (host, navigator, selected);
+  }
+
+  Future<void> open(WidgetTester tester) async {
+    await tester.tap(find.byKey(_entry));
+    await tester.pumpAndSettle();
+    expect(find.byKey(_panel), findsOneWidget);
+  }
+
+  double sourceOpacity(WidgetTester tester) =>
+      tester.widget<Opacity>(find.byKey(_source)).opacity;
+
+  Future<void> closeFrames(
+    WidgetTester tester,
+    ModalRoute<dynamic> route,
+  ) async {
+    for (var frame = 0; frame < 24; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      if (route.animation!.status == AnimationStatus.dismissed ||
+          find.byKey(_surface).evaluate().isEmpty) {
+        expect(
+          sourceOpacity(tester),
+          1,
+          reason:
+              'the source must be visible in the same closing handoff frame',
+        );
+      }
+    }
+    await tester.pumpAndSettle();
+    expect(find.byKey(_panel), findsNothing);
+    expect(sourceOpacity(tester), 1);
+  }
+
+  Future<void> exportExpanded(WidgetTester tester, String name) async {
+    final directory =
+        Platform.environment['HIPLAB_ROUTINE_FOLDER_ARTIFACT_DIR'];
+    if (directory == null) return;
+    final context = tester.element(find.byKey(_entry));
+    final assets = tester
+        .widgetList<trainer.TrainerPoster>(find.byType(trainer.TrainerPoster))
+        .map((poster) => poster.asset)
+        .toSet();
+    final width = trainer.TrainingPosterImages.decodeWidth(context);
+    final bundle = DefaultAssetBundle.of(context);
+    final configuration = createLocalImageConfiguration(context);
+    var allDecoded = false;
+    for (var attempt = 0; attempt < 100; attempt++) {
+      final statuses = await tester.runAsync(
+        () => Future.wait([
+          for (final asset in assets)
+            trainer.TrainingPosterImages.provider(
+              asset,
+              width,
+              bundle: bundle,
+            ).obtainCacheStatus(configuration: configuration),
+        ]),
+      );
+      allDecoded = statuses!.every(
+        (status) =>
+            status != null &&
+            !status.pending &&
+            (status.keepAlive || status.live),
+      );
+      if (allDecoded) break;
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
+    expect(allDecoded, isTrue, reason: 'export actual decoded poster artwork');
+    await tester.pump();
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find.byKey(_shot),
+    );
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 2);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      Directory(directory).createSync(recursive: true);
+      File('$directory/$name.png').writeAsBytesSync(data!.buffer.asUint8List());
+      image.dispose();
+    });
+  }
+
+  testWidgets(
+    'closed folder has four real poster miniatures and no video node',
+    (tester) async {
+      await mount(tester, items: choices.take(2).toList());
+      expect(tester.getSize(find.byKey(_entry)), const Size.square(64));
+      expect(find.byType(trainer.TrainerPoster), findsNWidgets(4));
+      final posters = tester
+          .widgetList<trainer.TrainerPoster>(find.byType(trainer.TrainerPoster))
+          .map((poster) => poster.asset);
+      final expected = [
+        for (var step = 0; step < 2; step++)
+          for (final choice in choices.take(2))
+            fixture.policy.posterAssetFor(choice.drills[step].id),
+      ];
+      expect(posters, expected);
+      expect(find.byType(trainer.TrainingActionMedia), findsNothing);
+      expect(find.byType(trainer.UgkPackedAlphaVideo), findsNothing);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'folder surface unfolds in bounds while the grid keeps one layout',
+    (tester) async {
+      final (_, navigator, selected) = await mount(tester);
+      final origin = tester.getRect(find.byKey(_entry));
+      await tester.tap(find.byKey(_entry));
+      await tester.pump();
+      final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+      expect(route.transitionDuration, const Duration(milliseconds: 360));
+      final gridLayout = tester.getRect(find.byKey(_panel));
+      var previous = tester.getRect(find.byKey(_surface));
+      expect(previous, origin);
+      expect(sourceOpacity(tester), 0);
+      for (var frame = 0; frame < 24; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        final current = tester.getRect(find.byKey(_surface));
+        expect(current.width, greaterThanOrEqualTo(previous.width - .01));
+        expect(current.height, greaterThanOrEqualTo(previous.height - .01));
+        expect(current.left, greaterThanOrEqualTo(0));
+        expect(current.top, greaterThanOrEqualTo(0));
+        expect(current.right, lessThanOrEqualTo(394));
+        expect(current.bottom, lessThanOrEqualTo(853));
+        expect(tester.getRect(find.byKey(_panel)), gridLayout);
+        previous = current;
+      }
+      expect(previous, gridLayout);
+      expect(previous.width, lessThan(394));
+      expect(previous.height, lessThan(853));
+      expect(selected, isEmpty);
+      await tester.tap(find.byKey(_close));
+      await closeFrames(tester, route);
+      expect(navigator.currentState!.canPop(), isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'close, barrier, Escape, Android back and early back cancel safely',
+    (tester) async {
+      final (_, navigator, selected) = await mount(tester);
+      var exitRequests = 0;
+      final messenger = tester.binding.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'SystemNavigator.pop') exitRequests++;
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      for (final method in [
+        'close',
+        'barrier',
+        'escape',
+        'back',
+        'early-back',
+      ]) {
+        if (method == 'early-back') {
+          await tester.tap(find.byKey(_entry));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 64));
+        } else {
+          await open(tester);
+        }
+        final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+        switch (method) {
+          case 'close':
+            await tester.tap(find.byKey(_close));
+          case 'barrier':
+            await tester.tapAt(const Offset(5, 5));
+          case 'escape':
+            await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+          case 'back' || 'early-back':
+            await tester.binding.handlePopRoute();
+            await tester.pump(const Duration(milliseconds: 32));
+            await tester.binding.handlePopRoute();
+            await tester.pump(const Duration(milliseconds: 16));
+            await tester.binding.handlePopRoute();
+        }
+        await closeFrames(tester, route);
+        expect(
+          selected,
+          isEmpty,
+          reason: '$method must not choose a training group',
+        );
+        expect(navigator.currentState!.canPop(), isFalse);
+        expect(find.text('今天的训练'), findsOneWidget);
+        expect(
+          exitRequests,
+          0,
+          reason: 'repeated closing Back must not exit Home',
+        );
+        expect(find.byType(trainer.TrainingActionMedia), findsNothing);
+        expect(fixture.requested, isEmpty);
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets(
+    'selection reports once only after the return animation finishes',
+    (tester) async {
+      final (_, navigator, selected) = await mount(tester);
+      await open(tester);
+      final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+      expect(
+        route.reverseTransitionDuration,
+        const Duration(milliseconds: 300),
+      );
+      final choice = find.byKey(
+        ValueKey('home-routine-choice-${choices[2].id}'),
+      );
+      await tester.ensureVisible(choice);
+      await tester.pumpAndSettle();
+      await tester.tap(choice);
+      expect(selected, isEmpty);
+      await tester.pump();
+      for (var frame = 0; frame < 15; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(selected, isEmpty);
+      }
+      await tester.pumpAndSettle();
+      expect(selected, [choices[2].id]);
+      expect(navigator.currentState!.canPop(), isFalse);
+      expect(sourceOpacity(tester), 1);
+      await tester.pump(const Duration(seconds: 1));
+      expect(selected, [choices[2].id]);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'normal phones and landscape keep every group reachable in both themes',
+    (tester) async {
+      for (final palette in [HipPalette.dark, HipPalette.light]) {
+        for (final size in [const Size(320, 700), const Size(394, 853)]) {
+          final (_, navigator, selected) = await mount(
+            tester,
+            palette: palette,
+            size: size,
+          );
+          await open(tester);
+          final panel = tester.getRect(find.byKey(_panel));
+          expect(panel.left, greaterThan(0));
+          expect(panel.top, greaterThanOrEqualTo(44));
+          expect(panel.right, lessThan(size.width));
+          expect(panel.bottom, lessThanOrEqualTo(size.height - 44));
+          for (final choice in choices) {
+            final tile = find.byKey(
+              ValueKey('home-routine-choice-${choice.id}'),
+            );
+            await tester.ensureVisible(tile);
+            await tester.pumpAndSettle();
+            expect(tile.hitTestable(), findsOneWidget);
+          }
+          if (size.width == 394) {
+            await tester.drag(
+              find.byKey(const ValueKey('home-routine-folder-grid')),
+              const Offset(0, 1000),
+            );
+            await tester.pumpAndSettle();
+            await exportExpanded(
+              tester,
+              palette == HipPalette.dark
+                  ? 'folder-dark-expanded'
+                  : 'folder-light-expanded',
+            );
+          }
+          await tester.tap(find.byKey(_close));
+          await tester.pumpAndSettle();
+          expect(selected, isEmpty);
+          expect(navigator.currentState!.canPop(), isFalse);
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox.shrink());
+        }
+      }
+      final (_, _, selected) = await mount(tester, size: const Size(740, 360));
+      await open(tester);
+      final grid = find.byKey(const ValueKey('home-routine-folder-grid'));
+      final scrollable = find.descendant(
+        of: grid,
+        matching: find.byType(Scrollable),
+      );
+      final scroll = tester.state<ScrollableState>(scrollable);
+      expect(scroll.position.maxScrollExtent, greaterThan(0));
+      final last = find.byKey(
+        ValueKey('home-routine-choice-${choices.last.id}'),
+      );
+      await tester.scrollUntilVisible(last, 150, scrollable: scrollable);
+      await tester.pumpAndSettle();
+      expect(last.hitTestable(), findsOneWidget);
+      await tester.tap(last);
+      await tester.pumpAndSettle();
+      expect(selected, [choices.last.id]);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('reduced motion opens and selects without a timed transition', (
+    tester,
+  ) async {
+    final (_, navigator, selected) = await mount(tester, reduced: true);
+    await tester.tap(find.byKey(_entry));
+    await tester.pump();
+    final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+    expect(route.transitionDuration, Duration.zero);
+    expect(route.reverseTransitionDuration, Duration.zero);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(ValueKey('home-routine-choice-${choices.first.id}')),
+    );
+    await tester.pumpAndSettle();
+    expect(selected, [choices.first.id]);
+    expect(navigator.currentState!.canPop(), isFalse);
+    expect(find.byKey(_panel), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'changed scene, unavailable choices and unmount retire the open snapshot',
+    (tester) async {
+      final (host, navigator, selected) = await mount(tester);
+      await open(tester);
+      host.currentState!.change(scene: '办公');
+      await tester.pumpAndSettle();
+      expect(find.byKey(_panel), findsNothing);
+      expect(selected, isEmpty);
+      expect(navigator.currentState!.canPop(), isFalse);
+
+      await open(tester);
+      host.currentState!.change(choices: choices.take(2).toList());
+      await tester.pumpAndSettle();
+      expect(find.byKey(_panel), findsNothing);
+      expect(selected, isEmpty);
+      expect(navigator.currentState!.canPop(), isFalse);
+
+      await tester.tap(find.byKey(_entry));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 80));
+      host.currentState!.change(visible: false);
+      await tester.pumpAndSettle();
+      expect(find.byType(HipHomeRoutineFolder), findsNothing);
+      expect(find.byKey(_panel), findsNothing);
+      expect(selected, isEmpty);
+      expect(navigator.currentState!.canPop(), isFalse);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+}

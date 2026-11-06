@@ -2343,6 +2343,24 @@ void main() {
     return store;
   }
 
+  Future<void> chooseHomeRoutine(WidgetTester tester, String routineId) async {
+    await tester.tap(find.byKey(const ValueKey('home-rotate')));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('home-routine-folder-panel')),
+      findsOneWidget,
+    );
+    final choice = find.byKey(ValueKey('home-routine-choice-$routineId'));
+    await tester.ensureVisible(choice);
+    await tester.pumpAndSettle();
+    await tester.tap(choice);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('home-routine-folder-panel')),
+      findsNothing,
+    );
+  }
+
   (HomeDeckPlaybackRepository, HomeDeckPlaybackPlatform) homePlayback(
     WidgetTester tester,
   ) {
@@ -2455,6 +2473,181 @@ void main() {
         hasLength(before),
       );
       expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'routine folder cancels without changing a preview and directly chooses a non-adjacent plan without playing',
+    (tester) async {
+      final (repository, platform) = homePlayback(tester);
+      final storage = MemoryStorage();
+      final store = await showHome(
+        tester,
+        storage,
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      await nativeFrames(
+        tester,
+        platform,
+        Iterable.generate(platform.sources.length, (i) => i + 1),
+      );
+      await tester.pumpAndSettle();
+      await next(tester);
+      final selected = store.sceneRoutines(store.scene).first;
+      final persisted = Map<String, String>.of(storage.values);
+      final minutes = store.minutes;
+      final deckBefore = tester.widget<HipHomeActionDeck>(
+        find.byType(HipHomeActionDeck),
+      );
+      final state = tester.state(frontMedia());
+      final surface = tester.element(frontSurface());
+      final creates = platform.sources.length;
+      final requested = repository.requested.length;
+      final preview = frontId(tester);
+      await tester.tap(find.byKey(const ValueKey('home-rotate')));
+      await tester.pumpAndSettle();
+      final currentChoice = find.byKey(
+        ValueKey('home-routine-choice-${selected.id}'),
+      );
+      final semantic = tester.ensureSemantics();
+      try {
+        await tester.pump();
+        expect(
+          tester.getSemantics(currentChoice),
+          isSemantics(
+            isButton: true,
+            isSelected: true,
+            isInMutuallyExclusiveGroup: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+      } finally {
+        semantic.dispose();
+      }
+      final choices = store.sceneRoutines(store.scene);
+      expect(choices.length, greaterThanOrEqualTo(3));
+      for (final routine in choices) {
+        expect(
+          find.byKey(ValueKey('home-routine-choice-${routine.id}')),
+          findsOneWidget,
+        );
+      }
+      expect(platform.sources, hasLength(creates));
+      expect(repository.requested, hasLength(requested));
+      expect(find.byType(HipPlayerPage), findsNothing);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('home-routine-folder-panel')),
+        findsNothing,
+      );
+      expect(tester.state(frontMedia()), same(state));
+      expect(tester.element(frontSurface()), same(surface));
+      expect(frontId(tester), preview);
+      expect(position(tester), '02');
+      expect(
+        tester
+            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
+            .identity,
+        deckBefore.identity,
+      );
+      expect(storage.values, persisted);
+
+      final direct = choices[2];
+      final expected = store.planForRoutine(direct)!;
+      await chooseHomeRoutine(tester, direct.id);
+      final deck = tester.widget<HipHomeActionDeck>(
+        find.byType(HipHomeActionDeck),
+      );
+      expect(deck.identity, endsWith('/${direct.id}'));
+      expect(position(tester), '01');
+      expect(frontId(tester), expected.steps.first.drill.id);
+      expect(
+        deck.drills.map((drill) => drill.id),
+        expected.steps.map((step) => step.drill.id),
+      );
+      expect(store.scene, HipScene.home);
+      expect(store.minutes, minutes);
+      expect(storage.values, persisted);
+      expect(
+        platform.commands.where((command) => command.$2 == 'play'),
+        isEmpty,
+      );
+      expect(find.byType(HipPlayerPage), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'routine folder keeps a separate choice per scene and starts the chosen complete plan',
+    (tester) async {
+      final storage = MemoryStorage();
+      final store = await showHome(tester, storage);
+      final home = store.sceneRoutines(HipScene.home).last;
+      final homePlan = store.planForRoutine(home)!;
+      var persisted = Map<String, String>.of(storage.values);
+      await chooseHomeRoutine(tester, home.id);
+      expect(storage.values, persisted);
+      expect(
+        tester
+            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
+            .identity,
+        endsWith('/${home.id}'),
+      );
+
+      await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+      await tester.pumpAndSettle();
+      final chair = store.sceneRoutines(HipScene.chair).last;
+      persisted = Map<String, String>.of(storage.values);
+      await chooseHomeRoutine(tester, chair.id);
+      expect(storage.values, persisted);
+      expect(
+        tester
+            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
+            .identity,
+        endsWith('/${chair.id}'),
+      );
+
+      for (final scene in [HipScene.home, HipScene.chair, HipScene.home]) {
+        await tester.tap(find.byKey(ValueKey('scene-$scene')));
+        await tester.pumpAndSettle();
+        final expected = scene == HipScene.home ? home : chair;
+        expect(
+          tester
+              .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
+              .identity,
+          endsWith('/${expected.id}'),
+        );
+        expect(position(tester), '01');
+      }
+      expect(fixture.requested, isEmpty);
+      expect(find.byType(HipPlayerPage), findsNothing);
+
+      // Selecting the already-current group closes the folder without losing
+      // the user's inspected action; actual Start still uses the whole plan.
+      await next(tester);
+      final preview = frontId(tester);
+      await chooseHomeRoutine(tester, home.id);
+      expect(position(tester), '02');
+      expect(frontId(tester), preview);
+      await tester.tap(find.byKey(const ValueKey('start-today')));
+      await pumpTrainerReady(tester);
+      final player = tester.widget<HipPlayerPage>(
+        find.byType(HipPlayerPage, skipOffstage: false),
+      );
+      expect(player.plan.refId, homePlan.refId);
+      expect(
+        player.plan.steps.map((step) => step.drill.id),
+        homePlan.steps.map((step) => step.drill.id),
+      );
+      expect(player.plan.seconds, homePlan.seconds);
+      expect(fixture.requested, isEmpty);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
       expect(tester.takeException(), isNull);
     },
   );
@@ -2599,7 +2792,10 @@ void main() {
         await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
       });
       await changedPlan(HipScene.home, 1, () async {
-        await tester.tap(find.byKey(const ValueKey('home-rotate')));
+        await chooseHomeRoutine(
+          tester,
+          store.sceneRoutines(HipScene.home)[1].id,
+        );
       });
       await changedPlan(HipScene.home, 1, () async {
         now = now.add(const Duration(days: 1));
@@ -3002,8 +3198,7 @@ void main() {
       final title = tester
           .widget<Text>(find.byKey(const ValueKey('home-title')))
           .data;
-      await tester.tap(find.byKey(const ValueKey('home-rotate')));
-      await tester.pumpAndSettle();
+      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data,
         isNot(title),
@@ -3099,8 +3294,7 @@ void main() {
       final identity = tester
           .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
           .identity;
-      await tester.tap(find.byKey(const ValueKey('home-rotate')));
-      await tester.pumpAndSettle();
+      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
       expect(
         tester
             .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))

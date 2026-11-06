@@ -1,5 +1,5 @@
 // Home redesign r1 (开哥 2026-11-02): scene by time of day, one routine with
-// 「换一套」, a small 打卡 chip, the dock's 更多 → 「更多」 with AI first (gated).
+// a routine folder, a small 打卡 chip, the dock's 更多 → 「更多」 with AI first (gated).
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -118,28 +118,41 @@ void main() {
     return store;
   }
 
-  testWidgets('home: no tab bar, one start, small streak chip, 换一套', (
-    tester,
-  ) async {
-    final store = await pumpHome(tester, scene: HipScene.home);
-    expect(find.byKey(const ValueKey('tab-0')), findsNothing);
-    expect(find.byKey(const ValueKey('minutes-5')), findsNothing);
-    expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('home-streak')),
-        matching: find.text('${store.streak} 天'),
-      ),
-      findsOneWidget,
-    );
-    String title() =>
-        tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data!;
-    final first = title();
-    await tester.tap(find.byKey(const ValueKey('home-rotate')));
-    await tester.pumpAndSettle();
-    expect(title(), isNot(first));
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'home: no tab bar, one start, small streak chip, routine folder',
+    (tester) async {
+      final store = await pumpHome(tester, scene: HipScene.home);
+      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
+      expect(find.byKey(const ValueKey('minutes-5')), findsNothing);
+      expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('home-streak')),
+          matching: find.text('${store.streak} 天'),
+        ),
+        findsOneWidget,
+      );
+      String title() =>
+          tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data!;
+      final first = title();
+      await tester.tap(find.byKey(const ValueKey('home-rotate')));
+      await tester.pumpAndSettle();
+      expect(
+        title(),
+        first,
+        reason: 'opening the folder does not choose a plan',
+      );
+      expect(
+        find.byKey(const ValueKey('home-routine-folder-panel')),
+        findsOneWidget,
+      );
+      final next = store.sceneRoutines(HipScene.home)[1];
+      await tester.tap(find.byKey(ValueKey('home-routine-choice-${next.id}')));
+      await tester.pumpAndSettle();
+      expect(title(), isNot(first));
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('更多: rows in order; no AI card', (tester) async {
     await pumpHome(tester);
