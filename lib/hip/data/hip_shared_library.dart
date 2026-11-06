@@ -47,7 +47,11 @@ hipEnglishPublicDisplay(coach.Catalog? catalog) {
       metadata: HipPublicDisplay.metadata(definition.raw),
       muscles: HipPublicDisplay.muscleText(definition.raw),
       cues: copy.cues,
-      cautions: [...copy.cautions, ...copy.contraindications],
+      cautions: [
+        ...copy.cautions,
+        if (copy.contraindications.isNotEmpty)
+          'Caution areas: ${copy.contraindications.join(', ')}.',
+      ],
     );
   };
 }

@@ -590,8 +590,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
-      resolved-ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
+      ref: fa957ff405cc57cd10d53987430313822ff20607
+      resolved-ref: fa957ff405cc57cd10d53987430313822ff20607
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
     version: "0.8.0"
@@ -599,8 +599,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/ugk_coach_chat"
-      ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
-      resolved-ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
+      ref: fa957ff405cc57cd10d53987430313822ff20607
+      resolved-ref: fa957ff405cc57cd10d53987430313822ff20607
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
     version: "0.1.0"
@@ -608,8 +608,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/ugk_coach_ui"
-      ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
-      resolved-ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
+      ref: fa957ff405cc57cd10d53987430313822ff20607
+      resolved-ref: fa957ff405cc57cd10d53987430313822ff20607
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
     version: "0.4.0"
@@ -617,8 +617,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/ugk_trainer_runtime"
-      ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
-      resolved-ref: "49c1a39a20af76c10aefb30bb9c30fe4eab5a347"
+      ref: fa957ff405cc57cd10d53987430313822ff20607
+      resolved-ref: fa957ff405cc57cd10d53987430313822ff20607
       url: "https://github.com/mhgd3250905/ugk-3d-pose-sdk.git"
     source: git
     version: "0.1.0"
