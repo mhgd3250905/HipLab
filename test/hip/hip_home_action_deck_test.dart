@@ -215,9 +215,29 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(platform.sources, hasLength(1));
+    void expectQuietPoster() {
+      expect(
+        tester
+            .widget<trainer.TrainingActionMedia>(frontMedia())
+            .showLoadingIndicator,
+        isFalse,
+      );
+      expect(
+        find.byKey(const ValueKey('public-action-progress')),
+        findsNothing,
+      );
+      final poster = find.descendant(
+        of: frontMedia(),
+        matching: find.byKey(const ValueKey('public-action-poster')),
+      );
+      expect(tester.widget<AnimatedOpacity>(poster).opacity, 1);
+    }
+
+    expectQuietPoster();
     platform.emit(1, 'ready');
     await tester.pump();
     await tester.pump();
+    expectQuietPoster();
     expect(
       platform.commands.where((c) => c.$2 == 'prime-first-frame'),
       hasLength(1),
@@ -934,6 +954,75 @@ void main() {
     expectCardPainted(tester);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'a newly selected action keeps its poster silently until its delayed first frame',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      await next(tester);
+      await tester.pump();
+      expect(frontId(tester), drills[1].id);
+      expect(platform.sources, hasLength(2));
+      platform.emit(2, 'ready');
+      await tester.pump();
+      await tester.pump();
+      final media = frontMedia();
+      final mediaState = tester.state(media);
+      final surface = find.descendant(
+        of: media,
+        matching: find.byType(trainer.UgkPackedAlphaVideo),
+      );
+      final surfaceElement = tester.element(surface);
+      final poster = find.descendant(
+        of: media,
+        matching: find.byKey(const ValueKey('public-action-poster')),
+      );
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(
+        tester.widget<trainer.TrainingActionMedia>(media).showLoadingIndicator,
+        isFalse,
+      );
+      expect(
+        find.byKey(const ValueKey('public-action-progress')),
+        findsNothing,
+      );
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(tester.widget<AnimatedOpacity>(poster).opacity, 1);
+      expect(
+        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller.hasFrame,
+        isFalse,
+      );
+      expect(platform.sources, hasLength(2));
+      platform.emit(2, 'first-frame');
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 130));
+      expect(tester.state(media), same(mediaState));
+      expect(tester.element(surface), same(surfaceElement));
+      expect(tester.widget<AnimatedOpacity>(poster).opacity, 0);
+      expect(
+        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller.hasFrame,
+        isTrue,
+      );
+      expect(platform.sources, hasLength(2));
+      expect(
+        platform.commands.where(
+          (c) => c.$1 == 2 && c.$2 == 'prime-first-frame',
+        ),
+        hasLength(1),
+      );
+      expect(
+        platform.commands.where((c) => c.$1 == 2 && c.$2 == 'dispose'),
+        isEmpty,
+      );
+      expect(
+        find.byKey(const ValueKey('public-action-progress')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'one painted video surface survives every frame of expanding and collapsing',
