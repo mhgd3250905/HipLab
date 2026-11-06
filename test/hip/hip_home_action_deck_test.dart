@@ -18,6 +18,16 @@ import 'home_deck_playback_fixture.dart';
 import 'public_media_fixture.dart';
 import 'trainer_test_pump.dart';
 
+class _CountingAssetBundle extends CachingAssetBundle {
+  final loads = <String>[];
+
+  @override
+  Future<ByteData> load(String key) {
+    loads.add(key);
+    return rootBundle.load(key);
+  }
+}
+
 void main() {
   final content = loadContent();
   late PublicMediaFixture fixture;
@@ -239,6 +249,7 @@ void main() {
     WidgetTester tester, {
     List<HipDrill>? items,
     bool neighborsReady = true,
+    bool openAndClose = true,
   }) async {
     final repository = HomeDeckPlaybackRepository();
     final platform = HomeDeckPlaybackPlatform();
@@ -303,6 +314,17 @@ void main() {
       isTrue,
     );
     expect(find.byKey(const ValueKey('home-deck-expanded')), findsNothing);
+    expect(posterOpacity(tester, frontMedia()), 1);
+    if (openAndClose) {
+      // A decoded initial frame stays behind its poster until user intent.
+      // Most existing surface-lifecycle tests begin from an already inspected
+      // card, so establish that state through the actual interaction.
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      await tester.tap(arrow('收起动作卡片'));
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
+    }
     return platform;
   }
 
@@ -405,9 +427,12 @@ void main() {
           matching: find.byKey(const ValueKey('home-hero')),
         );
         expect(
-          tester.widget<HipDrillArt>(
-            find.descendant(of: image, matching: find.byType(HipDrillArt)),
-          ).drill.id,
+          tester
+              .widget<HipDrillArt>(
+                find.descendant(of: image, matching: find.byType(HipDrillArt)),
+              )
+              .drill
+              .id,
           drills[i].id,
         );
         expect(
@@ -1074,6 +1099,7 @@ void main() {
     (tester) async {
       phone(tester);
       final platform = await readyCompactPlaybackCard(tester);
+      final commandStart = platform.commands.length;
       final mediaState = tester.state(frontMedia());
       final surface = frontSurface();
       final surfaceElement = tester.element(surface);
@@ -1090,7 +1116,10 @@ void main() {
         tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
         isTrue,
       );
-      expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+      expect(
+        platform.commands.skip(commandStart).where((c) => c.$2 == 'play'),
+        isEmpty,
+      );
       expect(tester.state(frontMedia()), same(mediaState));
       expect(tester.element(surface), same(surfaceElement));
       await tester.pumpAndSettle();
@@ -1377,7 +1406,10 @@ void main() {
     tester,
   ) async {
     phone(tester);
-    final platform = await readyCompactPlaybackCard(tester);
+    final platform = await readyCompactPlaybackCard(
+      tester,
+      openAndClose: false,
+    );
     final media = tester.widget<trainer.TrainingActionMedia>(frontMedia());
     expect(media.playing, isTrue);
     expect(media.paused, isTrue);
@@ -2282,6 +2314,7 @@ void main() {
     DateTime Function()? clock,
     bool videoEnabled = false,
     trainer.TrainingMediaPolicy? mediaPolicy,
+    AssetBundle? bundle,
   }) async {
     phone(tester);
     final store = HipStore(
@@ -2296,18 +2329,560 @@ void main() {
       ..scene = HipScene.home
       ..theme = HipThemeChoice.dark;
     await store.choose();
+    final app = HipApp(
+      store: store,
+      mediaPolicy: mediaPolicy ?? fixture.policy,
+      videoEnabled: videoEnabled,
+      voice: HipVoice.silent,
+    );
     await tester.pumpWidget(
-      HipApp(
-        store: store,
-        mediaPolicy: mediaPolicy ?? fixture.policy,
-        videoEnabled: videoEnabled,
-        voice: HipVoice.silent,
-      ),
+      bundle == null ? app : DefaultAssetBundle(bundle: bundle, child: app),
     );
     await tester.pumpAndSettle();
     addTearDown(store.dispose);
     return store;
   }
+
+  (HomeDeckPlaybackRepository, HomeDeckPlaybackPlatform) homePlayback(
+    WidgetTester tester,
+  ) {
+    final repository = HomeDeckPlaybackRepository();
+    final platform = HomeDeckPlaybackPlatform(nativeRgba: true);
+    final previousFilter = trainer.UgkPackedAlphaVideo.debugFilterBuilder;
+    trainer.UgkPackedAlphaVideo.debugPlatform = platform;
+    trainer.UgkPackedAlphaVideo.debugFilterBuilder = (input) => input;
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await platform.dispose();
+      repository.dispose();
+      trainer.UgkPackedAlphaVideo.debugFilterBuilder = previousFilter;
+    });
+    return (repository, platform);
+  }
+
+  Future<void> nativeFrames(
+    WidgetTester tester,
+    HomeDeckPlaybackPlatform platform,
+    Iterable<int> ids,
+  ) async {
+    for (final id in ids) {
+      platform.emit(id, 'ready');
+    }
+    await tester.pump();
+    for (final id in ids) {
+      platform.emit(id, 'first-frame');
+    }
+    await tester.pump();
+    await tester.pump();
+  }
+
+  testWidgets(
+    'home warms only candidate first posters with the bundle and decode key used when switching scenes',
+    (tester) async {
+      // A distinct bundle isolates these image-cache keys without evicting
+      // images owned by other tests or actively mounted widgets.
+      final bundle = _CountingAssetBundle();
+      final store = await showHome(tester, MemoryStorage(), bundle: bundle);
+      final candidates = <String>{
+        for (final scene in [HipScene.chair, HipScene.home])
+          for (final routine in store.sceneRoutines(scene))
+            if (store.planForRoutine(routine) case final plan?)
+              if (plan.steps.isNotEmpty)
+                fixture.policy.posterAssetFor(plan.steps.first.drill.id)!,
+      };
+      expect(candidates, isNotEmpty);
+      final context = tester.element(find.byType(HipHomeActionDeck));
+      expect(DefaultAssetBundle.of(context), same(bundle));
+      final width = trainer.TrainingPosterImages.decodeWidth(context);
+      expect(width, 394);
+      final configuration = createLocalImageConfiguration(context);
+      Future<List<ImageCacheStatus?>> statuses() async =>
+          (await tester.runAsync(
+            () => Future.wait([
+              for (final asset in candidates)
+                trainer.TrainingPosterImages.provider(
+                  asset,
+                  width,
+                  bundle: bundle,
+                ).obtainCacheStatus(configuration: configuration),
+            ]),
+          ))!;
+      var cached = await statuses();
+      bool decoded(ImageCacheStatus? status) =>
+          status != null &&
+          !status.pending &&
+          (status.keepAlive || status.live);
+      for (var i = 0; i < 100 && !cached.every(decoded); i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+        cached = await statuses();
+      }
+      expect(cached, everyElement(predicate<ImageCacheStatus?>(decoded)));
+      expect(bundle.loads.toSet(), containsAll(candidates));
+      final rendered = tester
+          .widgetList<trainer.TrainerPoster>(
+            find.byType(trainer.TrainerPoster, skipOffstage: false),
+          )
+          .map((poster) => poster.asset)
+          .toSet();
+      final loadedPosters = bundle.loads
+          .where((asset) => asset.startsWith(HipPublicMedia.posterRoot))
+          .toSet();
+      // The currently painted fan may load its own neighbors. Additional
+      // warming is bounded by the finite set of routine first actions.
+      expect(
+        loadedPosters.difference(rendered),
+        everyElement(isIn(candidates)),
+      );
+      expect(
+        loadedPosters.difference(rendered).length,
+        lessThanOrEqualTo(candidates.length),
+      );
+      expect(fixture.requested, isEmpty);
+      final nextRoutine = store.sceneRoutines(HipScene.chair).first;
+      final nextAction = store.planForRoutine(nextRoutine)!.steps.first.drill;
+      final nextPoster = fixture.policy.posterAssetFor(nextAction.id)!;
+      final before = bundle.loads.where((asset) => asset == nextPoster).length;
+      expect(before, 1);
+      await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+      await tester.pumpAndSettle();
+      expect(frontId(tester), nextAction.id);
+      expect(
+        bundle.loads.where((asset) => asset == nextPoster),
+        hasLength(before),
+      );
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'scene, routine and day changes keep the new first card still until explicit opening',
+    (tester) async {
+      final (repository, platform) = homePlayback(tester);
+      var now = DateTime(2026, 11, 6, 10);
+      final store = await showHome(
+        tester,
+        MemoryStorage(),
+        clock: () => now,
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      await nativeFrames(
+        tester,
+        platform,
+        Iterable.generate(platform.sources.length, (i) => i + 1),
+      );
+      await tester.pumpAndSettle();
+      var prepared = platform.sources.length;
+
+      Future<void> changedPlan(
+        HipScene scene,
+        int pick,
+        Future<void> Function() change,
+      ) async {
+        final previousId = frontId(tester);
+        final previousState = tester.state(frontMedia());
+        final previousSurface = tester.element(frontSurface());
+        final previousController = tester
+            .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+            .controller;
+        final previousPoster = posterOpacity(tester, frontMedia());
+        final commandStart = platform.commands.length;
+        await change();
+        await tester.pump();
+        await tester.pump();
+        final routines = store.sceneRoutines(scene);
+        final routine = routines[pick % routines.length];
+        final plan = store.planForRoutine(routine)!;
+        final expected = plan.steps.first.drill;
+        final deck = tester.widget<HipHomeActionDeck>(
+          find.byType(HipHomeActionDeck),
+        );
+        expect(deck.identity, contains('/${scene.id}/'));
+        expect(deck.identity, endsWith('/${routine.id}'));
+        expect(frontId(tester), expected.id);
+        expect(position(tester), '01');
+        expect(
+          tester
+              .widget<Text>(find.byKey(const ValueKey('home-deck-caption')))
+              .data,
+          expected.name,
+        );
+        final state = tester.state(frontMedia());
+        final surface = tester.element(frontSurface());
+        final controller = tester
+            .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+            .controller;
+        final reused = expected.id == previousId;
+        final compactPoster = reused ? previousPoster : 1.0;
+        if (reused) {
+          expect(state, same(previousState));
+          expect(surface, same(previousSurface));
+          expect(controller, same(previousController));
+        } else {
+          expect(state, isNot(same(previousState)));
+        }
+        expect(posterOpacity(tester, frontMedia()), compactPoster);
+        // The resolved URI mounts the surface before asynchronous native
+        // creation supplies its texture. Observe that real creation boundary
+        // without treating metadata or a fixed number of pumps as readiness.
+        final texture = find.descendant(
+          of: frontMedia(),
+          matching: find.byType(Texture),
+        );
+        for (var i = 0; i < 12 && texture.evaluate().isEmpty; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(frontId(tester), expected.id);
+          expect(posterOpacity(tester, frontMedia()), compactPoster);
+          expect(tester.state(frontMedia()), same(state));
+          expect(tester.element(frontSurface()), same(surface));
+        }
+        expect(texture, findsOneWidget);
+        final current = playerFor(tester, frontMedia());
+        final fresh = [
+          for (var id = prepared + 1; id <= platform.sources.length; id++) id,
+        ];
+        for (final id in fresh) {
+          platform.emit(id, 'ready');
+        }
+        await tester.pump();
+        // Metadata alone cannot make a frame or replace the existing picture.
+        expect(controller.hasFrame, reused);
+        for (var i = 0; i < 8; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(frontId(tester), expected.id);
+          expect(posterOpacity(tester, frontMedia()), compactPoster);
+        }
+        for (final id in fresh) {
+          platform.emit(id, 'first-frame');
+        }
+        await tester.pump();
+        await tester.pump();
+        for (var i = 0; i < 24; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(posterOpacity(tester, frontMedia()), compactPoster);
+          expect(tester.state(frontMedia()), same(state));
+          expect(tester.element(frontSurface()), same(surface));
+          expect(frontId(tester), expected.id);
+        }
+        expect(controller.hasFrame, isTrue);
+        expect(
+          platform.commands
+              .skip(commandStart)
+              .where((c) => c.$1 == current && c.$2 == 'play'),
+          isEmpty,
+        );
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        await openActionCard(tester);
+        await tester.pumpAndSettle();
+        expect(posterOpacity(tester, frontMedia()), 0);
+        expect(tester.state(frontMedia()), same(state));
+        expect(tester.element(frontSurface()), same(surface));
+        await dismissActionCard(tester, 'close');
+        await tester.pumpAndSettle();
+        expect(posterOpacity(tester, frontMedia()), 0);
+        expect(
+          tester.widget<trainer.UgkPackedAlphaVideo>(frontSurface()).controller,
+          same(controller),
+        );
+        prepared = platform.sources.length;
+      }
+
+      await changedPlan(HipScene.chair, 0, () async {
+        await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+      });
+      await changedPlan(HipScene.home, 0, () async {
+        await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
+      });
+      await changedPlan(HipScene.home, 1, () async {
+        await tester.tap(find.byKey(const ValueKey('home-rotate')));
+      });
+      await changedPlan(HipScene.home, 1, () async {
+        now = now.add(const Duration(days: 1));
+        await store.choose();
+      });
+
+      // An ordinary visual/route refresh must preserve the now-explicitly
+      // revealed current frame rather than reapplying the new-plan poster lock.
+      final state = tester.state(frontMedia());
+      final surface = tester.element(frontSurface());
+      final creates = platform.sources.length;
+      await store.setTheme(HipThemeChoice.light);
+      await tester.pumpAndSettle();
+      expect(tester.state(frontMedia()), same(state));
+      expect(tester.element(frontSurface()), same(surface));
+      expect(posterOpacity(tester, frontMedia()), 0);
+      await tester.tap(find.byKey(const ValueKey('home-more')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('more-back')));
+      await tester.pumpAndSettle();
+      expect(tester.state(frontMedia()), same(state));
+      expect(tester.element(frontSurface()), same(surface));
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(platform.sources, hasLength(creates));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'rapid scene A to B to A ignores late first frames from retired plans',
+    (tester) async {
+      final (repository, platform) = homePlayback(tester);
+      await showHome(
+        tester,
+        MemoryStorage(),
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      final original = tester.widget<HipHomeActionDeck>(
+        find.byType(HipHomeActionDeck),
+      );
+      // A remains cold: returning to it cannot reuse a truly ready surface.
+      await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+      await tester.pump();
+      await tester.pump();
+      final retired = platform.sources.length;
+      for (var id = 1; id <= retired; id++) {
+        platform.emit(id, 'ready');
+      }
+      await tester.pump();
+      // Queue B's real frame and leave before its post-frame notification can
+      // be applied to the next plan's freshly reset occurrence keys.
+      for (var id = 1; id <= retired; id++) {
+        platform.emit(id, 'first-frame');
+      }
+      await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
+      await tester.pump();
+      await tester.pump();
+      final latest = tester.widget<HipHomeActionDeck>(
+        find.byType(HipHomeActionDeck),
+      );
+      expect(latest.identity, original.identity);
+      expect(frontId(tester), original.drills.first.id);
+      final state = tester.state(frontMedia());
+      final surface = tester.element(frontSurface());
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+          .controller;
+      for (var id = 1; id <= retired; id++) {
+        platform.emit(id, 'first-frame');
+      }
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(posterOpacity(tester, frontMedia()), 1);
+        expect(controller.hasFrame, isFalse);
+        expect(tester.state(frontMedia()), same(state));
+      }
+      await nativeFrames(tester, platform, [
+        for (var id = retired + 1; id <= platform.sources.length; id++) id,
+      ]);
+      for (var i = 0; i < 24; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(posterOpacity(tester, frontMedia()), 1);
+        expect(tester.element(frontSurface()), same(surface));
+      }
+      expect(controller.hasFrame, isTrue);
+      expect(platform.commands.where((c) => c.$2 == 'play'), isEmpty);
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(tester.element(frontSurface()), same(surface));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'changing ordered drills with the same identity locks the new first card without affecting theme refreshes',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      final previous = platform.sources.length;
+      final changed = [drills[2], drills[0], drills[1], ...drills.skip(3)];
+      await showDeck(tester, items: changed, videoEnabled: true);
+      await tester.pump();
+      await tester.pump();
+      expect(frontId(tester), changed.first.id);
+      expect(position(tester), '01');
+      final state = tester.state(frontMedia());
+      final surface = tester.element(frontSurface());
+      await nativeFrames(tester, platform, [
+        for (var id = previous + 1; id <= platform.sources.length; id++) id,
+      ]);
+      for (var i = 0; i < 24; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(posterOpacity(tester, frontMedia()), 1);
+        expect(tester.state(frontMedia()), same(state));
+        expect(tester.element(frontSurface()), same(surface));
+      }
+      await showDeck(
+        tester,
+        items: changed,
+        videoEnabled: true,
+        palette: HipPalette.light,
+      );
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 1);
+      expect(tester.state(frontMedia()), same(state));
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      await showDeck(
+        tester,
+        items: changed,
+        videoEnabled: true,
+        palette: HipPalette.dark,
+      );
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(tester.state(frontMedia()), same(state));
+      expect(tester.element(frontSurface()), same(surface));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'closing an opening cold card keeps late native frames hidden until the next inspection',
+    (tester) async {
+      final (repository, platform) = homePlayback(tester);
+      await showHome(
+        tester,
+        MemoryStorage(),
+        videoEnabled: true,
+        mediaPolicy: repository.policy,
+      );
+      final prepared = platform.sources.length;
+      for (var id = 1; id <= prepared; id++) {
+        platform.emit(id, 'ready');
+      }
+      await tester.pump();
+      final state = tester.state(frontMedia());
+      final surface = tester.element(frontSurface());
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+          .controller;
+      expect(controller.hasFrame, isFalse);
+      await openActionCard(tester);
+      await tester.pump(const Duration(milliseconds: 80));
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 1);
+      for (var id = 1; id <= prepared; id++) {
+        platform.emit(id, 'first-frame');
+      }
+      await tester.pump();
+      await tester.pump();
+      for (var i = 0; i < 24; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(posterOpacity(tester, frontMedia()), 1);
+        expect(tester.state(frontMedia()), same(state));
+        expect(tester.element(frontSurface()), same(surface));
+      }
+      expect(controller.hasFrame, isTrue);
+      expect(platform.sources, hasLength(prepared));
+      expect(
+        platform.commands.where(
+          (c) => {'dispose', 'seek', 'return-to-first-frame'}.contains(c.$2),
+        ),
+        isEmpty,
+      );
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(tester.element(frontSurface()), same(surface));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'a new plan keeps the ready visible occurrence when it becomes the first card',
+    (tester) async {
+      phone(tester);
+      for (final inspected in [false, true]) {
+        final platform = await readyCompactPlaybackCard(
+          tester,
+          neighborsReady: false,
+          openAndClose: false,
+        );
+        await next(tester);
+        expect(position(tester), '02');
+        final current = playerFor(tester, frontMedia());
+        platform.emit(current, 'first-frame');
+        await tester.pump();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(posterOpacity(tester, frontMedia()), 1);
+        if (inspected) {
+          await openActionCard(tester);
+          await tester.pumpAndSettle();
+          await dismissActionCard(tester, 'close');
+          await tester.pumpAndSettle();
+        }
+        final state = tester.state(frontMedia());
+        final surface = tester.element(frontSurface());
+        final controller = tester
+            .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+            .controller;
+        expect(controller.hasFrame, isTrue);
+        final expectedPoster = inspected ? 0.0 : 1.0;
+        final commandStart = platform.commands.length;
+        final changed = [drills[1], drills[2], drills[0], ...drills.skip(3)];
+        await showDeck(
+          tester,
+          identity: 'new-plan/$inspected',
+          items: changed,
+          videoEnabled: true,
+        );
+        for (var i = 0; i < 24; i++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(frontId(tester), drills[1].id);
+          expect(position(tester), '01');
+          expect(tester.state(frontMedia()), same(state));
+          expect(tester.element(frontSurface()), same(surface));
+          expect(playerFor(tester, frontMedia()), current);
+          expect(
+            tester
+                .widget<trainer.UgkPackedAlphaVideo>(frontSurface())
+                .controller,
+            same(controller),
+          );
+          expect(posterOpacity(tester, frontMedia()), expectedPoster);
+        }
+        expect(
+          platform.commands
+              .skip(commandStart)
+              .where(
+                (c) =>
+                    c.$1 == current &&
+                    {
+                      'dispose',
+                      'prime-first-frame',
+                      'seek',
+                      'return-to-first-frame',
+                      'play',
+                    }.contains(c.$2),
+              ),
+          isEmpty,
+        );
+        // The remapped occurrence can still be explicitly revealed. Its
+        // readiness callback must now belong to index 0, not the old index 1.
+        await openActionCard(tester);
+        await tester.pumpAndSettle();
+        expect(posterOpacity(tester, frontMedia()), 0);
+        expect(tester.state(frontMedia()), same(state));
+        await dismissActionCard(tester, 'close');
+        await tester.pumpAndSettle();
+        expect(posterOpacity(tester, frontMedia()), 0);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+      }
+    },
+  );
 
   testWidgets(
     'opening More and Settings keeps the home card current frame throughout both route transitions',
@@ -2372,7 +2947,7 @@ void main() {
           ),
           skipOffstage: false,
         );
-        expect(tester.widget<AnimatedOpacity>(poster).opacity, 0);
+        expect(tester.widget<AnimatedOpacity>(poster).opacity, 1);
         expectNoDecoderChurn(platform);
       }
 

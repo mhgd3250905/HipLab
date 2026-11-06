@@ -591,6 +591,43 @@ class _HipHomeState extends State<HipHome> {
   /// 「换一套」 position per scene (this launch only).
   final _pick = <HipScene, int>{};
 
+  AssetBundle? _posterBundle;
+  int? _posterDecodeWidth;
+  final _warmedPlanPosters = <String>{};
+
+  // Warm only selectable plans' first covers, using the exact key TrainerPoster
+  // will resolve. A cold image decode must not add a blank frame to scene swaps.
+  void _warmPlanPosters() {
+    final policy = HipPublicMedia.current;
+    if (policy == null) return;
+    final bundle = DefaultAssetBundle.of(context);
+    final width = trainer.TrainingPosterImages.decodeWidth(context);
+    if (!identical(bundle, _posterBundle) || width != _posterDecodeWidth) {
+      _posterBundle = bundle;
+      _posterDecodeWidth = width;
+      _warmedPlanPosters.clear();
+    }
+    for (final scene in HipScene.values) {
+      for (final routine in store.sceneRoutines(scene)) {
+        final first = store.planForRoutine(routine)?.steps.firstOrNull;
+        final asset = first == null
+            ? null
+            : policy.posterAssetFor(first.drill.id);
+        if (asset == null || !_warmedPlanPosters.add(asset)) continue;
+        precacheImage(
+          trainer.TrainingPosterImages.provider(asset, width, bundle: bundle),
+          context,
+          onError: (_, _) {
+            if (identical(bundle, _posterBundle) &&
+                width == _posterDecodeWidth) {
+              _warmedPlanPosters.remove(asset);
+            }
+          },
+        ).ignore();
+      }
+    }
+  }
+
   /// 练习库: segment and filter survive leaving and reopening it.
   final _practice = PracticeMemory();
 
@@ -705,6 +742,7 @@ class _HipHomeState extends State<HipHome> {
 
   @override
   Widget build(BuildContext context) {
+    _warmPlanPosters();
     final routine = _routine;
     final plan = routine == null ? null : store.planForRoutine(routine);
     final alerts = [

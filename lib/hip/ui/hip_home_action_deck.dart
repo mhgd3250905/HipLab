@@ -55,7 +55,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   final _mediaKeys = <int, GlobalKey>{};
   final _readyCallbacks = <int, ValueChanged<bool>>{};
   final _readyFrames = <int>{};
-  final _posterLocked = <int>{};
+  // The first visible cold card follows the same rule as a cold incoming card:
+  // prepare underneath its still, but reveal only on an intentional opening.
+  final _posterLocked = <int>{0};
   bool _committing = false;
   Offset _flightDirection = Offset.zero;
   Rect? _frontBounds;
@@ -86,7 +88,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     final changed = ready
         ? _readyFrames.add(index)
         : _readyFrames.remove(index);
-    if (changed) setState(() {});
+    final presentationChanged =
+        !ready && index == _index && !_expanded && _posterLocked.add(index);
+    if (changed || presentationChanged) setState(() {});
   }
 
   ValueChanged<bool> _readyCallback(int index) =>
@@ -158,6 +162,17 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.identity != widget.identity ||
         !listEqualsIds(oldWidget.drills, widget.drills)) {
+      // A scene/day/plan change need not discard the visible pose when its
+      // action is also the new first action. Preserve only this one decoded
+      // occurrence, not an unbounded cache of old plans or hidden neighbors.
+      final previousKey = _mediaKeys[_index];
+      final reuseVisible =
+          widget.drills.isNotEmpty &&
+          _index < oldWidget.drills.length &&
+          oldWidget.drills[_index].id == widget.drills.first.id &&
+          previousKey?.currentState != null &&
+          _readyFrames.contains(_index);
+      final wasPosterLocked = _posterLocked.contains(_index);
       _generation++;
       _position.stop();
       _vertical.stop();
@@ -170,6 +185,13 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _readyCallbacks.clear();
       _readyFrames.clear();
       _posterLocked.clear();
+      if (reuseVisible) {
+        _mediaKeys[0] = previousKey!;
+        _readyFrames.add(0);
+        if (wasPosterLocked) _posterLocked.add(0);
+      } else {
+        _posterLocked.add(0);
+      }
       _index = 0;
       _toward = 1;
       _committing = false;
@@ -268,6 +290,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     setState(() {
       _expanded = false;
       _paused = true;
+      // Closing before the first decoded frame must not allow that late frame
+      // to swap the compact still after the inspection has already finished.
+      if (!_readyFrames.contains(_index)) _posterLocked.add(_index);
     });
     if (_reduced) {
       _expansion.value = 0;
