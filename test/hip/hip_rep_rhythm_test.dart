@@ -195,7 +195,7 @@ void main() {
       ('glute-max-A', const KitDose(reps: 6)), // 计数·双相起落, 每侧
       ('h-squat', const KitDose(reps: 8)), // 双相, 双侧
       ('h-quad-cars', const KitDose(reps: 3)), // 正反循环, 每侧
-      ('n-chair-wiper', const KitDose(reps: 3)), // SDK r2-v1 单侧, 每侧
+      ('n-chair-wiper', const KitDose(reps: 6)), // 左右交替
       ('h-hip-gate', const KitDose(reps: 6)), // 开门 / 关门 交替, 每侧
       ('h-sumo-pry', const KitDose(reps: 3, holdSeconds: 10)), // 带停留
       ('n-seated-knee-lift', const KitDose(reps: 3, holdSeconds: 5)),

@@ -20,8 +20,8 @@
    "relax"
   ],
   "level": "beginner",
-  "sided": true,
-  "firstSide": "right",
+  "sided": false,
+  "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-chair-wiper.jpg",
    "light": "assets/drill_media/light/hip-n-chair-wiper.jpg"
@@ -68,12 +68,12 @@
   "source": "Pose-Hub spec timeline (measured)"
  },
  "training": {
-  "kind": "rep_updown",
+  "kind": "rep_alternate",
   "unit": "reps",
-  "sided": true,
+  "sided": false,
   "leadSeconds": 1.0,
   "defaults": {
-   "reps": 3,
+   "reps": 6,
    "sets": 1,
    "seconds": null,
    "holdSeconds": null,
@@ -86,7 +86,10 @@
     {
      "id": "go",
      "seconds": 1.1,
-     "cue": "w.knee_in"
+     "cue": [
+      "w.right_knee_in",
+      "w.left_knee_in"
+     ]
     },
     {
      "id": "hold",
@@ -115,9 +118,13 @@
     "zh": "坐在椅子上，小腿向外摆，膝盖向内倒",
     "en": "Seated, swing the shin out and let the knee fall in"
    },
-   "w.knee_in": {
-    "zh": "膝盖向内",
-    "en": "Knee in"
+   "w.right_knee_in": {
+    "zh": "右膝向内",
+    "en": "Right knee in"
+   },
+   "w.left_knee_in": {
+    "zh": "左膝向内",
+    "en": "Left knee in"
    },
    "w.center": {
     "zh": "回正",
@@ -137,7 +144,7 @@
    "left": "p.switch_left",
    "right": "p.switch_right"
   },
-  "firstSide": "p.right_first",
+  "firstSide": null,
   "coach": [
    "cue.relax.1",
    "cue.relax.2"
@@ -145,7 +152,7 @@
   "midHold": null
  },
  "review": {
-  "why": "SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = one knee drop of the working side; pace from the spec (knee in 0.3–1.7 s, hold to 2.6, back by 3.8, then the other side)",
+  "why": "spec: right knee in 0.3–1.7 s, hold to 2.6, back by 3.8; then left",
   "flags": []
  }
 }

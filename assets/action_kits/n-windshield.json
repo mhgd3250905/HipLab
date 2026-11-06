@@ -7,8 +7,8 @@
    "en": "Supine windshield wipers"
   },
   "point": {
-   "zh": "双膝一起慢慢倒向一侧，肩膀贴地",
-   "en": "Let both knees fall to one side, shoulders down"
+   "zh": "双膝一起慢慢左右倒，肩膀贴地",
+   "en": "Let both knees fall side to side, shoulders down"
   },
   "cautions": [],
   "targets": [
@@ -20,8 +20,8 @@
    "control"
   ],
   "level": "beginner",
-  "sided": true,
-  "firstSide": "right",
+  "sided": false,
+  "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-windshield.jpg",
    "light": "assets/drill_media/light/hip-n-windshield.jpg"
@@ -68,12 +68,12 @@
   "source": "Pose-Hub spec timeline (measured)"
  },
  "training": {
-  "kind": "rep_updown",
+  "kind": "rep_alternate",
   "unit": "reps",
-  "sided": true,
+  "sided": false,
   "leadSeconds": 1.0,
   "defaults": {
-   "reps": 4,
+   "reps": 8,
    "sets": 1,
    "seconds": null,
    "holdSeconds": null,
@@ -86,7 +86,10 @@
     {
      "id": "go",
      "seconds": 1.1,
-     "cue": "w.knees_over"
+     "cue": [
+      "w.knees_right",
+      "w.knees_left"
+     ]
     },
     {
      "id": "hold",
@@ -112,12 +115,16 @@
     "en": "Supine windshield wipers"
    },
    "point.n-windshield": {
-    "zh": "双膝一起慢慢倒向一侧，肩膀贴地",
-    "en": "Let both knees fall to one side, shoulders down"
+    "zh": "双膝一起慢慢左右倒，肩膀贴地",
+    "en": "Let both knees fall side to side, shoulders down"
    },
-   "w.knees_over": {
-    "zh": "倒过去",
-    "en": "Knees over"
+   "w.knees_right": {
+    "zh": "倒向右边",
+    "en": "Knees right"
+   },
+   "w.knees_left": {
+    "zh": "倒向左边",
+    "en": "Knees left"
    },
    "w.center": {
     "zh": "回正",
@@ -137,7 +144,7 @@
    "left": "p.switch_left",
    "right": "p.switch_right"
   },
-  "firstSide": "p.right_first",
+  "firstSide": null,
   "coach": [
    "cue.relax.1",
    "cue.relax.2"
@@ -145,7 +152,7 @@
   "midHold": null
  },
  "review": {
-  "why": "SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = both knees drop to the working side and come back; pace from the spec (one drop each way / 8 s)",
+  "why": "spec: one cycle (both sides) / 8 s, right first",
   "flags": []
  }
 }

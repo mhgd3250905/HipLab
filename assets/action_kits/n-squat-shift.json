@@ -7,8 +7,8 @@
    "en": "Deep squat side shift"
   },
   "point": {
-   "zh": "低蹲，重心慢慢移到一侧",
-   "en": "Stay low and shift your weight onto one leg"
+   "zh": "低蹲，重心慢慢左右移",
+   "en": "Stay low and shift your weight side to side"
   },
   "cautions": [
    "膝"
@@ -21,8 +21,8 @@
    "control"
   ],
   "level": "advanced",
-  "sided": true,
-  "firstSide": "right",
+  "sided": false,
+  "firstSide": null,
   "poster": {
    "dark": "assets/drill_media/hip-n-squat-shift.jpg",
    "light": "assets/drill_media/light/hip-n-squat-shift.jpg"
@@ -69,12 +69,12 @@
   "source": "Pose-Hub spec timeline (measured)"
  },
  "training": {
-  "kind": "rep_updown",
+  "kind": "rep_alternate",
   "unit": "reps",
-  "sided": true,
+  "sided": false,
   "leadSeconds": 1.0,
   "defaults": {
-   "reps": 4,
+   "reps": 8,
    "sets": 1,
    "seconds": null,
    "holdSeconds": null,
@@ -87,7 +87,10 @@
     {
      "id": "go",
      "seconds": 1.15,
-     "cue": "w.shift_over"
+     "cue": [
+      "w.shift_left",
+      "w.shift_right"
+     ]
     },
     {
      "id": "hold",
@@ -113,12 +116,16 @@
     "en": "Deep squat side shift"
    },
    "point.n-squat-shift": {
-    "zh": "低蹲，重心慢慢移到一侧",
-    "en": "Stay low and shift your weight onto one leg"
+    "zh": "低蹲，重心慢慢左右移",
+    "en": "Stay low and shift your weight side to side"
    },
-   "w.shift_over": {
-    "zh": "移过去",
-    "en": "Shift over"
+   "w.shift_left": {
+    "zh": "移到左边",
+    "en": "Shift left"
+   },
+   "w.shift_right": {
+    "zh": "移到右边",
+    "en": "Shift right"
    },
    "w.center": {
     "zh": "回正",
@@ -138,7 +145,7 @@
    "left": "p.switch_left",
    "right": "p.switch_right"
   },
-  "firstSide": "p.right_first",
+  "firstSide": null,
   "coach": [
    "cue.control.1",
    "cue.control.2"
@@ -146,7 +153,7 @@
   "midHold": null
  },
  "review": {
-  "why": "SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = one shift onto the working leg and back; pace from the spec (one shift each way / 8 s)",
+  "why": "spec: one cycle (both sides) / 8 s, left first",
   "flags": []
  }
 }

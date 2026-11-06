@@ -40,9 +40,6 @@ WORDS = {
     'w.slide_out': ('滑出去', 'Slide out'),
     'w.pull_in': ('收回来', 'Pull it in'),
     'w.center': ('回正', 'Back to center'),
-    'w.knee_in': ('膝盖向内', 'Knee in'),
-    'w.knees_over': ('倒过去', 'Knees over'),
-    'w.shift_over': ('移过去', 'Shift over'),
     'w.right_knee_in': ('右膝向内', 'Right knee in'),
     'w.left_knee_in': ('左膝向内', 'Left knee in'),
     'w.knees_right': ('倒向右边', 'Knees right'),
@@ -133,20 +130,14 @@ RULES = {
                           why='training dose 「每侧 正反各 N 圈」: one count = one forward circle + '
                               'one reverse circle, 3.6 s a circle (the demo draws two circles in '
                               '7.2 s); the demo\'s cross-over part only loops as a demonstration'),
-    # ── counted, per side (SDK r2-v1 unilateral; were alternating before) ──
-    'n-chair-wiper': dict(kind='rep_updown', sided=True, go='w.knee_in', back='w.center', reps=3,
-                          why='SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = '
-                              'one knee drop of the working side; pace from the spec (knee in '
-                              '0.3–1.7 s, hold to 2.6, back by 3.8, then the other side)'),
-    'n-windshield': dict(kind='rep_updown', sided=True, go='w.knees_over', back='w.center', reps=4,
-                         why='SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = '
-                             'both knees drop to the working side and come back; pace from the spec '
-                             '(one drop each way / 8 s)'),
-    'n-squat-shift': dict(kind='rep_updown', sided=True, go='w.shift_over', back='w.center', reps=4,
-                          why='SDK r2-v1 unilateral: true – trained per side (每侧 N 次), one count = '
-                              'one shift onto the working leg and back; pace from the spec '
-                              '(one shift each way / 8 s)'),
-    # ── counted, alternating directions ──
+    # ── counted, alternating sides / directions ──
+    'n-chair-wiper': dict(kind='rep_alternate', sided=False, go=['w.right_knee_in', 'w.left_knee_in'],
+                          back='w.center', reps=6,
+                          why='spec: right knee in 0.3–1.7 s, hold to 2.6, back by 3.8; then left'),
+    'n-windshield': dict(kind='rep_alternate', sided=False, go=['w.knees_right', 'w.knees_left'],
+                         back='w.center', reps=8, why='spec: one cycle (both sides) / 8 s, right first'),
+    'n-squat-shift': dict(kind='rep_alternate', sided=False, go=['w.shift_left', 'w.shift_right'],
+                          back='w.center', reps=8, why='spec: one cycle (both sides) / 8 s, left first'),
     'h-hip-gate': dict(kind='rep_alternate', sided=True, go=['w.gate_open', 'w.gate_close'],
                        back='w.lower', reps=6,
                        phases=[('go', .5, ['w.gate_open', 'w.gate_close']), ('hold', 1.35, None),

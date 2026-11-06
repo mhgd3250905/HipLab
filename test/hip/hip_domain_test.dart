@@ -223,9 +223,7 @@ void main() {
         // Pending product decision, see PR / development-roadmap.md D-12.
         // Rep rhythm (action kits): 坐姿抬膝悬停 3 × (lift + 5 s hover +
         // lower) needs 22 s a side, not 20 → 279 s of work, 354 s.
-        // SDK r2-v1: 坐椅雨刷 is per side (每侧 3 次 = 1 s lead + 3 × 4 s
-        // = 13 s a side → 26 s, was 25 s alternating) → 355 s.
-        expect(plan.seconds, 355);
+        expect(plan.seconds, 354);
         expect(plan.minutes, 6);
         final home = planner.plan(
           minutes: 10,
