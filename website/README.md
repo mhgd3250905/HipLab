@@ -8,4 +8,4 @@
 ```
 python3 website/build.py && PYTHONPATH=/workspace/work/pylib python3 website/deploy.py
 ```
-文案中的动作名、自测项、套路与数值取自 `assets/hip/hip-content.json`、`assets/coach/catalog.json` 与 App 界面（动作库显示 210 个动作）。
+文案中的动作名、自测项、套路与数值取自 `assets/hip/hip-content.json`、`assets/coach/catalog.json` 与 App 界面（动作库显示 208 个动作，1.1.0+35 起 r2-v1 范围）。
