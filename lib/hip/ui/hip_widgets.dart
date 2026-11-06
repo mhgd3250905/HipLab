@@ -233,6 +233,8 @@ class HipDrillArt extends StatefulWidget {
     required this.drill,
     this.play = false,
     this.holdVideo = false,
+    this.revealPausedFrame = true,
+    this.onFrameReadyChanged,
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
     this.alignment = Alignment.center,
@@ -249,6 +251,8 @@ class HipDrillArt extends StatefulWidget {
   /// Keep one decoded, paused video surface between compact and expanded views.
   /// Ordinary library artwork keeps its existing poster-only behavior.
   final bool holdVideo;
+  final bool revealPausedFrame;
+  final ValueChanged<bool>? onFrameReadyChanged;
   final BoxFit fit;
   final bool showPendingLabel;
   final Alignment alignment;
@@ -319,6 +323,8 @@ class _HipDrillArtState extends State<HipDrillArt> {
       showLoadingIndicator: !widget.holdVideo,
       retainPausedSurfaceWhileCovered: widget.holdVideo,
       nativeAlpha: widget.holdVideo,
+      revealPausedFrame: widget.revealPausedFrame,
+      onFrameReadyChanged: widget.onFrameReadyChanged,
       mirrored: widget.mirror,
       radius: 0,
       stage: HipColors.mediaBackdrop,

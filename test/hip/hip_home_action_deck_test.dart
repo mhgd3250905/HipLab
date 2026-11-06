@@ -109,7 +109,12 @@ void main() {
   }
 
   String frontId(WidgetTester tester) => tester
-      .widget<HipDrillArt>(find.byKey(const ValueKey('home-hero')))
+      .widget<HipDrillArt>(
+        find.descendant(
+          of: find.byKey(const ValueKey('home-hero')),
+          matching: find.byType(HipDrillArt),
+        ),
+      )
       .drill
       .id;
 
@@ -172,11 +177,45 @@ void main() {
     matching: find.byType(trainer.TrainingActionMedia),
   );
 
-  void expectNoDecoderChurn(HomeDeckPlaybackPlatform platform) {
-    expect(platform.sources, hasLength(1));
+  Finder frontSurface({bool skipOffstage = true}) => find.descendant(
+    of: find.byKey(const ValueKey('home-hero'), skipOffstage: skipOffstage),
+    matching: find.byType(
+      trainer.UgkPackedAlphaVideo,
+      skipOffstage: skipOffstage,
+    ),
+    skipOffstage: skipOffstage,
+  );
+
+  int playerFor(WidgetTester tester, Finder media) =>
+      tester
+          .widget<Texture>(
+            find.descendant(of: media, matching: find.byType(Texture)),
+          )
+          .textureId -
+      100;
+
+  Finder mediaOn(Finder card) => find.descendant(
+    of: card,
+    matching: find.byType(trainer.TrainingActionMedia),
+  );
+
+  double posterOpacity(WidgetTester tester, Finder media) => tester
+      .widget<AnimatedOpacity>(
+        find.descendant(
+          of: media,
+          matching: find.byKey(const ValueKey('public-action-poster')),
+        ),
+      )
+      .opacity;
+
+  void expectNoDecoderChurn(
+    HomeDeckPlaybackPlatform platform, {
+    int warmCount = 3,
+  }) {
+    expect(platform.sources, hasLength(warmCount));
     expect(
       platform.commands.where((c) => c.$2 == 'prime-first-frame'),
-      hasLength(1),
+      hasLength(warmCount),
     );
     expect(
       platform.commands.where(
@@ -197,8 +236,10 @@ void main() {
   }
 
   Future<HomeDeckPlaybackPlatform> readyCompactPlaybackCard(
-    WidgetTester tester,
-  ) async {
+    WidgetTester tester, {
+    List<HipDrill>? items,
+    bool neighborsReady = true,
+  }) async {
     final repository = HomeDeckPlaybackRepository();
     final platform = HomeDeckPlaybackPlatform();
     final previousFilter = trainer.UgkPackedAlphaVideo.debugFilterBuilder;
@@ -212,10 +253,11 @@ void main() {
       repository.dispose();
       trainer.UgkPackedAlphaVideo.debugFilterBuilder = previousFilter;
     });
-    await showDeck(tester, videoEnabled: true);
+    await showDeck(tester, videoEnabled: true, items: items);
     await tester.pump();
     await tester.pump();
-    expect(platform.sources, hasLength(1));
+    final warmCount = (items ?? drills).length.clamp(0, 3);
+    expect(platform.sources, hasLength(warmCount));
     void expectQuietPoster() {
       expect(
         tester
@@ -235,22 +277,25 @@ void main() {
     }
 
     expectQuietPoster();
-    platform.emit(1, 'ready');
+    for (var id = 1; id <= platform.sources.length; id++) {
+      platform.emit(id, 'ready');
+    }
     await tester.pump();
     await tester.pump();
     expectQuietPoster();
     expect(
       platform.commands.where((c) => c.$2 == 'prime-first-frame'),
-      hasLength(1),
+      hasLength(warmCount),
     );
-    platform.emit(1, 'first-frame');
+    final currentId = playerFor(tester, frontMedia());
+    for (var id = 1; id <= platform.sources.length; id++) {
+      if (neighborsReady || id == currentId) platform.emit(id, 'first-frame');
+    }
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
-    final surface = tester.widget<trainer.UgkPackedAlphaVideo>(
-      find.byType(trainer.UgkPackedAlphaVideo),
-    );
+    final surface = tester.widget<trainer.UgkPackedAlphaVideo>(frontSurface());
     expect(surface.controller.ready, isTrue);
     expect(surface.controller.hasFrame, isTrue);
     expect(
@@ -359,7 +404,12 @@ void main() {
           of: front,
           matching: find.byKey(const ValueKey('home-hero')),
         );
-        expect(tester.widget<HipDrillArt>(image).drill.id, drills[i].id);
+        expect(
+          tester.widget<HipDrillArt>(
+            find.descendant(of: image, matching: find.byType(HipDrillArt)),
+          ).drill.id,
+          drills[i].id,
+        );
         expect(
           tester
               .widget<Text>(find.byKey(const ValueKey('home-deck-caption')))
@@ -1025,7 +1075,7 @@ void main() {
       phone(tester);
       final platform = await readyCompactPlaybackCard(tester);
       final mediaState = tester.state(frontMedia());
-      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surface = frontSurface();
       final surfaceElement = tester.element(surface);
       final finger = await tester.startGesture(
         tester.getCenter(find.byKey(const ValueKey('home-hero'))),
@@ -1061,7 +1111,7 @@ void main() {
       phone(tester);
       final platform = await readyCompactPlaybackCard(tester);
       final mediaState = tester.state(frontMedia());
-      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surface = frontSurface();
       final surfaceElement = tester.element(surface);
       List<double> pose() => tester
           .widget<Transform>(find.byKey(const ValueKey('home-deck-pose')))
@@ -1201,6 +1251,96 @@ void main() {
   );
 
   testWidgets(
+    'a vertical release accelerates and then gathers rather than following a flat speed plateau',
+    (tester) async {
+      phone(tester);
+      await showDeck(tester);
+      await tester.pumpAndSettle();
+      double y() {
+        final box = tester.renderObject<RenderBox>(visualFront());
+        return box
+            .localToGlobal(Offset(box.size.width / 2, box.size.height * .9))
+            .dy;
+      }
+
+      final drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      drag.onPanUpdate!(
+        DragUpdateDetails(
+          globalPosition: Offset.zero,
+          delta: const Offset(0, -150),
+        ),
+      );
+      await tester.pump();
+      final release = y();
+      drag.onPanEnd!(DragEndDetails());
+      await tester.pump();
+      final distances = <double>[0];
+      for (var i = 0; i < 7; i++) {
+        await tester.pump(const Duration(milliseconds: 40));
+        expect(position(tester), '01');
+        distances.add(release - y());
+      }
+      final steps = List.generate(
+        distances.length - 1,
+        (i) => distances[i + 1] - distances[i],
+      );
+      expect(steps.every((step) => step > 0), isTrue);
+      // An inertial throw builds speed after a gentle release, then clearly
+      // gathers before the visible card exits; equal-time travel is not flat.
+      expect(steps[2], greaterThan(steps[0] * 1.5));
+      expect(steps[6], lessThan(steps[3] * .95));
+      await tester.pumpAndSettle();
+      expect(position(tester), '02');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'vertical throws preserve distinct fast release velocities above the old cap',
+    (tester) async {
+      phone(tester);
+      final travel = <double>[];
+      // Both speeds were formerly clamped to 900 and produced one trajectory.
+      for (final speed in [1200.0, 2200.0]) {
+        await showDeck(tester, identity: 'speed-$speed');
+        await tester.pumpAndSettle();
+        double y() {
+          final box = tester.renderObject<RenderBox>(visualFront());
+          return box
+              .localToGlobal(Offset(box.size.width / 2, box.size.height * .9))
+              .dy;
+        }
+
+        final drag = deckDrag(tester);
+        drag.onPanStart!(DragStartDetails());
+        drag.onPanUpdate!(
+          DragUpdateDetails(
+            globalPosition: Offset.zero,
+            delta: const Offset(0, -150),
+          ),
+        );
+        await tester.pump();
+        final release = y();
+        drag.onPanEnd!(
+          DragEndDetails(
+            velocity: Velocity(pixelsPerSecond: Offset(0, -speed)),
+          ),
+        );
+        await tester.pump();
+        expect(y(), closeTo(release, .01));
+        await tester.pump(const Duration(milliseconds: 80));
+        expect(position(tester), '01');
+        travel.add(release - y());
+        await tester.pumpAndSettle();
+        expect(position(tester), '02');
+      }
+      expect(travel[1], greaterThan(travel[0] + 30));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'vertical releases inside the center or flicked back toward the stack return',
     (tester) async {
       phone(tester);
@@ -1250,71 +1390,158 @@ void main() {
   });
 
   testWidgets(
-    'a newly selected action keeps its poster silently until its delayed first frame',
+    'a cold incoming card keeps its poster after a late frame and reveals the same video only on opening',
     (tester) async {
       phone(tester);
-      final platform = await readyCompactPlaybackCard(tester);
+      final platform = await readyCompactPlaybackCard(
+        tester,
+        neighborsReady: false,
+      );
+      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingState = tester.state(incomingMedia);
+      final incomingSurface = find.descendant(
+        of: incomingMedia,
+        matching: find.byType(trainer.UgkPackedAlphaVideo),
+      );
+      final surfaceElement = tester.element(incomingSurface);
+      final incomingId = playerFor(tester, incomingMedia);
+      final controller = tester
+          .widget<trainer.UgkPackedAlphaVideo>(incomingSurface)
+          .controller;
+      expect(controller.hasFrame, isFalse);
       await next(tester);
       await tester.pump();
       expect(frontId(tester), drills[1].id);
-      expect(platform.sources, hasLength(2));
-      platform.emit(2, 'ready');
+      expect(tester.state(frontMedia()), same(incomingState));
+      expect(tester.element(frontSurface()), same(surfaceElement));
+      expect(posterOpacity(tester, frontMedia()), 1);
+      platform.emit(incomingId, 'first-frame');
       await tester.pump();
       await tester.pump();
-      final media = frontMedia();
-      final mediaState = tester.state(media);
-      final surface = find.descendant(
-        of: media,
-        matching: find.byType(trainer.UgkPackedAlphaVideo),
-      );
-      final surfaceElement = tester.element(surface);
-      final poster = find.descendant(
-        of: media,
-        matching: find.byKey(const ValueKey('public-action-poster')),
-      );
       await tester.pump(const Duration(milliseconds: 350));
-      expect(
-        tester.widget<trainer.TrainingActionMedia>(media).showLoadingIndicator,
-        isFalse,
-      );
-      expect(
-        find.byKey(const ValueKey('public-action-progress')),
-        findsNothing,
-      );
+      expect(controller.hasFrame, isTrue);
+      expect(posterOpacity(tester, frontMedia()), 1);
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(tester.widget<AnimatedOpacity>(poster).opacity, 1);
+      expect(tester.state(frontMedia()), same(incomingState));
+      expect(tester.element(frontSurface()), same(surfaceElement));
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(tester.element(frontSurface()), same(surfaceElement));
+      await dismissActionCard(tester, 'close');
+      await tester.pumpAndSettle();
+      expect(posterOpacity(tester, frontMedia()), 0);
       expect(
-        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller.hasFrame,
-        isFalse,
+        tester.widget<trainer.UgkPackedAlphaVideo>(frontSurface()).controller,
+        same(controller),
       );
-      expect(platform.sources, hasLength(2));
-      platform.emit(2, 'first-frame');
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 130));
-      expect(tester.state(media), same(mediaState));
-      expect(tester.element(surface), same(surfaceElement));
-      expect(tester.widget<AnimatedOpacity>(poster).opacity, 0);
-      expect(
-        tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller.hasFrame,
-        isTrue,
-      );
-      expect(platform.sources, hasLength(2));
       expect(
         platform.commands.where(
-          (c) => c.$1 == 2 && c.$2 == 'prime-first-frame',
+          (c) => c.$1 == incomingId && c.$2 == 'prime-first-frame',
         ),
         hasLength(1),
       );
       expect(
-        platform.commands.where((c) => c.$1 == 2 && c.$2 == 'dispose'),
+        platform.commands.where((c) => c.$1 == incomingId && c.$2 == 'dispose'),
         isEmpty,
       );
-      expect(
-        find.byKey(const ValueKey('public-action-progress')),
-        findsNothing,
-      );
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'a warm incoming video keeps its decoded surface through both-direction promotion and a cancelled preview',
+    (tester) async {
+      phone(tester);
+      final platform = await readyCompactPlaybackCard(tester);
+      final originalState = tester.state(frontMedia());
+      final originalSurface = tester.element(frontSurface());
+      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingState = tester.state(incomingMedia);
+      final incomingSurface = tester.element(
+        find.descendant(
+          of: incomingMedia,
+          matching: find.byType(trainer.UgkPackedAlphaVideo),
+        ),
+      );
+      final incomingId = playerFor(tester, incomingMedia);
+      expect(posterOpacity(tester, incomingMedia), 0);
+      // A cancelled preview cannot replace or re-prime the already decoded rear face.
+      var drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      moveCard(drag, -65);
+      await tester.pump();
+      drag.onPanCancel!();
+      await tester.pumpAndSettle();
+      expect(tester.state(incomingMedia), same(incomingState));
+      expect(platform.sources, hasLength(3));
+      drag = deckDrag(tester);
+      drag.onPanStart!(DragStartDetails());
+      moveCard(drag, -190);
+      await tester.pump();
+      drag.onPanEnd!(DragEndDetails());
+      await tester.pump();
+      for (var frame = 0; frame < 70 && position(tester) == '01'; frame++) {
+        expect(tester.state(incomingMedia), same(incomingState));
+        expect(posterOpacity(tester, incomingMedia), 0);
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await tester.pumpAndSettle();
+      expect(position(tester), '02');
+      expect(tester.state(frontMedia()), same(incomingState));
+      expect(tester.element(frontSurface()), same(incomingSurface));
+      expect(posterOpacity(tester, frontMedia()), 0);
+      expect(platform.sources, hasLength(4));
+      expect(
+        platform.commands.where(
+          (c) => c.$1 == incomingId && c.$2 == 'prime-first-frame',
+        ),
+        hasLength(1),
+      );
+      expect(
+        platform.commands.where((c) => c.$1 == incomingId && c.$2 == 'dispose'),
+        isEmpty,
+      );
+      // Going back promotes the original paused occurrence, rather than rebuilding it.
+      turnPreview(tester, -1);
+      await tester.pumpAndSettle();
+      expect(position(tester), '01');
+      expect(tester.state(frontMedia()), same(originalState));
+      expect(tester.element(frontSurface()), same(originalSurface));
+      final disposed = platform.commands
+          .where((c) => c.$2 == 'dispose')
+          .map((c) => c.$1)
+          .toSet();
+      expect(platform.sources.length - disposed.length, 3);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'two and three occurrence warm pools retain repeated-action media identities through a full loop',
+    (tester) async {
+      phone(tester);
+      for (final count in [2, 3]) {
+        // Teardown the prior identity before measuring a separate bounded pool.
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        final platform = await readyCompactPlaybackCard(
+          tester,
+          items: List.filled(count, drills.first),
+        );
+        final states = <Object>{};
+        for (var i = 0; i < count; i++) {
+          states.add(tester.state(frontMedia()));
+          await next(tester);
+          expect(posterOpacity(tester, frontMedia()), 0);
+          expect(platform.sources, hasLength(count));
+        }
+        expect(states, hasLength(count));
+        expect(position(tester), '01');
+        expect(tester.state(frontMedia()), same(states.first));
+        expectNoDecoderChurn(platform, warmCount: count);
+        expect(tester.takeException(), isNull);
+      }
     },
   );
 
@@ -1327,11 +1554,16 @@ void main() {
       final artElement = tester.element(
         find.byKey(const ValueKey('home-hero')),
       );
-      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surface = frontSurface();
       final surfaceElement = tester.element(surface);
       final controller = tester
           .widget<trainer.UgkPackedAlphaVideo>(surface)
           .controller;
+      final textureId = tester
+          .widget<Texture>(
+            find.descendant(of: surface, matching: find.byType(Texture)),
+          )
+          .textureId;
       final compactRect = tester.getRect(visualFront());
       Iterable<Layer> descendantLayers(Layer layer) sync* {
         yield layer;
@@ -1358,7 +1590,14 @@ void main() {
           tester.widget<trainer.UgkPackedAlphaVideo>(surface).controller,
           same(controller),
         );
-        expect(tester.widget<Texture>(find.byType(Texture)).textureId, 101);
+        expect(
+          tester
+              .widget<Texture>(
+                find.descendant(of: surface, matching: find.byType(Texture)),
+              )
+              .textureId,
+          textureId,
+        );
         // Inspect the painted layer tree, not only Transform.filterQuality.
         // The card's pose must wrap the composed texture in a matrix filter,
         // keeping its perspective out of the packed RGB/alpha input space.
@@ -1368,9 +1607,9 @@ void main() {
         expect(pose.debugLayer, isA<ImageFilterLayer>());
         final poseLayer = pose.debugLayer! as ImageFilterLayer;
         expect(poseLayer.attached, isTrue);
-        final textureLayer = descendantLayers(
-          poseLayer,
-        ).whereType<TextureLayer>().where((layer) => layer.textureId == 101);
+        final textureLayer = descendantLayers(poseLayer)
+            .whereType<TextureLayer>()
+            .where((layer) => layer.textureId == textureId);
         expect(textureLayer, hasLength(1));
         expect(textureLayer.single.attached, isTrue);
         expectNoDecoderChurn(platform);
@@ -1414,7 +1653,7 @@ void main() {
       phone(tester);
       final platform = await readyCompactPlaybackCard(tester);
       final mediaState = tester.state(frontMedia());
-      final surface = find.byType(trainer.UgkPackedAlphaVideo);
+      final surface = frontSurface();
       final surfaceElement = tester.element(surface);
       for (final method in ['close', 'barrier', 'back']) {
         await openActionCard(tester);
@@ -2091,11 +2330,15 @@ void main() {
         videoEnabled: true,
         mediaPolicy: repository.policy,
       );
-      expect(platform.sources, hasLength(1));
-      expect(platform.nativeCreates, 1);
-      platform.emit(1, 'ready');
+      expect(platform.sources, hasLength(3));
+      expect(platform.nativeCreates, 3);
+      for (var id = 1; id <= platform.sources.length; id++) {
+        platform.emit(id, 'ready');
+      }
       await tester.pump();
-      platform.emit(1, 'first-frame');
+      for (var id = 1; id <= platform.sources.length; id++) {
+        platform.emit(id, 'first-frame');
+      }
       await tester.pumpAndSettle();
       final hero = find.byKey(const ValueKey('home-hero'), skipOffstage: false);
       final media = find.descendant(
@@ -2103,10 +2346,7 @@ void main() {
         matching: find.byType(trainer.TrainingActionMedia, skipOffstage: false),
         skipOffstage: false,
       );
-      final surface = find.byType(
-        trainer.UgkPackedAlphaVideo,
-        skipOffstage: false,
-      );
+      final surface = frontSurface(skipOffstage: false);
       final mediaState = tester.state(media);
       final surfaceElement = tester.element(surface);
       final controller = tester

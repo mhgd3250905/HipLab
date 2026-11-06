@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import '../domain/hip_models.dart';
 import 'hip_home_action_inspect.dart';
 import 'hip_theme.dart';
+import 'hip_widgets.dart' show HipMediaPolicy;
 
 /// The ordered action deck with a persistent video front face.
 /// The local index never leaves this widget or changes a training plan.
@@ -51,6 +52,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   int _index = 0;
   int _toward = 1;
   int _generation = 0;
+  final _mediaKeys = <int, GlobalKey>{};
+  final _readyCallbacks = <int, ValueChanged<bool>>{};
+  final _readyFrames = <int>{};
+  final _posterLocked = <int>{};
   bool _committing = false;
   Offset _flightDirection = Offset.zero;
   Rect? _frontBounds;
@@ -64,6 +69,38 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   Size? _viewport;
   bool get _multiple => widget.drills.length > 1;
   bool get _reduced => MediaQuery.disableAnimationsOf(context);
+  bool get _videoEnabled => HipMediaPolicy.of(context);
+  Set<int> get _warmIndices => {
+    _index,
+    if (_videoEnabled && _multiple) _at(1),
+    if (_videoEnabled && _multiple) _at(-1),
+  };
+
+  GlobalKey _mediaKey(int index) => _mediaKeys.putIfAbsent(
+    index,
+    () => GlobalKey(debugLabel: 'Home action media $index'),
+  );
+
+  void _frameReady(int index, GlobalKey key, bool ready) {
+    if (!mounted || _disposing || _mediaKeys[index] != key) return;
+    final changed = ready
+        ? _readyFrames.add(index)
+        : _readyFrames.remove(index);
+    if (changed) setState(() {});
+  }
+
+  ValueChanged<bool> _readyCallback(int index) =>
+      _readyCallbacks.putIfAbsent(index, () {
+        final key = _mediaKey(index);
+        return (ready) => _frameReady(index, key, ready);
+      });
+
+  void _lockIncomingPresentation(int direction) {
+    final incoming = _at(direction);
+    if (!_readyFrames.contains(incoming)) {
+      _posterLocked.add(incoming);
+    }
+  }
 
   @override
   void initState() {
@@ -129,6 +166,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _vertical.value = 0;
       _finishFloating();
       _resetInspection();
+      _mediaKeys.clear();
+      _readyCallbacks.clear();
+      _readyFrames.clear();
+      _posterLocked.clear();
       _index = 0;
       _toward = 1;
       _committing = false;
@@ -192,6 +233,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     setState(() {
       _expanded = true;
       _paused = true;
+      _posterLocked.remove(_index);
     });
     _history = LocalHistoryEntry(
       impliesAppBarDismissal: false,
@@ -241,6 +283,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     _position.stop();
     _vertical.stop();
     _flight.stop();
+    for (final neighbor in _warmIndices.where((i) => i != _index)) {
+      if (_readyFrames.contains(neighbor)) _posterLocked.remove(neighbor);
+    }
     _floatFront();
   }
 
@@ -251,7 +296,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
 
   void _setDragOffset(Offset offset) {
     if (_committing || _expanded || _expansion.value > 0) return;
-    if (offset.distance > 8) _toward = _directionFor(offset);
+    if (offset.distance > 8) {
+      _toward = _directionFor(offset);
+      _lockIncomingPresentation(_toward);
+    }
     _position.value = offset.dx;
     _vertical.value = offset.dy;
   }
@@ -346,6 +394,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     Offset? exitDirection,
   }) async {
     if (!_multiple || _committing || _expanded || _expansion.value > 0) return;
+    _lockIncomingPresentation(direction);
     _toward = direction;
     final generation = ++_generation;
     _position.stop();
@@ -376,8 +425,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     : view.height - bounds.top + 48) /
                 _flightDirection.dy.abs();
       // A far-off target gives a spring a much stronger initial pull on a tall
-      // screen. Aim just beyond the visible edge instead, and let a vertical
-      // release carry more weight than a horizontal turn.
+      // screen. Aim just beyond the visible edge, preserving the actual flick
+      // speed while a slightly underdamped vertical spring gives it a clear
+      // lift-off and settling phase. Horizontal motion keeps its original feel.
       final exitDistance =
           offset.distance + math.max(0, math.min(horizontal, vertical));
       final verticalWeight = _flightDirection.dy.abs();
@@ -388,9 +438,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
               _DeckExitSpring(
                 _flight.value,
                 exitDistance,
-                velocity.clamp(0.0, lerpDouble(2400, 900, verticalWeight)!),
+                velocity.clamp(0.0, 2400.0),
                 exitDistance,
-                stiffness: lerpDouble(240, 60, verticalWeight)!,
+                stiffness: lerpDouble(240, 70, verticalWeight)!,
+                dampingRatio: lerpDouble(1, .82, verticalWeight)!,
               ),
             )
             .orCancel;
@@ -650,6 +701,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                       ),
                                       drill: widget.drills[_index],
                                       number: _index + 1,
+                                      mediaKey: _mediaKey(_index),
+                                      revealPausedFrame: !_posterLocked
+                                          .contains(_index),
+                                      onFrameReadyChanged: _readyCallback(
+                                        _index,
+                                      ),
                                       restingSize: Size(_cardWidth, height),
                                       expansion: t,
                                       expanded: _expanded,
@@ -730,10 +787,19 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     final offset = _reduced ? 0.0 : raw;
     final progress = (offset.abs() / _cardWidth).clamp(0.0, 1.0);
     final count = math.min(3, widget.drills.length);
+    final rearIndices = {
+      for (var layer = 1; layer < count; layer++) _at(layer * _toward),
+    };
     return Stack(
       clipBehavior: Clip.none,
       fit: StackFit.expand,
       children: [
+        // Prepare the opposite neighbor as well, before the user chooses a
+        // direction. Opacity keeps its native node alive without drawing it;
+        // Offstage/TickerMode would retire the frame we're preparing.
+        for (final index in _warmIndices)
+          if (index != _index && !rearIndices.contains(index))
+            _card(index, 1, width, height, warmingOnly: true, opacity: 0),
         // Replenish underneath the last card while the stack advances. Starting
         // at that card's resting pose lets its movement uncover the new face;
         // the final pose is already correct when the front index commits.
@@ -758,15 +824,19 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double width,
     double height, {
     bool replenishing = false,
+    bool warmingOnly = false,
     double opacity = 1,
   }) {
+    final warm = !replenishing && _videoEnabled && _warmIndices.contains(index);
     final tilt = Matrix4.identity()
       ..setEntry(3, 2, .0012)
       ..rotateX(.018)
       ..rotateY(-.10);
     return Positioned(
       key: ValueKey(
-        'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
+        warmingOnly
+            ? 'home-deck-warm-$index'
+            : 'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
       ),
       left: (width - _cardWidth) / 2 - 18 + depth * 16,
       top: 74 - depth * 26,
@@ -790,6 +860,13 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     child: HipHomeActionFace(
                       key: ValueKey('back-face-$index'),
                       front: false,
+                      warmVideo: warm,
+                      mediaKey: warm ? _mediaKey(index) : null,
+                      mediaLabelKey: warmingOnly
+                          ? ValueKey('warm-art-${index + 1}')
+                          : null,
+                      revealPausedFrame: !_posterLocked.contains(index),
+                      onFrameReadyChanged: warm ? _readyCallback(index) : null,
                       drill: widget.drills[index],
                       number: index + 1,
                       restingSize: Size(_cardWidth, height),
@@ -825,11 +902,12 @@ class _DeckExitSpring extends SpringSimulation {
     double velocity,
     this.exitDistance, {
     required double stiffness,
+    required double dampingRatio,
   }) : super(
          SpringDescription(
            mass: 1,
            stiffness: stiffness,
-           damping: 2 * math.sqrt(stiffness),
+           damping: 2 * dampingRatio * math.sqrt(stiffness),
          ),
          start,
          end,

@@ -18,6 +18,11 @@ class HipHomeActionFace extends StatefulWidget {
     required this.restingSize,
     this.stackDepth = 0,
     this.front = true,
+    this.warmVideo = false,
+    this.mediaKey,
+    this.mediaLabelKey,
+    this.revealPausedFrame = true,
+    this.onFrameReadyChanged,
     this.expansion = 0,
     this.expanded = false,
     this.paused = true,
@@ -36,6 +41,9 @@ class HipHomeActionFace extends StatefulWidget {
   final double stackDepth;
   final double expansion;
   final bool front, expanded, paused, compact;
+  final bool warmVideo, revealPausedFrame;
+  final Key? mediaKey, mediaLabelKey;
+  final ValueChanged<bool>? onFrameReadyChanged;
   final ScrollController? informationScroll;
   final VoidCallback? onClose, onToggle;
   final String dose, cue, description;
@@ -484,6 +492,11 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 key: const ValueKey('face-media'),
                 rect: media,
                 child: Semantics(
+                  key:
+                      widget.mediaLabelKey ??
+                      (front
+                          ? const ValueKey('home-hero')
+                          : ValueKey('back-art-${widget.number}')),
                   button: widget.expanded,
                   label: widget.expanded
                       ? (widget.paused ? '播放动作示范' : '暂停动作示范')
@@ -501,12 +514,12 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                       child: SizedBox.square(
                         dimension: math.min(media.width, media.height),
                         child: HipDrillArt(
-                          key: front
-                              ? const ValueKey('home-hero')
-                              : ValueKey('back-art-${widget.number}'),
+                          key: widget.mediaKey,
                           drill: drill,
                           play: widget.expanded && !widget.paused,
-                          holdVideo: front,
+                          holdVideo: front || widget.warmVideo,
+                          revealPausedFrame: widget.revealPausedFrame,
+                          onFrameReadyChanged: widget.onFrameReadyChanged,
                           showPendingLabel: false,
                         ),
                       ),
