@@ -1,5 +1,15 @@
 # 开发事项台账
 
+## 2026-11-06：D-51后续：同一视频牌面 / +44
+
+运行/构建源 `c0798ecc6a9ef5f91bfa0221cee5bb2c42dfad38`，独立分支 `codex/home-card-live-surface-20261106`；`1.1.0+44` / arm64 `2044`。四个实际SDK包及coach override固定 `1c082e9d3e22022f228888fdd1935b1d61371cb9`；hosted锁、Flutter3.44.7及素材内容保持。日常目录仍 `feat/ui-detail-polish@25260b3`，保持clean。
+
+用户在+43交付后反馈展开/收起仍闪，并提出同一视频元素方案。+44将当前前牌常驻root OverlayPortal：初次准备首帧暂停，展开只改变同一牌面的矩阵/大小并播放，关闭立即暂停当前帧并缩回，compact继续显示该帧；再次展开继续播放。移除App快放回首调用、两面交接、截图捕获及专用弹层路由。
+
+App相关9文件85通过/0失败/12既有截图跳过（牌组34项）；SDK runtime相关29项通过，双方fatal-infos分析0，App严格锁解析通过，lock仅四个Git节点ref变化。未跑全量App/SDK。 最终+44 release已构建、验签及资源校验，尚未由Agent安装；按用户决定交由用户远程安装测试。同一节点/纹理身份的组件回归和浅深色实际widget绘制检查已完成，原生首帧准备与真实过渡观感等待用户反馈，不能记作真机无闪烁通过。
+
+[方案、包身份与验收归属](home-card-live-surface-2026-11-06.md)。
+
 ## 2026-11-06：D-51：动作牌收起连续性 / +43待真机
 
 运行/构建源 `32ac1a76e12894f6aedb8218be0b35a591fd3461`，分支 `codex/home-card-return-fix-20261106`；`1.1.0+43` / arm64 `2043`，四个实际 SDK 包及 coach override 固定 `4b9b685788352415fbfce2d8a2651f7f9d207512`。日常目录保持 `feat/ui-detail-polish@25260b3`；本轮在既有 E 盘隔离副本开发。

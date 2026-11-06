@@ -1,5 +1,15 @@
 # 版本交付台账
 
+## 2026-11-06：持久视频牌面 / +44远程测试包
+
+运行/构建源 `c0798ecc6a9ef5f91bfa0221cee5bb2c42dfad38`，独立分支 `codex/home-card-live-surface-20261106`；`1.1.0+44` / arm64 `2044`。四个实际SDK包及coach override固定 `1c082e9d3e22022f228888fdd1935b1d61371cb9`；hosted锁、Flutter3.44.7及素材内容保持。日常目录仍 `feat/ui-detail-polish@25260b3`，保持clean。
+
+APK `E:/AII-3D/hiplab-releases/home-card-live-c0798ec-44-20261106/hiplab-1.1.0+44-c0798ec-internal-arm64-release.apk`，47628200字节，SHA256 `8bbeb76156b1098ab623de6c3a6b40b2222cddf10f6022e3648c9f33265e6e17`，证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`；与+43内部包验签一致。构建77.0秒，包身份、789资源项、重签runtime负载通过。原上传签名包仅本地归档。
+
+最终+44 release已构建、验签及资源校验，尚未由Agent安装；按用户决定交由用户远程安装测试。同一节点/纹理身份的组件回归和浅深色实际widget绘制检查已完成，原生首帧准备与真实过渡观感等待用户反馈，不能记作真机无闪烁通过。
+
+[实现、检查与证据](home-card-live-surface-2026-11-06.md)。
+
 ## 2026-11-06：动作牌视频回首 / +43待真机
 
 运行/构建源 `32ac1a76e12894f6aedb8218be0b35a591fd3461`，分支 `codex/home-card-return-fix-20261106`；`1.1.0+43` / arm64 `2043`，四个实际 SDK 包及 coach override 固定 `4b9b685788352415fbfce2d8a2651f7f9d207512`。日常目录保持 `feat/ui-detail-polish@25260b3`；本轮在既有 E 盘隔离副本开发。
