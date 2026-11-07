@@ -236,13 +236,13 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 ## 版本与来源身份
 
-共用版本采用 `版本名+构建号`，当前为 `1.1.0+34`；arm64 split包为versionName `1.1.0`、versionCode `2034`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
+共用版本采用 `版本名+构建号`，当前为 `1.1.0+61`；arm64 split包为versionName `1.1.0`、versionCode `2061`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
 
 单独的文档整理、合并事实补记不递增 App 版本，也不触发重新构建或安装。审核期曾有多份相同 `0.3.6+11` 的包，不能只凭版本名判断内容；必须结合构建源码、APK SHA256、大小和签名识别。
 
 构建源码 SHA、已验业务来源 SHA、PR 合并提交和后续文档 HEAD 可以不同，分别记录。复用早先测试时先比较到当前树的有限差异；只有业务、资源、原生代码、测试和锁文件未受影响，才能按原来源引用，不能写成新 HEAD 已重新执行。构建证据始终归属于实际构建源码；文档提交不会产生新 APK。
 
-App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`；当前媒体采用仓库公共元数据/封面及 SDK 按需策略，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
+App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `fa957ff405cc57cd10d53987430313822ff20607`；当前媒体为r2-v1公共目录249项、209授权封面及SDK按需视频，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
 
 ## 状态分别登记
 

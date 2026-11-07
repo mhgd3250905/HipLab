@@ -1,5 +1,9 @@
 # HipLab 文档与开发台账
 
+## 当前使用入口：+61主线与可复用UI
+
+截至+61的本轮日常Android UI已由用户验收并接收main；运行内容基线`8420268`，包源`7ca9617`，版本仍为`1.1.0+61`/2061。当前设计数值看[UI设计规范](ui-design-standard.md)，其它App参考实现看[UI实现与复用手册](ui-kit/README.md)（完整Flutter画廊、源码配方、失败演进与验证样例），本次文档修正和证据绑定见[阶段收束记录](ui-documentation-closeout-2026-11-07.md)。
+
 ## 2026-11-07：已验收UI接收为main主线 / +61
 
 用户已明确确认截至+61的本轮UI改动全部验收通过，并授权推进main作为后续开发主线。已将main从`6bdf1e9`快进到完整候选`6e49ac7`（67提交），再追加本次文档回执；不重写历史、不拆分已验收内容。共用版本保持`1.1.0+61`，arm64`2061`，四SDK实际依赖及coach override固定`fa957ff405cc57cd10d53987430313822ff20607`，hosted锁版本保持。最终候选全量624通过/70条件跳过/0失败、analyze0、严格离线锁解析及diff检查通过。手机已装+61，运行源`7ca9617`；它与集成候选的非docs文件完全相同。本轮只做集成与文档，不重建、不增版、不再操作手机。用户验收属于本轮日常Android界面体验，不扩大为新iOS、语音听感、锁屏/中断、实模对话或商店发布的Agent实测。
@@ -180,7 +184,7 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 
 测试APK已备好，同签名、211封面/0MP4，交用户远程安装；本轮未安装，候选不合main、release/商店不动。两条缺标签按目录回退、无替换候选时保留原动作，详细边界见[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。当前main仍4d610f5，UIr3 PR29另行待验，下方main快照保留历史。
 
-## 2026-11-04：当前导航
+## 2026-11-04：导航快照（历史）
 
 当前 main 已含 PR #26/#27/#28/#30，版本 **1.1.0+34 / 2034**、SDK pin `f7b8a8e`；UI r3 [PR #29](https://github.com/mhgd3250905/HipLab/pull/29) 仍为 Draft，待用户真机反馈。旧“PR30 候选未合 main”等文字是当时快照。
 
@@ -276,6 +280,8 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 | [Google Play 送审](play-store-release-2026-10-17.md) | 0.2.0+4 / Submission 1 的历史回执 | Console 实际变化后 |
 | [Pose-Hub 接入](pose-hub-adoption.md) | v0.2.0 冻结同步、保留素材及两端边界 | 素材发布或同步时 |
 | [UI 设计规范](ui-design-standard.md) | 顶栏/状态栏材质、几何、透明度曲线与页面接入方式；界面按标准实现，改标准先改这里 | 设计标准变化时 |
+| [UI 实现与复用手册](ui-kit/README.md) | 当前规范的实现解释、跨App依赖边界、可运行Flutter画廊与验证样例 | 规范或组件合同变化时同步 |
+| [UI 阶段文档收束](ui-documentation-closeout-2026-11-07.md) | baseline/HEAD/delta、canonical发现、当前事实修正与验证来源 | 本阶段收束证据 |
 | [当前状态](current-state.md) | 当前 App、分支、PR、环境与完成边界 | 状态实际改变后 |
 | [版本管理说明](version-management.md) | 版本来源、构建/安装/合并/推送/发布状态及台账维护规则 | 版本管理约定变化时 |
 | [版本交付台账](version-ledger.md) | 每次构建、安装、发布的版本和产物身份 | 产生可交付版本时追加 |
@@ -308,7 +314,7 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 
 ### 当前 main：公共元数据、封面与 SDK 按需视频
 
-从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。公共目录/语义与 211 张封面、209 条未审 AI 标签随仓库保存；SDK 不自带 App 标签。`HipPublicMedia` 从这些元数据创建 SDK 媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。
+从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。当前r2-v1公共目录249项、209张授权封面、209条未审AI标签随仓库保存；SDK不自带App标签。`HipPublicMedia` 从这些元数据创建SDK媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。引导使用三张friendly透明卡通图，旧深浅六张保留源文件但不打包。
 
 两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，保持锁文件当前的 `pub.dev` 源，已有解析时才用 `--no-pub` 验证；不要为使用旧镜像缓存重写 lock。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
 

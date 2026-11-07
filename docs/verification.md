@@ -1,5 +1,11 @@
 # 验证台账
 
+## 2026-11-07：UI文档/参考样例验证
+
+本次只改README/AGENTS与docs，App源、资源、原有测试、pubspec/lock保持`8420268`的运行内容。复用的624通过/70条件跳过/0失败、App分析0仍绑定`6e49ac7f7c22370c54f4d1c5068166c7f200c0bb`；到8420268仅文档差异，已再次核对。
+
+本次新执行：Flutter3.44.7/Dart3.12.2；`dart format docs/ui-kit/examples`最终5文件0变更；`flutter analyze --no-pub docs/ui-kit/examples`零问题；`flutter test --no-pub --concurrency=1 docs/ui-kit/examples/gallery_test.dart`六项全部通过。该六项验证文档样例的布局/交互与假媒体Element连续性，不代表真实GPU/视频/手机性能。source state为本次文档工作树，五个样例SHA256与全部命令/归属记录在[阶段收束报告](ui-documentation-closeout-2026-11-07.md)。新增本地链接、完整状态和diff按该报告核对，不重跑App全量、不构建或安装。
+
 ## 2026-11-07：已验收UI接收为main主线 / +61
 
 用户已明确确认截至+61的本轮UI改动全部验收通过，并授权推进main作为后续开发主线。已将main从`6bdf1e9`快进到完整候选`6e49ac7`（67提交），再追加本次文档回执；不重写历史、不拆分已验收内容。共用版本保持`1.1.0+61`，arm64`2061`，四SDK实际依赖及coach override固定`fa957ff405cc57cd10d53987430313822ff20607`，hosted锁版本保持。最终候选全量624通过/70条件跳过/0失败、analyze0、严格离线锁解析及diff检查通过。手机已装+61，运行源`7ca9617`；它与集成候选的非docs文件完全相同。本轮只做集成与文档，不重建、不增版、不再操作手机。用户验收属于本轮日常Android界面体验，不扩大为新iOS、语音听感、锁屏/中断、实模对话或商店发布的Agent实测。
