@@ -8,15 +8,18 @@ import '../../coach/hip_coach_profile.dart' show hiplabCoachAuthorizedActionIds;
 import '../../domain/hip_models.dart';
 import '../../domain/hip_library.dart';
 import '../../data/hip_public_media.dart';
+import '../../data/hip_public_text_en.dart';
 import '../hip_icons.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
+import '../hip_content_text.dart';
 
 /// Only brand roles, local artwork and the existing native preview are bound
 /// here. The SDK owns chat layout, states, controls and animation.
 CoachChatVisuals hipCoachChatVisuals(
   HipContent content, {
   coach.Catalog? catalog,
+  String Function()? languageTagOf,
 }) {
   final previews = Expando<Map<String, HipDrillArtHandle>>();
   HipDrillArtHandle surface(BuildContext context, String id) {
@@ -30,6 +33,10 @@ CoachChatVisuals hipCoachChatVisuals(
     fontFamily: hipFontFamily,
     iconBuilder: _hipChatIcon,
     exerciseFor: (id, brightness) {
+      final lang = languageTagOf?.call() ?? 'zh';
+      final english = lang == 'en';
+      final copy = english ? HipContentText.en : HipContentText.zh;
+      final translated = english ? hipPublicTextEn[id] : null;
       final drill = content.drills[id];
       final public = (content.publicCatalog ?? catalog)?[id];
       final action = HipPublicMedia.current?.actionFor(id);
@@ -43,21 +50,39 @@ CoachChatVisuals hipCoachChatVisuals(
       final p = dark ? HipPalette.dark : HipPalette.light;
       return CoachExercise(
         id: id,
-        name: public?.name.of('zh') ?? drill!.name,
+        name: public?.name.of(lang) ?? copy.drillName(drill!),
         poster: poster,
         cutout: hipCoachStandingAsset(id),
         stillCutout: hipCoachStandingAsset(id),
-        categoryLabel: action != null
+        categoryLabel: english
+            ? switch (public?.category) {
+                'strength' => 'Strength',
+                'core' => 'Core',
+                'cardio' => 'Cardio',
+                'mobility' => 'Mobility',
+                'stretch' => 'Stretch',
+                _ =>
+                  drill?.methods
+                          .map((value) => copy.text(value.zh))
+                          .join(' · ') ??
+                      '',
+              }
+            : action != null
             ? trainer.PoseHubActionFacets.type(action)
             : drill?.methods.map((value) => value.zh).join(' · ') ?? '',
         levelLabel: public == null
-            ? (drill!.advanced ? '进阶' : '基础')
+            ? (drill!.advanced
+                  ? (english ? 'Advanced' : '进阶')
+                  : (english ? 'Basic' : '基础'))
             : switch (public.level) {
-                1 => '入门',
-                2 => '基础',
-                _ => '进阶',
+                1 => english ? 'Starter' : '入门',
+                2 => english ? 'Basic' : '基础',
+                _ => english ? 'Advanced' : '进阶',
               },
-        cues: public?.cues['zh'] ?? [if (drill!.note.isNotEmpty) drill.note],
+        cues:
+            translated?.cues ??
+            public?.cues[lang] ??
+            [if (drill?.note.isNotEmpty ?? false) copy.text(drill!.note)],
         stage: CoachMediaPalette(
           mediaStage: p.mediaBackdrop,
           onStage: p.text,

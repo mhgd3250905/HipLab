@@ -16,6 +16,7 @@ import 'hip_icons.dart';
 import 'hip_tactile.dart';
 import 'hip_glass.dart';
 import 'hip_theme.dart';
+import 'hip_text.dart';
 
 export 'hip_tactile.dart';
 
@@ -232,6 +233,9 @@ class HipDrillArt extends StatefulWidget {
     super.key,
     required this.drill,
     this.play = false,
+    this.holdVideo = false,
+    this.revealPausedFrame = true,
+    this.onFrameReadyChanged,
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
     this.alignment = Alignment.center,
@@ -244,6 +248,12 @@ class HipDrillArt extends StatefulWidget {
   /// Loop the clip (when the drill has one and video is enabled). Turning
   /// this off pauses on the current frame instead of tearing the view down.
   final bool play;
+
+  /// Keep one decoded, paused video surface between compact and expanded views.
+  /// Ordinary library artwork keeps its existing poster-only behavior.
+  final bool holdVideo;
+  final bool revealPausedFrame;
+  final ValueChanged<bool>? onFrameReadyChanged;
   final BoxFit fit;
   final bool showPendingLabel;
   final Alignment alignment;
@@ -289,9 +299,14 @@ class _HipDrillArtState extends State<HipDrillArt> {
   Widget build(BuildContext context) {
     final policy = HipPublicMedia.current;
     if (policy == null || policy.actionFor(widget.drill.id) == null) {
-      return HipPendingArt(label: widget.showPendingLabel ? '暂无公共动作示范' : null);
+      return HipPendingArt(
+        label: widget.showPendingLabel
+            ? HipText.of(context).pick('暂无公共动作示范', 'Demonstration unavailable')
+            : null,
+      );
     }
-    if (HipSharedLibrary.current case final config?) {
+    final config = HipSharedLibrary.current;
+    if (!widget.holdVideo && config != null) {
       return trainer.TrainingLibraryActionArt(
         actionId: widget.drill.id,
         mirrored: widget.mirror,
@@ -304,8 +319,17 @@ class _HipDrillArtState extends State<HipDrillArt> {
     return trainer.TrainingActionMedia(
       actionId: widget.drill.id,
       policy: policy,
-      playing: widget.play && !_retired && HipMediaPolicy.of(context),
+      playing:
+          (widget.play || widget.holdVideo) &&
+          !_retired &&
+          HipMediaPolicy.of(context),
       paused: !widget.play,
+      prepareFirstFrame: widget.holdVideo,
+      showLoadingIndicator: !widget.holdVideo,
+      retainPausedSurfaceWhileCovered: widget.holdVideo,
+      nativeAlpha: widget.holdVideo,
+      revealPausedFrame: widget.revealPausedFrame,
+      onFrameReadyChanged: widget.onFrameReadyChanged,
       mirrored: widget.mirror,
       radius: 0,
       stage: HipColors.mediaBackdrop,
@@ -379,6 +403,7 @@ class HipTopBar extends StatelessWidget {
     this.subtitle,
     this.center,
     this.trailing,
+    this.leading,
     this.onClose,
     this.icon = HipGlyph.close,
     this.tooltip = '关闭',
@@ -389,6 +414,9 @@ class HipTopBar extends StatelessWidget {
   /// Centred content instead of a title (e.g. progress dots).
   final Widget? center;
   final Widget? trailing;
+
+  /// Optional leading control for immersive pages with a custom header.
+  final Widget? leading;
   final VoidCallback? onClose;
   final HipGlyph icon;
   final String tooltip;
@@ -399,50 +427,73 @@ class HipTopBar extends StatelessWidget {
     child: ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          HipCircleButton(
-            icon: icon,
-            tooltip: tooltip,
-            onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+          // Keep the immersive header's existing 48pt control rail. A tall
+          // question heading must not pull the close control down with it.
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child:
+                leading ??
+                HipCircleButton(
+                  icon: icon,
+                  tooltip: tooltip == '关闭'
+                      ? HipText.of(context).pick('关闭', 'Close')
+                      : tooltip,
+                  onPressed: onClose ?? () => Navigator.of(context).maybePop(),
+                ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child:
-                center ??
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.2,
-                          color: HipColors.jadeText,
-                          fontWeight: FontWeight.w600,
-                        ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                heightFactor: 1,
+                // The question heading still owns the full middle column,
+                // so its internally centred labels do not drift left.
+                child: SizedBox(
+                  width: double.infinity,
+                  child:
+                      center ??
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (subtitle != null)
+                            Text(
+                              subtitle!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.2,
+                                color: HipColors.jadeText,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          if (title != null)
+                            Text(
+                              title!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                height: 1.25,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                        ],
                       ),
-                    if (title != null)
-                      Text(
-                        title!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
                 ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 44,
+            height: 48,
             child: Align(
               alignment: Alignment.centerRight,
               child: trailing ?? const SizedBox(),
@@ -473,27 +524,30 @@ class HipFadeSwitcher extends StatelessWidget {
   final bool expand;
 
   @override
-  Widget build(BuildContext context) => AnimatedSwitcher(
-    duration: duration,
-    switchInCurve: HipMotion.curve,
-    switchOutCurve: Curves.easeIn,
-    layoutBuilder: (current, previous) => Stack(
-      alignment: alignment,
-      fit: expand ? StackFit.expand : StackFit.loose,
-      children: [...previous, ?current],
-    ),
-    transitionBuilder: (child, animation) => FadeTransition(
-      opacity: animation,
-      child: SlideTransition(
-        position: Tween(
-          begin: Offset(0, offset),
-          end: Offset.zero,
-        ).animate(animation),
-        child: child,
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return child;
+    return AnimatedSwitcher(
+      duration: duration,
+      switchInCurve: HipMotion.curve,
+      switchOutCurve: Curves.easeIn,
+      layoutBuilder: (current, previous) => Stack(
+        alignment: alignment,
+        fit: expand ? StackFit.expand : StackFit.loose,
+        children: [...previous, ?current],
       ),
-    ),
-    child: child,
-  );
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween(
+            begin: Offset(0, offset),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: child,
+    );
+  }
 }
 
 /// The six-direction hip radar. Axis order follows the prototype:
@@ -535,12 +589,22 @@ class HipRadar extends StatelessWidget {
         height: 1.2,
       );
       final scaler = MediaQuery.textScalerOf(context);
+      String directionLabel(HipDirection d) => HipText.of(context).isEn
+          ? switch (d) {
+              HipDirection.flexion => 'Flexion',
+              HipDirection.extension => 'Extension',
+              HipDirection.abduction => 'Abduction',
+              HipDirection.adduction => 'Adduction',
+              HipDirection.internalRotation => 'Int. rot.',
+              HipDirection.externalRotation => 'Ext. rot.',
+            }
+          : d.zh;
       final dir = Directionality.of(context);
       // Measure every label at the current text scale (bold = widest).
       Size measure(HipDirection d) {
         final tp = TextPainter(
           text: TextSpan(
-            text: d.zh,
+            text: directionLabel(d),
             style: labelStyle.copyWith(fontWeight: FontWeight.w700),
           ),
           textDirection: dir,
@@ -616,7 +680,7 @@ class HipRadar extends StatelessWidget {
                       top: top,
                       width: ls.width + 1,
                       child: Text(
-                        d.zh,
+                        directionLabel(d),
                         maxLines: 1,
                         softWrap: false,
                         textAlign: cx > .3
@@ -923,6 +987,7 @@ class HipPressable extends StatefulWidget {
     this.scale = HipMotion.pressScale,
     this.focusNode,
     this.semanticLabel,
+    this.preserveChildSemantics = false,
     this.selected,
     this.inMutuallyExclusiveGroup = false,
     this.onPressChanged,
@@ -932,6 +997,10 @@ class HipPressable extends StatefulWidget {
   final double scale;
   final FocusNode? focusNode;
   final String? semanticLabel;
+
+  /// Keep independently actionable children (for example a card's Start
+  /// button) visible to accessibility instead of folding them into this tap.
+  final bool preserveChildSemantics;
   final bool? selected;
   final bool inMutuallyExclusiveGroup;
 
@@ -954,52 +1023,59 @@ class _HipPressableState extends State<HipPressable> {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    return MergeSemantics(
-      child: Semantics(
-        container: true,
-        button: true,
+    final semantics = Semantics(
+      container: true,
+      explicitChildNodes: widget.preserveChildSemantics,
+      button: true,
+      enabled: widget.onTap != null,
+      label: widget.semanticLabel,
+      selected: widget.selected,
+      inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup,
+      onTap: widget.onTap,
+      child: FocusableActionDetector(
+        focusNode: widget.focusNode,
         enabled: widget.onTap != null,
-        label: widget.semanticLabel,
-        selected: widget.selected,
-        inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup,
-        onTap: widget.onTap,
-        child: FocusableActionDetector(
-          focusNode: widget.focusNode,
-          enabled: widget.onTap != null,
-          shortcuts: const {
-            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          },
-          actions: {
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                widget.onTap?.call();
-                return null;
-              },
-            ),
-          },
-          child: GestureDetector(
-            excludeFromSemantics: true,
-            behavior: HitTestBehavior.opaque,
-            onTapDown: widget.onTap == null ? null : (_) => _set(true),
-            onTapUp: widget.onTap == null ? null : (_) => _set(false),
-            onTapCancel: () => _set(false),
-            onTap: widget.onTap,
-            child: AnimatedScale(
-              scale: _down && !reduceMotion ? widget.scale : 1,
-              duration: _down ? HipMotion.press : HipMotion.release,
-              curve: _down ? Curves.easeOut : Curves.easeOutCubic,
-              child: HipPressedScope(
-                pressed: _down,
-                child: widget.semanticLabel == null
-                    ? widget.child
-                    : ExcludeSemantics(child: widget.child),
-              ),
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          behavior: HitTestBehavior.opaque,
+          onTapDown: widget.onTap == null ? null : (_) => _set(true),
+          onTapUp: widget.onTap == null ? null : (_) => _set(false),
+          onTapCancel: () => _set(false),
+          onTap: widget.onTap,
+          child: AnimatedScale(
+            scale: _down && !reduceMotion ? widget.scale : 1,
+            duration: reduceMotion
+                ? Duration.zero
+                : _down
+                ? HipMotion.press
+                : HipMotion.release,
+            curve: _down ? Curves.easeOut : Curves.easeOutCubic,
+            child: HipPressedScope(
+              pressed: _down,
+              child:
+                  widget.semanticLabel == null || widget.preserveChildSemantics
+                  ? widget.child
+                  : ExcludeSemantics(child: widget.child),
             ),
           ),
         ),
       ),
     );
+    return widget.preserveChildSemantics
+        ? semantics
+        : MergeSemantics(child: semantics);
   }
 }
 
@@ -1019,8 +1095,8 @@ class _HipFlatFace extends StatelessWidget {
   final Color pressedColor;
   final Widget child;
 
-  /// UI r2 §2: HipLab buttons are 48 high with a 12 radius. The pill shape
-  /// stays only where the button sits on an SDK-owned screen.
+  /// iOS control geometry: 50 high with a 14 radius. The pill shape stays
+  /// only where the button sits on an SDK-owned screen.
   final bool stadium;
 
   @override
@@ -1036,7 +1112,7 @@ class _HipFlatFace extends StatelessWidget {
           shape: stadium
               ? const StadiumBorder()
               : const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderRadius: BorderRadius.all(Radius.circular(14)),
                 ),
         ),
         child: child,
@@ -1070,7 +1146,7 @@ class HipPrimaryButton extends StatelessWidget {
     final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 50,
       child: HipPressable(
         semanticLabel: label,
         onTap: onPressed,
@@ -1086,14 +1162,14 @@ class HipPrimaryButton extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (icon != null) ...[
-                      HipIcon(icon!, size: 17, filled: true, color: fg),
+                      HipIcon(icon!, size: 18, filled: true, color: fg),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       label,
                       style: TextStyle(
                         fontFamily: hipFontFamily,
-                        fontSize: 15,
+                        fontSize: 17,
                         fontWeight: FontWeight.w600,
                         color: fg,
                       ),
@@ -1132,7 +1208,7 @@ class HipSecondaryButton extends StatelessWidget {
   final bool sdkScale;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: sdkScale ? 56 : 48,
+    height: sdkScale ? 56 : 50,
     width: double.infinity,
     child: HipPressable(
       semanticLabel: label,
@@ -1154,7 +1230,7 @@ class HipSecondaryButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontFamily: hipFontFamily,
-                  fontSize: sdkScale ? 18 : 15,
+                  fontSize: sdkScale ? 18 : 17,
                   fontWeight: FontWeight.w500,
                   color: onPressed == null ? HipColors.muted : HipColors.text,
                 ),
@@ -1263,6 +1339,9 @@ class HipStartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pill = width != null;
+    final label = this.label == '开始'
+        ? HipText.of(context).pick('开始', 'Start')
+        : this.label;
     final enabled = onTap != null;
     final fg = enabled ? stage.onJade : stage.faint;
     final glyph = HipIcon(

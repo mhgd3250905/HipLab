@@ -11,6 +11,7 @@ import '../../domain/hip_models.dart';
 import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
+import '../hip_content_text.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
@@ -111,9 +112,10 @@ class _PracticePageState extends State<PracticePage> {
         HipSegmented<int>(
           keyPrefix: 'practice',
           standalone: true,
-          height: 34,
+          height: 32,
           radius: 9,
-          inset: 3,
+          inset: 2,
+          ios: true,
           values: const [2, 1],
           selected: seg,
           onChanged: (v) => setState(() => mem.segment = v),
@@ -202,7 +204,7 @@ class _PracticePageState extends State<PracticePage> {
     }
     // 训练组 has no moves view: open 动作库 filtered.
     Navigator.of(context).push(
-      HipRoute.push<void>(
+      HipRoute.content<void>(
         (_) => PracticePage(
           actions: actions,
           library: true,
@@ -232,6 +234,8 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
+    // Show the same adapted plan as the detail page, including its timing.
+    final plan = actions.store.planner.planFor([r], actions.store.profile);
     final nameStyle = TextStyle(
       fontSize: 16,
       height: 1.25,
@@ -239,16 +243,16 @@ class _PracticePageState extends State<PracticePage> {
       color: HipColors.text,
     );
     final minutes = Text(
-      t.minutes(r.minutes),
+      t.minutes(plan.minutes),
       style: TextStyle(fontSize: 14, color: HipColors.faint),
     );
     return HipPressable(
       key: ValueKey('routine-card-${r.id}'),
-      semanticLabel: routineShortName(r),
+      semanticLabel: routineShortName(r, t.lang),
       scale: .98,
       onTap: () async => _applyJump(
         await Navigator.of(context).push<Object?>(
-          HipRoute.push<Object?>(
+          HipRoute.content<Object?>(
             (_) => RoutineDetailPage(actions: actions, routineId: r.id),
           ),
         ),
@@ -260,7 +264,7 @@ class _PracticePageState extends State<PracticePage> {
             // Very large text: name on its own line, tag + minutes under it
             // (side by side the name was squeezed to one character a line).
             if (libLargeText(context)) ...[
-              Text(routineShortName(r), style: nameStyle),
+              Text(routineShortName(r, t.lang), style: nameStyle),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,
@@ -271,7 +275,9 @@ class _PracticePageState extends State<PracticePage> {
             ] else
               Row(
                 children: [
-                  Expanded(child: Text(routineShortName(r), style: nameStyle)),
+                  Expanded(
+                    child: Text(routineShortName(r, t.lang), style: nameStyle),
+                  ),
                   if (rec) ...[
                     tintTag(t.recommended),
                     const SizedBox(width: 8),
@@ -281,8 +287,8 @@ class _PracticePageState extends State<PracticePage> {
               ),
             const SizedBox(height: 4),
             Text(
-              '${t.scene(r.scene)} · ${t.movesCount(r.steps.length)} · '
-              '${r.audience.split('；').first}',
+              '${t.scene(r.scene)} · ${t.movesCount(plan.steps.length)} · '
+              '${HipContentText(t.lang).routineAudience(r).split(t.isEn ? '. ' : '；').first}',
               style: TextStyle(
                 fontSize: 13,
                 height: 1.3,
@@ -304,7 +310,7 @@ class _PracticePageState extends State<PracticePage> {
             LibThumbStrip(
               size: 32,
               gap: 8,
-              drills: [for (final s in r.steps) content.drill(s.drillId)],
+              drills: [for (final s in plan.steps) s.drill],
             ),
           ],
         ),
@@ -349,12 +355,12 @@ class _PracticePageState extends State<PracticePage> {
     final store = actions.store;
     final draft = CustomRoutine(
       id: store.newCustomId(),
-      name: store.nextCustomName(),
+      name: store.nextCustomName(language: LibText.of(context).lang),
       steps: const [],
     );
     // 新建 goes straight to picking moves, then the editor.
     final ids = await Navigator.of(context).push<List<String>>(
-      HipRoute.push(
+      HipRoute.content(
         (_) => DrillPickerPage(
           actions: actions,
           groupName: draft.name,
@@ -364,7 +370,7 @@ class _PracticePageState extends State<PracticePage> {
     );
     if (ids == null || ids.isEmpty || !mounted) return;
     await Navigator.of(context).push(
-      HipRoute.push<void>(
+      HipRoute.content<void>(
         (_) => GroupEditorPage(
           actions: actions,
           initial: draft.copyWith(
@@ -434,11 +440,12 @@ class GroupCard extends StatelessWidget {
     return HipPressable(
       key: ValueKey('group-card-${g.id}'),
       semanticLabel: g.name,
+      preserveChildSemantics: true,
       scale: .98,
       onTap: () => g.coachPlan != null && actions.coach != null
           ? openHipSavedCoachPlan(context, actions, g)
           : Navigator.of(context).push(
-              HipRoute.push<void>(
+              HipRoute.content<void>(
                 (_) => GroupEditorPage(actions: actions, initial: g),
               ),
             ),
@@ -456,49 +463,51 @@ class GroupCard extends StatelessWidget {
                 Flexible(
                   flex: large ? 0 : 1,
                   fit: FlexFit.tight,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        g.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                          color: HipColors.text,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.3,
-                          color: HipColors.muted,
-                        ),
-                      ),
-                      if (from != null)
+                  child: ExcludeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          t.fromRoutine(routineShortName(from)),
+                          g.name,
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.25,
+                            fontWeight: FontWeight.w600,
+                            color: HipColors.text,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${t.movesCount(g.steps.length)} · ${t.duration(secs)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 13,
                             height: 1.3,
-                            color: HipColors.faint,
+                            color: HipColors.muted,
                           ),
                         ),
-                      if (g.removed > 0)
-                        Text(
-                          t.delisted(g.removed),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: HipColors.tight,
+                        if (from != null)
+                          Text(
+                            t.fromRoutine(routineShortName(from, t.lang)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.3,
+                              color: HipColors.faint,
+                            ),
                           ),
-                        ),
-                    ],
+                        if (g.removed > 0)
+                          Text(
+                            t.delisted(g.removed),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: HipColors.tight,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8, height: 10),
@@ -508,6 +517,7 @@ class GroupCard extends StatelessWidget {
                     child: LibPill(
                       key: ValueKey('group-start-${g.id}'),
                       label: t.start,
+                      semanticLabel: '${t.start} ${g.name}',
                       icon: HipGlyph.play,
                       height: 32,
                       radius: 8,
@@ -525,7 +535,9 @@ class GroupCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            LibThumbStrip(drills: drills, size: 32, gap: 8),
+            ExcludeSemantics(
+              child: LibThumbStrip(drills: drills, size: 32, gap: 8),
+            ),
           ],
         ),
       ),
@@ -557,28 +569,17 @@ Future<void> startGroup(
         if (store.content.drills.containsKey(s.kitId))
           t.area(store.content.drill(s.kitId).directions.first),
     }.join('、');
-    final go = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Text(
-          plan.steps.isEmpty
-              ? t.allRelaxOnly
-              : t.lockedSkipped(areas, skipped.length),
-          key: const ValueKey('group-skip-note'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.cancel),
-          ),
-          if (plan.steps.isNotEmpty)
-            TextButton(
-              key: const ValueKey('group-start-anyway'),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(t.startAnyway),
-            ),
-        ],
-      ),
+    final go = await showHipConfirmDialog(
+      context,
+      message: plan.steps.isEmpty
+          ? t.allRelaxOnly
+          : t.lockedSkipped(areas, skipped.length),
+      messageKey: const ValueKey('group-skip-note'),
+      cancelLabel: t.cancel,
+      confirmLabel: plan.steps.isNotEmpty ? t.startAnyway : null,
+      confirmKey: plan.steps.isNotEmpty
+          ? const ValueKey('group-start-anyway')
+          : null,
     );
     if (go != true) return;
   }
@@ -635,13 +636,9 @@ class _AssessmentIntroPageState extends State<AssessmentIntroPage> {
   }
 
   @override
-  Widget build(BuildContext context) => HipNavPage(
-    title: '髋部自测',
-    leadingKey: const ValueKey('intro-back'),
-    body: HipAssessmentIntro(
-      store: widget.actions.store,
-      startKey: _startKey,
-      onStart: _start,
-    ),
+  Widget build(BuildContext context) => HipAssessmentIntro(
+    store: widget.actions.store,
+    startKey: _startKey,
+    onStart: _start,
   );
 }

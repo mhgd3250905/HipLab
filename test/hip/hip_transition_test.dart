@@ -2,7 +2,7 @@
 // pages move progressively instead of cutting, the container transform
 // grows over its whole duration with the page fading in late, the page
 // below only answers quietly, tabs fade through, and "reduce motion"
-// swaps every move for a cross-fade.
+// reaches the final layout without a visual transition.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
@@ -153,28 +153,50 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('reduce motion swaps the moves for a cross-fade', (tester) async {
-    final nav = await pumpHome(tester, reduceMotion: true);
-    nav.push(HipRoute.push<void>(page));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 5));
-    expect(
-      find.ancestor(
-        of: find.byKey(const ValueKey('page')),
-        matching: find.byType(SlideTransition),
-      ),
-      findsNothing,
-    );
-    expect(pageDx(tester), 0);
-    expect(
-      find.ancestor(
-        of: find.byKey(const ValueKey('page')),
-        matching: find.byType(FadeTransition),
-      ),
-      findsWidgets,
-    );
-    await tester.pumpAndSettle();
-  });
+  testWidgets(
+    'reduce motion shows an operable final page without a transition',
+    (tester) async {
+      final nav = await pumpHome(tester, reduceMotion: true);
+      var tapped = false;
+      nav.push(
+        HipRoute.push<void>(
+          (_) => Scaffold(
+            body: SizedBox.expand(
+              key: const ValueKey('page'),
+              child: TextButton(
+                key: const ValueKey('reduced-action'),
+                onPressed: () => tapped = true,
+                child: const Text('Continue'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(
+        find.ancestor(
+          of: find.byKey(const ValueKey('page')),
+          matching: find.byType(SlideTransition),
+        ),
+        findsNothing,
+      );
+      expect(pageDx(tester), 0);
+      expect(
+        find.ancestor(
+          of: find.byKey(const ValueKey('page')),
+          matching: find.byType(FadeTransition),
+        ),
+        findsNothing,
+      );
+      await tester.tap(find.byKey(const ValueKey('reduced-action')));
+      expect(tapped, isTrue);
+      nav.pop();
+      await tester.pump();
+      await tester.pump();
+      expect(find.byKey(const ValueKey('page')), findsNothing);
+    },
+  );
 
   testWidgets('tabs fade through: never two half-visible pages', (
     tester,

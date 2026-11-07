@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/coach/coach_config.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
@@ -17,6 +18,9 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('zh'),
+          supportedLocales: const [Locale('zh'), Locale('en')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
           theme: ThemeData(platform: TargetPlatform.iOS),
           home: HipPrivacyPage(
             coachConfig: CoachConfig(
@@ -40,6 +44,40 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('在线 AI 未启用'), findsNothing);
+    });
+  }
+
+  for (final mode in ['worker', 'bearer']) {
+    testWidgets('English iOS privacy discloses $mode identifier behavior', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('en'),
+          theme: ThemeData(platform: TargetPlatform.iOS),
+          home: HipPrivacyPage(
+            coachConfig: CoachConfig(
+              authMode: mode,
+              appKey: mode == 'worker' ? 'local-test-fixture' : '',
+              token: mode == 'bearer' ? 'local-test-fixture' : '',
+            ),
+          ),
+        ),
+      );
+      await tester.scrollUntilVisible(
+        find.text('AI training and installation identifier'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(
+        find.textContaining(
+          mode == 'worker'
+              ? 'randomly generated installation identifier'
+              : 'does not attach an AI installation identifier',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Online AI is not enabled'), findsNothing);
     });
   }
 

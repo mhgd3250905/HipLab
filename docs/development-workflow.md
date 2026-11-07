@@ -1,10 +1,18 @@
 # 主线开发工作流
 
-## 2026-11-04 当前主线和媒体准备
+## UI实现与文档维护
 
-日常目录main收束前为0737e4e，已含PR26/27/28；当前1.1.0+30/2030、四SDK实际包及coach override固定693cbc02，Flutter3.44.7。UI r3 Draft PR29仍在候选分支，未经真机反馈不按本轮文档整理推进合并。
+设计数值由[UI规范](ui-design-standard.md)维护；实现、依赖边界、跨App配方及完整画廊见[UI复用手册](ui-kit/README.md)。代码/设计变动时同步规范与对应样例，历史交付报告只追加事实，不把已淘汰方案当作当前接入方式。文档收束仅检查相关事实、链接、示例与diff；不因整理文档重复构建或增加版本。本阶段记录见[closeout报告](ui-documentation-closeout-2026-11-07.md)。
 
-当前新机器使用Git中的`assets/public_media/`、`assets/public_posters/`和pubspec锁文件准备依赖，再按[文档入口](README.md#新机器拉素材mac--windows)执行严格锁解析。0内置MP4，视频由SDK按需缓存；**下方v0.2.0 ZIP同步仅适用于旧分支，不在当前main执行回填**。本页旧版本、安装与工具默认路径描述均按其日期保留；实际操作先核对工作区与显式Flutter入口，不依据历史快照改动环境。
+## 2026-11-07 当前开发入口
+
+日常目录`E:/AII-3D/3D-Hip`已切回`main`，接收完整已验收UI、首页卡片/文件夹、英文和友善安全插画。当前`1.1.0+61`/2061，SDK固定`fa957ff405cc57cd10d53987430313822ff20607`；后续从main继续，按任务建分支即可。旧UI和SDK候选分支保留，不再把`feat/ui-detail-polish`当作最新运行源。Flutter仍3.44.7，媒体r2-v1、209授权动作/封面、0内置MP4；依赖只按现有lock恢复。下方2026-11-04 main +34是历史快照。[本轮回执](ui-main-integration-2026-11-07.md)。
+
+## 2026-11-04 主线和媒体准备快照（历史）
+
+日常目录main本次文档收束前为2400b34，已含PR26/27/28/30；当前1.1.0+34/2034、四SDK实际包及coach override固定f7b8a8e（v0.7.2内容），Flutter3.44.7。UI r3 Draft PR29仍在候选分支，与SDK问答v3是不同事项；未经真机反馈不按本轮文档整理推进该UI候选合并。
+
+当前新机器使用Git中的`assets/public_media/`、`assets/public_posters/`、`assets/coach/ai-tags/`和pubspec锁文件准备依赖，再按[文档入口](README.md#新机器拉素材mac--windows)执行严格锁解析，保持当前lock的pub.dev源。+34已验证源码0f0882e与功能集成点同树，本次只改文档，不重复测试/构建。0内置MP4，视频由SDK按需缓存；**下方v0.2.0 ZIP同步仅适用于旧分支，不在当前main执行回填**。本页旧版本、安装与工具默认路径描述均按其日期保留；实际操作先核对工作区与显式Flutter入口，不依据历史快照改动环境。
 
 ## 2026-10-24 Windows 固定工具入口
 
@@ -63,7 +71,7 @@ Codex 托管副本整理前，逐项核对对应任务与聊天附件、Git work
 
 ## 两端分工与授权
 
-Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器允许按 README 用 `--from-dir` 恢复冻结资源并 `--check`。禁止 force push，保留未提交工作与用户数据。
+Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`、依赖和共用版本；已获直接提交推送 main 的授权，无需新 PR。Mac 负责 `ios/` 及少量 iOS 专属平台代码，从已推送 main 开 `ios/…` 分支并提 PR；不升级依赖、lock 或素材版本。Mac 新机器按 README 当前main流程准备Git元数据、封面和依赖；`--from-dir`恢复与`--check`仅用于需要旧内置视频布局的分支。禁止 force push，保留未提交工作与用户数据。
 
 ## 内容与素材
 
@@ -111,4 +119,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 已送 Alpha 审核，iOS 构建与正式发布仍见待办。没有正式签名配置时 Android release 会退回 debug 签名，不得把这种产物标成正式上架包。
+debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 送 Alpha 是历史记录，iOS 与商店后续状态仍按发布记录维护。本仓库 Android release 缺少 `android/key.properties` 时构建失败，不自动回退 debug 签名；内部测试包须单独核对实际旧包证书（本轮+34基线为+32），不得标成商店上传包。

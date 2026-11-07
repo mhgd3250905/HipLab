@@ -75,19 +75,22 @@ void main() {
   });
   tearDownAll(() => HipPublicMedia.current?.repository.dispose());
 
-  test('one fixed list admits all 211 complete public actions to Coach', () {
-    expect(pack.allActions, hasLength(219));
-    expect(pack.pendingActions, hasLength(8));
-    expect(hiplabCoachAuthorizedActionIds, hasLength(211));
+  test('one fixed list admits its 209 r2-v1 public actions to Coach', () {
+    // r2-v1: 249 complete actions; HipLab keeps its fixed 209-ID list, so the
+    // 40 actions new to r2-v1 stay outside the Coach scope.
+    expect(pack.allActions, hasLength(249));
+    expect(pack.pendingActions, isEmpty);
+    expect(hiplabCoachAuthorizedActionIds, hasLength(209));
     expect(
       coach.computeAllowlistSha256(hiplabCoachAuthorizedActionIds),
-      '2f95a37a379458fbedbbaa6c4940f658d72c75476fd1b4c85b4a65850ee393b9',
+      '2871dbb6b175d65fb6ad737fc2dd31d679d777d45923ce9e58784482171e39d0',
     );
-    expect(
-      hiplabCoachAuthorizedActionIds,
-      pack.semanticCompleteActions.map((action) => action.id).toSet(),
-    );
-    expect(catalog.ids.toSet(), hiplabCoachAuthorizedActionIds);
+    final complete =
+        pack.semanticCompleteActions.map((action) => action.id).toSet();
+    expect(complete.containsAll(hiplabCoachAuthorizedActionIds), isTrue);
+    final outside = complete.difference(hiplabCoachAuthorizedActionIds);
+    expect(outside, hasLength(40));
+    expect(catalog.ids.toSet(), complete);
     expect(catalog.problems, isEmpty);
     expect(hiplabCoachProfile.select.ids, hiplabCoachAuthorizedActionIds);
     expect(hiplabCoachProfile.select.apps, isEmpty);
@@ -104,6 +107,9 @@ void main() {
     for (final action in pack.pendingActions) {
       expect(scope.contains(action.id), isFalse, reason: action.id);
       expect(catalog[action.id], isNull, reason: action.id);
+    }
+    for (final id in outside) {
+      expect(scope.contains(id), isFalse, reason: id);
     }
     expect(profile.library!.allowedActionIds, scope.allowedActionIds);
     expect(
@@ -133,7 +139,10 @@ void main() {
     final assets = _BytesOnlyAssets();
     final loaded = await loadHipCoachCatalog(bundle: assets);
     expect(assets.loaded, [hipPublicCatalogAsset, hipPublicSemanticsAsset]);
-    expect(loaded.ids.toSet(), hiplabCoachAuthorizedActionIds);
+    expect(
+      loaded.ids.toSet(),
+      pack.semanticCompleteActions.map((action) => action.id).toSet(),
+    );
     expect(loaded.problems, isEmpty);
     final damaged = File(hipPublicSemanticsAsset).readAsBytesSync();
     damaged[damaged.length - 1] ^= 1;
@@ -148,7 +157,7 @@ void main() {
 
   test('metadata and authored execution cadence are preserved', () {
     final source = pack.toAiCatalog();
-    expect(rhythms.keys.toSet(), hiplabCoachAuthorizedActionIds);
+    expect(rhythms.keys.toSet(), pack.allActions.map((a) => a.id).toSet());
     var authored = 0;
     for (final drill in source.drills) {
       final projected = catalog[drill.id]!;
@@ -193,9 +202,15 @@ void main() {
         );
       }
     }
-    expect(authored, 78);
-    expect(rhythms['h-sumo-pry']!.holdSeconds, 10);
-    expect(rhythms['n-seated-knee-lift']!.holdSeconds, 5);
+    // r2-v1 authors an execution rhythm for every action.
+    expect(authored, 249);
+    // r2-v1 dropped defaultDose.holdSeconds; the hold is the authored phase.
+    double holdPhase(String id) =>
+        rhythms[id]!.phases.firstWhere((p) => p.id == 'hold').seconds;
+    expect(rhythms['h-sumo-pry']!.holdSeconds, isNull);
+    expect(holdPhase('h-sumo-pry'), 1.9);
+    expect(rhythms['n-seated-knee-lift']!.holdSeconds, isNull);
+    expect(holdPhase('n-seated-knee-lift'), 2.1);
   });
 
   test('ambient equipment codes match public catalog IDs through SDK tags', () {

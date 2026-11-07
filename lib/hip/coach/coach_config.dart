@@ -6,7 +6,7 @@ import 'package:ugk_coach/ugk_coach.dart' as uc;
 /// ```
 /// flutter run --dart-define=UGK_COACH_APP_KEY=<HipLab app key> \
 ///   [--dart-define=UGK_COACH_BASE_URL=https://api.uuugk.win/v1] \
-///   [--dart-define=UGK_COACH_MODEL=deepseek-v4-flash-0731] \
+///   [--dart-define=UGK_COACH_MODEL=deepseek-v4.1-flash] \
 ///   [--dart-define=UGK_COACH_CATALOG_URL=https://…/manifest.json]
 /// ```
 class CoachConfig {
@@ -21,7 +21,7 @@ class CoachConfig {
        _model = model; // ignore: prefer_initializing_formals
 
   static const defaultBaseUrl = 'https://api.uuugk.win/v1';
-  static const defaultModel = 'deepseek-v4-flash-0731';
+  static const defaultModel = 'deepseek-v4.1-flash';
 
   /// Relay app credential (X-App-Key). Blank means unconfigured.
   final String appKey;
@@ -60,11 +60,15 @@ class CoachConfig {
   };
 
   /// Release defaults retain Worker headers. Internal builds explicitly select
-  /// bearer + https://ai.uuugk.win/v1 + deepseek-flash with dart defines.
+  /// bearer + the test gateway + deepseek-v4.1-flash with dart defines.
   uc.LlmConfig get llmConfig => uc.LlmConfig.ugkWorker.copyWith(
     baseUrl: baseUrl,
     model: model,
     maxRetries: 0,
+    extraBody: const {
+      'thinking': {'type': 'enabled'},
+      'reasoning_effort': 'max',
+    },
   );
 
   uc.OpenAiCompatibleClient createClient({

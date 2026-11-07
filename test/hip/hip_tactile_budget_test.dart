@@ -118,11 +118,12 @@ void main() {
       // Home r1: no tab bar (its filled/outline glyphs went with it).
       expect(find.byKey(const ValueKey('tab-0')), findsNothing);
 
-      // 训练组 (UI r2): only the 我的 | 推荐套路 thumb is tactile (T1).
+      // 训练组: the 我的 | 推荐套路 switch is a flat iOS segment, so the
+      // page carries no tactile surface (2026-11-05 control pass).
       await openGroups(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'practice');
-      expect(find.byType(HipTactile), findsOneWidget, reason: 'one thumb');
+      expect(find.byType(HipTactile), findsNothing, reason: 'flat segment');
       for (final seg in [1, 2]) {
         // 1 推荐套路, 2 我的.
         await tester.tap(find.byKey(ValueKey('practice-$seg')));
@@ -143,7 +144,8 @@ void main() {
       tester.state<NavigatorState>(find.byType(Navigator).first).pop();
       await tester.pumpAndSettle();
 
-      // Progress + settings (scrolled): only segmented thumbs (T1).
+      // Settings (scrolled): the row segments are flat iOS controls, so the
+      // page carries no tactile surfaces at all (2026-11-05 settings pass).
       await openSettings(tester);
       await tester.pumpAndSettle();
       _expectBudget(tester, p, 'progress');
@@ -157,10 +159,7 @@ void main() {
         await tester.pumpAndSettle();
         _expectBudget(tester, p, 'settings scroll $i');
       }
-      expect(
-        _inside<HipSegmented>(find.byType(HipTactile).evaluate().first),
-        isTrue,
-      );
+      expect(find.byType(HipTactile), findsNothing);
     });
   }
 }

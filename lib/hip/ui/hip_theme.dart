@@ -379,18 +379,61 @@ class HipPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) {
-    final curved = CurvedAnimation(
-      parent: animation,
+  ) => _HipPageSlide(animation: animation, child: child);
+}
+
+class _HipPageSlide extends StatefulWidget {
+  const _HipPageSlide({required this.animation, required this.child});
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  State<_HipPageSlide> createState() => _HipPageSlideState();
+}
+
+class _HipPageSlideState extends State<_HipPageSlide> {
+  late CurvedAnimation _curve;
+
+  void _bindCurve() {
+    _curve = CurvedAnimation(
+      parent: widget.animation,
       curve: HipMotion.enter,
       reverseCurve: HipMotion.exit.flipped,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _bindCurve();
+  }
+
+  @override
+  void didUpdateWidget(_HipPageSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animation != widget.animation) {
+      _curve.dispose();
+      _bindCurve();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curve.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+      return widget.child;
+    }
     return SlideTransition(
       position: Tween(
         begin: const Offset(1, 0),
         end: Offset.zero,
-      ).animate(curved),
-      child: child,
+      ).animate(_curve),
+      child: widget.child,
     );
   }
 }

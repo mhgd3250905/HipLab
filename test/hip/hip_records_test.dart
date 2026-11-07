@@ -1,5 +1,6 @@
 // UI r2 M4: 训练记录 achievement rules (pure) and the page's sections.
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
@@ -47,6 +48,13 @@ void main() {
     ]);
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(body: HipRecordsView(store: store)),
       ),
     );
@@ -83,6 +91,13 @@ void main() {
     ]);
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(body: HipRecordsView(store: store)),
       ),
     );
@@ -102,6 +117,13 @@ void main() {
     var started = 0;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(
           body: HipRecordsView(store: store, onStartPractice: () => started++),
         ),

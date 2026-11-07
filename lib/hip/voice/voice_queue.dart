@@ -21,12 +21,13 @@ class VoiceSettings {
   final bool chimes;
   final VoiceLanguage language;
   final double volume;
-  trainer.VoiceSettings toTrainer() => trainer.VoiceSettings(
-    voice: voice,
-    chimes: chimes,
-    language: language.clipLanguage,
-    volume: volume,
-  );
+  trainer.VoiceSettings toTrainer({String appLanguageTag = 'zh'}) =>
+      trainer.VoiceSettings(
+        voice: voice,
+        chimes: chimes,
+        language: language.resolveClipLanguage(appLanguageTag),
+        volume: volume,
+      );
   VoiceSettings copyWith({
     bool? voice,
     bool? chimes,
@@ -59,5 +60,6 @@ class VoiceQueue extends trainer.VoiceQueue {
     required super.output,
     required super.lib,
     required VoiceSettings settings,
-  }) : super(settings: settings.toTrainer());
+    String appLanguageTag = 'zh',
+  }) : super(settings: settings.toTrainer(appLanguageTag: appLanguageTag));
 }

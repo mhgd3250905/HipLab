@@ -1,0 +1,46 @@
+{
+  "source": "packages/ugk_trainer_runtime/android/src/main/kotlin/com/ugk/trainer/PackedAlphaGlRenderer.kt",
+  "sourceSha256": "fdd2baa1e9f73a27f849b558d2a873015b60b7d8864d9216980c7082a57e5f84",
+  "fragmentShaderSha256": "940df952c23a4788d6a5efcb9a1b8480986d7d93810b11b5206a9394c7389b36",
+  "adapterChanges": [
+    "removed GL_OES_EGL_image_external require directive",
+    "samplerExternalOES replaced with sampler2D for synthetic texture"
+  ],
+  "vertexHarness": "identity full-screen quad with vUv bottom-left origin",
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 Laptop GPU (0x000027A0) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1074)",
+  "glVersion": "OpenGL ES 3.0.0 (ANGLE 2.1.22762 git hash: 533fa5cedc61)",
+  "outputSize": [
+    128,
+    128
+  ],
+  "reference": "independent Pillow vector mask plus CPU premultiplication oracle",
+  "cases": [
+    {
+      "case": "identity",
+      "maxChannelError": 0,
+      "meanChannelError": 0.0,
+      "differentPixels": 0
+    },
+    {
+      "case": "vertical-flip",
+      "maxChannelError": 0,
+      "meanChannelError": 0.0,
+      "differentPixels": 0
+    }
+  ],
+  "pngAlphaEncoding": "straight-alpha PNG from unpremultiplied GPU RGBA; Flutter decode restores premultiplied Texture semantics",
+  "uploadCases": {
+    "identity": "vertically reversed top-down packed PNG bytes, identity ST",
+    "vertical-flip": "original top-down packed PNG bytes, ST scaleY=-1 translateY=1"
+  },
+  "androidDevice": false,
+  "oesTransportVerified": false,
+  "surfaceProducerVerified": false,
+  "fragmentExtraction": "FRAGMENT_SHADER triple-quoted Kotlin body, read as UTF-8 and CRLF normalized to LF; runtime whitespace does not affect GLSL",
+  "fixtureSha256": {
+    "reference-rgba.png": "a59ea620c55ba0b3ca5d574079521fc23bca20458f2d1eebee175d7eaa0e0a41",
+    "rgba-identity.png": "93d5391d2c630ee960efde19c14bd1b9024ff389dac74c529d01f34f74805ad7",
+    "rgba-vertical-flip.png": "93d5391d2c630ee960efde19c14bd1b9024ff389dac74c529d01f34f74805ad7",
+    "source-packed.png": "21d48497a79f44eb0ae0bf01bbc10fd72f969e740e32ae6fcf00bb4a6c5e05a1"
+  }
+}

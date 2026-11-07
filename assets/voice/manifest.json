@@ -41,10 +41,10 @@
    "dose.02": 1393,
    "dose.03": 2159,
    "dose.04": 1672,
-   "dose.05": 2090,
+   "dose.05": 1231,
    "dose.06": 2601,
    "dose.07": 1161,
-   "dose.08": 1602,
+   "dose.08": 1231,
    "dose.09": 1416,
    "dose.10": 1416,
    "dose.11": 1672,
@@ -64,11 +64,10 @@
    "dose.25": 766,
    "dose.26": 1463,
    "dose.27": 1741,
-   "dose.28": 1347,
-   "dose.29": 1695,
-   "dose.30": 1440,
-   "dose.31": 1533,
-   "dose.32": 2624,
+   "dose.28": 1695,
+   "dose.29": 1440,
+   "dose.30": 1533,
+   "dose.31": 2624,
    "drill.glute-max-A": 1440,
    "drill.h-9090-liftoff": 1788,
    "drill.h-adductor-rock": 1625,
@@ -207,11 +206,11 @@
    "point.n-seated-knee-lift": 2252,
    "point.n-seated-squeeze": 1811,
    "point.n-slider-lateral": 2485,
-   "point.n-squat-shift": 2229,
+   "point.n-squat-shift": 2368,
    "point.n-straddle-fold": 2740,
    "point.n-thomas-test": 2601,
    "point.n-wide-fold": 2670,
-   "point.n-windshield": 2763,
+   "point.n-windshield": 2740,
    "point.o-seated-fig4": 2856,
    "point.o-seated-ham": 3181,
    "point.o-stand-crossreach": 2183,
@@ -235,11 +234,13 @@
    "routine.F": 1045,
    "routine.M": 766,
    "sec.10": 952,
+   "sec.13": 1161,
    "sec.15": 1138,
    "sec.16": 1231,
    "sec.20": 1045,
    "sec.22": 1231,
    "sec.25": 1254,
+   "sec.26": 1300,
    "sec.27": 1324,
    "sec.30": 998,
    "sec.33": 1207,
@@ -273,9 +274,8 @@
    "w.hips_up": 627,
    "w.hold": 464,
    "w.inhale_release": 1324,
-   "w.knees_left": 813,
-   "w.knees_right": 789,
-   "w.left_knee_in": 929,
+   "w.knee_in": 627,
+   "w.knees_over": 766,
    "w.lift": 511,
    "w.lower": 534,
    "w.open": 534,
@@ -283,9 +283,7 @@
    "w.pelvis_other_way": 975,
    "w.pull_in": 743,
    "w.relax": 720,
-   "w.right_knee_in": 859,
-   "w.shift_left": 859,
-   "w.shift_right": 813,
+   "w.shift_over": 789,
    "w.sit_back": 766,
    "w.slide_out": 766,
    "w.squat_down": 882,
@@ -328,10 +326,10 @@
    "dose.02": 1161,
    "dose.03": 2833,
    "dose.04": 1324,
-   "dose.05": 1300,
+   "dose.05": 1022,
    "dose.06": 1834,
    "dose.07": 1161,
-   "dose.08": 1533,
+   "dose.08": 1045,
    "dose.09": 1161,
    "dose.10": 1161,
    "dose.11": 1347,
@@ -351,11 +349,10 @@
    "dose.25": 604,
    "dose.26": 952,
    "dose.27": 1091,
-   "dose.28": 975,
-   "dose.29": 1625,
-   "dose.30": 1045,
-   "dose.31": 1138,
-   "dose.32": 1741,
+   "dose.28": 1625,
+   "dose.29": 1045,
+   "dose.30": 1138,
+   "dose.31": 1741,
    "drill.glute-max-A": 1022,
    "drill.h-9090-liftoff": 2113,
    "drill.h-adductor-rock": 1811,
@@ -494,11 +491,11 @@
    "point.n-seated-knee-lift": 2531,
    "point.n-seated-squeeze": 2577,
    "point.n-slider-lateral": 2810,
-   "point.n-squat-shift": 2206,
+   "point.n-squat-shift": 2345,
    "point.n-straddle-fold": 2833,
    "point.n-thomas-test": 2949,
    "point.n-wide-fold": 3390,
-   "point.n-windshield": 3042,
+   "point.n-windshield": 3274,
    "point.o-seated-fig4": 2833,
    "point.o-seated-ham": 3111,
    "point.o-stand-crossreach": 3529,
@@ -522,11 +519,13 @@
    "routine.F": 1022,
    "routine.M": 1579,
    "sec.10": 697,
+   "sec.13": 836,
    "sec.15": 789,
    "sec.16": 813,
    "sec.20": 743,
    "sec.22": 882,
    "sec.25": 906,
+   "sec.26": 906,
    "sec.27": 906,
    "sec.30": 789,
    "sec.33": 998,
@@ -560,9 +559,8 @@
    "w.hips_up": 1022,
    "w.hold": 604,
    "w.inhale_release": 1300,
-   "w.knees_left": 952,
-   "w.knees_right": 952,
-   "w.left_knee_in": 952,
+   "w.knee_in": 1022,
+   "w.knees_over": 743,
    "w.lift": 697,
    "w.lower": 580,
    "w.open": 604,
@@ -570,9 +568,7 @@
    "w.pelvis_other_way": 1022,
    "w.pull_in": 743,
    "w.relax": 604,
-   "w.right_knee_in": 906,
-   "w.shift_left": 906,
-   "w.shift_right": 906,
+   "w.shift_over": 766,
    "w.sit_back": 766,
    "w.slide_out": 743,
    "w.squat_down": 604,
@@ -717,8 +713,8 @@
    "zh": "每侧 25 秒"
   },
   "dose.05": {
-   "en": "6 reps, alternating sides",
-   "zh": "左右交替 6 次"
+   "en": "3 reps each side",
+   "zh": "每侧 3 次"
   },
   "dose.06": {
    "en": "3 reps with a 5 second hold, each side",
@@ -729,8 +725,8 @@
    "zh": "慢呼吸 6 次"
   },
   "dose.08": {
-   "en": "8 slow drops side to side",
-   "zh": "左右慢慢倒 8 次"
+   "en": "4 reps each side",
+   "zh": "每侧 4 次"
   },
   "dose.09": {
    "en": "40 seconds each side",
@@ -809,22 +805,18 @@
    "zh": "停 75 秒"
   },
   "dose.28": {
-   "en": "8 reps side to side",
-   "zh": "左右 8 次"
-  },
-  "dose.29": {
    "en": "3 holds of 15 seconds",
    "zh": "停 3 次，15 秒"
   },
-  "dose.30": {
+  "dose.29": {
    "en": "20 seconds each side",
    "zh": "每侧 20 秒"
   },
-  "dose.31": {
+  "dose.30": {
    "en": "15 seconds each side",
    "zh": "每侧 15 秒"
   },
-  "dose.32": {
+  "dose.31": {
    "en": "1 reps with a 5 second hold, each side",
    "zh": "每侧 1 次，停 5 秒"
   },
@@ -1381,8 +1373,8 @@
    "zh": "一只脚向侧面滑出去，再收回来"
   },
   "point.n-squat-shift": {
-   "en": "Stay low and shift your weight side to side",
-   "zh": "低蹲，重心慢慢左右移"
+   "en": "Stay low and shift your weight onto one leg",
+   "zh": "低蹲，重心慢慢移到一侧"
   },
   "point.n-straddle-fold": {
    "en": "Sit tall in a straddle and lean forward from the hips",
@@ -1397,8 +1389,8 @@
    "zh": "双脚分开，扶住椅子，从髋部往前折"
   },
   "point.n-windshield": {
-   "en": "Let both knees fall side to side, shoulders down",
-   "zh": "双膝一起慢慢左右倒，肩膀贴地"
+   "en": "Let both knees fall to one side, shoulders down",
+   "zh": "双膝一起慢慢倒向一侧，肩膀贴地"
   },
   "point.o-seated-fig4": {
    "en": "Ankle on the knee, keep the back straight and lean forward",
@@ -1492,6 +1484,10 @@
    "en": "10 seconds",
    "zh": "10 秒"
   },
+  "sec.13": {
+   "en": "13 seconds",
+   "zh": "13 秒"
+  },
   "sec.15": {
    "en": "15 seconds",
    "zh": "15 秒"
@@ -1511,6 +1507,10 @@
   "sec.25": {
    "en": "25 seconds",
    "zh": "25 秒"
+  },
+  "sec.26": {
+   "en": "26 seconds",
+   "zh": "26 秒"
   },
   "sec.27": {
    "en": "27 seconds",
@@ -1644,17 +1644,13 @@
    "en": "Breathe in, let go",
    "zh": "吸气，放松"
   },
-  "w.knees_left": {
-   "en": "Knees left",
-   "zh": "倒向左边"
+  "w.knee_in": {
+   "en": "Knee in",
+   "zh": "膝盖向内"
   },
-  "w.knees_right": {
-   "en": "Knees right",
-   "zh": "倒向右边"
-  },
-  "w.left_knee_in": {
-   "en": "Left knee in",
-   "zh": "左膝向内"
+  "w.knees_over": {
+   "en": "Knees over",
+   "zh": "倒过去"
   },
   "w.lift": {
    "en": "Lift",
@@ -1684,17 +1680,9 @@
    "en": "Relax",
    "zh": "放松"
   },
-  "w.right_knee_in": {
-   "en": "Right knee in",
-   "zh": "右膝向内"
-  },
-  "w.shift_left": {
-   "en": "Shift left",
-   "zh": "移到左边"
-  },
-  "w.shift_right": {
-   "en": "Shift right",
-   "zh": "移到右边"
+  "w.shift_over": {
+   "en": "Shift over",
+   "zh": "移过去"
   },
   "w.sit_back": {
    "en": "Sit back",
@@ -1732,27 +1720,26 @@
    "6 次": "dose.17",
    "8 次": "dose.25",
    "停 3 次 × 10 秒": "dose.24",
-   "停 3 次 × 15 秒": "dose.29",
+   "停 3 次 × 15 秒": "dose.28",
    "停 40 秒": "dose.20",
    "停 60 秒": "dose.26",
    "停 60 秒（床头靠墙也可以）": "dose.12",
    "停 75 秒": "dose.27",
-   "左右 8 次": "dose.28",
-   "左右交替 6 次": "dose.05",
-   "左右慢慢倒 8 次": "dose.08",
    "慢呼吸 6 次": "dose.07",
    "慢开慢合 6 次": "dose.11",
    "正反各 3 圈": "dose.21",
    "正反各 4 圈": "dose.01",
-   "每侧 1 次 × 停 5 秒": "dose.32",
+   "每侧 1 次 × 停 5 秒": "dose.31",
    "每侧 10 次": "dose.23",
-   "每侧 15 秒": "dose.31",
-   "每侧 20 秒": "dose.30",
+   "每侧 15 秒": "dose.30",
+   "每侧 20 秒": "dose.29",
    "每侧 25 秒": "dose.04",
    "每侧 3 圈": "dose.14",
+   "每侧 3 次": "dose.05",
    "每侧 3 次 × 停 5 秒": "dose.06",
    "每侧 30 秒": "dose.02",
    "每侧 35 秒": "dose.18",
+   "每侧 4 次": "dose.08",
    "每侧 40 秒": "dose.09",
    "每侧 40 秒（用毛巾）": "dose.10",
    "每侧 5 次": "dose.15",

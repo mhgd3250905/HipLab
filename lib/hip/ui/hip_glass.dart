@@ -165,12 +165,17 @@ class HipGlassRoundButton extends StatelessWidget {
     onTap: onTap,
     scale: .94,
     child: SizedBox.square(
-      dimension: size,
-      child: HipGlass(
-        shape: HipGlassShape.circle,
-        blur: blur,
-        sigma: 16,
-        child: Center(child: child),
+      dimension: size < 44 ? 44 : size,
+      child: Center(
+        child: SizedBox.square(
+          dimension: size,
+          child: HipGlass(
+            shape: HipGlassShape.circle,
+            blur: blur,
+            sigma: 16,
+            child: Center(child: child),
+          ),
+        ),
       ),
     ),
   );

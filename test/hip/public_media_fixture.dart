@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
+import 'package:hiplab/hip/data/hip_public_catalog.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
@@ -13,9 +14,9 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 class PublicMediaFixture implements trainer.CatalogMediaRepository {
   PublicMediaFixture()
     : catalog = coach.PoseHubAppTestCatalog.fromBytes(
-        File(HipPublicMedia.catalogAsset).readAsBytesSync(),
+        File(hipPublicCatalogAsset).readAsBytesSync(),
         semanticCatalogBytes: File(
-          HipPublicMedia.semanticsAsset,
+          hipPublicSemanticsAsset,
         ).readAsBytesSync(),
       );
 

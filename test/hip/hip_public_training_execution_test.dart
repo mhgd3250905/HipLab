@@ -69,9 +69,9 @@ void main() {
   final planner = TrainingPlanner(content);
 
   test(
-    'all 211 complete SDK actions survive durable restore and execution',
+    'all 249 complete SDK r2-v1 actions survive durable restore and execution',
     () {
-      expect(catalog.length, 211);
+      expect(catalog.length, 249);
       expect(builder.rhythms.keys.toSet(), catalog.ids.toSet());
       var actionsOutsideLegacy = 0;
       for (final action in catalog.drills) {
@@ -120,11 +120,20 @@ void main() {
   );
 
   test(
-    'eight partial actions cannot restore a playable SDK preview or plan',
+    'unadmitted actions cannot restore a playable SDK preview or plan',
     () {
-      expect(pack.pendingActions, hasLength(8));
+      // r2-v1 has no pending rows; r1-v3 ids it removed stand in as the
+      // unadmitted ids a stale saved payload can still carry.
+      expect(pack.pendingActions, isEmpty);
+      const removed = ['h-sleeper-stretch', 'scapular-C'];
+      for (final id in removed) {
+        expect(pack.tryGet(id), isNull, reason: id);
+      }
       final complete = _defaultItem(catalog.drills.first);
-      for (final partial in pack.pendingActions) {
+      for (final partial in [
+        ...pack.pendingActions.map((action) => action.id),
+        ...removed,
+      ].map((id) => (id: id))) {
         // Deliberately substitute an unadmitted id into otherwise valid plan
         // data. This models an incompatible/malicious saved payload, not a dose
         // definition for the incomplete action.

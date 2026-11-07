@@ -1,6 +1,5 @@
 // 练习库 UI strings, Chinese and English (docs/training-library-2026-10-19.md
-// §双语). The app runs with the zh locale today; the English table is
-// complete so the library follows the app once it ships English UI. Drill
+// §双语). Library pages follow the current App locale. Drill
 // names and key points come from the action kits' display.{zh,en}.
 import 'package:flutter/widgets.dart';
 
@@ -33,8 +32,10 @@ class LibText {
       _('6 个动作，找出髋部哪个方向最紧', '6 moves to find your tightest direction');
   String get checkStart => _('开始自测', 'Start');
   String get checkRetest => _('重测', 'Retest');
-  String lastChecked(DateTime d) =>
-      _('上次 ${d.month} 月 ${d.day} 日', 'Last ${d.month}/${d.day}');
+  String lastChecked(DateTime d) => _(
+    '上次 ${d.month} 月 ${d.day} 日',
+    'Last ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.day}',
+  );
   String levelName(int level) => switch (level) {
     3 => _('进阶', 'Advanced'),
     2 => _('基础', 'Basic'),
@@ -43,7 +44,7 @@ class LibText {
   String get checkBlocked => _('先问问医生再来', 'Ask a doctor first');
 
   // ── 动作大全 ──
-  String get searchHint => _('搜动作，中文或英文都行', 'Search moves (中文 / English)');
+  String get searchHint => _('搜动作，中文或英文都行', 'Search moves by name');
 
   /// The search hint when the system text is very large (fits one line).
   String get searchHintShort => _('搜动作', 'Search');
@@ -157,7 +158,7 @@ class LibText {
   );
   String get recommended => _('为你推荐', 'For you');
   String minutes(int m) => _('$m 分钟', '$m min');
-  String movesCount(int n) => _('$n 个动作', '$n moves');
+  String movesCount(int n) => _('$n 个动作', '$n ${n == 1 ? 'move' : 'moves'}');
   String get dancerNote => _(
     '面向舞者，动作偏难；没解锁的进阶动作会自动换成入门版',
     'For dancers, harder; locked advanced moves become their easier versions',

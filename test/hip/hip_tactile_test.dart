@@ -150,11 +150,11 @@ void main() {
               ? Colors.white.withValues(alpha: .10)
               : p.track,
         );
-        // UI r2 §2: 48 high, radius 12, no outline.
+        // 2026-11-05 control pass: 50 high, radius 14, no outline.
         expect((edge.shape as RoundedRectangleBorder).side, BorderSide.none);
         expect(
           (edge.shape as RoundedRectangleBorder).borderRadius,
-          const BorderRadius.all(Radius.circular(12)),
+          const BorderRadius.all(Radius.circular(14)),
         );
         expect(edge.shadows, anyOf(isNull, isEmpty));
 

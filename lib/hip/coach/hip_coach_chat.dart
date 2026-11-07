@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 import 'package:flutter/services.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import '../../core/storage/local_state_storage.dart';
@@ -11,6 +13,7 @@ import 'coach_config.dart';
 import 'coach_device_id.dart';
 import 'hip_coach_chat_storage.dart';
 import 'hip_coach_profile.dart';
+import 'hip_coach_ai_tags.dart';
 
 /// App lifetime and host ports only. The SDK owns the sole conversation.
 class HipCoachChat {
@@ -41,6 +44,8 @@ class HipCoachChat {
   HiplabCoachChatPreferenceStore? _preferences;
   Future<CoachChatController>? _loading;
   bool _closed = false;
+  String _languageTag = 'zh';
+  String get languageTag => _languageTag;
   bool get configured => gateway != null || config.configured;
   CoachChatController get controller =>
       _controller ?? (throw StateError('Open the coach first'));
@@ -48,9 +53,34 @@ class HipCoachChat {
   Future<CoachChatController> load({
     required trainer.SessionBuilder builder,
     required CoachChatHostActions actions,
+    String languageTag = 'zh',
   }) {
     if (_closed) return Future.error(StateError('Coach host is closed'));
+    _languageTag = languageTag == 'en' ? 'en' : 'zh';
+    if (_controller case final chat?) _applyLocalization(chat);
     return _loading ??= _load(builder, actions);
+  }
+
+  void _applyLocalization(CoachChatController chat) {
+    if (chat.context.language == _languageTag &&
+        chat.profile.strings.languageTag == _languageTag) {
+      return;
+    }
+    final localized = hiplabCoachAppProfile(
+      catalog: chat.catalog,
+      coachProfile: hiplabCoachProfile,
+      executionTiming: chat.profile.executionTiming,
+      content: store.content,
+      aiTags: chat.profile.aiTags,
+      languageTag: _languageTag,
+      languageTagOf: () => _languageTag,
+    );
+    chat.updateLocalization(
+      strings: localized.strings,
+      language: _languageTag,
+      library: localized.library,
+      conversationPolicy: localized.conversationPolicy,
+    );
   }
 
   Future<CoachChatController> _load(
@@ -62,11 +92,15 @@ class HipCoachChat {
       final catalog = bundle == null
           ? store.content.publicCatalog ?? await loadHipCoachCatalog()
           : await loadHipCoachCatalog(bundle: bundle);
+      final appAiTags = await loadHipCoachAiTags(bundle: bundle);
       final profile = hiplabCoachAppProfile(
         catalog: catalog,
         coachProfile: hiplabCoachProfile,
         executionTiming: builder.executionTiming,
         content: store.content,
+        aiTags: appAiTags,
+        languageTag: _languageTag,
+        languageTagOf: () => _languageTag,
       );
       final history = HiplabCoachChatHistoryStore(store, storage: storage);
       final preferences = HiplabCoachChatPreferenceStore(
@@ -76,6 +110,7 @@ class HipCoachChat {
       final chat = CoachChatController(
         profile: profile,
         catalog: catalog,
+        context: coach.CoachContext(language: _languageTag),
         replyDelay: replyDelay,
         bindings: CoachChatBindings(
           storageNamespace: namespace,
@@ -109,12 +144,25 @@ class HipCoachChat {
       );
       _preferences = preferences;
       _controller = chat;
+      _applyLocalization(chat);
       if (_closed) {
         await chat.close();
         throw StateError('Coach host is closed');
       }
       final result = await chat.start();
-      if (!result.ok) throw StateError('SDK coach restoration failed');
+      if (!result.ok) {
+        if (kDebugMode) {
+          final cause = result.error;
+          debugPrint('HipLab SDK coach start: ${cause.runtimeType}');
+          if (cause is Error && cause.stackTrace != null) {
+            debugPrint(
+              cause.stackTrace.toString().split('\n').take(8).join('\n'),
+            );
+          }
+        }
+        throw StateError('SDK coach restoration failed');
+      }
+      _applyLocalization(chat);
       return chat;
     } on Object {
       await _controller?.close();

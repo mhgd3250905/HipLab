@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 1.1.0+30
+version: 1.1.0+61
 
 environment:
   sdk: ^3.12.2
@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # Material/Cupertino localizations for the zh locale (date pickers, a11y labels).
+  # Material/Cupertino localizations for Chinese and English UI.
   flutter_localizations:
     sdk: flutter
   # On-device state (lib/core/storage/local_state_storage.dart).
@@ -35,21 +35,21 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: fa957ff405cc57cd10d53987430313822ff20607
   ugk_trainer_runtime:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: fa957ff405cc57cd10d53987430313822ff20607
       path: packages/ugk_trainer_runtime
   ugk_coach_ui:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: fa957ff405cc57cd10d53987430313822ff20607
       path: packages/ugk_coach_ui
   ugk_coach_chat:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: fa957ff405cc57cd10d53987430313822ff20607
       path: packages/ugk_coach_chat
 
 # Keep SDK transitive dependencies on the same reviewed commit.
@@ -57,7 +57,7 @@ dependency_overrides:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 693cbc02cdf284163409868e117e438515c6a8d8
+      ref: fa957ff405cc57cd10d53987430313822ff20607
 
 dev_dependencies:
   flutter_test:
@@ -72,7 +72,9 @@ flutter:
     - assets/hip/posters/
     - assets/hip/assessment/
     - assets/hip/assessment/light/
-    - assets/hip/onboarding/
+    - assets/hip/onboarding/pregnancy-friendly.webp
+    - assets/hip/onboarding/surgery-friendly.webp
+    - assets/hip/onboarding/acute-friendly.webp
     # SDK public metadata and transparent frame-zero posters; no bundled video.
     - assets/public_media/
     - assets/public_media/catalog/
@@ -84,6 +86,7 @@ flutter:
     - assets/action_kits/
     - assets/licenses/
     - assets/coach/
+    - assets/coach/ai-tags/
   fonts:
     - family: NotoSansSC
       fonts:
