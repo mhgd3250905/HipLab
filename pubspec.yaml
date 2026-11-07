@@ -1,7 +1,7 @@
 name: hiplab
 description: "开胯训练助手 HipLab — offline hip mobility, flexibility and control training."
 publish_to: 'none'
-version: 1.1.0+59
+version: 1.1.0+60
 
 environment:
   sdk: ^3.12.2
@@ -72,7 +72,9 @@ flutter:
     - assets/hip/posters/
     - assets/hip/assessment/
     - assets/hip/assessment/light/
-    - assets/hip/onboarding/
+    - assets/hip/onboarding/pregnancy-friendly.webp
+    - assets/hip/onboarding/surgery-friendly.webp
+    - assets/hip/onboarding/acute-friendly.webp
     # SDK public metadata and transparent frame-zero posters; no bundled video.
     - assets/public_media/
     - assets/public_media/catalog/

@@ -208,6 +208,7 @@ void main() {
       await mount(tester, theme: theme, onboarded: false);
       await capture(tester, '${theme.id}-onboarding');
       for (var index = 0; index < content.safetyCards.length; index++) {
+        await capture(tester, '${theme.id}-safety-card-${index + 1}');
         await tester.tap(find.byKey(const ValueKey('safety-no')));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);

@@ -264,16 +264,16 @@ class _HipOnboardingState extends State<HipOnboarding> {
     'personal_injury': HipGlyph.clipboard,
   };
 
-  /// Hero art per card and theme: `assets/hip/onboarding/<id>-<dark|light>.webp`
-  /// (tools/onboarding_art/import_onboarding_art.py; swap set A↔B there).
-  static String heroAsset(String cardId, {required bool dark}) =>
-      'assets/hip/onboarding/$cardId-${dark ? 'dark' : 'light'}.webp';
+  // Transparent editorial cartoons share the surrounding light/dark surface.
+  // Older mannequin art remains in source history, outside the asset bundle.
+  static String heroAsset(String cardId) =>
+      'assets/hip/onboarding/$cardId-friendly.webp';
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     hipPrecache(context, [
-      for (final c in _cards) heroAsset(c.id, dark: HipColors.isDark),
+      for (final c in _cards) heroAsset(c.id),
     ]);
   }
 
@@ -320,7 +320,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
 
   Widget _safetyCard() {
     final card = _cards[_index];
-    final hero = heroAsset(card.id, dark: HipColors.isDark);
+    final hero = heroAsset(card.id);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -363,13 +363,11 @@ class _HipOnboardingState extends State<HipOnboarding> {
           ],
         ),
         const SizedBox(height: 16),
-        // Large hero visual (4:3 art) at the top; on short screens it gives
-        // way first, the question and buttons always stay whole.
+        // On short screens art yields space to the question and buttons.
         Expanded(
           child: LayoutBuilder(
             builder: (context, c) {
-              // As tall as a square when there is room (cropping the 4:3
-              // art's empty sides), never shorter than the art's own 4:3.
+              // Keep the complete character and annotations inside the frame.
               final h = c.maxHeight.clamp(0.0, c.maxWidth).toDouble();
               return Align(
                 alignment: Alignment.topCenter,
@@ -391,7 +389,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
                       child: Image.asset(
                         hero,
                         key: ValueKey(hero),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         gaplessPlayback: true,
                         errorBuilder: (_, _, _) => _heroPlaceholder(card),
                       ),
