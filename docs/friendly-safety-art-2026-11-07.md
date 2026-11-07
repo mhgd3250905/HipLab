@@ -29,3 +29,8 @@
 按用户反馈，第二张改为约20岁的年轻男性卡通：黑色短发、卫衣、运动鞋和现代前臂拐杖，保留绿色暂停与膝部标记。只替换第二张，第一/第三张及运行代码/SDK/lock保持。运行源`7ca96179d44e216b79ffbc9b9855986f669552cc`，版本`1.1.0+61`/arm64`2061`。语言页面/首次安全流程及资源共10项通过，深浅第二张测试截图已核对，diff检查通过。纯素材和版本变更，未重复静态分析/全量测试。APK验签匹配+60、资源核对通过，SHA256`1a2e3765b744448a6ebd7937d39fa63b0fb91c4a33c2eaff6bcaae55fcfb2d10`。已覆盖安装真机2060→2061并启动ok，无卸载或清数据；视觉验收待用户。[素材及交付记录](friendly-safety-art-2026-11-07.md)。
 
 最终素材：`assets/hip/onboarding/surgery-friendly.webp`，960×960 RGBA，89498字节。使用内置imagegen编辑原图；提示词重点：约20岁年轻成年男性、全黑短发、卫衣/运动鞋、现代前臂拐杖，保留坐姿构图、透明背景、友善卡通风格、绿色暂停符号和膝部虚线标记；不加文字或真人质感。原PNG与预览留`E:/AII-3D/hiplab-releases/safety-young-man-20261107`。APK：`E:/AII-3D/hiplab-releases/safety-young-man-7ca9617-61-20261107/hiplab-1.1.0+61-7ca9617-internal-arm64-release.apk`；安装日志/回执留`E:/AII-3D/hiplab-releases/safety-young-man-7ca9617-61-20261107`。
+
+
+## 后续用户验收与主线接收
+
+2026-11-07用户确认截至+61的本轮UI全部验收通过，授权接收main。本页此前“待用户验收/未合main”保留为当时状态；当前以[主线回执](ui-main-integration-2026-11-07.md)为准，历史独立未验项仍按回执边界区分。
