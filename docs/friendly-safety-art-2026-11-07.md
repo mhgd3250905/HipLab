@@ -15,3 +15,10 @@
 验证：Flutter3.44.7，offline enforce-lockfile通过；语言/页面、原首次启动与安全阻断流程、资源检查共18项通过，analyze0，git diff --check通过。检查六张深浅主题三步骤的测试渲染截图，人物与标记均完整；测试图片不是手机截图。未重跑全量或iOS原生验收。
 
 本地原图、检查和预览：`E:/AII-3D/hiplab-releases/friendly-safety-art-20261107/`。构建/安装证据另追加，不将生成或组件测试当作用户验收。
+
+
+## 构建和安装回执
+
+运行源`9a4050e7182ecdbcb3e0eaf529bc6a6256e09c46`，APK`E:/AII-3D/hiplab-releases/friendly-safety-art-9a4050e-60-20261107/hiplab-1.1.0+60-9a4050e-internal-arm64-release.apk`，48230000字节，SHA256`11fa10ed573ac66de9d162e141929a1e4a3e115a642fda0d1bee2d9ccd1b7291`。签名与+59一致，重签payload相同；APK中安全图仅三张friendly素材，逐字节匹配源文件，旧六图未打包。
+
+真机2602BRT18C覆盖安装Success，2059→2060，启动Status: ok并观测到应用进程；无卸载/清数据。未代替用户选择安全问题或宣称插画已验收。包回执和设备日志位于`E:/AII-3D/hiplab-releases/friendly-safety-art-9a4050e-60-20261107`。代码与文档保存候选分支`codex/friendly-safety-art-20261107`，未合main。
