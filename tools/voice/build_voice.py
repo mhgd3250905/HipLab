@@ -70,7 +70,7 @@ def collect_lines():
     """key -> (zh, en), plus text lookups the app needs."""
     c = json.loads(CONTENT.read_text(encoding='utf-8'))
     lines = dict(L.PHRASES)
-    for k in range(0, 11):
+    for k in range(0, len(L.NUMBERS_ZH)):
         lines[f'n.{k}'] = (L.NUMBERS_ZH[k], L.NUMBERS_EN[k])
     secs = {REST_SECONDS, 5, 10}
     doses, tips = {}, {}

@@ -236,6 +236,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
         raw['nameEn'] as String? ??
         (names is Map ? names['en'] as String? : null);
     final muscles = strings(raw['muscleGroups']);
+    final publicAction = policy?.actionFor(id);
     final tools = strings(raw['equipment']);
     final scenes = strings(raw['scenes']);
     final local = c.drills[id];
@@ -259,7 +260,22 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
       HipActionItem(
         id: id,
         name: t.lang == 'en' && en != null && en.isNotEmpty ? en : zh,
-        aliases: [zh, ?en, ...strings(raw['aliasesZh'])],
+        aliases: [
+          zh,
+          ?en,
+          ...strings(raw['aliasesZh']),
+          if (publicAction != null)
+            ...trainer.PoseHubActionFacets.searchNames(publicAction)
+          else ...[
+            // Content-only fixtures have no pack action. Reuse the SDK's
+            // muscle vocabulary without widening the admitted action list.
+            ...strings(raw['muscles']),
+            for (final muscle in muscles) ...[
+              ?trainer.poseHubMuscleLabels[muscle],
+              ...?trainer.poseHubMuscleSearchTerms[muscle],
+            ],
+          ],
+        ],
         parts: [
           for (final p in hipPartOrder)
             if (parts.contains(p)) p,

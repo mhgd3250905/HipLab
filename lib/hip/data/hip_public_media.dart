@@ -16,7 +16,7 @@ abstract final class HipPublicMedia {
     final repository = await trainer.TrainingMediaRepository.fromCatalog(
       catalog: catalog,
       catalogRevision: poseHubCatalogRevisionOf(catalog),
-      // The pack follows the catalogue in use (r2-v1 baseline or hot update).
+      // The pack follows the catalogue in use (r2-v10 baseline or hot update).
       mediaBaseUrls: [trainer.PoseHubActionLibrary.mediaBaseUriFor(catalog)],
       rootDirectory: rootDirectory,
     );

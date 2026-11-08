@@ -1,5 +1,17 @@
 # 版本管理说明
 
+## 2026-11-08：SDK 同步候选 / +62
+
+本轮候选为 `codex/sdk-sync-r1-20261108`，从本地 `main@54471ae` 建立；
+版本 `1.1.0+62` / arm64 `2062`，五处 SDK ref 与四实际包锁为
+`886ffd50bda196de06674debbf1a8958e3900d2f`，渠道 `stable`。SDK 分支 `codex/hiplab-sync-r1`
+已推送并开 Draft PR #26，未合 SDK main。App 同步 r2-v10、肌群检索、目录线上语音、
+Set/Round 语序及 11–30 录音，保留 +61 UI、授权 209 / 可浏览 208 与本地优先。
+
+App 最终 analyze 0 问题，全量 638 通过 / 70 既有跳过 / 0 失败；正在准备 stable arm64 APK。本轮不合 main、不打 tag、不安装或发布。
+既有 main/+61 验收保持原归属。范围、验证和最终包身份见
+[本轮记录](sdk-sync-r1-2026-11-08.md)。下方日期记录保留历史。
+
 ## 2026-11-07：已验收UI接收为main主线 / +61
 
 用户已明确确认截至+61的本轮UI改动全部验收通过，并授权推进main作为后续开发主线。已将main从`6bdf1e9`快进到完整候选`6e49ac7`（67提交），再追加本次文档回执；不重写历史、不拆分已验收内容。共用版本保持`1.1.0+61`，arm64`2061`，四SDK实际依赖及coach override固定`fa957ff405cc57cd10d53987430313822ff20607`，hosted锁版本保持。最终候选全量624通过/70条件跳过/0失败、analyze0、严格离线锁解析及diff检查通过。手机已装+61，运行源`7ca9617`；它与集成候选的非docs文件完全相同。本轮只做集成与文档，不重建、不增版、不再操作手机。用户验收属于本轮日常Android界面体验，不扩大为新iOS、语音听感、锁屏/中断、实模对话或商店发布的Agent实测。
@@ -242,7 +254,7 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 构建源码 SHA、已验业务来源 SHA、PR 合并提交和后续文档 HEAD 可以不同，分别记录。复用早先测试时先比较到当前树的有限差异；只有业务、资源、原生代码、测试和锁文件未受影响，才能按原来源引用，不能写成新 HEAD 已重新执行。构建证据始终归属于实际构建源码；文档提交不会产生新 APK。
 
-App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。目前实际依赖 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 均固定于 Git `fa957ff405cc57cd10d53987430313822ff20607`；当前媒体为r2-v1公共目录249项、209授权封面及SDK按需视频，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
+App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。已验收 main/+61 的四实际 SDK 包与 coach override 为 `fa957ff405cc57cd10d53987430313822ff20607` / r2-v1；本轮 +62 候选的 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 固定为 `886ffd50bda196de06674debbf1a8958e3900d2f` / r2-v10，均为公共目录249项、209授权封面及SDK按需视频，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
 
 ## 状态分别登记
 

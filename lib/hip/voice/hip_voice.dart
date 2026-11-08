@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import '../domain/action_kit.dart';
 import 'session_script.dart';
@@ -13,12 +14,17 @@ class HipVoice {
     required this.output,
     required this.settingsOf,
     this.appLanguageTag = 'zh',
+    this.online,
   });
 
   final VoiceLibrary lib;
   final VoiceOutput output;
   final VoiceSettings Function() settingsOf;
   final String appLanguageTag;
+
+  /// Local recordings with the active catalogue's verified voice behind them.
+  /// Only public SDK-plan playback uses this optional source.
+  final trainer.VoiceSource? online;
 
   /// A lightweight locale-bound view; the library, output and live preferences
   /// are shared. No playback resources are created or disposed here.
@@ -27,6 +33,7 @@ class HipVoice {
     output: output,
     settingsOf: settingsOf,
     appLanguageTag: languageTag,
+    online: online,
   );
 
   /// Off in widget tests / when no library loaded.

@@ -98,10 +98,15 @@ class _HipAppState extends State<HipApp> {
     } else if (!widget.videoEnabled) {
       voice = HipVoice.silent;
     } else {
+      final lib = await VoiceLibrary.load();
       voice = HipVoice(
-        lib: await VoiceLibrary.load(),
+        lib: lib,
         output: JustAudioVoiceOutput(),
         settingsOf: () => store.voice,
+        online: await trainer.withPoseHubCatalogVoice(
+          lib,
+          catalog: HipPublicMedia.current!.catalog,
+        ),
       );
     }
     return (store, voice);
@@ -272,9 +277,7 @@ class _HipOnboardingState extends State<HipOnboarding> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    hipPrecache(context, [
-      for (final c in _cards) heroAsset(c.id),
-    ]);
+    hipPrecache(context, [for (final c in _cards) heroAsset(c.id)]);
   }
 
   Future<void> _answer(bool yes) async {
@@ -726,7 +729,9 @@ class _HipHomeState extends State<HipHome> {
       firstPosterAsset: first == null ? null : policy?.posterAssetFor(first),
       mediaPolicy: policy,
       theme: HipSharedLibrary.theme(context),
-      planActionIds: plan.steps.map((step) => step.drill.id),
+      planActionIds: HipMediaPolicy.of(context)
+          ? plan.steps.map((step) => step.drill.id)
+          : const [],
     );
   }
 
@@ -1471,7 +1476,9 @@ class HipProgressPage extends StatelessWidget {
                           : policy?.posterAssetFor(first),
                       mediaPolicy: policy,
                       theme: HipSharedLibrary.theme(context),
-                      planActionIds: plan.steps.map((step) => step.drill.id),
+                      planActionIds: HipMediaPolicy.of(context)
+                          ? plan.steps.map((step) => step.drill.id)
+                          : const [],
                     );
                   },
                 ),

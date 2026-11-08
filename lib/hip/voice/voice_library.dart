@@ -87,4 +87,15 @@ class VoiceLibrary extends trainer.ManifestVoiceSource {
   @override
   String asset(String key, {String lang = 'zh'}) =>
       super.asset(key, lang: lang);
+
+  @override
+  List<String> setsPhrase(int n) => ['n.$n', 'u.sets'];
+
+  @override
+  List<String> ordinalSet(int n, {String lang = 'zh'}) =>
+      lang == 'zh' ? ['p.di', 'n.$n', 'u.sets'] : ['p.set', 'n.$n'];
+
+  @override
+  List<String> ordinalRound(int n, {String lang = 'zh'}) =>
+      lang == 'zh' ? ['p.di', 'n.$n', 'u.rounds'] : ['p.round', 'n.$n'];
 }

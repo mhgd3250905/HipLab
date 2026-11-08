@@ -56,12 +56,13 @@ void main() {
   // actual media bounds so an external overlay is covered by this guard too.
   Finder onMedia(Finder f) => find.byElementPredicate((element) {
     if (!f.evaluate().contains(element)) return false;
-    final art = find
-        .byType(trainer.TrainingActionMedia)
-        .first
-        .evaluate()
-        .single
-        .renderObject;
+    final video = find.byType(trainer.TrainingActionMedia);
+    // The current SDK renders TrainerPoster directly when videos are disabled.
+    // Both backends occupy the actual demonstration bounds checked below.
+    final media = video.evaluate().isEmpty
+        ? find.byType(trainer.TrainerPoster).first
+        : video.first;
+    final art = media.evaluate().single.renderObject;
     final target = element.renderObject;
     if (art is! RenderBox ||
         target is! RenderBox ||
