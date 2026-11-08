@@ -8,7 +8,9 @@
 已推送并开 Draft PR #26，未合 SDK main。App 同步 r2-v10、肌群检索、目录线上语音、
 Set/Round 语序及 11–30 录音，保留 +61 UI、授权 209 / 可浏览 208 与本地优先。
 
-App 最终 analyze 0 问题，全量 638 通过 / 70 既有跳过 / 0 失败；正在准备 stable arm64 APK。本轮不合 main、不打 tag、不安装或发布。
+App 最终 analyze 0 问题，全量 638 通过 / 70 既有跳过 / 0 失败；已从
+`221312bd51264d85e9e23cc7ba2fe0accb8f6f9a` 构建 stable arm64 release APK，版本 `2062`，
+验签与 +61 一致，未安装。本轮只推候选分支，不合 main、不打 tag、不发布。
 既有 main/+61 验收保持原归属。范围、验证和最终包身份见
 [本轮记录](sdk-sync-r1-2026-11-08.md)。下方日期记录保留历史。
 
