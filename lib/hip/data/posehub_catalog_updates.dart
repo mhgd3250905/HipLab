@@ -22,7 +22,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart'
 /// Checks the channel pointer once per launch and again on resume once a day
 /// has passed. A verified new catalogue is stored and takes effect on the next
 /// launch; [PoseHubActionLibrary.load] always opens the verified cache first,
-/// then the bundled r2-v1 baseline.
+/// then the bundled r2-v10 baseline.
 ///
 /// The channel is fixed at build time: `--dart-define=POSEHUB_CATALOG_CHANNEL=
 /// dev|beta|stable`, defaulting to `stable`.

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/domain/hip_action_media.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -42,7 +43,7 @@ void main() {
     }
   });
 
-  test('public transparent posters are the pinned SDK r2-v1 posters', () {
+  test('public transparent posters match the pinned SDK bundled pack', () {
     final config = File('.dart_tool/package_config.json');
     final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
     final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
@@ -50,7 +51,7 @@ void main() {
       config.uri.resolve(sdk['rootUri'] as String),
     ).uri;
     final standing = sdkRoot.resolve(
-      'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v1/standing/',
+      'packages/ugk_trainer/assets/pose_hub/app-pack-${trainer.PoseHubActionLibrary.packVersion}/standing/',
     );
     final bundled = Directory(
       'assets/public_posters',

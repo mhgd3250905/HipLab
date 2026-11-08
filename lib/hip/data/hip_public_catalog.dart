@@ -9,7 +9,7 @@ const hipPublicCatalogAsset = 'assets/public_media/catalog.json';
 const hipPublicSemanticsAsset = 'assets/public_media/catalog/catalog.json';
 
 /// The catalogue in use: the SDK-verified hot-update cache when present, else
-/// HipLab's bundled baseline copy (SDK r2-v1, identical bytes and SHA).
+/// HipLab's bundled baseline copy (SDK r2-v10, identical bytes and SHA).
 Future<coach.PoseHubAppTestCatalog> loadHipPublicCatalog({
   AssetBundle? bundle,
   trainer.PoseHubCatalogStore? verifiedCache,

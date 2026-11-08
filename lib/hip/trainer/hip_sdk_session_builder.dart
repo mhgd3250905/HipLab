@@ -7,6 +7,7 @@ import '../domain/hip_models.dart';
 trainer.SessionBuilder hipSdkSessionBuilder(
   HipContent content, {
   trainer.SwitchSeconds? switchSecondsFor,
+  trainer.PrepSeconds? prepSecondsFor,
   // A mixed training group (M6) rests its own 10/15/20/30 s between actions.
   int transitionSeconds = 15,
 }) => trainer.SessionBuilder(
@@ -22,6 +23,7 @@ trainer.SessionBuilder hipSdkSessionBuilder(
   prepSeconds: 15,
   transitionSeconds: transitionSeconds,
   switchSecondsFor: switchSecondsFor,
+  prepSecondsFor: prepSecondsFor,
   // Estimate allowance per side switch (SDK v0.6.0, user 2026-11-03).
   sideSwitchMarginSeconds:
       trainer.SessionBuilder.recommendedSideSwitchMarginSeconds,

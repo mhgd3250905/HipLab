@@ -1,5 +1,15 @@
 # HipLab 协作约定
 
+## 2026-11-08 SDK 同步候选（不合 main）
+
+本轮用户明确要求从 `main@54471ae` 建 `codex/sdk-sync-r1-20261108`，
+版本 `1.1.0+62` / arm64 `2062`，五处 ref 统一 SDK 集成分支
+`886ffd50bda196de06674debbf1a8958e3900d2f`，r2-v10、stable 渠道。SDK 普通 merge 保留
+`01a12f5` 与 `fa957ff` 两边历史，Draft PR #26 只供审阅。本轮在最终软件检查后交付
+APK并推候选分支；不合 main、不打 tag、不操作手机或商店。旧 +61 UI 验收保持，
++62 真机验收单独记录。详情见 `docs/sdk-sync-r1-2026-11-08.md`。
+
+
 ## UI规范与复用入口（2026-11-07文档收束）
 
 本项目设计数值以`docs/ui-design-standard.md`为准；跨App实现学习从`docs/ui-kit/README.md`进入，含实际组件合同、完整Flutter画廊与样例验证。样例属于docs内的学习入口，不替换App运行入口，也未发布为独立Pub包。变更设计时同步规范与配方；不要照搬旧交付报告或源码文件头中的历史参数。阶段事实与证据绑定见`docs/ui-documentation-closeout-2026-11-07.md`，版本/锁文件/运行内容保持+61。
