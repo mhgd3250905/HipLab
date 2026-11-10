@@ -43,7 +43,7 @@ void main() {
             action['id'] as String: action,
       };
       expect(actions.keys.toSet(), hipPublicTextEn.keys.toSet());
-      expect(actions, hasLength(209));
+      expect(actions, hasLength(249));
       var cues = 0, cautions = 0, contraindications = 0;
       for (final entry in actions.entries) {
         final translated = hipPublicTextEn[entry.key]!;
@@ -79,9 +79,9 @@ void main() {
         cautions += translated.cautions.length;
         contraindications += translated.contraindications.length;
       }
-      expect(cues, 689);
-      expect(cautions, 289);
-      expect(contraindications, 200);
+      expect(cues, 815);
+      expect(cautions, 344);
+      expect(contraindications, 253);
       expect(
         hipPublicTextEn['h-band-hip-extension']!.cautions.last,
         'Do not attach the band to the chair.',

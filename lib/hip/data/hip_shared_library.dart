@@ -46,8 +46,6 @@ hipEnglishPublicDisplay(coach.Catalog? catalog) {
       name: definition.name.of('en'),
       metadata: HipPublicDisplay.metadata(definition.raw),
       muscles: HipPublicDisplay.muscleText(definition.raw),
-      // The SDK retains the authored catalogue text when a display override
-      // is null. The expanded library does not have new English instructions.
       cues: copy?.cues,
       cautions: copy == null
           ? null

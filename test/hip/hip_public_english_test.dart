@@ -19,15 +19,19 @@ void main() {
       (row as Map<String, dynamic>)['id'] as String: row,
   };
   final chinese = RegExp(r'[\u3400-\u9fff]');
+  final blockedEnglish = RegExp(
+    r'\b(?:rehab|rehabilitation|therapy|treatment|physical therapy|medical)\b',
+    caseSensitive: false,
+  );
 
   test(
-    'existing 209 English display translations retain every authored line',
+    'English translations retain every authored line for 248 actions and the self-test demo',
     () {
-      expect(hipPublicTextEn, hasLength(209));
-      expect(
-        hipPublicTextEn.keys.toSet().difference(hiplabCoachAuthorizedActionIds),
-        {'n-thomas-test'},
-      );
+      expect(hiplabCoachAuthorizedActionIds, hasLength(248));
+      expect(hipPublicTextEn.keys.toSet(), {
+        ...hiplabCoachAuthorizedActionIds,
+        'n-thomas-test',
+      });
       var cueCount = 0, cautionCount = 0, contraindicationCount = 0;
       for (final id in hipPublicTextEn.keys) {
         final original = definitions[id]!;
@@ -52,32 +56,42 @@ void main() {
         ]) {
           expect(text.trim(), isNotEmpty, reason: id);
           expect(chinese.hasMatch(text), isFalse, reason: '$id: $text');
+          expect(blockedEnglish.hasMatch(text), isFalse, reason: '$id: $text');
         }
         cueCount += copy.cues.length;
         cautionCount += copy.cautions.length;
         contraindicationCount += copy.contraindications.length;
       }
-      expect(cueCount, 689);
-      expect(cautionCount, 289);
-      expect(contraindicationCount, 200);
+      expect(cueCount, 815);
+      expect(cautionCount, 344);
+      expect(contraindicationCount, 253);
     },
   );
 
-  test('new actions show English labels and retain original guidance', () {
+  test('all library actions show English labels and guidance', () {
     final display = hipEnglishPublicDisplay(coach.Catalog.fromJson(source))!;
-    final newIds = hiplabCoachAuthorizedActionIds.difference(
-      hipPublicTextEn.keys.toSet(),
-    );
-    expect(newIds, hasLength(40));
-    for (final id in newIds) {
+    for (final id in hiplabCoachAuthorizedActionIds) {
       final original = definitions[id]!;
-      final copy = display(id)!;
-      expect(copy.name, (original['name'] as Map)['en'], reason: id);
-      expect(copy.metadata, isNotEmpty, reason: id);
-      expect(chinese.hasMatch(copy.metadata!), isFalse, reason: id);
-      expect(copy.cues, isNull, reason: id);
-      expect(copy.cautions, isNull, reason: id);
-      expect((original['cues'] as Map)['zh'], isNotEmpty, reason: id);
+      final text = display(id)!;
+      final copy = hipPublicTextEn[id]!;
+      expect(text.name, (original['name'] as Map)['en'], reason: id);
+      expect(text.metadata, isNotEmpty, reason: id);
+      expect(text.cues, copy.cues, reason: id);
+      expect(text.cautions, [
+        ...copy.cautions,
+        if (copy.contraindications.isNotEmpty)
+          'Caution areas: ${copy.contraindications.join(', ')}.',
+      ], reason: id);
+      for (final value in [
+        text.name!,
+        text.metadata!,
+        text.muscles!,
+        ...text.cues!,
+        ...text.cautions!,
+      ]) {
+        expect(chinese.hasMatch(value), isFalse, reason: '$id: $value');
+        expect(blockedEnglish.hasMatch(value), isFalse, reason: '$id: $value');
+      }
     }
   });
 
