@@ -351,16 +351,19 @@ class TrainingPlanner {
       !d.isRelax;
 
   /// 单练: one step at the user's dose. Null when a safety card blocks
-  /// training or the drill's direction is relax-only this week. Advanced /
-  /// gated drills are not swapped (拍板 4: advise, still allowed); no
-  /// tight-side extra set (the user picked the dose).
+  /// training, the drill is a self-test demo, or its direction is relax-only
+  /// this week. Advanced / gated drills are not swapped (拍板 4: advise, still
+  /// allowed); no tight-side extra set (the user picked the dose).
   TrainingPlan? singlePlan(
     HipDrill drill,
     LibraryDose dose,
     TrainingProfile profile,
   ) {
     final kit = content.kit(drill.id);
-    if (kit == null || profile.blocked || lockedOut(drill, profile)) {
+    if (kit == null ||
+        assessmentOnlyDrills.contains(drill.id) ||
+        profile.blocked ||
+        lockedOut(drill, profile)) {
       return null;
     }
     final d = DoseRules.clamp(kit, dose, single: true);

@@ -63,7 +63,7 @@ void main() {
   });
 
   test(
-    'public single practice preserves all 209 SDK doses and safety gate',
+    'public single practice preserves all 248 SDK doses and safety gate',
     () async {
       final content = await loadHipContent(FileAssetBundle());
       final store = HipStore(content: content, storage: MemoryStorage());
@@ -77,13 +77,14 @@ void main() {
         store: store,
         startPlan: (plan, {from, radius = 28, originColor}) async {},
       );
+      var admitted = 0;
       for (final drill in content.publicCatalog!.drills) {
         final plan = HipSharedLibrary.planFor(actions, drill.id);
         if (!hiplabCoachAuthorizedActionIds.contains(drill.id)) {
-          // New in r2-v1 but outside HipLab's fixed list: not startable.
           expect(plan, isNull, reason: drill.id);
           continue;
         }
+        admitted++;
         expect(plan, isNotNull, reason: drill.id);
         expect(plan!.source, PlanSource.single);
         final item = plan.sdkPlan!.items.single;
@@ -96,7 +97,11 @@ void main() {
         expect(item.perSide, drill.unilateral);
         expect(plan.sdkPlan!.equipment, drill.equipment.toList());
       }
-      expect(HipSharedLibrary.planFor(actions, 'h-db-shrug'), isNull);
+      expect(admitted, 248);
+      expect(HipSharedLibrary.planFor(actions, 'h-db-shrug'), isNotNull);
+      for (final id in assessmentOnlyDrills) {
+        expect(HipSharedLibrary.planFor(actions, id), isNull, reason: id);
+      }
       store.safety = {'pregnancy': true};
       expect(HipSharedLibrary.canStart(actions, 'chest-A'), isFalse);
     },

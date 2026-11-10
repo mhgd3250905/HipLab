@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/data/hip_public_text_en.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/coach/hip_coach_chat_page.dart';
@@ -29,7 +28,7 @@ void main() {
   );
 
   test(
-    'every authorised public action retains all authored English display lines',
+    'existing translated actions retain all authored English display lines',
     () {
       final source =
           jsonDecode(
@@ -40,10 +39,10 @@ void main() {
               as Map;
       final actions = <String, Map>{
         for (final action in source['drills'] as List)
-          if (hiplabCoachAuthorizedActionIds.contains((action as Map)['id']))
+          if (hipPublicTextEn.containsKey((action as Map)['id']))
             action['id'] as String: action,
       };
-      expect(hipPublicTextEn.keys.toSet(), hiplabCoachAuthorizedActionIds);
+      expect(actions.keys.toSet(), hipPublicTextEn.keys.toSet());
       expect(actions, hasLength(209));
       var cues = 0, cautions = 0, contraindications = 0;
       for (final entry in actions.entries) {

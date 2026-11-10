@@ -135,7 +135,7 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
-    testWidgets('208 scoped actions (测试演示 excluded); search and 怎么练 filter', (
+    testWidgets('248 scoped actions (测试演示 excluded); search and 怎么练 filter', (
       tester,
     ) async {
       await pumpApp(tester);
@@ -146,11 +146,10 @@ void main() {
           .data!;
       final config = HipSharedLibrary.current!;
       expect(config.allowedActionIds, hiplabCoachAuthorizedActionIds);
-      expect(count(), '208 个动作');
-      expect(
-        find.byKey(const ValueKey('drill-card-n-thomas-test')),
-        findsNothing,
-      );
+      expect(count(), '248 个动作');
+      for (final id in assessmentOnlyDrills) {
+        expect(find.byKey(ValueKey('drill-card-$id')), findsNothing);
+      }
       await tester.enterText(
         find.byKey(const ValueKey('lib-search')),
         HipPublicMedia.current!.actionFor('s-pigeon')!.nameZh,
@@ -174,7 +173,7 @@ void main() {
           .actions(HipPublicMedia.current!.catalog)
           .where(
             (action) =>
-                action.id != 'n-thomas-test' &&
+                !assessmentOnlyDrills.contains(action.id) &&
                 trainer.PoseHubActionFacets.type(action) == '拉伸放松',
           )
           .length;

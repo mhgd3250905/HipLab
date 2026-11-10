@@ -9,15 +9,14 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/engine.dart'
     show SessionBuilderPlanExecutionTiming, PhaseKind;
 
+import '../data/hip_action_scope.dart';
 import '../trainer/hip_sdk_session_builder.dart';
 import 'hip_models.dart';
 
 // ───────────────────────── 动作大全 ─────────────────────────
 
-/// Assessment-only demo drills (开哥 2026-10-19): `n-thomas-test` exists only
-/// to demo the 托马斯 check item, is in no routine and is named 测试演示; its
-/// training form is `h-knee-hug`.
-const assessmentOnlyDrills = {'n-thomas-test'};
+/// Self-test media IDs, including the legacy supine-cross demo alias.
+const assessmentOnlyDrills = {'n-thomas-test', 'supine-cross-demo'};
 
 /// 动作大全: the content pack's own drills (never new Pose-Hub moves) that
 /// have a clip and an action kit, minus assessment-only demos. Content
@@ -40,10 +39,15 @@ bool inLibrary(HipContent c, String id) {
       !assessmentOnlyDrills.contains(id);
 }
 
-/// SDK plans and the SDK library share the complete public training catalog.
+/// SDK plans and the library admit only HipLab's authorized public actions.
 /// Older pure-data fixtures can still exercise the original local kit path.
-bool inSdkLibrary(HipContent c, String id) =>
-    c.publicCatalog?.contains(id) ?? inLibrary(c, id);
+bool inSdkLibrary(HipContent c, String id) {
+  if (assessmentOnlyDrills.contains(id)) return false;
+  final catalog = c.publicCatalog;
+  return catalog == null
+      ? inLibrary(c, id)
+      : hiplabCoachAuthorizedActionIds.contains(id) && catalog.contains(id);
+}
 
 /// Display/safety DTO for an admitted SDK action, without inventing HipLab
 /// direction, method or scene metadata for public actions outside the old pack.
@@ -81,9 +85,7 @@ HipDrill? hipSdkDrill(HipContent c, String id) {
 /// fields override the SDK catalog's default dose) and the group then plays
 /// through one host-built SDK plan.
 bool isSdkGroupStep(HipContent c, String id) =>
-    !inLibrary(c, id) &&
-    !assessmentOnlyDrills.contains(id) &&
-    c.publicCatalog?[id] != null;
+    !inLibrary(c, id) && inSdkLibrary(c, id);
 
 /// Whether [id] can be put into a training group: a local kit drill or any
 /// public SDK action.
@@ -93,6 +95,7 @@ bool canJoinGroup(HipContent c, String id) =>
 /// The catalog default dose of an SDK group step as a [LibraryDose]
 /// (reps or seconds, sets).
 LibraryDose? sdkDefaultDose(HipContent c, String id) {
+  if (!inSdkLibrary(c, id)) return null;
   final d = c.publicCatalog?[id]?.defaultDose;
   if (d == null) return null;
   final reps = d.mode == coach.DoseMode.reps;
@@ -478,6 +481,7 @@ class CustomStep {
   /// This step as an SDK plan item (M6 mixed groups). A local kit drill keeps
   /// the user's reps/seconds/sets when its unit matches the catalog dose.
   coach.PlanItem? planItem(HipContent c) {
+    if (!inSdkLibrary(c, kitId)) return null;
     final source = c.publicCatalog?[kitId];
     if (source == null) return null;
     final dd = source.defaultDose;
@@ -719,10 +723,12 @@ class CustomRoutine {
         continue;
       }
       final kitId = s['kitId'];
+      // Keep known preview steps in old SDK saves. Training admission checks
+      // the complete stored plan, including every segment, before playback.
       if (kitId is! String ||
           !(coachPlan == null
               ? canJoinGroup(c, kitId)
-              : inSdkLibrary(c, kitId))) {
+              : (c.publicCatalog?.contains(kitId) ?? inLibrary(c, kitId)))) {
         removed++;
         continue;
       }

@@ -77,15 +77,16 @@ void main() {
   });
 
   test(
-    'new search terms keep browsing and group selection within existing scope',
+    'browsing and group selection expose the 248 public training actions',
     () {
       final all = hipActionItems(content, LibText.zh);
-      final expected = hiplabCoachAuthorizedActionIds.difference(
-        assessmentOnlyDrills,
-      );
+      const expected = hiplabCoachAuthorizedActionIds;
+      expect(expected, hasLength(248));
       expect(all.map((a) => a.id).toSet(), expected);
-      expect(all.map((a) => a.id), isNot(contains('n-thomas-test')));
-      expect(all.map((a) => a.id), isNot(contains('h-db-shrug')));
+      for (final id in assessmentOnlyDrills) {
+        expect(all.map((a) => a.id), isNot(contains(id)), reason: id);
+      }
+      expect(all.firstWhere((a) => a.id == 'h-db-shrug').canAddToGroup, isTrue);
       for (final query in ['臀', '髂腰', 'dumbbell', '']) {
         final results = ActionFilter(query: query).apply(all);
         expect(results.every((a) => expected.contains(a.id)), isTrue);

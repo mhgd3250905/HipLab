@@ -40,18 +40,22 @@ hipEnglishPublicDisplay(coach.Catalog? catalog) {
   final definitions = {for (final drill in catalog.drills) drill.id: drill};
   return (id) {
     final definition = definitions[id];
+    if (definition == null) return null;
     final copy = hipPublicTextEn[id];
-    if (definition == null || copy == null) return null;
     return trainer.TrainingLibraryActionText(
       name: definition.name.of('en'),
       metadata: HipPublicDisplay.metadata(definition.raw),
       muscles: HipPublicDisplay.muscleText(definition.raw),
-      cues: copy.cues,
-      cautions: [
-        ...copy.cautions,
-        if (copy.contraindications.isNotEmpty)
-          'Caution areas: ${copy.contraindications.join(', ')}.',
-      ],
+      // The SDK retains the authored catalogue text when a display override
+      // is null. The expanded library does not have new English instructions.
+      cues: copy?.cues,
+      cautions: copy == null
+          ? null
+          : [
+              ...copy.cautions,
+              if (copy.contraindications.isNotEmpty)
+                'Caution areas: ${copy.contraindications.join(', ')}.',
+            ],
     );
   };
 }
@@ -205,7 +209,7 @@ abstract final class HipSharedLibrary {
       context,
       actionId: id,
       config: localized(context),
-      mediaPolicy: policy,
+      mediaPolicy: HipPublicMedia.forLibrary(policy),
       theme: theme(context),
       canStart: (id) => canStart(actions, id),
       onStart: (id) => start(actions, id),

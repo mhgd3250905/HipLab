@@ -75,21 +75,20 @@ void main() {
   });
   tearDownAll(() => HipPublicMedia.current?.repository.dispose());
 
-  test('one fixed list admits its 209 r2-v1 public actions to Coach', () {
-    // r2-v1: 249 complete actions; HipLab keeps its fixed 209-ID list, so the
-    // 40 actions new to r2-v1 stay outside the Coach scope.
+  test('one fixed list admits the 248 training actions to Coach', () {
     expect(pack.allActions, hasLength(249));
     expect(pack.pendingActions, isEmpty);
-    expect(hiplabCoachAuthorizedActionIds, hasLength(209));
+    expect(hiplabCoachAuthorizedActionIds, hasLength(248));
     expect(
       coach.computeAllowlistSha256(hiplabCoachAuthorizedActionIds),
-      '2871dbb6b175d65fb6ad737fc2dd31d679d777d45923ce9e58784482171e39d0',
+      '7a74b025e73765bf878a67ed6e6dd8c24cb20cc79719d6561da4378331e8fbf3',
     );
-    final complete =
-        pack.semanticCompleteActions.map((action) => action.id).toSet();
+    final complete = pack.semanticCompleteActions
+        .map((action) => action.id)
+        .toSet();
     expect(complete.containsAll(hiplabCoachAuthorizedActionIds), isTrue);
     final outside = complete.difference(hiplabCoachAuthorizedActionIds);
-    expect(outside, hasLength(40));
+    expect(outside, {'n-thomas-test'});
     expect(catalog.ids.toSet(), complete);
     expect(catalog.problems, isEmpty);
     expect(hiplabCoachProfile.select.ids, hiplabCoachAuthorizedActionIds);
@@ -102,7 +101,7 @@ void main() {
     expect(scope.allowedActionIds, hiplabCoachAuthorizedActionIds);
     expect(scope.plannableIds, hiplabCoachAuthorizedActionIds);
     expect(scope.catalog.ids.toSet(), hiplabCoachAuthorizedActionIds);
-    expect(scope.contains('n-thomas-test'), isTrue);
+    expect(scope.contains('n-thomas-test'), isFalse);
     expect(scope.contains('chest-A'), isTrue);
     for (final action in pack.pendingActions) {
       expect(scope.contains(action.id), isFalse, reason: action.id);

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/data/hip_public_display.dart';
 import 'package:hiplab/hip/data/hip_public_text_en.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 void main() {
   final source =
@@ -19,11 +21,15 @@ void main() {
   final chinese = RegExp(r'[\u3400-\u9fff]');
 
   test(
-    'every authorized public action has complete display-only English copy',
+    'existing 209 English display translations retain every authored line',
     () {
-      expect(hipPublicTextEn.keys.toSet(), hiplabCoachAuthorizedActionIds);
+      expect(hipPublicTextEn, hasLength(209));
+      expect(
+        hipPublicTextEn.keys.toSet().difference(hiplabCoachAuthorizedActionIds),
+        {'n-thomas-test'},
+      );
       var cueCount = 0, cautionCount = 0, contraindicationCount = 0;
-      for (final id in hiplabCoachAuthorizedActionIds) {
+      for (final id in hipPublicTextEn.keys) {
         final original = definitions[id]!;
         final copy = hipPublicTextEn[id]!;
         final cues = (original['cues'] as Map)['zh'] as List;
@@ -56,6 +62,24 @@ void main() {
       expect(contraindicationCount, 200);
     },
   );
+
+  test('new actions show English labels and retain original guidance', () {
+    final display = hipEnglishPublicDisplay(coach.Catalog.fromJson(source))!;
+    final newIds = hiplabCoachAuthorizedActionIds.difference(
+      hipPublicTextEn.keys.toSet(),
+    );
+    expect(newIds, hasLength(40));
+    for (final id in newIds) {
+      final original = definitions[id]!;
+      final copy = display(id)!;
+      expect(copy.name, (original['name'] as Map)['en'], reason: id);
+      expect(copy.metadata, isNotEmpty, reason: id);
+      expect(chinese.hasMatch(copy.metadata!), isFalse, reason: id);
+      expect(copy.cues, isNull, reason: id);
+      expect(copy.cautions, isNull, reason: id);
+      expect((original['cues'] as Map)['zh'], isNotEmpty, reason: id);
+    }
+  });
 
   test(
     'English metadata covers the actual catalogue taxonomy without changing IDs',

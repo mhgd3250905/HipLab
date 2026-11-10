@@ -1,6 +1,8 @@
 * text=auto
 # Keep generated content packs and media bytes intact across platforms.
 *.json -text
+# Preserve the CDN catalog's original CRLF bytes without whitespace warnings.
+assets/public_media/catalog.json whitespace=cr-at-eol
 *.png binary
 *.jpg binary
 *.webp binary

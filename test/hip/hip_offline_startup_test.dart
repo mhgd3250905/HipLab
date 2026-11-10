@@ -12,8 +12,11 @@ import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/library/action_filter.dart';
+import 'package:hiplab/hip/ui/library/lib_text.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'home_nav.dart' show openPractice;
 
 class _NetworkDown extends HttpOverrides {
   int clients = 0;
@@ -34,8 +37,26 @@ class _NetworkDown extends HttpOverrides {
   }
 }
 
+Future<void> _decodeBundledImage(String asset) async {
+  final data = await rootBundle.load(asset);
+  final codec = await ui.instantiateImageCodec(
+    data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+  );
+  try {
+    final frame = await codec.getNextFrame();
+    try {
+      expect(frame.image.width, greaterThan(0), reason: asset);
+      expect(frame.image.height, greaterThan(0), reason: asset);
+    } finally {
+      frame.image.dispose();
+    }
+  } finally {
+    codec.dispose();
+  }
+}
+
 void main() {
-  testWidgets('offline cold startup reaches home with bundled catalog/poster', (
+  testWidgets('offline cold startup opens all 248 moves with bundled art', (
     tester,
   ) async {
     final network = _NetworkDown();
@@ -80,16 +101,7 @@ void main() {
         expect(policy!.prefetchBeforeTraining, isTrue);
         final poster = policy.posterAssetFor('n-leg-circles');
         expect(poster, isNotNull);
-        await tester.runAsync(() async {
-          final data = await rootBundle.load(poster!);
-          final codec = await ui.instantiateImageCodec(
-            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-          );
-          final frame = await codec.getNextFrame();
-          expect(frame.image.width, greaterThan(0));
-          frame.image.dispose();
-          codec.dispose();
-        });
+        await tester.runAsync(() => _decodeBundledImage(poster!));
 
         // Do not warm the coach catalog: this also guards the large-asset race.
         rootBundle.evict(hipCoachCatalogAsset);
@@ -105,9 +117,49 @@ void main() {
         expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
         expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
         expect(HipSharedLibrary.current, isNotNull);
+
+        await openPractice(tester);
+        final count = find.byKey(const ValueKey('actions-count'));
+        expect(tester.widget<Text>(count).data, '248 个动作');
+        final items = hipActionItems(
+          store.content,
+          LibText.of(tester.element(count)),
+        );
+        expect(items, hasLength(248));
+        expect(
+          items.map((item) => item.id).toSet(),
+          hiplabCoachAuthorizedActionIds,
+        );
+        expect(items.map((item) => item.id), isNot(contains('n-thomas-test')));
+
+        // The grid is lazy. Decode the asset selected for every row, including
+        // the rows below the fold, inside the same offline zone.
+        await tester.runAsync(() async {
+          for (final item in items) {
+            final asset =
+                'assets/public_posters/r2-v11/thumbnail/${item.id}.webp';
+            expect(item.poster, asset, reason: item.id);
+            await _decodeBundledImage(asset);
+          }
+        });
+        await tester.pumpAndSettle();
+        final firstCard = find.byType(ActionCard).first;
+        final firstItem = tester.widget<ActionCard>(firstCard).item;
+        final cardImage = find.descendant(
+          of: firstCard,
+          matching: find.byType(Image),
+        );
+        expect(
+          tester.widget<Image>(cardImage).image,
+          isA<AssetImage>().having(
+            (image) => image.assetName,
+            'assetName',
+            firstItem.poster,
+          ),
+        );
         expect(tester.takeException(), isNull);
-        // Catalog setup, media prefetch and Worker access must not be startup
-        // dependencies, even with a configured coach and prefetch enabled.
+        // Startup and browsing stay offline with a configured coach and
+        // prefetch enabled.
         expect(network.clients, 0);
         expect(network.connections, 0);
       } finally {

@@ -195,7 +195,6 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
       hiplabCoachAuthorizedActionIds;
   final out = <HipActionItem>[];
   final seen = <String>{};
-  final posterRoot = HipPublicMedia.posterRoot;
   // The SDK library's own browse list when it is installed (what the SDK
   // view listed), else the public definitions on the content.
   final List<Map<String, dynamic>> rows;
@@ -297,7 +296,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
           raw['unilateral'] == true,
         ),
         drill: inLibrary(c, id) ? local : null,
-        poster: '$posterRoot$id.webp',
+        poster: HipPublicMedia.thumbnailAssetFor(id),
         groupable: canJoinGroup(c, id),
       ),
     );

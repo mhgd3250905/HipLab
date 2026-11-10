@@ -69,12 +69,17 @@ void main() {
   final planner = TrainingPlanner(content);
 
   test(
-    'all 249 complete SDK r2-v1 actions survive durable restore and execution',
+    'all 248 public training actions survive durable restore and execution',
     () {
       expect(catalog.length, 249);
       expect(builder.rhythms.keys.toSet(), catalog.ids.toSet());
+      final trainingActions = catalog.drills
+          .where((action) => !assessmentOnlyDrills.contains(action.id))
+          .toList();
+      expect(trainingActions, hasLength(248));
       var actionsOutsideLegacy = 0;
-      for (final action in catalog.drills) {
+      for (final action in trainingActions) {
+        expect(inSdkLibrary(content, action.id), isTrue, reason: action.id);
         final original = _plan(_defaultItem(action));
         final encoded = jsonDecode(
           jsonEncode(CustomRoutinesCodec.encode([_stored(original)])),
@@ -119,44 +124,87 @@ void main() {
     },
   );
 
-  test(
-    'unadmitted actions cannot restore a playable SDK preview or plan',
-    () {
-      // r2-v1 has no pending rows; r1-v3 ids it removed stand in as the
-      // unadmitted ids a stale saved payload can still carry.
-      expect(pack.pendingActions, isEmpty);
-      const removed = ['h-sleeper-stretch', 'scapular-C'];
-      for (final id in removed) {
-        expect(pack.tryGet(id), isNull, reason: id);
-      }
-      final complete = _defaultItem(catalog.drills.first);
-      for (final partial in [
-        ...pack.pendingActions.map((action) => action.id),
-        ...removed,
-      ].map((id) => (id: id))) {
-        // Deliberately substitute an unadmitted id into otherwise valid plan
-        // data. This models an incompatible/malicious saved payload, not a dose
-        // definition for the incomplete action.
-        final item = complete.copyWith(exerciseId: partial.id);
+  test('unadmitted actions cannot restore a playable SDK preview or plan', () {
+    // r2-v11 has no pending rows; r1-v3 ids it removed stand in as the
+    // unadmitted ids a stale saved payload can still carry.
+    expect(pack.pendingActions, isEmpty);
+    const removed = ['h-sleeper-stretch', 'scapular-C'];
+    for (final id in removed) {
+      expect(pack.tryGet(id), isNull, reason: id);
+    }
+    final complete = _defaultItem(catalog.drills.first);
+    for (final partial in [
+      ...pack.pendingActions.map((action) => action.id),
+      ...removed,
+    ].map((id) => (id: id))) {
+      // Deliberately substitute an unadmitted id into otherwise valid plan
+      // data. This models an incompatible/malicious saved payload, not a dose
+      // definition for the incomplete action.
+      final item = complete.copyWith(exerciseId: partial.id);
+      final original = _plan(item);
+      final restored = CustomRoutine.fromJson(
+        _stored(original).toJson(),
+        content,
+      )!;
+      expect(inSdkLibrary(content, partial.id), isFalse);
+      expect(hipSdkDrill(content, partial.id), isNull);
+      expect(restored.steps, isEmpty);
+      expect(restored.removed, 1);
+      expect(restored.coachPlan, original.toJson());
+      expect(planner.customPlan(restored, const TrainingProfile()), isNull);
+      expect(
+        planner.customSkipped(restored, const TrainingProfile()).single.kitId,
+        partial.id,
+      );
+      expect(restored.seconds(content), 0);
+    }
+  });
+
+  test('stored direct and segmented self-test actions remain non-playable', () {
+    final admitted = _defaultItem(catalog['h-squat']!);
+    expect(catalog.contains('n-thomas-test'), isTrue);
+    for (final id in assessmentOnlyDrills) {
+      expect(inSdkLibrary(content, id), isFalse, reason: id);
+      expect(canJoinGroup(content, id), isFalse, reason: id);
+      expect(CustomStep.sdk(content, id), isNull, reason: id);
+      expect(CustomStep(id).planItem(content), isNull, reason: id);
+      for (final item in [
+        admitted.copyWith(exerciseId: id),
+        admitted.copyWith(
+          segments: [
+            coach.PlanSegment(
+              id: 'self-test',
+              exerciseId: id,
+              mode: coach.DoseMode.time,
+              workSeconds: 30,
+            ),
+          ],
+        ),
+      ]) {
         final original = _plan(item);
-        final restored = CustomRoutine.fromJson(
-          _stored(original).toJson(),
-          content,
-        )!;
-        expect(inSdkLibrary(content, partial.id), isFalse);
-        expect(hipSdkDrill(content, partial.id), isNull);
-        expect(restored.steps, isEmpty);
-        expect(restored.removed, 1);
-        expect(restored.coachPlan, original.toJson());
-        expect(planner.customPlan(restored, const TrainingProfile()), isNull);
+        final saved = _stored(original);
+        final encoded = jsonDecode(
+          jsonEncode(CustomRoutinesCodec.encode([saved])),
+        );
+        final restored = CustomRoutinesCodec.decode(encoded, content).single;
+        expect(restored.coachPlan, saved.coachPlan, reason: id);
+        if (catalog.contains(item.exerciseId)) {
+          expect(restored.toJson(), saved.toJson(), reason: id);
+          expect(restored.removed, 0, reason: id);
+        }
+        expect(restored.seconds(content), 0, reason: id);
+        expect(
+          planner.customPlan(restored, const TrainingProfile()),
+          isNull,
+          reason: id,
+        );
         expect(
           planner.customSkipped(restored, const TrainingProfile()).single.kitId,
-          partial.id,
+          id,
         );
-        expect(restored.seconds(content), 0);
       }
-    },
-  );
+    }
+  });
 
   test(
     'legacy routine doses and assessment metadata stay on the local path',
@@ -172,9 +220,28 @@ void main() {
           reason: routine.id,
         );
       }
-      for (final id in legacy.drills.keys.where(catalog.contains)) {
+      for (final id in legacy.drills.keys.where(
+        (id) => inSdkLibrary(content, id),
+      )) {
         expect(hipSdkDrill(content, id), same(legacy.drill(id)), reason: id);
       }
+      final demo = legacy.drill('n-thomas-test');
+      final demoKit = legacy.kit(demo.id)!;
+      expect(hipSdkDrill(content, demo.id), isNull);
+      expect(
+        localPlanner.singlePlan(
+          demo,
+          DoseRules.singleDefault(demoKit),
+          const TrainingProfile(),
+        ),
+        isNull,
+      );
+      expect(
+        content.rules.items
+            .firstWhere((item) => item.id == 'thomas')
+            .demoArt(content.drills),
+        same(demo),
+      );
     },
   );
 }

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/domain/hip_action_media.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -43,7 +42,39 @@ void main() {
     }
   });
 
-  test('public transparent posters match the pinned SDK bundled pack', () {
+  test('r2-v11 covers and thumbnails match the pinned public catalog', () {
+    final catalogBytes = File(
+      'assets/public_media/catalog.json',
+    ).readAsBytesSync();
+    expect(
+      _sha256Hex(catalogBytes),
+      '6f46c0a3fc0b6546193e2e3d867d90add55ce21bf0b8f3c482edaa507cdcabc0',
+    );
+    final catalog = jsonDecode(utf8.decode(catalogBytes)) as Map;
+    final semantics = catalog['semanticCatalog'] as Map;
+    final semanticBytes = File(
+      'assets/public_media/catalog/catalog.json',
+    ).readAsBytesSync();
+    expect(semanticBytes.length, semantics['bytes']);
+    expect(_sha256Hex(semanticBytes), semantics['sha256']);
+    final actions = {
+      for (final action in catalog['actions'] as List) action['id']: action,
+    };
+    for (final id in hiplabCoachAuthorizedActionIds) {
+      final files = actions[id]['files'] as Map;
+      for (final kind in ['cover', 'thumbnail']) {
+        final entry = files[kind] as Map;
+        final path = 'assets/public_posters/r2-v11/$kind/$id.webp';
+        final bytes = File(path).readAsBytesSync();
+        expect(bytes.length, entry['bytes'], reason: path);
+        expect(_sha256Hex(bytes), entry['sha256'], reason: path);
+        expect(entry['alpha'], isTrue, reason: path);
+        expect(_hasWebpAlpha(bytes), isTrue, reason: path);
+      }
+    }
+  });
+
+  test('retained standing posters match the previous SDK r2-v10 pack', () {
     final config = File('.dart_tool/package_config.json');
     final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
     final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
@@ -51,20 +82,26 @@ void main() {
       config.uri.resolve(sdk['rootUri'] as String),
     ).uri;
     final standing = sdkRoot.resolve(
-      'packages/ugk_trainer/assets/pose_hub/app-pack-${trainer.PoseHubActionLibrary.packVersion}/standing/',
+      'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v10/standing/',
     );
-    final bundled = Directory(
-      'assets/public_posters',
-    ).listSync().whereType<File>().map((f) => f.uri.pathSegments.last).toSet();
-    expect(bundled, {
-      for (final id in hiplabCoachAuthorizedActionIds) '$id.webp',
-    });
-    for (final id in hiplabCoachAuthorizedActionIds) {
-      final path = 'assets/public_posters/$id.webp';
+    final bundled =
+        Directory('assets/public_posters')
+            .listSync()
+            .whereType<File>()
+            .map((f) => f.uri.pathSegments.last)
+            .toList()
+          ..sort();
+    expect(bundled, hasLength(209));
+    // Freeze the previous list, including the Thomas assessment demo, without
+    // using today's larger browse/Coach scope to identify legacy assets.
+    expect(
+      _sha256Hex(Uint8List.fromList(utf8.encode(bundled.join('\n')))),
+      'b35af75aa9e49965bf02f3a99d7d2837c5cced84d1306e41a038aec565d0076c',
+    );
+    for (final name in bundled) {
+      final path = 'assets/public_posters/$name';
       final bytes = File(path).readAsBytesSync();
-      final source = File.fromUri(
-        standing.resolve('$id.webp'),
-      ).readAsBytesSync();
+      final source = File.fromUri(standing.resolve(name)).readAsBytesSync();
       expect(bytes.length, source.length, reason: path);
       expect(_sha256Hex(bytes), _sha256Hex(source), reason: path);
       // RIFF/WEBP VP8X with the alpha flag set: transparent poster.
@@ -90,6 +127,23 @@ void main() {
       'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
     );
   });
+}
+
+bool _hasWebpAlpha(Uint8List bytes) {
+  if (bytes.length < 25 ||
+      String.fromCharCodes(bytes.sublist(0, 4)) != 'RIFF' ||
+      String.fromCharCodes(bytes.sublist(8, 12)) != 'WEBP') {
+    return false;
+  }
+  return switch (String.fromCharCodes(bytes.sublist(12, 16))) {
+    'VP8X' => bytes[20] & 0x10 != 0,
+    'VP8L' =>
+      bytes[20] == 0x2f &&
+          ByteData.sublistView(bytes).getUint32(21, Endian.little) &
+                  (1 << 28) !=
+              0,
+    _ => false,
+  };
 }
 
 // Minimal SHA-256 (FIPS 180-4) so the manifest check needs no new package.

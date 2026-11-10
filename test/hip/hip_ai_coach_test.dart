@@ -79,7 +79,11 @@ void main() {
         host.controller.profile.allowedActionIds,
         hiplabCoachAuthorizedActionIds,
       );
-      expect(host.controller.profile.allowedActionIds, hasLength(209));
+      expect(host.controller.profile.allowedActionIds, hasLength(248));
+      expect(
+        host.controller.profile.allowedActionIds,
+        isNot(contains('n-thomas-test')),
+      );
       expect(host.controller.profile.allowedActionIds, contains('chest-A'));
       expect(client.requests, isEmpty);
       await host.close();
