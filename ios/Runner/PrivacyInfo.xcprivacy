@@ -2,8 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- HipLab is offline: no account, no analytics, no ads, no network
-	     beyond the on-device 127.0.0.1 drill-clip server. -->
+	<!-- No account, analytics or ads. Public videos download over HTTPS
+	     into the app cache; training records stay on device. AI is available
+	     only when configured, with requests initiated by the user. Reassess
+	     configured services, retention and App Privacy before upload. -->
 	<key>NSPrivacyTracking</key>
 	<false/>
 	<key>NSPrivacyTrackingDomains</key>

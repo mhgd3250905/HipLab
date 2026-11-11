@@ -268,7 +268,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('这是运动练习，不能替代医生的建议。'), 300);
     expect(find.text('AI 定制用量'), findsNothing);
-    expect(find.byKey(const ValueKey('voice-preview')), findsNothing);
+    expect(find.byKey(const ValueKey('voice-preview')), findsOneWidget);
   }, variant: ios);
 
   testWidgets('iOS privacy explains the offline audio session', (tester) async {

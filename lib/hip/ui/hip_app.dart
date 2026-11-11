@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -21,6 +22,7 @@ import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
+import '../voice/voice_queue.dart';
 import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
 import 'hip_glass.dart';
@@ -73,6 +75,7 @@ class HipApp extends StatefulWidget {
 }
 
 class _HipAppState extends State<HipApp> {
+  final _audioRoutes = RouteObserver<ModalRoute<dynamic>>();
   HipLanguage _loadingLanguage = HipLanguage.zh;
   late Future<(HipStore, HipVoice)> _loading = _load();
 
@@ -167,6 +170,9 @@ class _HipAppState extends State<HipApp> {
     Widget home, {
     HipLanguage language = HipLanguage.zh,
   }) => MaterialApp(
+    navigatorObservers: [
+      if (defaultTargetPlatform == TargetPlatform.iOS) _audioRoutes,
+    ],
     onGenerateTitle: (context) =>
         HipText.of(context).pick(hipAppName, 'HipLab · Hip Mobility'),
     debugShowCheckedModeBanner: false,
@@ -1565,10 +1571,7 @@ class HipVoiceSettingsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = store.voice;
-    // The iOS base release only opens background audio for guided
-    // exercise sessions. The shared settings preview has no session
-    // lifetime, so do not expose it on iOS.
-    final preview = Theme.of(context).platform != TargetPlatform.iOS;
+    final ios = Theme.of(context).platform == TargetPlatform.iOS;
     return Column(
       key: const ValueKey('voice-settings'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1646,7 +1649,9 @@ class HipVoiceSettingsPanel extends StatelessWidget {
                       onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
                     ),
                   ),
-                  if (preview)
+                  if (ios)
+                    _HipIosVoicePreviewButton(settings: v)
+                  else
                     Tooltip(
                       message: HipText.of(context).pick("试听", "Preview"),
                       child: HipPressable(
@@ -1702,6 +1707,140 @@ class HipVoiceSettingsPanel extends StatelessWidget {
       q.tick(t);
       if (i >= cues.length && t > 6) timer.cancel();
     });
+  }
+}
+
+/// A short foreground preview owns its audio lifetime on iOS.
+class _HipIosVoicePreviewButton extends StatefulWidget {
+  const _HipIosVoicePreviewButton({required this.settings});
+  final VoiceSettings settings;
+
+  @override
+  State<_HipIosVoicePreviewButton> createState() =>
+      _HipIosVoicePreviewButtonState();
+}
+
+class _HipIosVoicePreviewButtonState extends State<_HipIosVoicePreviewButton>
+    with WidgetsBindingObserver, RouteAware {
+  Timer? _timer;
+  VoiceQueue? _queue;
+  StreamSubscription<AudioInterruption>? _interruptions;
+  RouteObserver<ModalRoute<dynamic>>? _routes;
+  ModalRoute<dynamic>? _route;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    final routes = Navigator.maybeOf(context)?.widget.observers
+        .whereType<RouteObserver<ModalRoute<dynamic>>>()
+        .firstOrNull;
+    if (_route != route || _routes != routes) {
+      _routes?.unsubscribe(this);
+      _route = route;
+      _routes = routes;
+      if (route != null) routes?.subscribe(this, route);
+    }
+    if (route?.isCurrent == false) _stopPreview();
+  }
+
+  // Release synchronously on navigation, before the new player is built.
+  @override
+  void didPushNext() => _stopPreview();
+
+  @override
+  void didPop() => _stopPreview();
+
+  @override
+  void didUpdateWidget(_HipIosVoicePreviewButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.settings != widget.settings) _stopPreview();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _stopPreview();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _routes?.unsubscribe(this);
+    _stopPreview();
+    super.dispose();
+  }
+
+  void _stopPreview() {
+    final elapsed = (_timer?.tick ?? 0) * .05;
+    _timer?.cancel();
+    _timer = null;
+    unawaited(_interruptions?.cancel());
+    _interruptions = null;
+    final queue = _queue;
+    _queue = null;
+    if (queue == null) return;
+    queue.cancelAll(elapsed);
+    // end invalidates this session synchronously; the SDK serializes its
+    // release with the next begin, including an immediately opened workout.
+    unawaited(queue.output.end());
+  }
+
+  void _preview() {
+    _stopPreview();
+    final voice = HipVoice.of(context);
+    final q = _queue = voice.queue();
+    unawaited(voice.output.begin());
+    if (voice.output case final InterruptibleVoiceOutput output) {
+      _interruptions = output.interruptions.listen((event) {
+        if (event != AudioInterruption.ended) _stopPreview();
+      });
+    }
+    final cues = [
+      const VoiceCue(0, ['p.ready'], CuePriority.call),
+      for (var k = 3; k >= 1; k--)
+        VoiceCue(4.0 - k, ['chime.tick', 'n.$k'], CuePriority.count),
+      const VoiceCue(4, ['chime.start', 'p.go'], CuePriority.call),
+    ];
+    var i = 0;
+    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      final t = timer.tick * .05;
+      while (i < cues.length && cues[i].at <= t) {
+        q.submit(cues[i++], t);
+      }
+      q.tick(t);
+      if (i >= cues.length && t > 6) _stopPreview();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.settings.voice || widget.settings.chimes;
+    return Tooltip(
+      message: HipText.of(context).pick('试听', 'Preview'),
+      child: HipPressable(
+        key: const ValueKey('voice-preview'),
+        semanticLabel: HipText.of(context).pick('试听', 'Preview'),
+        scale: .9,
+        onTap: enabled ? _preview : null,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: HipIcon(
+              HipGlyph.play,
+              size: 16,
+              filled: true,
+              color: enabled ? HipColors.jadeText : HipColors.faint,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

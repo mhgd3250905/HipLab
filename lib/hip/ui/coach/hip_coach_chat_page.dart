@@ -26,8 +26,7 @@ import '../library/library_actions.dart';
 import '../library/practice_page.dart';
 
 bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
-    (configured ?? CoachConfig.fromEnvironment.configured) &&
-    Theme.of(context).platform != TargetPlatform.iOS;
+    configured ?? CoachConfig.fromEnvironment.configured;
 
 /// Only the route, lifecycle and dependency lookup belong to HipLab.
 class HipCoachChatPage extends StatefulWidget {
