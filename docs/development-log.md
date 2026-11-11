@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-12 Android 会员凭据验证
+
+启用 Play 服务账号所属 Google Cloud 项目的 Cloud Pub/Sub API。HipLab 的 RevenueCat 凭据验证通过，商品目录、订阅目录和基础方案可读取。[验证回执](android-membership-2026-11-11.md)
+
 ## 2026-11-11 Android 会员 +65
 
 从 `7118095` 新建本地 `feat/membership`。按 Flare 结构接入匿名 RevenueCat、Android 付费页、训练组门禁和 Hip AI 网关客户端。[实现记录](android-membership-2026-11-11.md)

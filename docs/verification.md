@@ -2,7 +2,7 @@
 
 ## 2026-11-11 Android 会员 +65
 
-`feat/membership` 静态分析 0 问题，全量 660 通过、70 跳过、0 失败。签名商店 AAB 通过 bundletool 和 +62 上传证书核对，已发布 Play 内测。线上网关 402 已实测，购买和恢复待凭据有效后真机验证。[验证记录](android-membership-2026-11-11.md#本地验证)
+`feat/membership` 静态分析 0 问题，全量 660 通过、70 跳过、0 失败。签名商店 AAB 通过 bundletool 和 +62 上传证书核对，已发布 Play 内测。线上网关 402 已实测，RevenueCat 凭据验证通过，购买、恢复和会员 AI 待真机验证。[验证记录](android-membership-2026-11-11.md#本地验证)
 
 ## 2026-11-10 动作库 +64 上架前候选
 

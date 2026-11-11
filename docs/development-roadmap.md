@@ -2,7 +2,7 @@
 
 ## 2026-11-11 Android 会员 +65
 
-Android 月付和年付客户端、训练组与 AI 门禁已接入。Play 商品、内测轨道和网关已启用。下一步上传 Hip 的 RevenueCat Play 服务账号凭据，回读 Valid 后真机验收。[接入记录](android-membership-2026-11-11.md)
+Android 月付和年付客户端、训练组与 AI 门禁已接入。Play 商品、内测轨道和网关已启用。Hip 的 RevenueCat Play 服务账号凭据已验证有效，下一步真机验收购买、恢复和会员 AI。[接入记录](android-membership-2026-11-11.md)
 
 ## 2026-11-10 动作库 +64 上架前候选
 
