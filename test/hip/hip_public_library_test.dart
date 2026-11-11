@@ -62,45 +62,44 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  test(
-    'public single practice preserves all 209 SDK doses and safety gate',
-    () async {
-      final content = await loadHipContent(FileAssetBundle());
-      final store = HipStore(content: content, storage: MemoryStorage());
-      addTearDown(store.dispose);
-      final previous = HipSharedLibrary.current;
-      addTearDown(() => HipSharedLibrary.current = previous);
-      HipSharedLibrary.current = hipSharedLibraryConfig(
-        hipActionScope(content.publicCatalog!),
-      );
-      final actions = LibraryActions(
-        store: store,
-        startPlan: (plan, {from, radius = 28, originColor}) async {},
-      );
-      for (final drill in content.publicCatalog!.drills) {
-        final plan = HipSharedLibrary.planFor(actions, drill.id);
-        if (!hiplabCoachAuthorizedActionIds.contains(drill.id)) {
-          // New in r2-v1 but outside HipLab's fixed list: not startable.
-          expect(plan, isNull, reason: drill.id);
-          continue;
-        }
-        expect(plan, isNotNull, reason: drill.id);
-        expect(plan!.source, PlanSource.single);
-        final item = plan.sdkPlan!.items.single;
-        expect(item.exerciseId, drill.id);
-        expect(item.mode, drill.defaultDose.mode);
-        expect(item.sets, drill.defaultDose.sets);
-        expect(item.reps, drill.defaultDose.reps);
-        expect(item.workSeconds, drill.defaultDose.seconds);
-        expect(item.restSeconds, drill.defaultDose.restSeconds);
-        expect(item.perSide, drill.unilateral);
-        expect(plan.sdkPlan!.equipment, drill.equipment.toList());
+  test('public single practice preserves all 209 SDK doses', () async {
+    final content = await loadHipContent(FileAssetBundle());
+    final store = HipStore(content: content, storage: MemoryStorage());
+    addTearDown(store.dispose);
+    final previous = HipSharedLibrary.current;
+    addTearDown(() => HipSharedLibrary.current = previous);
+    HipSharedLibrary.current = hipSharedLibraryConfig(
+      hipActionScope(content.publicCatalog!),
+    );
+    final actions = LibraryActions(
+      store: store,
+      startPlan: (plan, {from, radius = 28, originColor}) async {},
+    );
+    for (final drill in content.publicCatalog!.drills) {
+      final plan = HipSharedLibrary.planFor(actions, drill.id);
+      if (!hiplabCoachAuthorizedActionIds.contains(drill.id)) {
+        // New in r2-v1 but outside HipLab's fixed list: not startable.
+        expect(plan, isNull, reason: drill.id);
+        continue;
       }
-      expect(HipSharedLibrary.planFor(actions, 'h-db-shrug'), isNull);
-      store.safety = {'pregnancy': true};
-      expect(HipSharedLibrary.canStart(actions, 'chest-A'), isFalse);
-    },
-  );
+      expect(plan, isNotNull, reason: drill.id);
+      expect(plan!.source, PlanSource.single);
+      final item = plan.sdkPlan!.items.single;
+      expect(item.exerciseId, drill.id);
+      expect(item.mode, drill.defaultDose.mode);
+      expect(item.sets, drill.defaultDose.sets);
+      expect(item.reps, drill.defaultDose.reps);
+      expect(item.workSeconds, drill.defaultDose.seconds);
+      expect(item.restSeconds, drill.defaultDose.restSeconds);
+      expect(item.perSide, drill.unilateral);
+      expect(plan.sdkPlan!.equipment, drill.equipment.toList());
+    }
+    expect(HipSharedLibrary.planFor(actions, 'h-db-shrug'), isNull);
+    // Legacy safety answers no longer veto training: the first-launch
+    // safety cards were removed.
+    store.safety = {'pregnancy': true};
+    expect(HipSharedLibrary.canStart(actions, 'chest-A'), isTrue);
+  });
 
   testWidgets(
     'new public action opens the SDK player with SDK discomfort flow',
