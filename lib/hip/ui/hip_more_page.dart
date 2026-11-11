@@ -8,6 +8,7 @@ import 'hip_app.dart' show HipProgressPage, HipProgressSection, HipSettingsPage;
 import 'hip_calm.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
+import 'hip_membership_scope.dart';
 import 'hip_page_kit.dart';
 import 'hip_routes.dart';
 import 'hip_theme.dart';
@@ -55,6 +56,7 @@ class HipMorePage extends StatelessWidget {
 
   Widget _list(BuildContext context) {
     final t = HipText.of(context);
+    final membership = HipMembershipScope.of(context);
     final groups = store.customRoutines.length;
     // UI r2 M3: the same list 动作库 shows.
     final drills = hipActionItems(store.content, LibText.of(context)).length;
@@ -115,6 +117,14 @@ class HipMorePage extends StatelessWidget {
       const SizedBox(height: 28),
       HipListGroup(
         children: [
+          if (membership != null)
+            HipListRow(
+              key: const ValueKey('more-membership'),
+              glyph: HipGlyph.bolt,
+              title: t.pick('HipLab 会员', 'HipLab Premium'),
+              meta: membership.isPremium ? t.pick('已开通', 'Active') : null,
+              onTap: () => openHipMembership(context, membership),
+            ),
           HipListRow(
             key: const ValueKey('more-settings'),
             glyph: HipGlyph.contrast,

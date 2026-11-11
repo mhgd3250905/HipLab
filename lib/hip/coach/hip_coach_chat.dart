@@ -1,25 +1,29 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
-import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
+import 'package:flutter/foundation.dart'
+    show ValueNotifier, kDebugMode, debugPrint;
 import 'package:flutter/services.dart';
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import '../../core/storage/local_state_storage.dart';
+import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import 'coach_config.dart';
 import 'coach_device_id.dart';
 import 'hip_coach_chat_storage.dart';
 import 'hip_coach_profile.dart';
 import 'hip_coach_ai_tags.dart';
+import 'membership_gateway.dart';
 
 /// App lifetime and host ports only. The SDK owns the sole conversation.
 class HipCoachChat {
   HipCoachChat({
     required this.store,
     this.config = CoachConfig.fromEnvironment,
+    this.membership,
     this.gateway,
     this.storage,
     this.bundle,
@@ -32,6 +36,7 @@ class HipCoachChat {
   static const namespace = 'hiplab';
   final HipStore store;
   final CoachConfig config;
+  final HipMembership? membership;
   final CoachGatewayBinding? gateway;
   final LocalStateStorage? storage;
   final AssetBundle? bundle;
@@ -46,7 +51,44 @@ class HipCoachChat {
   bool _closed = false;
   String _languageTag = 'zh';
   String get languageTag => _languageTag;
-  bool get configured => gateway != null || config.configured;
+  final gatewayNotice = ValueNotifier<GatewayNotice?>(null);
+
+  bool get configured =>
+      gateway != null ||
+      (membership == null
+          ? config.configured
+          : MembershipGateway.baseUrl != null);
+
+  void _notifyGateway(GatewayNotice notice) {
+    if (_closed) return;
+    if (notice.kind == GatewayRejection.premiumRequired) {
+      membership?.rejectPremium();
+    }
+    gatewayNotice.value = null;
+    gatewayNotice.value = notice;
+  }
+
+  coach.OpenAiCompatibleClient _createClient() {
+    final member = membership;
+    if (member == null) {
+      return config.createClient(deviceId: CoachDeviceId.device.load);
+    }
+    final baseUrl = MembershipGateway.baseUrl;
+    if (baseUrl == null) throw StateError('HipLab AI gateway is unavailable');
+    return coach.OpenAiCompatibleClient(
+      config: const CoachConfig().llmConfig.copyWith(
+        baseUrl: baseUrl,
+        model: CoachConfig.defaultModel,
+      ),
+      auth: const coach.NoAuth(),
+      httpClient: MembershipGateway(
+        baseUri: Uri.parse(baseUrl),
+        readUserId: () => member.activeAppUserId,
+        onNotice: _notifyGateway,
+      ),
+    );
+  }
+
   CoachChatController get controller =>
       _controller ?? (throw StateError('Open the coach first'));
 
@@ -118,15 +160,14 @@ class HipCoachChat {
               gateway ??
               CoachGatewayBinding(
                 create: () {
-                  final client = config.createClient(
-                    deviceId: CoachDeviceId.device.load,
-                  );
+                  final client = _createClient();
                   return CoachClientLease.owned(client, release: client.close);
                 },
               ),
           plans: HiplabCoachPlanStore(
             store,
             catalog: profile.planningCatalog(catalog),
+            canSave: () => membership?.isPremium ?? true,
           ),
           history: history,
           preferences: preferences,
@@ -178,7 +219,9 @@ class HipCoachChat {
   void requestCompose() => controller.requestCompose();
 
   Future<void> close() async {
+    if (_closed) return;
     _closed = true;
+    gatewayNotice.dispose();
     await _controller?.close();
     _preferences?.dispose();
   }

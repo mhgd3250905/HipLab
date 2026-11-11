@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../coach/coach_config.dart';
+import '../coach/membership_gateway.dart';
 import 'hip_theme.dart';
 import 'hip_icons.dart';
+import 'hip_membership_scope.dart';
 import 'hip_page_kit.dart';
 import 'hip_widgets.dart';
 import 'hip_text.dart';
@@ -20,6 +22,8 @@ class HipPrivacyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ios = Theme.of(context).platform == TargetPlatform.iOS;
     final publicPolicyUrl = ios ? iosPolicyUrl : policyUrl;
+    final membership = HipMembershipScope.of(context) != null;
+    final configured = _coachConfigured(membership);
     return HipNavPage(
       title: HipText.of(context).pick('隐私政策', 'Privacy policy'),
       leadingKey: const ValueKey('privacy-back'),
@@ -45,9 +49,10 @@ class HipPrivacyPage extends StatelessWidget {
           _PolicySection(
             title: '我们如何处理你的信息',
             body:
-                '本应用无需账号，不含广告、行为分析或支付功能。'
+                '本应用无需账号，不含广告或行为分析。'
+                '${membership ? '安卓会员订阅由 Google Play 处理。' : '此版本不含支付功能。'}'
                 '日常训练和自测记录保存在本机，不会自动上传。'
-                '${CoachConfig.fromEnvironment.configured ? '只有你主动使用 AI 定制时，才会向 AI 服务发送请求。' : '此基础版不启用在线 AI 或云端同步，不向开发者服务器发送训练记录。'}',
+                '${configured ? '只有你主动使用 AI 定制时，才会向 AI 服务发送请求。' : '此基础版不启用在线 AI 或云端同步，不向开发者服务器发送训练记录。'}',
           ),
           const _PolicySection(
             title: '只在设备上保存的记录',
@@ -67,12 +72,22 @@ class HipPrivacyPage extends StatelessWidget {
                 '本应用未禁用系统备份。你可以在设备的系统备份设置中管理相关备份。'
                 '我们无法访问或代你删除设备及系统备份中的记录。',
           ),
-          if (CoachConfig.fromEnvironment.configured)
+          if (membership)
+            const _PolicySection(
+              title: '安卓会员订阅',
+              body:
+                  'Google Play 处理购买和续订。RevenueCat 使用随机生成的匿名标识处理订阅状态及恢复购买。应用不会收到支付卡信息。',
+            ),
+          if (configured)
             _PolicySection(
               title: 'AI 定制与设备标识',
               body:
                   '使用 AI 定制时，你输入的需求和当前对话会发送给 AI 服务生成计划。'
-                  '${ios ? (CoachConfig.fromEnvironment.authMode == 'worker' ? '请求会附带首次使用时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。' : '此连接模式不附带 AI 安装标识。') : '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。'}'
+                  '${membership
+                      ? 'AI 网关会使用 RevenueCat 的匿名标识核对会员权限和用量。'
+                      : ios
+                      ? (CoachConfig.fromEnvironment.authMode == 'worker' ? '请求会附带首次使用时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。' : '此连接模式不附带 AI 安装标识。')
+                      : '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。'}'
                   'App 不会自动发送本机自测结果或训练历史。',
             )
           else
@@ -89,7 +104,7 @@ class HipPrivacyPage extends StatelessWidget {
                 '开始训练前可能需要联网准备视频，尚未缓存的视频在离线时可能无法播放。'
                 '网络也用于检查公共动作目录和素材更新。'
                 '${ios ? '媒体请求包含网络连接所需的 IP 地址及资源路径，不附带训练记录、自测结果或 AI 安装标识。' : ''}'
-                '${CoachConfig.fromEnvironment.configured ? '网络权限也用于你主动使用的 AI 定制请求。' : ''}'
+                '${configured ? '网络权限也用于你主动使用的 AI 定制请求。' : ''}'
                 '应用不访问相机、麦克风、联系人或位置。',
           ),
           _PolicySection(
@@ -196,6 +211,7 @@ const _privacyTitles = <String, String>{
   '我们如何处理你的信息': 'How we handle your information',
   '只在设备上保存的记录': 'Records stored only on your device',
   '保留、删除与系统备份': 'Retention, deletion and system backups',
+  '安卓会员订阅': 'Android membership',
   'AI 定制与设备标识': 'AI training and installation identifier',
   '在线 AI 未启用': 'Online AI is not enabled',
   '视频、网络与权限': 'Video, network access and permissions',
@@ -204,13 +220,19 @@ const _privacyTitles = <String, String>{
   '政策更新与联系': 'Policy updates and contact',
 };
 
+bool _coachConfigured(bool membership) => membership
+    ? MembershipGateway.baseUrl != null
+    : CoachConfig.fromEnvironment.configured;
+
 String _privacyBody(BuildContext context, String section) {
-  final configured = CoachConfig.fromEnvironment.configured;
+  final membership = HipMembershipScope.of(context) != null;
+  final configured = _coachConfigured(membership);
   final ios = Theme.of(context).platform == TargetPlatform.iOS;
   final platform = ios ? 'iOS' : 'Android';
   return switch (section) {
     '我们如何处理你的信息' =>
-      'No account is required. This app contains no advertising, behavioral analytics or payment features. '
+      'No account is required. This app contains no advertising or behavioral analytics. '
+          '${membership ? 'Google Play processes Android subscriptions. ' : 'This version has no payment features. '}'
           'Your routine training and check-up records stay on your device and are not uploaded automatically. '
           '${configured ? 'Requests are sent to the AI service only when you choose to use AI training.' : 'This basic edition does not enable online AI or cloud sync and does not send training records to a developer server.'}',
     '只在设备上保存的记录' =>
@@ -224,9 +246,16 @@ String _privacyBody(BuildContext context, String section) {
           'and restore it when you reinstall. This app has not disabled system backups. You can manage backups '
           'in your device’s system backup settings. We cannot access or delete records on your device or '
           'in system backups on your behalf.',
+    '安卓会员订阅' =>
+      'Google Play processes purchases and renewals. RevenueCat uses a randomly generated anonymous identifier '
+          'to check subscription status and restore purchases. The app does not receive payment card details.',
     'AI 定制与设备标识' =>
       'When you use AI training, your request and current conversation are sent to the AI service to generate a plan. '
-          '${ios && CoachConfig.fromEnvironment.authMode != 'worker' ? 'This connection mode does not attach an AI installation identifier. ' : 'Requests include an installation identifier generated randomly at first launch and stored locally to identify device requests. It is not your phone’s hardware serial number. '}'
+          '${membership
+              ? 'The AI gateway uses the RevenueCat anonymous identifier to verify membership and usage limits. '
+              : ios && CoachConfig.fromEnvironment.authMode != 'worker'
+              ? 'This connection mode does not attach an AI installation identifier. '
+              : 'Requests include an installation identifier generated randomly at first launch and stored locally to identify device requests. It is not your phone’s hardware serial number. '}'
           'The app does not automatically send your local check-up results or training history.',
     '在线 AI 未启用' =>
       'This version has no AI credentials configured, so AI training and usage entries are hidden. '

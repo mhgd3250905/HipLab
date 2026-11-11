@@ -4,12 +4,15 @@
 //   flutter build apk --release
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'hip/coach/coach_config.dart';
 import 'hip/coach/coach_device_id.dart';
+import 'hip/control/hip_membership.dart';
 import 'hip/data/hip_public_catalog.dart';
 import 'hip/data/posehub_catalog_updates.dart';
+import 'hip/platform/hip_revenuecat.dart';
 import 'hip/ui/hip_app.dart';
 
 Future<void> main() async {
@@ -20,7 +23,10 @@ Future<void> main() async {
   // Generate only for an AI-enabled build, before the AI page is opened. A coach
   // request awaits this same operation; storage errors keep offline use working
   // and can be retried before any network request sends a device ID.
-  if (CoachConfig.fromEnvironment.configured) {
+  final membership = !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+      ? HipMembership(HipRevenueCatStore())
+      : null;
+  if (membership == null && CoachConfig.fromEnvironment.configured) {
     unawaited(
       CoachDeviceId.device.load().then<void>(
         (_) {},
@@ -32,5 +38,5 @@ Future<void> main() async {
       ),
     );
   }
-  runApp(const HipApp());
+  runApp(HipApp(membership: membership));
 }

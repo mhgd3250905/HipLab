@@ -6,6 +6,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../coach/coach_config.dart';
 import '../../coach/hip_coach_chat_storage.dart';
+import '../../coach/membership_gateway.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_session.dart';
 import '../../trainer/hip_sdk_session_builder.dart';
@@ -14,6 +15,7 @@ import '../../voice/session_script.dart';
 import '../hip_app.dart' show HipSettingsPage;
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_player_page.dart';
 import '../hip_routes.dart';
@@ -38,10 +40,50 @@ class HipCoachChatPage extends StatefulWidget {
 
 class _HipCoachChatPageState extends State<HipCoachChatPage> {
   Future<CoachChatController>? _loading;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.actions.coach?.gatewayNotice.addListener(_showGatewayNotice);
+  }
+
+  @override
+  void dispose() {
+    widget.actions.coach?.gatewayNotice.removeListener(_showGatewayNotice);
+    super.dispose();
+  }
+
+  void _showGatewayNotice() {
+    final notice = widget.actions.coach?.gatewayNotice.value;
+    if (notice == null || !mounted) return;
+    final t = HipText.of(context);
+    final limit = notice.limit;
+    final text = switch (notice.kind) {
+      GatewayRejection.premiumRequired => t.pick(
+        'AI 定制需要有效会员。',
+        'AI training requires an active membership.',
+      ),
+      GatewayRejection.dailyQuota => t.pick(
+        '今日 AI 用量已达 $limit 次，UTC 零点恢复。',
+        'Your daily limit of $limit AI requests resets at midnight UTC.',
+      ),
+      GatewayRejection.rateLimit =>
+        limit == null
+            ? t.pick('请求太频繁，请稍后重试。', 'Too many requests. Try again shortly.')
+            : t.pick(
+                '请求已达每分钟 $limit 次，请稍后重试。',
+                'The limit is $limit requests per minute. Try again shortly.',
+              ),
+    };
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loading = _load();
+    _loading = hasHipPremium(context) ? _load() : null;
   }
 
   Future<CoachChatController> _load() async {
@@ -62,6 +104,19 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
   Widget build(BuildContext context) => FutureBuilder<CoachChatController>(
     future: _loading,
     builder: (context, snapshot) {
+      if (!hasHipPremium(context)) {
+        final membership = HipMembershipScope.of(context)!;
+        final t = HipText.of(context);
+        return HipNavPage(
+          title: t.pick('HipLab 训练助手', 'HipLab Coach'),
+          body: Center(
+            child: HipPrimaryButton(
+              label: t.pick('查看会员', 'View membership'),
+              onPressed: () => openHipMembership(context, membership),
+            ),
+          ),
+        );
+      }
       if (snapshot.data case final chat?) {
         return CoachChatPage(controller: chat);
       }
@@ -212,18 +267,21 @@ Future<CoachChatController> loadHipChat(
             ),
       onOpenLibrary: (context, request) => _pushPractice(context, actions, 0),
       onOpenSavedPlans: (context) => _pushPractice(context, actions, 2),
-      onOpenCustomPlan: (context) => _push(
-        context,
-        GroupEditorPage(
-          actions: actions,
-          initial: CustomRoutine(
-            id: store.newCustomId(),
-            name: store.nextCustomName(),
-            steps: const [],
+      onOpenCustomPlan: (context) async {
+        if (!await ensureHipPremium(context) || !context.mounted) return;
+        await _push(
+          context,
+          GroupEditorPage(
+            actions: actions,
+            initial: CustomRoutine(
+              id: store.newCustomId(),
+              name: store.nextCustomName(),
+              steps: const [],
+            ),
+            isNew: true,
           ),
-          isNew: true,
-        ),
-      ),
+        );
+      },
       onOpenSettings: (context) =>
           _push(context, HipSettingsPage(store: store)),
     ),
@@ -355,6 +413,9 @@ class HipCoachChatEntryCard extends StatelessWidget {
       '说说想拉伸哪里，用髋部动作排一套训练',
       'Tell us your goals and build a guided workout',
     ),
-    onTap: () => _push(context, HipCoachChatPage(actions: actions)),
+    onTap: () async {
+      if (!await ensureHipPremium(context) || !context.mounted) return;
+      await _push(context, HipCoachChatPage(actions: actions));
+    },
   );
 }

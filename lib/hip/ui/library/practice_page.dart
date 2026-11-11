@@ -12,6 +12,7 @@ import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
 import '../hip_content_text.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
@@ -352,6 +353,7 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   Future<void> _newGroup() async {
+    if (!await ensureHipPremium(context) || !mounted) return;
     final store = actions.store;
     final draft = CustomRoutine(
       id: store.newCustomId(),
@@ -369,6 +371,7 @@ class _PracticePageState extends State<PracticePage> {
       ),
     );
     if (ids == null || ids.isEmpty || !mounted) return;
+    if (!await ensureHipPremium(context) || !mounted) return;
     await Navigator.of(context).push(
       HipRoute.content<void>(
         (_) => GroupEditorPage(
@@ -413,12 +416,38 @@ class _PracticePageState extends State<PracticePage> {
 }
 
 /// A custom group: name, moves · time, 「改自套路」, thumbnails; the tinted
-/// 「▶ 开始」 pill plays it, the rest of the card opens the editor.
+/// 「▶ 开始」 pill plays it, the rest opens its details or editor.
 class GroupCard extends StatelessWidget {
   GroupCard({super.key, required this.actions, required this.group});
   final LibraryActions actions;
   final CustomRoutine group;
   final _startKey = GlobalKey();
+
+  Future<void> _open(BuildContext context) async {
+    if (hasHipPremium(context)) {
+      await _edit(context, group);
+      return;
+    }
+    await Navigator.of(context).push(
+      HipRoute.content<void>(
+        (_) => _SavedGroupPage(actions: actions, initial: group, onEdit: _edit),
+      ),
+    );
+  }
+
+  Future<void> _edit(BuildContext context, CustomRoutine group) async {
+    if (!await ensureHipPremium(context) || !context.mounted) return;
+    final current = actions.store.customRoutine(group.id) ?? group;
+    if (current.coachPlan != null && actions.coach != null) {
+      await openHipSavedCoachPlan(context, actions, current);
+      return;
+    }
+    await Navigator.of(context).push(
+      HipRoute.content<void>(
+        (_) => GroupEditorPage(actions: actions, initial: current),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -442,13 +471,7 @@ class GroupCard extends StatelessWidget {
       semanticLabel: g.name,
       preserveChildSemantics: true,
       scale: .98,
-      onTap: () => g.coachPlan != null && actions.coach != null
-          ? openHipSavedCoachPlan(context, actions, g)
-          : Navigator.of(context).push(
-              HipRoute.content<void>(
-                (_) => GroupEditorPage(actions: actions, initial: g),
-              ),
-            ),
+      onTap: () => _open(context),
       child: hipFlatCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,6 +563,133 @@ class GroupCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SavedGroupPage extends StatelessWidget {
+  const _SavedGroupPage({
+    required this.actions,
+    required this.initial,
+    required this.onEdit,
+  });
+
+  final LibraryActions actions;
+  final CustomRoutine initial;
+  final Future<void> Function(BuildContext, CustomRoutine) onEdit;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: actions.store,
+    builder: (context, _) {
+      final group = actions.store.customRoutine(initial.id);
+      if (group == null) {
+        return HipNavPage(title: initial.name, body: const SizedBox.shrink());
+      }
+      final t = LibText.of(context);
+      final content = actions.store.content;
+      final secs = group.seconds(content);
+      return HipNavPage(
+        key: const ValueKey('saved-group-details'),
+        title: group.name,
+        subtitle: '${t.movesCount(group.steps.length)} · ${t.duration(secs)}',
+        trailing: GroupDeleteButton(
+          key: const ValueKey('saved-group-delete'),
+          actions: actions,
+          group: group,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          children: [
+            if (group.coachPlan == null)
+              Text('${t.restBetween} ${t.restValue(group.restSeconds)}'),
+            if (group.removed > 0) Text(t.delisted(group.removed)),
+            for (final step in group.steps)
+              _move(content, t, step, coachPlan: group.coachPlan != null),
+          ],
+        ),
+        bottomBar: LibFooter(
+          children: [
+            Expanded(
+              child: HipSecondaryButton(
+                key: const ValueKey('saved-group-edit'),
+                label: t.editGroup,
+                onPressed: () async {
+                  await onEdit(context, group);
+                  if (context.mounted &&
+                      actions.store.customRoutine(group.id) == null) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Builder(
+                builder: (startContext) => HipPrimaryButton(
+                  key: const ValueKey('saved-group-start'),
+                  label: t.start,
+                  icon: HipGlyph.play,
+                  onPressed: actions.store.blocked || group.steps.isEmpty
+                      ? null
+                      : () => startGroup(
+                          context,
+                          actions,
+                          group,
+                          from: startContext,
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
+  Widget _move(
+    HipContent content,
+    LibText t,
+    CustomStep step, {
+    required bool coachPlan,
+  }) {
+    final drill = coachPlan || isSdkGroupStep(content, step.kitId)
+        ? hipSdkDrill(content, step.kitId)
+        : content.drills[step.kitId];
+    final kit = content.kit(step.kitId);
+    final dose = coachPlan
+        ? t.savedPlanDose(step)
+        : kit == null
+        ? sdkStepDoseText(content, step, lang: t.lang)
+        : doseText(kit, step.dose(kit), single: false, lang: t.lang);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          if (drill != null) ...[
+            HipThumb(
+              size: 44,
+              radius: 10,
+              child: HipDrillArt(drill: drill, showPendingLabel: false),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  drill == null
+                      ? step.kitId
+                      : drillName(content, drill, t.lang),
+                ),
+                if (dose.isNotEmpty)
+                  Text(dose, style: TextStyle(color: HipColors.muted)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

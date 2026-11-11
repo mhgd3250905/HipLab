@@ -2,6 +2,7 @@
     <!-- WebView plays bundled assets through a loopback HTTP server. Android
          requires INTERNET for these local sockets; no remote service is used. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.android.vending.BILLING" />
     <!-- User-started training plays spoken coaching while backgrounded/locked.
          Keep this app-level declaration explicit for the Play FGS declaration. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

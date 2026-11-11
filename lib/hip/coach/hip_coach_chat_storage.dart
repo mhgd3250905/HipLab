@@ -12,7 +12,8 @@ import '../domain/hip_settings.dart';
 
 /// The practice library remains the only writer of durable saved plans.
 class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
-  HiplabCoachPlanStore(this.store, {required this.catalog});
+  HiplabCoachPlanStore(this.store, {required this.catalog, this.canSave});
+  final bool Function()? canSave;
   final HipStore store;
   final coach.Catalog catalog;
   final List<String> unreadableExternalIds = [];
@@ -111,6 +112,9 @@ class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
 
   @override
   Future<CoachPlanWriteResult> save(CoachPlanWriteRequest request) async {
+    if (canSave?.call() == false) {
+      return const CoachPlanWriteResult.failure(CoachPlanWriteStatus.readOnly);
+    }
     final update = request.mode == CoachPlanWriteMode.update;
     if (update && request.externalId == null) {
       return const CoachPlanWriteResult.failure(CoachPlanWriteStatus.deleted);

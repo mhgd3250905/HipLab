@@ -3,6 +3,7 @@
 // names and key points come from the action kits' display.{zh,en}.
 import 'package:flutter/widgets.dart';
 
+import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 
 class LibText {
@@ -215,6 +216,18 @@ class LibText {
   String get total => _('总时长', 'Total');
   String summary(int n, int rest) =>
       _('$n 个动作 · 休息 $rest 秒', '$n moves · ${rest}s rest');
+  String savedPlanDose(CustomStep step) {
+    final dose = switch ((step.reps, step.seconds)) {
+      (final reps?, _) => _('$reps 次', '$reps reps'),
+      (_, final seconds?) => restValue(seconds),
+      _ => '',
+    };
+    final sets = step.sets ?? 1;
+    return sets > 1 && dose.isNotEmpty
+        ? _('$sets 组 × $dose', '$sets × $dose')
+        : dose;
+  }
+
   String get addMoves => _('＋ 添加动作', '+ Add moves');
   String get save => _('保存', 'Save');
   String get discardTitle => _('放弃修改？', 'Discard changes?');

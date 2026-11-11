@@ -10,6 +10,7 @@ import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
@@ -180,6 +181,7 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
       // its animation runs (PR #22 F9): never save the old list.
       await _settleSwipes();
       if (!mounted || _live.isEmpty) return;
+      if (!await ensureHipPremium(context) || !mounted || _live.isEmpty) return;
       await widget.actions.store.saveCustomRoutine(_current);
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -187,23 +189,8 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
     }
   }
 
-  Future<void> _delete() async {
-    final t = LibText.of(context);
-    final yes = await showHipConfirmDialog(
-      context,
-      title: t.deleteGroup,
-      message: t.deleteGroupBody(widget.initial.name),
-      cancelLabel: t.cancel,
-      confirmLabel: t.delete,
-      destructive: true,
-      confirmKey: const ValueKey('editor-delete-confirm'),
-    );
-    if (yes != true) return;
-    await widget.actions.store.deleteCustomRoutine(widget.initial.id);
-    if (mounted) Navigator.of(context).pop();
-  }
-
   Future<void> _addMoves() async {
+    if (!await ensureHipPremium(context) || !mounted) return;
     final ids = await Navigator.of(context).push<List<String>>(
       HipRoute.content(
         (_) => DrillPickerPage(
@@ -345,24 +332,10 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
         title: t.editGroup,
         trailing: widget.isNew
             ? null
-            : Tooltip(
-                message: t.deleteGroup,
-                child: HipPressable(
-                  key: const ValueKey('editor-delete'),
-                  semanticLabel: t.deleteGroup,
-                  scale: .9,
-                  onTap: _delete,
-                  child: SizedBox.square(
-                    dimension: 44,
-                    child: Center(
-                      child: HipIcon(
-                        HipGlyph.trash,
-                        size: 20,
-                        color: HipColors.text,
-                      ),
-                    ),
-                  ),
-                ),
+            : GroupDeleteButton(
+                key: const ValueKey('editor-delete'),
+                actions: widget.actions,
+                group: widget.initial,
               ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -724,6 +697,53 @@ class _GroupEditorPageState extends State<GroupEditorPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class GroupDeleteButton extends StatelessWidget {
+  const GroupDeleteButton({
+    super.key,
+    required this.actions,
+    required this.group,
+  });
+
+  final LibraryActions actions;
+  final CustomRoutine group;
+
+  Future<void> _delete(BuildContext context, LibText t) async {
+    final yes = await showHipConfirmDialog(
+      context,
+      title: t.deleteGroup,
+      message: t.deleteGroupBody(group.name),
+      cancelLabel: t.cancel,
+      confirmLabel: t.delete,
+      destructive: true,
+      confirmKey: const ValueKey('editor-delete-confirm'),
+    );
+    if (yes != true || !context.mounted) return;
+    final navigator = Navigator.of(context);
+    final route = ModalRoute.of(context);
+    await actions.store.deleteCustomRoutine(group.id);
+    if (navigator.mounted && route?.isCurrent == true) navigator.pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = LibText.of(context);
+    return Tooltip(
+      message: t.deleteGroup,
+      child: HipPressable(
+        semanticLabel: t.deleteGroup,
+        scale: .9,
+        onTap: () => _delete(context, t),
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: HipIcon(HipGlyph.trash, size: 20, color: HipColors.text),
+          ),
         ),
       ),
     );

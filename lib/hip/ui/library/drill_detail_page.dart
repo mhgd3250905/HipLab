@@ -8,6 +8,7 @@ import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
 import '../hip_content_text.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -305,6 +306,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
   }
 
   Future<void> _addToGroup(BuildContext context) async {
+    if (!await ensureHipPremium(context) || !context.mounted) return;
     final t = LibText.of(context);
     final fullPlanHint = t.isEn
         ? 'Adjust this plan in its details'
@@ -366,9 +368,10 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
         ),
       ),
     );
-    if (picked == null || !mounted) return;
+    if (picked == null || !context.mounted) return;
+    if (!await ensureHipPremium(context) || !context.mounted) return;
     if (picked.isEmpty) {
-      await Navigator.of(this.context).push(
+      await Navigator.of(context).push(
         HipRoute.content<void>(
           (_) => GroupEditorPage(
             actions: widget.actions,
@@ -385,15 +388,19 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     }
     final g = store.customRoutine(picked);
     if (g == null) return;
-    if (g.coachPlan != null) {
-      ScaffoldMessenger.of(this.context)
+    if (g.coachPlan != null || g.steps.length >= CustomRoutine.maxSteps) {
+      ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(fullPlanHint)));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(g.coachPlan != null ? fullPlanHint : t.groupFull),
+          ),
+        );
       return;
     }
     await store.saveCustomRoutine(g.copyWith(steps: [...g.steps, step]));
-    if (!mounted) return;
-    ScaffoldMessenger.of(this.context)
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(t.addedTo(g.name))));
   }

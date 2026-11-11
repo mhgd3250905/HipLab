@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
+import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
@@ -29,6 +30,7 @@ import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_home_action_deck.dart';
 import 'hip_home_routine_folder.dart';
+import 'hip_membership_scope.dart';
 import 'hip_more_page.dart';
 import 'hip_page_kit.dart';
 import 'hip_player_page.dart';
@@ -54,6 +56,7 @@ class HipApp extends StatefulWidget {
     this.videoEnabled = true,
     this.voice,
     this.coach,
+    this.membership,
     this.mediaPolicy,
   });
 
@@ -68,6 +71,7 @@ class HipApp extends StatefulWidget {
   /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
   /// otherwise built from external configuration (unconfigured → hidden).
   final HipCoachChat? coach;
+  final HipMembership? membership;
   final trainer.TrainingMediaPolicy? mediaPolicy;
 
   @override
@@ -78,6 +82,26 @@ class _HipAppState extends State<HipApp> {
   final _audioRoutes = RouteObserver<ModalRoute<dynamic>>();
   HipLanguage _loadingLanguage = HipLanguage.zh;
   late Future<(HipStore, HipVoice)> _loading = _load();
+
+  AppLifecycleListener? _membershipLifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.membership case final membership?) {
+      unawaited(membership.refresh());
+      _membershipLifecycle = AppLifecycleListener(
+        onResume: () => unawaited(membership.refresh()),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _membershipLifecycle?.dispose();
+    widget.membership?.dispose();
+    super.dispose();
+  }
 
   Future<(HipStore, HipVoice)> _load() async {
     final store = widget.store ?? HipStore(content: await loadHipContent());
@@ -156,7 +180,11 @@ class _HipAppState extends State<HipApp> {
           child: _shell(
             _mode(store.theme),
             store.onboarded
-                ? HipHome(store: store, coach: widget.coach)
+                ? HipHome(
+                    store: store,
+                    coach: widget.coach,
+                    membership: widget.membership,
+                  )
                 : HipOnboarding(store: store),
             language: store.language,
           ),
@@ -197,6 +225,9 @@ class _HipAppState extends State<HipApp> {
           policy: policy,
           child: content,
         );
+      }
+      if (widget.membership case final membership?) {
+        content = HipMembershipScope(membership: membership, child: content);
       }
       return _PaletteScope(child: content);
     },
@@ -637,11 +668,12 @@ class _HipOnboardingState extends State<HipOnboarding> {
 // else lives in 「更多」 (top-right ⋯).
 
 class HipHome extends StatefulWidget {
-  const HipHome({super.key, required this.store, this.coach});
+  const HipHome({super.key, required this.store, this.coach, this.membership});
   final HipStore store;
 
   /// AI 定制 service; null = built from --dart-define.
   final HipCoachChat? coach;
+  final HipMembership? membership;
   @override
   State<HipHome> createState() => _HipHomeState();
 }
@@ -707,7 +739,8 @@ class _HipHomeState extends State<HipHome> {
   final _practice = PracticeMemory();
 
   /// AI 定制 conversation: survives leaving the page and a session.
-  late final _coach = widget.coach ?? HipCoachChat(store: store);
+  late final _coach =
+      widget.coach ?? HipCoachChat(store: store, membership: widget.membership);
   late final _library = LibraryActions(
     store: store,
     startPlan: _startPlan,
