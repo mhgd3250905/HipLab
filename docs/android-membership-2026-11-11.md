@@ -24,3 +24,15 @@ Flutter 3.44.7 静态分析 0 问题。全量测试 660 通过、70 跳过、0 �
 本地调试 AAB 通过 `bundletool validate`，确认包名 `com.ugk.hiplab`、版本码 65、Play Billing 权限。大小 116,239,402 字节，SHA-256 为 `b863ba706b9dc47e476d6f4c951b7e2813829484f3beab9c2b620788ed1e7579`。路径为 `E:/AII-3D/hiplab-releases/membership-65-local/hiplab-1.1.2+65-local-debug.aab`。当前构建的 `purchases_flutter` 仍使用 Kotlin Gradle Plugin，Flutter 3.44.7 构建成功并提示未来升级时检查该依赖。
 
 Play 内测包、RevenueCat 凭据 Valid、Worker Version ID、在线 402 和真机交易待外部配置及验证。
+
+## 2026-11-11 Play 内测和网关部署
+
+构建源 `6c739c372423a911a745d7d8d3012093c9f88119` 已推送。签名 release AAB 为 `E:/AII-3D/hiplab-releases/membership-65-local/hiplab-1.1.2+65-membership-store-release.aab`，大小 99,034,816 字节，SHA-256 为 `77d4f7a51a341eef9f5883c8a99f99fd4593695dc2f2eebe6b0fafe01118936e`。通过 bundletool 和签名验证，匹配 +62 上传证书，包名 `com.ugk.hiplab`、版本码 65。
+
+Play 显示版本 65 已面向内部测试人员发布，名单只选中 `wrist-test`（2 人）。[加入内部测试](https://play.google.com/apps/internaltest/4701079694408471816)
+
+Play 商品 `hip_premium` 的 `monthly` 和 `annual` 已启用。美国价格分别为 US$2.99 和 US$19.99，其他支持地区由 Play 折算。两项基础方案各有 175 个 Play 支持地区，地区列表未列中国大陆。优惠 `trial-3d` 和 `trial-7d` 已启用，资格为从未在 HipLab 订阅过任何内容。
+
+RevenueCat 的 Hip 项目已创建 Android 应用、`premium` 权益及当前 `default` offering。月付和年付分别映射 `hip_premium:monthly` 和 `hip_premium:annual`。已核对 Flare 现有 Play 凭据有效，并在 Play 为该服务账号保存 HipLab 应用范围权限。Hip 端还需上传现有 JSON 并回读 Valid，随后在真机验证购买和恢复。[HipLab Android 配置](https://app.revenuecat.com/projects/c2e6f2e3/apps/app6666552c0b)
+
+网关本地类型检查通过，8 项测试通过。新版本仅新增三个 Hip secret 绑定，原绑定一致，线上版本 `c05e7d9a-5602-4797-9e67-ff601fb5b5fc` 承接 100% 流量。使用新的无权益匿名身份请求 Hip 路径实测返回 `402 not_premium`。会员模型请求待真机购买后验证。

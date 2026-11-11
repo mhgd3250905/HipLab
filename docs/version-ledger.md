@@ -2,7 +2,7 @@
 
 ## 2026-11-11 Android 会员 +65
 
-Android `1.1.2+65` 的本地调试 AAB 已通过 bundletool 验证。Play 内测商店包需注入 Hip 的 RevenueCat 公开 SDK Key 和已部署网关地址。[调试包身份](android-membership-2026-11-11.md#本地验证)
+Android `1.1.2+65` 签名商店包已发布 Play 内测。构建源为 `6c739c3`，签名匹配 +62 上传证书。[构建与发布证据](android-membership-2026-11-11.md#2026-11-11-play-内测和网关部署)
 
 ## 2026-11-10 动作库 +64 上架前候选
 

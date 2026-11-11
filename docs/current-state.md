@@ -2,7 +2,7 @@
 
 ## 2026-11-11 Android 会员 +65
 
-本地 `feat/membership` 的 Android 会员候选版本为 `1.1.2+65`。Play、RevenueCat 和网关需完成远程配置后才能验证内测购买。[接入与验证记录](android-membership-2026-11-11.md)
+`1.1.2+65` 已发布 Play 内测，仅 `wrist-test` 两人。网关在线 402 已验证，Hip 的 RevenueCat 凭据上传和真机购买待完成。[接入与验证记录](android-membership-2026-11-11.md)
 
 ## 2026-11-10 动作库 +64 上架前候选
 
