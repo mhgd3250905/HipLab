@@ -115,7 +115,7 @@ abstract final class HipSharedLibrary {
   /// SDK single-practice adapter. No local kit or prescription is synthesized.
   static TrainingPlan? planFor(LibraryActions actions, String id) {
     final store = actions.store;
-    if (current?.allowedActionIds.contains(id) != true || store.blocked) {
+    if (current?.allowedActionIds.contains(id) != true) {
       return null;
     }
     if (store.content.publicCatalog case final catalog?) {

@@ -213,7 +213,7 @@ void main() {
     );
 
     testWidgets(
-      'host safety disables SDK start while details remain browsable',
+      'legacy safety answers leave SDK start enabled and details browsable',
       (tester) async {
         await pumpApp(
           tester,
@@ -225,7 +225,7 @@ void main() {
         );
         await toPractice(tester);
         await openDrill(tester, 's-figure4');
-        expect(startButton(tester).onPressed, isNull);
+        expect(startButton(tester).onPressed, isNotNull);
       },
     );
 
@@ -366,7 +366,7 @@ void main() {
       expect(g.steps.length, content.routine('A').steps.length);
     });
 
-    testWidgets('blocked: group ▶ 开始 disabled, routine 开始 disabled', (
+    testWidgets('legacy safety answers do not disable group or routine start', (
       tester,
     ) async {
       await pumpApp(
@@ -394,7 +394,7 @@ void main() {
                   .first,
             )
             .onTap,
-        isNull,
+        isNotNull,
       );
       await tester.tap(find.byKey(const ValueKey('practice-1')));
       await tester.pumpAndSettle();
@@ -406,7 +406,7 @@ void main() {
               find.byKey(const ValueKey('routine-start')),
             )
             .onPressed,
-        isNull,
+        isNotNull,
       );
     });
   });

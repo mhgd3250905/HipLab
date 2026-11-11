@@ -47,7 +47,7 @@ class HipPrivacyPage extends StatelessWidget {
         const _PolicySection(
           title: '只在设备上保存的记录',
           body:
-              '安全提示的回答、训练身份选择、自测结果（包括疼痛反馈）、'
+              '自测结果（包括疼痛反馈）、'
               '训练日期、疼痛与麻木反馈、提醒时间和训练偏好，'
               '通过 SharedPreferences 保存在设备的应用私有存储中。'
               '这些信息用于本机生成练习建议、显示进度和调整训练安排。'

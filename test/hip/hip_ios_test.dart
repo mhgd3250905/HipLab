@@ -435,14 +435,13 @@ void main() {
 
   group('iPhone safe areas', () {
     for (final phone in iPhones) {
-      testWidgets('${phone.name}: onboarding', (tester) async {
+      testWidgets('${phone.name}: home without first-launch safety cards', (
+        tester,
+      ) async {
         await bootIos(tester, phone: phone, onboarded: false);
         expect(safeAreaOffenders(tester, phone), isEmpty);
-        for (var i = 0; i < 3; i++) {
-          await tester.tap(find.byKey(const ValueKey('safety-no')));
-          await tester.pumpAndSettle();
-          expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'card $i');
-        }
+        expect(find.byKey(const ValueKey('safety-no')), findsNothing);
+        expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
       }, variant: ios);
 
       testWidgets('${phone.name}: home, check, progress tabs', (tester) async {

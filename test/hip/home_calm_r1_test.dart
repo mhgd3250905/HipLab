@@ -14,6 +14,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_pain.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:hiplab/hip/ui/hip_widgets.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
@@ -67,21 +68,66 @@ void main() {
       expect(reopened.scene, HipScene.chair, reason: 'next day: by time');
     });
 
-    test('each scene offers its routines; 办公 rotates to the chair set', () {
+    test('首页 folder starts with one default 套路 per scene', () {
       final store = HipStore(content: content, storage: MemoryStorage())
         ..identity = HipIdentity.office;
-      expect(store.sceneRoutines(HipScene.chair).map((r) => r.id), ['A', 'M']);
-      final home = store.sceneRoutines(HipScene.home).map((r) => r.id);
-      expect(home, containsAll(['B', 'C', 'D', 'E']));
-      expect(home, isNot(contains('F')), reason: 'Breaking only for dancers');
+      expect(store.homeRoutines(HipScene.chair), ['A']);
+      expect(store.homeRoutines(HipScene.home), ['D']);
+      expect(store.homeRoutineId(HipScene.chair), 'A');
+      // 训练组 offers every authored 套路, including the micro set.
+      expect(store.libraryRoutines.map((r) => r.id), [
+        'A',
+        'B',
+        'C',
+        'D',
+        'E',
+        'F',
+        'M',
+      ]);
     });
+
+    test(
+      'any 套路 can be added, selected and removed from a scene folder',
+      () async {
+        final disk = MemoryStorage();
+        final store = HipStore(content: content, storage: disk);
+        // Adding is per scene and does not switch 首页's scene.
+        await store.setHomeRoutine(HipScene.chair, 'M', added: true);
+        expect(store.homeRoutines(HipScene.chair), ['A', 'M']);
+        expect(store.homeRoutines(HipScene.home), ['D']);
+        expect(
+          store.homeRoutineId(HipScene.chair),
+          'M',
+          reason: 'added = selected',
+        );
+        expect(store.scene, HipScene.home);
+
+        await store.pickSceneRoutine(HipScene.chair, 'A');
+        expect(store.homeRoutineId(HipScene.chair), 'A');
+        await store.setHomeRoutine(HipScene.chair, 'A', added: false);
+        expect(store.homeRoutines(HipScene.chair), ['M']);
+        expect(store.homeRoutineId(HipScene.chair), 'M');
+
+        // Unknown ids are ignored, not stored.
+        await store.setHomeRoutine(HipScene.home, 'gone', added: true);
+        expect(store.homeRoutines(HipScene.home), ['D']);
+
+        final reopened = HipStore(content: content, storage: disk);
+        await reopened.initialize();
+        expect(reopened.homeRoutines(HipScene.chair), ['M']);
+        expect(reopened.homeRoutines(HipScene.home), ['D']);
+        expect(reopened.homeRoutineId(HipScene.chair), 'M');
+        expect(reopened.scene, HipScene.home);
+      },
+    );
   });
 
   Future<HipStore> pumpHome(
     WidgetTester tester, {
     HipThemeChoice theme = HipThemeChoice.dark,
-    HipScene scene = HipScene.chair,
+    HipScene? scene = HipScene.chair,
     DateTime? at,
+    MemoryStorage? disk,
     HipCoachChat? Function(HipStore)? coach,
     void Function(HipStore)? setup,
   }) async {
@@ -92,16 +138,17 @@ void main() {
     final time = at ?? DateTime(2026, 11, 2, 14, 15);
     final store = HipStore(
       content: content,
-      storage: MemoryStorage(),
+      storage: disk ?? MemoryStorage(),
       clock: () => time,
     );
     await store.initialize();
     store
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
-      ..scene = scene
       ..theme = theme
       ..doneDays.addAll(['2026-11-01', '2026-10-31', '2026-10-30']);
+    // null keeps whatever the saved state restored (a real relaunch).
+    if (scene != null) store.scene = scene;
     setup?.call(store);
     await tester.pumpWidget(
       RepaintBoundary(
@@ -146,13 +193,74 @@ void main() {
         find.byKey(const ValueKey('home-routine-folder-panel')),
         findsOneWidget,
       );
-      final next = store.sceneRoutines(HipScene.home)[1];
-      await tester.tap(find.byKey(ValueKey('home-routine-choice-${next.id}')));
+      // The folder lists the current scene's 套路 and the 训练组选择 entry.
+      expect(
+        find.byKey(const ValueKey('home-routine-choice-D')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('home-routine-choose-groups')),
+        findsOneWidget,
+      );
+      // Add a second 居家 套路 from the library, then select it in the folder.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
       await tester.pumpAndSettle();
-      expect(title(), isNot(first));
+      expect(title(), isNot(first), reason: 'adding selects the new 套路');
+      await tester.tap(find.byKey(const ValueKey('home-rotate')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('home-routine-choice-D')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('home-routine-choice-D')));
+      await tester.pumpAndSettle();
+      expect(store.homeRoutineId(HipScene.home), 'D');
+      expect(store.scene, HipScene.home);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('the chosen 套路 is still selected after a real relaunch', (
+    tester,
+  ) async {
+    final disk = MemoryStorage();
+    final store = await pumpHome(tester, scene: HipScene.home, disk: disk);
+    String title() =>
+        tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data!;
+    final before = title();
+    // Add a second 居家 套路 and select it, staying in the 居家 scene.
+    await store.setHomeRoutine(HipScene.home, 'B', added: true);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home-rotate')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('home-routine-choice-D')));
+    await tester.pumpAndSettle();
+    final chosen = title();
+    expect(chosen, before, reason: 'D is the original default');
+    expect(store.homeRoutineId(HipScene.home), 'D');
+    expect(store.scene, HipScene.home);
+
+    // A cold start reads the same disk: the folder selection is not a
+    // this-launch-only preview any more.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    final relaunched = await pumpHome(tester, scene: null, disk: disk);
+    expect(relaunched.scene, HipScene.home);
+    expect(relaunched.homeRoutines(HipScene.home), ['D', 'B']);
+    expect(relaunched.homeRoutineId(HipScene.home), 'D');
+    expect(title(), chosen);
+    await tester.tap(find.byKey(const ValueKey('home-rotate')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<HipPressable>(
+            find.byKey(const ValueKey('home-routine-choice-D')),
+          )
+          .selected,
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('更多: rows in order; no AI card', (tester) async {
     await pumpHome(tester);

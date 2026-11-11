@@ -72,9 +72,8 @@ flutter:
     - assets/hip/posters/
     - assets/hip/assessment/
     - assets/hip/assessment/light/
-    - assets/hip/onboarding/pregnancy-friendly.webp
-    - assets/hip/onboarding/surgery-friendly.webp
-    - assets/hip/onboarding/acute-friendly.webp
+    # assets/hip/onboarding/* (legacy safety-card art) is no longer bundled:
+    # the first-launch flow was removed.
     # SDK public metadata and transparent frame-zero posters; no bundled video.
     - assets/public_media/
     - assets/public_media/catalog/

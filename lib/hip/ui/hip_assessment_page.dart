@@ -175,13 +175,11 @@ class HipAssessmentIntro extends StatelessWidget {
               child: RepaintBoundary(
                 child: HipPrimaryButton(
                   key: const ValueKey('assessment-start'),
-                  label: store.blocked
-                      ? t.pick('先问问医生再来', 'Ask a doctor first')
-                      : store.latestResult != null
+                  label: store.latestResult != null
                       ? t.pick('重新自测', 'Check again')
                       : t.pick('开始自测', 'Start check-up'),
                   icon: HipGlyph.play,
-                  onPressed: store.blocked ? null : onStart,
+                  onPressed: onStart,
                 ),
               ),
             ),

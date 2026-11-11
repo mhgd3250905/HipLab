@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -2416,10 +2418,13 @@ void main() {
       final store = await showHome(tester, MemoryStorage(), bundle: bundle);
       final candidates = <String>{
         for (final scene in [HipScene.chair, HipScene.home])
-          for (final routine in store.sceneRoutines(scene))
-            if (store.planForRoutine(routine) case final plan?)
-              if (plan.steps.isNotEmpty)
-                fixture.policy.posterAssetFor(plan.steps.first.drill.id)!,
+          for (final id in store.homeRoutines(scene))
+            for (final routine in store.libraryRoutines.where(
+              (r) => r.id == id,
+            ))
+              if (store.planForRoutine(routine) case final plan?)
+                if (plan.steps.isNotEmpty)
+                  fixture.policy.posterAssetFor(plan.steps.first.drill.id)!,
       };
       expect(candidates, isNotEmpty);
       final context = tester.element(find.byType(HipHomeActionDeck));
@@ -2472,7 +2477,9 @@ void main() {
         lessThanOrEqualTo(candidates.length),
       );
       expect(fixture.requested, isEmpty);
-      final nextRoutine = store.sceneRoutines(HipScene.chair).first;
+      final nextRoutine = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(HipScene.chair),
+      );
       final nextAction = store.planForRoutine(nextRoutine)!.steps.first.drill;
       final nextPoster = fixture.policy.posterAssetFor(nextAction.id)!;
       final before = bundle.loads.where((asset) => asset == nextPoster).length;
@@ -2490,7 +2497,7 @@ void main() {
   );
 
   testWidgets(
-    'routine folder cancels without changing a preview and directly chooses a non-adjacent plan without playing',
+    'routine folder cancels without changing a preview and directly chooses an added plan without playing',
     (tester) async {
       final (repository, platform) = homePlayback(tester);
       final storage = MemoryStorage();
@@ -2500,6 +2507,11 @@ void main() {
         videoEnabled: true,
         mediaPolicy: repository.policy,
       );
+      // The folder starts with one 居家 套路; add a second so choosing is real.
+      await store.setHomeRoutine(HipScene.home, 'C', added: true);
+      await tester.pumpAndSettle();
+      await store.pickSceneRoutine(HipScene.home, 'D');
+      await tester.pumpAndSettle();
       await nativeFrames(
         tester,
         platform,
@@ -2507,7 +2519,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       await next(tester);
-      final selected = store.sceneRoutines(store.scene).first;
+      final selected = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(store.scene),
+      );
       final persisted = Map<String, String>.of(storage.values);
       final minutes = store.minutes;
       final deckBefore = tester.widget<HipHomeActionDeck>(
@@ -2540,14 +2554,16 @@ void main() {
       } finally {
         semantic.dispose();
       }
-      final choices = store.sceneRoutines(store.scene);
-      expect(choices.length, greaterThanOrEqualTo(3));
-      for (final routine in choices) {
-        expect(
-          find.byKey(ValueKey('home-routine-choice-${routine.id}')),
-          findsOneWidget,
-        );
+      // The folder lists the current scene's added 套路 plus the groups tile.
+      final choices = store.homeRoutines(store.scene);
+      expect(choices, ['D', 'C']);
+      for (final id in choices) {
+        expect(find.byKey(ValueKey('home-routine-choice-$id')), findsOneWidget);
       }
+      expect(
+        find.byKey(const ValueKey('home-routine-choose-groups')),
+        findsOneWidget,
+      );
       expect(platform.sources, hasLength(creates));
       expect(repository.requested, hasLength(requested));
       expect(find.byType(HipPlayerPage), findsNothing);
@@ -2569,9 +2585,10 @@ void main() {
       );
       expect(storage.values, persisted);
 
-      final direct = choices[2];
-      final expected = store.planForRoutine(direct)!;
-      await chooseHomeRoutine(tester, direct.id);
+      final directId = choices.firstWhere((id) => id != selected.id);
+      final direct = store.libraryRoutines.firstWhere((r) => r.id == directId);
+      final expected = store.planForHomeRoutine(directId)!;
+      await chooseHomeRoutine(tester, directId);
       final deck = tester.widget<HipHomeActionDeck>(
         find.byType(HipHomeActionDeck),
       );
@@ -2584,7 +2601,23 @@ void main() {
       );
       expect(store.scene, HipScene.home);
       expect(store.minutes, minutes);
-      expect(storage.values, persisted);
+      // Choosing is durable: only the selected id changes; the folder stays
+      // in its scene (no implicit 办公/居家 switch).
+      Map<String, dynamic> saved(Map<String, String> disk) =>
+          Map<String, dynamic>.of(
+            jsonDecode(disk[HipStore.storageKey]!) as Map<String, dynamic>,
+          );
+      final before = saved(persisted);
+      final after = saved(storage.values);
+      expect(after.remove('sceneRoutinePicks'), {'home': directId});
+      expect(after.remove('homeRoutineIds'), {
+        'chair': ['A'],
+        'home': ['D', 'C'],
+      });
+      before
+        ..remove('sceneRoutinePicks')
+        ..remove('homeRoutineIds');
+      expect(after, before);
       expect(
         platform.commands.where((command) => command.$2 == 'play'),
         isEmpty,
@@ -2595,51 +2628,37 @@ void main() {
   );
 
   testWidgets(
-    'routine folder keeps a separate choice per scene and starts the chosen complete plan',
+    'the folder remembers its choice per scene and starts the complete plan',
     (tester) async {
       final storage = MemoryStorage();
       final store = await showHome(tester, storage);
-      final home = store.sceneRoutines(HipScene.home).last;
+      final home = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(HipScene.home),
+      );
       final homePlan = store.planForRoutine(home)!;
-      var persisted = Map<String, String>.of(storage.values);
+
+      // Add a second 居家 套路, then select the original one: the choice is
+      // saved to disk and the folder stays in the 居家 scene.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       await chooseHomeRoutine(tester, home.id);
-      expect(storage.values, persisted);
+      expect(store.scene, HipScene.home);
+      expect(store.homeRoutineId(HipScene.home), 'D');
+      expect(
+        storage.values[HipStore.storageKey],
+        contains('sceneRoutinePicks'),
+      );
       expect(
         tester
             .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
             .identity,
         endsWith('/${home.id}'),
       );
-
-      await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
-      await tester.pumpAndSettle();
-      final chair = store.sceneRoutines(HipScene.chair).last;
-      persisted = Map<String, String>.of(storage.values);
-      await chooseHomeRoutine(tester, chair.id);
-      expect(storage.values, persisted);
-      expect(
-        tester
-            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
-            .identity,
-        endsWith('/${chair.id}'),
-      );
-
-      for (final scene in [HipScene.home, HipScene.chair, HipScene.home]) {
-        await tester.tap(find.byKey(ValueKey('scene-$scene')));
-        await tester.pumpAndSettle();
-        final expected = scene == HipScene.home ? home : chair;
-        expect(
-          tester
-              .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
-              .identity,
-          endsWith('/${expected.id}'),
-        );
-        expect(position(tester), '01');
-      }
+      expect(position(tester), '01');
       expect(fixture.requested, isEmpty);
       expect(find.byType(HipPlayerPage), findsNothing);
 
-      // Selecting the already-current group closes the folder without losing
+      // Selecting the already-current 套路 closes the folder without losing
       // the user's inspected action; actual Start still uses the whole plan.
       await next(tester);
       final preview = frontId(tester);
@@ -2700,8 +2719,9 @@ void main() {
         await change();
         await tester.pump();
         await tester.pump();
-        final routines = store.sceneRoutines(scene);
-        final routine = routines[pick % routines.length];
+        final routine = store.libraryRoutines.firstWhere(
+          (r) => r.id == store.homeRoutineId(scene),
+        );
         final plan = store.planForRoutine(routine)!;
         final expected = plan.steps.first.drill;
         final deck = tester.widget<HipHomeActionDeck>(
@@ -2803,13 +2823,15 @@ void main() {
       await changedPlan(HipScene.home, 0, () async {
         await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
       });
-      await changedPlan(HipScene.home, 1, () async {
-        await chooseHomeRoutine(
-          tester,
-          store.sceneRoutines(HipScene.home)[1].id,
-        );
+      await changedPlan(HipScene.chair, 0, () async {
+        await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+        await tester.pumpAndSettle();
+        // 办公 gains a second 套路 in this scene and the folder chooses it.
+        await store.setHomeRoutine(HipScene.chair, 'B', added: true);
+        await tester.pumpAndSettle();
+        await chooseHomeRoutine(tester, 'B');
       });
-      await changedPlan(HipScene.home, 1, () async {
+      await changedPlan(HipScene.chair, 0, () async {
         now = now.add(const Duration(days: 1));
         await store.choose();
       });
@@ -3356,10 +3378,12 @@ void main() {
       expect(store.sessions, isEmpty);
       expect(store.streak, 0);
       final defaultPlan = store.todayPlan!;
-      final choices = store.sceneRoutines(store.scene);
-      final selected = choices
-          .skip(1)
-          .firstWhere((routine) => routine.id != defaultPlan.refId);
+      // Add a second 居家 套路 to this scene's folder, then choose it.
+      await store.setHomeRoutine(store.scene, 'B', added: true);
+      await tester.pumpAndSettle();
+      final selected = store.libraryRoutines.firstWhere(
+        (routine) => routine.id == 'B',
+      );
       final expected = store.planForRoutine(selected)!;
       expect(expected.refId, isNot(defaultPlan.refId));
       await chooseHomeRoutine(tester, selected.id);
@@ -3441,7 +3465,9 @@ void main() {
       final title = tester
           .widget<Text>(find.byKey(const ValueKey('home-title')))
           .data;
-      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
+      // Add a second 居家 套路 and switch the folder selection to it.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data,
         isNot(title),
@@ -3473,7 +3499,9 @@ void main() {
     (tester) async {
       final storage = MemoryStorage();
       final store = await showHome(tester, storage);
-      final routine = store.sceneRoutines(store.scene).first;
+      final routine = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(store.scene),
+      );
       final expected = store.planForRoutine(routine)!;
       expect(expected.steps.length, greaterThan(1));
       final persisted = Map<String, String>.of(storage.values);
@@ -3537,7 +3565,9 @@ void main() {
       final identity = tester
           .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
           .identity;
-      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
+      // Add a second 套路 and select it: the deck identity must change.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       expect(
         tester
             .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
@@ -3546,6 +3576,7 @@ void main() {
       );
       expect(position(tester), '01');
       await next(tester);
+      // The scene switch still resolves each scene's remembered 套路.
       await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
       await tester.pumpAndSettle();
       expect(store.scene, HipScene.chair);
@@ -3556,8 +3587,9 @@ void main() {
         'acute': true,
       });
       await tester.pumpAndSettle();
-      expect(find.byType(HipHomeActionDeck), findsNothing);
-      expect(find.byKey(const ValueKey('start-today')), findsNothing);
+      // Legacy safety answers are inert: the home deck stays available.
+      expect(find.byType(HipHomeActionDeck), findsOneWidget);
+      expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );

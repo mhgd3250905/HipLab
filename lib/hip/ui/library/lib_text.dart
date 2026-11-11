@@ -152,6 +152,19 @@ class LibText {
   String get groupFull => _('已满 20 个', 'Full (20)');
 
   // ── routines ──
+  String get homeAdded => _('已加入首页', 'On home');
+  String homeAddTo(HipScene scene) => _(
+    '加入首页${scene == HipScene.chair ? '办公' : '居家'}',
+    'Add to ${scene == HipScene.chair ? 'office' : 'home'}',
+  );
+  String homeRemoveFrom(HipScene scene) => _(
+    '从首页${scene == HipScene.chair ? '办公' : '居家'}移除',
+    'Remove from ${scene == HipScene.chair ? 'office' : 'home'}',
+  );
+  String get homeFolderEntry => _('训练组选择', 'Choose groups');
+  String get homeFolderScene => _('首页文件夹', 'Home folder');
+  String get homeFolderEmpty => _('还没有加入首页的训练组', 'No groups on home yet');
+
   String routinesCount(int n) => _(
     '$n 套编排好的套路，不受首页推荐限制，随便挑',
     '$n ready-made routines – pick any, not just the recommended one',
