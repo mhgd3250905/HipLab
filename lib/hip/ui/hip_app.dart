@@ -535,6 +535,76 @@ class _HipHomeState extends State<HipHome> {
     ];
     // The folder stays visible with just one 套路 because it also holds the
     // 「训练组选择」 entry.
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          key: const ValueKey('home-page-header'),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: _topBar(),
+        ),
+        for (final a in alerts) ...[
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: a),
+          const SizedBox(height: 10),
+        ],
+        if (plan != null && plan.steps.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Expanded(
+            // Tight intrinsic height establishes the scroll floor.
+            // Expanded still gets all additional viewport space.
+            child: SizedBox(
+              height: HipHomeActionDeck.minimumHeight(plan.steps.length),
+              child: HipHomeActionDeck(
+                key: const ValueKey('home-deck'),
+                identity: '${dayKey(store.now())}/${store.scene.id}/$routineId',
+                drills: [for (final step in plan.steps) step.drill],
+                doses: [
+                  for (final step in plan.steps)
+                    HipContentText.of(context).text(step.dose),
+                ],
+                cues: [
+                  for (final step in plan.steps)
+                    HipContentText.of(context).text(step.tip),
+                ],
+                descriptions: [
+                  for (final step in plan.steps)
+                    drillPoint(
+                      store.content,
+                      step.drill,
+                      HipText.of(context).languageTag,
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+        ] else
+          const Spacer(),
+        Padding(
+          key: const ValueKey('home-routine-section'),
+          padding: const EdgeInsets.only(left: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (plan != null)
+                Expanded(child: _headline(routineId, plan))
+              else
+                Expanded(
+                  child: Text(
+                    LibText.of(context).homeFolderEmpty,
+                    key: const ValueKey('home-title'),
+                    style: TextStyle(fontSize: 15, color: HipColors.muted),
+                  ),
+                ),
+              const SizedBox(width: 12),
+              _routineFolder(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _dock(plan),
+      ],
+    );
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -543,74 +613,19 @@ class _HipHomeState extends State<HipHome> {
           const HipPageBackdrop(),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: _topBar(),
-                  ),
-                  if (plan != null && plan.steps.isNotEmpty)
-                    Expanded(
-                      child: HipHomeActionDeck(
-                        key: const ValueKey('home-deck'),
-                        identity:
-                            '${dayKey(store.now())}/${store.scene.id}/$routineId',
-                        drills: [for (final step in plan.steps) step.drill],
-                        doses: [
-                          for (final step in plan.steps)
-                            HipContentText.of(context).text(step.dose),
-                        ],
-                        cues: [
-                          for (final step in plan.steps)
-                            HipContentText.of(context).text(step.tip),
-                        ],
-                        descriptions: [
-                          for (final step in plan.steps)
-                            drillPoint(
-                              store.content,
-                              step.drill,
-                              HipText.of(context).languageTag,
-                            ),
-                        ],
+              padding: const EdgeInsets.only(top: 6, bottom: 18),
+              child: LayoutBuilder(
+                builder: (context, viewport) => SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: viewport.maxHeight,
                       ),
-                    )
-                  else
-                    const Spacer(),
-                  for (final a in alerts) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: a,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (plan != null)
-                          Expanded(child: _headline(routineId, plan))
-                        else
-                          Expanded(
-                            child: Text(
-                              LibText.of(context).homeFolderEmpty,
-                              key: const ValueKey('home-title'),
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: HipColors.muted,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(width: 12),
-                        _routineFolder(),
-                      ],
+                      child: IntrinsicHeight(child: content),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _dock(plan),
-                ],
+                ),
               ),
             ),
           ),

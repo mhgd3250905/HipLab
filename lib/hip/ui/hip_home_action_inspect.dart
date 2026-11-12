@@ -11,7 +11,7 @@ import 'hip_content_text.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
-/// The printed front face keeps its live media mounted as the card opens.
+/// The shared printed face for the front and the next action.
 class HipHomeActionFace extends StatefulWidget {
   const HipHomeActionFace({
     super.key,
@@ -20,6 +20,8 @@ class HipHomeActionFace extends StatefulWidget {
     required this.total,
     required this.restingSize,
     this.mediaKey,
+    this.rear = false,
+    this.contactShadow = false,
     this.revealPausedFrame = true,
     this.onFrameReadyChanged,
     this.expansion = 0,
@@ -38,7 +40,7 @@ class HipHomeActionFace extends StatefulWidget {
   final int number, total;
   final Size restingSize;
   final double expansion;
-  final bool expanded, paused, compact;
+  final bool expanded, paused, compact, rear, contactShadow;
   final bool revealPausedFrame;
   final Key? mediaKey;
   final ValueChanged<bool>? onFrameReadyChanged;
@@ -361,16 +363,18 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
           ),
           borderRadius: BorderRadius.circular(radius),
           boxShadow: HipColors.shadows([
-            const BoxShadow(
-              color: Color(0x2114281f),
-              blurRadius: 44,
-              offset: Offset(0, 14),
-            ),
-            const BoxShadow(
-              color: Color(0x0d14281f),
-              blurRadius: 3,
-              offset: Offset(0, 1),
-            ),
+            if (!widget.rear)
+              const BoxShadow(
+                color: Color(0x2114281f),
+                blurRadius: 44,
+                offset: Offset(0, 14),
+              ),
+            if (!widget.rear || widget.contactShadow)
+              const BoxShadow(
+                color: Color(0x0d14281f),
+                blurRadius: 3,
+                offset: Offset(0, 1),
+              ),
           ]),
         ),
         child: ClipRRect(
@@ -474,7 +478,9 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                           lerpDouble(compact ? 10 : 15, 46, t)! / 46,
-                          key: const ValueKey('home-deck-position'),
+                          key: widget.rear
+                              ? null
+                              : const ValueKey('home-deck-position'),
                         ),
                       ),
                     ),
@@ -500,35 +506,38 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   ],
                 ),
               ),
-              Positioned(
-                key: const ValueKey('face-close'),
-                right: 12,
-                top: 20,
-                width: 44,
-                height: 44,
-                child: IgnorePointer(
-                  ignoring: !widget.expanded,
-                  child: ExcludeSemantics(
-                    excluding: !widget.expanded,
-                    child: Opacity(
-                      opacity: t,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: HipColors.surface.withValues(alpha: .7),
-                          border: Border.all(color: HipColors.line),
-                        ),
-                        child: HipCircleButton(
-                          key: const ValueKey('home-deck-expanded-close'),
-                          icon: HipGlyph.close,
-                          tooltip: copy.isEn ? 'Close move card' : '收起动作卡片',
-                          onPressed: widget.onClose,
+              if (!widget.rear)
+                Positioned(
+                  key: const ValueKey('face-close'),
+                  right: 12,
+                  top: 20,
+                  width: 44,
+                  height: 44,
+                  child: IgnorePointer(
+                    ignoring: !widget.expanded,
+                    child: ExcludeSemantics(
+                      excluding: !widget.expanded,
+                      child: Opacity(
+                        opacity: t,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: HipColors.surface.withValues(alpha: .7),
+                            border: Border.all(color: HipColors.line),
+                          ),
+                          child: HipCircleButton(
+                            key: widget.rear
+                                ? null
+                                : const ValueKey('home-deck-expanded-close'),
+                            icon: HipGlyph.close,
+                            tooltip: copy.isEn ? 'Close move card' : '收起动作卡片',
+                            onPressed: widget.onClose,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
               Positioned(
                 key: const ValueKey('face-masthead-rule'),
                 left: inset,
@@ -616,7 +625,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 key: const ValueKey('face-media'),
                 rect: media,
                 child: Semantics(
-                  key: const ValueKey('home-hero'),
+                  key: widget.rear ? null : const ValueKey('home-hero'),
                   button: widget.expanded,
                   label: widget.expanded
                       ? (widget.paused
@@ -630,7 +639,9 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                       : (copy.isEn ? 'Looping automatically' : '自动循环播放'),
                   onTap: widget.expanded ? widget.onToggle : null,
                   child: GestureDetector(
-                    key: const ValueKey('home-deck-expanded-media'),
+                    key: widget.rear
+                        ? null
+                        : const ValueKey('home-deck-expanded-media'),
                     behavior: HitTestBehavior.opaque,
                     excludeFromSemantics: true,
                     onTap: widget.expanded ? widget.onToggle : null,
@@ -706,7 +717,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   typeWidth,
                   types.title,
                   2,
-                  key: const ValueKey('home-deck-caption'),
+                  key: widget.rear ? null : const ValueKey('home-deck-caption'),
                 ),
               ),
               if (widget.dose.isNotEmpty) ...[
@@ -736,7 +747,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                     typeWidth,
                     types.dose,
                     1,
-                    key: const ValueKey('home-deck-dose'),
+                    key: widget.rear ? null : const ValueKey('home-deck-dose'),
                   ),
                 ),
               ],
@@ -779,9 +790,11 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                             alignment: Alignment.topLeft,
                             scale: typeScale,
                             child: SingleChildScrollView(
-                              key: const ValueKey(
-                                'home-deck-expanded-description',
-                              ),
+                              key: widget.rear
+                                  ? null
+                                  : const ValueKey(
+                                      'home-deck-expanded-description',
+                                    ),
                               controller: widget.informationScroll,
                               primary: false,
                               physics: widget.expanded

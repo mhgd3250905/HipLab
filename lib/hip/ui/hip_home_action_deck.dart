@@ -30,18 +30,26 @@ class HipHomeActionDeck extends StatefulWidget {
   final List<String> cues;
   final List<String> descriptions;
 
+  static const _paginationGap = 14.0;
+  static const _dotHeight = 5.0;
+  static const _minCardHeight = 400.0;
+
+  static double minimumHeight(int cardCount) =>
+      _minCardHeight + _paginationHeight(cardCount);
+
+  static double _paginationHeight(int cardCount) =>
+      cardCount > 1 ? _paginationGap + _dotHeight : 0;
+
   @override
   State<HipHomeActionDeck> createState() => _HipHomeActionDeckState();
 }
 
 class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     with TickerProviderStateMixin {
-  static const _restingWidth = 280.0;
-  static const _restingHeight = 464.0;
-  static const _stageInset = 58.0;
-  static const _cardTop = 28.0;
+  static const _aspect = .62;
+  // HipHome already provides 14dp horizontal padding.
+  static const _sideInset = 8.0;
   static const _rearAngle = 3.5 * math.pi / 180;
-  static const _aspect = _restingWidth / _restingHeight;
 
   late final AnimationController _position;
   late final AnimationController _vertical;
@@ -225,6 +233,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   }
 
   int _at(int offset) => (_index + offset) % widget.drills.length;
+
+  double _cardLeft(double stageWidth) =>
+      math.max(_sideInset, (stageWidth - _cardWidth) / 2 - 18);
 
   void _floatFront() {
     if (_reduced || _floating) return;
@@ -532,20 +543,22 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
           },
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final available = math.max(
-                0.0,
-                constraints.maxHeight - _stageInset,
+              final pagination = HipHomeActionDeck._paginationHeight(
+                widget.drills.length,
               );
-              if (available < 110) return const SizedBox.shrink();
+              final available = constraints.maxHeight - pagination;
+              if (available < 110 || constraints.maxWidth <= 2 * _sideInset) {
+                return const SizedBox.shrink();
+              }
               _cardWidth = math.min(
-                _restingWidth,
-                math.min(constraints.maxWidth * .85, available * _aspect),
+                constraints.maxWidth - 2 * _sideInset,
+                available * _aspect,
               );
               _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
               _switchDistance = MediaQuery.sizeOf(context).width * .26;
               final cardHeight = _cardWidth / _aspect;
               return Align(
-                alignment: Alignment.center,
+                alignment: Alignment.bottomCenter,
                 child: OverlayPortal.overlayChildLayoutBuilder(
                   controller: _overlay,
                   overlayLocation: OverlayChildLocation.rootOverlay,
@@ -556,7 +569,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                   ),
                   child: SizedBox(
                     key: const ValueKey('home-deck-stage'),
-                    height: cardHeight + _stageInset,
+                    height: cardHeight + pagination,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       dragStartBehavior: DragStartBehavior.down,
@@ -614,12 +627,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       );
       final pivot = Offset(_cardWidth / 2, height * .9);
       final source = Matrix4.copy(anchor)
-        ..translateByDouble(
-          (width - _cardWidth) / 2 - 18 + x,
-          _cardTop - lift * 18 + y,
-          0,
-          1,
-        )
+        ..translateByDouble(_cardLeft(width) + x, -lift * 18 + y, 0, 1)
         ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
         ..rotateZ(travel * .18)
         ..multiply(Matrix4.identity()..setEntry(3, 2, .0012))
@@ -736,46 +744,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                   fit: StackFit.expand,
                                   clipBehavior: Clip.none,
                                   children: [
-                                    HipHomeActionFace(
-                                      key: const ValueKey(
-                                        'home-deck-live-face',
-                                      ),
-                                      drill: widget.drills[_index],
-                                      number: _index + 1,
-                                      total: widget.drills.length,
-                                      mediaKey: _mediaKey(_index),
-                                      revealPausedFrame: !_posterLocked
-                                          .contains(_index),
-                                      onFrameReadyChanged: _readyCallback(
-                                        _index,
-                                      ),
-                                      restingSize: Size(_cardWidth, height),
-                                      expansion: t,
-                                      expanded: _expanded,
-                                      paused: _paused,
-                                      compact: height < 330,
-                                      dose:
-                                          widget.doses.elementAtOrNull(
-                                            _index,
-                                          ) ??
-                                          '',
-                                      cue:
-                                          widget.cues.elementAtOrNull(_index) ??
-                                          '',
-                                      description:
-                                          widget.descriptions.elementAtOrNull(
-                                            _index,
-                                          ) ??
-                                          '',
-                                      onClose: _closeCard,
-                                      onToggle: () {
-                                        if (_expanded &&
-                                            !_expansion.isAnimating) {
-                                          setState(() => _paused = !_paused);
-                                        }
-                                      },
-                                      informationScroll: _informationScroll,
-                                    ),
+                                    _actionFace(_index, height, expansion: t),
                                     if (_floating)
                                       const Positioned.fill(
                                         child: IgnorePointer(
@@ -829,11 +798,51 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         '${dose.isEmpty ? '' : '，$dose'}';
   }
 
+  Widget _actionFace(
+    int index,
+    double height, {
+    double expansion = 0,
+    bool rear = false,
+    bool contactShadow = false,
+  }) => KeyedSubtree(
+    key: ValueKey(rear ? 'home-deck-next-face' : 'home-deck-live-face'),
+    child: HipHomeActionFace(
+      // Reparent the same face and media when the turn commits.
+      key: GlobalObjectKey(_mediaKey(index)),
+      drill: widget.drills[index],
+      number: index + 1,
+      total: widget.drills.length,
+      mediaKey: _mediaKey(index),
+      revealPausedFrame: !_posterLocked.contains(index),
+      onFrameReadyChanged: _readyCallback(index),
+      restingSize: Size(_cardWidth, height),
+      expansion: expansion,
+      expanded: !rear && _expanded,
+      paused: rear || _paused,
+      rear: rear,
+      contactShadow: contactShadow,
+      compact: height < 330,
+      dose: widget.doses.elementAtOrNull(index) ?? '',
+      cue: widget.cues.elementAtOrNull(index) ?? '',
+      description: widget.descriptions.elementAtOrNull(index) ?? '',
+      onClose: rear ? null : _closeCard,
+      onToggle: rear
+          ? null
+          : () {
+              if (_expanded && !_expansion.isAnimating) {
+                setState(() => _paused = !_paused);
+              }
+            },
+      informationScroll: rear ? null : _informationScroll,
+    ),
+  );
+
   Widget _cards(double width, double height) {
     final raw = Offset(_position.value, _vertical.value).distance;
     final offset = _reduced ? 0.0 : raw;
     final progress = (offset.abs() / _cardWidth).clamp(0.0, 1.0);
     final count = math.min(3, widget.drills.length);
+    final next = count > 1 ? _at(_toward) : null;
     final bottomDepth = (count - 1).toDouble();
     final replenishing = count > 1 && progress > 0;
     return Stack(
@@ -843,7 +852,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         // Keep decoded neighbors available for the next turn without painting
         // their content, card surfaces or shadows in the visual stack.
         for (final index in _warmIndices)
-          if (index != _index) _warmMedia(index, height),
+          if (index != _index && index != next) _warmMedia(index, height),
         if (count > 1 && !HipColors.flatShadows)
           _rearPose(
             depth: bottomDepth,
@@ -866,18 +875,39 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
             bottom: true,
             opacity: Curves.easeOut.transform(progress),
           ),
-        for (var layer = count - 1; layer >= 1; layer--)
+        if (count == 3)
           _rearCard(
-            _at(layer * _toward),
-            layer - progress,
+            _at(2 * _toward),
+            2 - progress,
             width,
             height,
-            bottom: !replenishing && layer == count - 1,
+            bottom: !replenishing,
+          ),
+        if (next != null)
+          _rearPose(
+            key: ValueKey('home-deck-card-$next'),
+            depth: 1 - progress,
+            width: width,
+            height: height,
+            child: ExcludeSemantics(
+              child: IgnorePointer(
+                child: RepaintBoundary(
+                  child: _actionFace(
+                    next,
+                    height,
+                    rear: true,
+                    contactShadow: count == 3 || replenishing,
+                  ),
+                ),
+              ),
+            ),
           ),
         if (_multiple)
           Positioned(
-            left: (width - _cardWidth) / 2 - 18,
-            bottom: 8,
+            key: const ValueKey('home-deck-pagination'),
+            left: _cardLeft(width),
+            bottom: 0,
+            height: HipHomeActionDeck._dotHeight,
             width: _cardWidth,
             child: ExcludeSemantics(
               child: FittedBox(
@@ -888,7 +918,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     for (var index = 0; index < widget.drills.length; index++)
                       Container(
                         width: index == _index ? 14 : 5,
-                        height: 5,
+                        height: HipHomeActionDeck._dotHeight,
                         decoration: BoxDecoration(
                           color: index == _index
                               ? HipColors.text
@@ -985,8 +1015,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     required Widget child,
   }) => Positioned(
     key: key,
-    left: (width - _cardWidth) / 2 - 18 + depth * 16,
-    top: _cardTop - depth * 9,
+    left: _cardLeft(width) + depth * 16,
+    top: -depth * 9,
     width: _cardWidth,
     height: height,
     child: Transform.rotate(
