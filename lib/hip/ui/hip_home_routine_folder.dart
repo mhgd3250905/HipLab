@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
+import '../data/hip_library_poster_bounds.dart';
 import '../data/hip_public_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
+import 'hip_poster_bounds_fit.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipCard, HipPressable;
 import 'library/lib_text.dart';
@@ -22,15 +24,23 @@ abstract final class _FolderPreview {
   static const _inset = 6.0;
   static const _cellSize = 21.0;
   static const _stride = 25.0;
-  static const singleRowHeight = 2 * _inset + _cellSize;
-  static const width = singleRowHeight + (_folderColumns - 1) * _stride;
+  static const emptyHeight = 2 * _inset + _cellSize;
+  static const width = emptyHeight + (_folderColumns - 1) * _stride;
+  static const _singleArtSize = 44.0;
 
-  static Rect cell(int index) => Rect.fromLTWH(
-    _inset + (index % _folderColumns) * _stride,
-    _inset + (index ~/ _folderColumns) * _stride,
-    _cellSize,
-    _cellSize,
-  );
+  static Rect artworkRect(int index, int count) => count == 1
+      ? Rect.fromLTWH(
+          (width - _singleArtSize) / 2,
+          (width - _singleArtSize) / 2,
+          _singleArtSize,
+          _singleArtSize,
+        )
+      : Rect.fromLTWH(
+          _inset + (index % _folderColumns) * _stride,
+          _inset + (index ~/ _folderColumns) * _stride,
+          _cellSize,
+          _cellSize,
+        );
 }
 
 @immutable
@@ -183,8 +193,8 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
   @override
   Widget build(BuildContext context) {
     final miniatures = _miniatures;
-    final height = miniatures.length < _folderColumns
-        ? _FolderPreview.singleRowHeight
+    final height = miniatures.isEmpty
+        ? _FolderPreview.emptyHeight
         : _FolderPreview.width;
     return PopScope(
       canPop: _route == null,
@@ -226,13 +236,17 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
                     children: [
                       for (var i = 0; i < miniatures.length; i++)
                         Positioned.fromRect(
-                          rect: _FolderPreview.cell(i),
+                          rect: _FolderPreview.artworkRect(
+                            i,
+                            miniatures.length,
+                          ),
                           child: _FolderArtwork(
                             key: ValueKey(
                               'home-routine-preview-${widget.choices[i].id}',
                             ),
                             drill: miniatures[i],
                             radius: _FolderPreview.artRadius,
+                            previewProgress: miniatures.length == 1 ? 1 : 0,
                           ),
                         ),
                     ],
@@ -454,9 +468,15 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                         for (var i = 0; i < miniatures.length; i++)
                           Positioned.fromRect(
                             rect: Rect.lerp(
-                              _FolderPreview.cell(i).shift(origin.topLeft),
+                              _FolderPreview.artworkRect(
+                                i,
+                                miniatures.length,
+                              ).shift(origin.topLeft),
                               closingCovers != null && closingCovers![i] == null
-                                  ? _FolderPreview.cell(i).shift(origin.topLeft)
+                                  ? _FolderPreview.artworkRect(
+                                      i,
+                                      miniatures.length,
+                                    ).shift(origin.topLeft)
                                   : closingCovers?.elementAtOrNull(i) ??
                                         Rect.fromLTWH(
                                           target.left +
@@ -485,6 +505,9 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                                       'home-routine-flying-${choices[i].id}',
                                     ),
                                     drill: miniatures[i],
+                                    previewProgress: miniatures.length == 1
+                                        ? 1 - t
+                                        : 0,
                                     radius: lerpDouble(
                                       _FolderPreview.artRadius,
                                       18,
@@ -530,33 +553,66 @@ class _FolderSurface extends StatelessWidget {
 }
 
 class _FolderArtwork extends StatelessWidget {
-  const _FolderArtwork({super.key, required this.drill, required this.radius});
+  const _FolderArtwork({
+    super.key,
+    required this.drill,
+    required this.radius,
+    this.previewProgress = 0,
+  });
   final HipDrill? drill;
   final double radius;
+  final double previewProgress;
   @override
   Widget build(BuildContext context) {
-    final asset = drill == null
+    final id = drill?.id;
+    final asset = id == null
         ? null
-        : HipPublicMedia.current?.posterAssetFor(drill!.id);
+        : HipPublicMedia.current?.posterAssetFor(id);
+    final bounds = previewProgress > 0 ? libraryPosterBounds[id] : null;
+    final thumbnail = bounds == null || id == null
+        ? null
+        : HipPublicMedia.thumbnailAssetFor(id);
+    final poster = asset == null
+        ? Center(
+            child: HipIcon(HipGlyph.figure, size: 14, color: HipColors.muted),
+          )
+        : trainer.TrainerPoster(asset: asset);
+    const thumbnailSize = Size.square(libraryPosterPixels);
+
+    Widget artwork = poster;
+    if (thumbnail != null && bounds != null) {
+      final fittedThumbnail = HipPosterBoundsFit(
+        sourceSize: thumbnailSize,
+        bounds: Rect.lerp(
+          Offset.zero & thumbnailSize,
+          bounds,
+          previewProgress,
+        )!,
+        child: trainer.TrainerPoster(asset: thumbnail),
+      );
+      // Keep the larger poster in the expanded grid. Blend to it while the
+      // single group's tightly fitted thumbnail grows out of the small card.
+      artwork = previewProgress == 1
+          ? fittedThumbnail
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                Opacity(opacity: 1 - previewProgress, child: poster),
+                Opacity(opacity: previewProgress, child: fittedThumbnail),
+              ],
+            );
+    }
+
     return RepaintBoundary(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: ColoredBox(
-          color: HipColors.isDark
-              ? HipColors.mediaBackdrop
-              : const Color(0xfff1f3f2),
-          child: asset == null
-              ? Center(
-                  child: HipIcon(
-                    HipGlyph.figure,
-                    size: 14,
-                    color: HipColors.muted,
-                  ),
-                )
-              : trainer.TrainerPoster(
-                  asset: asset,
-                  stageColor: Colors.transparent,
-                ),
+          color:
+              (HipColors.isDark
+                      ? HipColors.mediaBackdrop
+                      : const Color(0xfff1f3f2))
+                  .withValues(alpha: 1 - previewProgress),
+          child: artwork,
         ),
       ),
     );

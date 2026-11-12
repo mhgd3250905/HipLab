@@ -93,8 +93,8 @@ void main() {
   final annualStart = DateTime(2025, 12, 12, 12);
   final expiresAt = DateTime(2026, 12, 12, 12);
 
-  Finder memberCard(Finder range) =>
-      find.ancestor(of: range, matching: find.byType(ClipRRect)).first;
+  Finder memberCard(Finder subtitle) =>
+      find.ancestor(of: subtitle, matching: find.byType(ClipRRect)).first;
 
   setUpAll(() async {
     await (FontLoader(
@@ -270,11 +270,10 @@ void main() {
         );
         await membership.refresh();
         await tester.pumpAndSettle();
-        final range = find.text('Annual · 2026-11-12 12:00 – 2026-11-14 11:00');
-        final status = find.text('Cancelled, ends on 2026-11-14 11:00');
-        expect(tester.widget<Text>(range).style?.fontSize, 13.5);
-        expect(tester.widget<Text>(status).style?.fontSize, 13.5);
-        expect(tester.getSize(memberCard(range)).height, greaterThan(180));
+        final subtitle = find.text('Annual · Ends on 2026-11-14');
+        expect(tester.widget<Text>(subtitle).style?.fontSize, 13.5);
+        expect(tester.widget<Text>(subtitle).maxLines, 1);
+        expect(tester.getSize(memberCard(subtitle)).height, greaterThan(180));
         final manageBottom = tester.getBottomLeft(manage).dy;
         expect(manage.hitTestable(), findsOneWidget);
         await tester.dragFrom(const Offset(180, 340), const Offset(0, -200));
@@ -317,10 +316,9 @@ void main() {
       await membership.refresh();
       await tester.pumpAndSettle();
       expect(find.text('生效中'), findsOneWidget);
-      final range = find.text('年付 · 2025-12-12 至 2026-12-12');
-      expect(range, findsOneWidget);
-      expect(tester.getSize(memberCard(range)).height, 192);
-      expect(find.text('到期自动续订'), findsOneWidget);
+      final subtitle = find.text('年付 · 2026-12-12 自动续订');
+      expect(subtitle, findsOneWidget);
+      expect(tester.getSize(memberCard(subtitle)).height, 192);
       expect(find.text('动作、疼痛、进度，随时问'), findsOneWidget);
       expect(find.text('管理订阅'), findsOneWidget);
       expect(tester.getSize(manage).height, 48);
@@ -337,20 +335,18 @@ void main() {
     }
   });
 
-  testWidgets('shows the purchased validity range and renewal status', (
+  testWidgets('shows the expiry date and renewal status on one line', (
     tester,
   ) async {
     final store = _Store(() async => [_month, _year]);
     final membership = HipMembership(store, now: () => now);
-    await mount(tester, membership);
+    await mount(tester, membership, locale: const Locale('zh'));
 
     Future<void> check({
-      required MembershipTerm term,
-      required DateTime start,
       required DateTime end,
-      required bool willRenew,
-      required String range,
-      required String status,
+      required bool? willRenew,
+      required String subtitle,
+      MembershipTerm? term = MembershipTerm.annual,
       bool isTrial = false,
     }) async {
       store.snapshot = MembershipSnapshot(
@@ -359,76 +355,51 @@ void main() {
         term: term,
         willRenew: willRenew,
         isTrial: isTrial,
-        latestPurchaseAt: start,
+        latestPurchaseAt: now,
       );
       await membership.refresh();
       await tester.pumpAndSettle();
 
-      expect(find.text(range), findsOneWidget);
-      expect(find.text(status), findsOneWidget);
+      expect(tester.widget<Text>(find.text(subtitle)).maxLines, 1);
     }
 
     try {
       await check(
-        term: MembershipTerm.annual,
-        start: annualStart,
         end: expiresAt,
         willRenew: true,
-        range: 'Annual · 2025-12-12 – 2026-12-12',
-        status: 'Renews automatically',
+        subtitle: '年付 · 2026-12-12 自动续订',
       );
       await check(
         term: MembershipTerm.monthly,
-        start: now,
         end: expiresAt,
         willRenew: true,
-        range: 'Monthly · 2026-11-12 – 2026-12-12',
-        status: 'Renews automatically',
+        subtitle: '月付 · 2026-12-12 自动续订',
       );
       await check(
-        term: MembershipTerm.annual,
-        start: DateTime(2026, 11, 9, 12),
         end: DateTime(2026, 11, 16, 12),
         willRenew: true,
         isTrial: true,
-        range: 'Annual · 2026-11-09 – 2026-11-16',
-        status: 'Free trial · billing starts 2026-11-16',
+        subtitle: '年付 · 2026-11-16 起扣费',
       );
-      expect(find.text('In trial'), findsOneWidget);
+      expect(find.text('试用中'), findsOneWidget);
       await check(
-        term: MembershipTerm.annual,
-        start: annualStart,
-        end: expiresAt,
-        willRenew: false,
-        range: 'Annual · 2025-12-12 – 2026-12-12',
-        status: 'Cancelled, ends on 2026-12-12',
-      );
-      await check(
-        term: MembershipTerm.annual,
-        start: now,
         end: now.add(const Duration(hours: 47)),
         willRenew: false,
-        range: 'Annual · 2026-11-12 12:00 – 2026-11-14 11:00',
-        status: 'Cancelled, ends on 2026-11-14 11:00',
+        subtitle: '年付 · 2026-11-14 到期',
       );
       await check(
-        term: MembershipTerm.annual,
-        start: now,
-        end: now.add(const Duration(hours: 48)),
-        willRenew: false,
-        range: 'Annual · 2026-11-12 – 2026-11-14',
-        status: 'Cancelled, ends on 2026-11-14',
-      );
-      await check(
-        term: MembershipTerm.annual,
-        start: DateTime(2026, 11, 9, 12),
         end: DateTime(2026, 11, 16, 12),
         willRenew: false,
         isTrial: true,
-        range: 'Annual · 2026-11-09 – 2026-11-16',
-        status: 'Cancelled, ends on 2026-11-16',
+        subtitle: '年付 · 2026-11-16 到期',
       );
-      expect(find.textContaining('billing starts'), findsNothing);
+      expect(find.textContaining('起扣费'), findsNothing);
+      await check(
+        term: null,
+        end: expiresAt,
+        willRenew: null,
+        subtitle: '2026-12-12',
+      );
     } finally {
       membership.rejectPremium();
     }

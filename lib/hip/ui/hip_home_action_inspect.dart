@@ -3,6 +3,8 @@ import 'dart:ui' show ImageFilter, lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import '../data/hip_home_poster_bounds.dart';
+import '../data/hip_public_media.dart';
 import '../domain/hip_models.dart';
 import 'hip_icons.dart';
 import 'hip_content_text.dart';
@@ -325,6 +327,16 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
         ),
       );
       final media = Rect.lerp(smallMedia, largeMedia, t)!;
+      final artSide = math.min(media.width, media.height);
+      final artBounds = Rect.fromCenter(
+        center: media.center,
+        width: artSide,
+        height: artSide,
+      );
+      final poster = front && t < 1
+          ? HipPublicMedia.current?.posterAssetFor(drill.id)
+          : null;
+      final silhouette = homeContactShadowBounds[poster];
       final titleTop = media.bottom + lerpDouble(11, 18, t)!;
       final doseTop = titleTop + titleHeight + doseGap;
       final cueTop = doseTop + doseHeight + cueGap;
@@ -571,45 +583,53 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   child: IgnorePointer(
                     child: Opacity(
                       opacity: 1 - t,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ImageFiltered(
-                            imageFilter: ImageFilter.blur(
-                              sigmaX: 34,
-                              sigmaY: 34,
-                            ),
-                            child: Container(
-                              width: media.width * .68,
-                              height: media.height * .66,
-                              decoration: BoxDecoration(
-                                color: const Color(0xffe8eeeb),
-                                borderRadius: BorderRadius.all(
-                                  Radius.elliptical(media.width, media.height),
-                                ),
+                      child: Center(
+                        child: ImageFiltered(
+                          imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
+                          child: Container(
+                            width: media.width * .68,
+                            height: media.height * .66,
+                            decoration: BoxDecoration(
+                              color: const Color(0xffe8eeeb),
+                              borderRadius: BorderRadius.all(
+                                Radius.elliptical(media.width, media.height),
                               ),
                             ),
                           ),
-                          Align(
-                            alignment: const Alignment(0, .75),
-                            child: ImageFiltered(
-                              imageFilter: ImageFilter.blur(
-                                sigmaX: 5,
-                                sigmaY: 5,
-                              ),
-                              child: Container(
-                                width: math.min(100, media.width * .42),
-                                height: 16,
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xff14281f,
-                                  ).withValues(alpha: .27),
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (silhouette != null)
+                Positioned.fromRect(
+                  key: const ValueKey('face-contact-shadow'),
+                  rect: Rect.fromCenter(
+                    center: Offset(
+                      artBounds.left + silhouette.center.dx * artSide,
+                      artBounds.top + silhouette.bottom * artSide,
+                    ),
+                    width: silhouette.width * artSide * .6,
+                    height: 10,
+                  ),
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 1 - t,
+                      child: ImageFiltered(
+                        imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xff14281f,
+                            ).withValues(alpha: .22),
+                            borderRadius: BorderRadius.all(
+                              Radius.elliptical(
+                                silhouette.width * artSide * .3,
+                                5,
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -644,7 +664,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                     onTap: widget.expanded ? widget.onToggle : null,
                     child: Center(
                       child: SizedBox.square(
-                        dimension: math.min(media.width, media.height),
+                        dimension: artSide,
                         child: HipDrillArt(
                           key: widget.mediaKey,
                           drill: drill,

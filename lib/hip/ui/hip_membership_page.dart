@@ -949,55 +949,32 @@ class _MemberCard extends StatelessWidget {
   final MembershipSnapshot? active;
   final HipText text;
 
-  String _formatDate(DateTime date, bool withTime) {
-    final iso = date.toLocal().toIso8601String();
-    final separator = iso.indexOf('T');
-    if (!withTime) return iso.substring(0, separator);
-    return '${iso.substring(0, separator)} ${iso.substring(separator + 1, separator + 6)}';
-  }
-
-  ({String? period, String? status}) _details(MembershipSnapshot active) {
-    final purchase = active.latestPurchaseAt;
-    final expiry = active.expiresAt;
-    final start =
-        purchase != null && expiry != null && !purchase.isAfter(expiry)
-        ? purchase
-        : null;
-    final withTime =
-        start != null && expiry!.difference(start) < const Duration(hours: 48);
-    final from = start == null ? null : _formatDate(start, withTime);
-    final end = expiry == null ? null : _formatDate(expiry, withTime);
-    final range = from == null || end == null
-        ? end
-        : text.pick('$from 至 $end', '$from – $end');
+  String _subtitle(MembershipSnapshot active) {
+    final expiry = active.expiresAt!
+        .toLocal()
+        .toIso8601String()
+        .split('T')
+        .first;
     final term = switch (active.term) {
       MembershipTerm.annual => text.pick('年付', 'Annual'),
       MembershipTerm.monthly => text.pick('月付', 'Monthly'),
       null => null,
     };
-    final status = switch (active.willRenew) {
-      false => text.pick(
-        '已取消续订，到期后失效',
-        end == null ? 'Cancelled' : 'Cancelled, ends on $end',
+    final timing = switch (active.willRenew) {
+      false => text.pick('$expiry 到期', 'Ends on $expiry'),
+      true when active.isTrial => text.pick(
+        '$expiry 起扣费',
+        'Billing starts $expiry',
       ),
-      true when active.isTrial && end != null => text.pick(
-        '免费试用中 · $end 起扣费',
-        'Free trial · billing starts $end',
-      ),
-      _ when active.isTrial => text.pick('免费试用中', 'Free trial'),
-      true => text.pick('到期自动续订', 'Renews automatically'),
-      null => null,
+      true => text.pick('$expiry 自动续订', 'Renews on $expiry'),
+      null => expiry,
     };
-    return (
-      period: term == null || range == null ? term ?? range : '$term · $range',
-      status: status,
-    );
+    return term == null ? timing : '$term · $timing';
   }
 
   @override
   Widget build(BuildContext context) {
     final snapshot = active;
-    final details = snapshot == null ? null : _details(snapshot);
     return _MembershipMaterial(
       radius: 22,
       child: ConstrainedBox(
@@ -1048,15 +1025,16 @@ class _MemberCard extends StatelessWidget {
                     ),
                     style: _style(13.5, const Color(0xCCFFFFFF)),
                   ),
-                if (details?.period case final period?)
-                  Text(
-                    period,
-                    style: _style(13.5, const Color(0xCCFFFFFF), height: 1.2),
-                  ),
-                if (details?.status case final status?)
-                  Text(
-                    status,
-                    style: _style(13.5, const Color(0xCCFFFFFF), height: 1.2),
+                if (snapshot != null)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _subtitle(snapshot),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: _style(13.5, const Color(0xCCFFFFFF), height: 1.2),
+                    ),
                   ),
                 const Spacer(),
                 const SizedBox(height: 8),

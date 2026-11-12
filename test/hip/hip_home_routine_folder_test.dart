@@ -6,7 +6,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hiplab/hip/data/hip_library_poster_bounds.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/ui/hip_home_routine_folder.dart';
+import 'package:hiplab/hip/ui/hip_poster_bounds_fit.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
@@ -279,8 +282,8 @@ void main() {
         await mount(tester, items: items);
         final source = tester.getRect(find.byKey(_source));
         final trigger = tester.getRect(find.byKey(_entry));
-        expect(source.size, Size(58, count < 2 ? 33 : 58));
-        expect(trigger.size, Size(58, count < 2 ? 44 : 58));
+        expect(source.size, Size(58, count == 0 ? 33 : 58));
+        expect(trigger.size, Size(58, count == 0 ? 44 : 58));
         expect(source.bottomRight, trigger.bottomRight);
         final shown = items.take(4).toList();
         expect(find.byType(trainer.TrainerPoster), findsNWidgets(shown.length));
@@ -291,7 +294,11 @@ void main() {
             .map((poster) => poster.asset);
         expect(posters, [
           for (final choice in shown)
-            fixture.policy.posterAssetFor(choice.drills.first.id),
+            (count == 1 &&
+                        libraryPosterBounds.containsKey(choice.drills.first.id)
+                    ? HipPublicMedia.thumbnailAssetFor(choice.drills.first.id)
+                    : null) ??
+                fixture.policy.posterAssetFor(choice.drills.first.id),
         ]);
         final cells = [
           for (final choice in shown)
@@ -301,14 +308,41 @@ void main() {
           expect(cells[i], findsOneWidget);
           expect(
             tester.getRect(cells[i]),
-            Rect.fromLTWH(
-              source.left + 6 + (i % 2) * 25,
-              source.top + 6 + (i ~/ 2) * 25,
-              21,
-              21,
-            ),
-            reason: 'group count must not recenter the fixed folder slots',
+            count == 1
+                ? Rect.fromCenter(center: source.center, width: 44, height: 44)
+                : Rect.fromLTWH(
+                    source.left + 6 + (i % 2) * 25,
+                    source.top + 6 + (i ~/ 2) * 25,
+                    21,
+                    21,
+                  ),
           );
+          if (count == 1) {
+            final backdrop = tester.widget<ColoredBox>(
+              find
+                  .descendant(of: cells[i], matching: find.byType(ColoredBox))
+                  .first,
+            );
+            expect(backdrop.color.a, 0);
+            final bounds = libraryPosterBounds[shown.single.drills.first.id]!;
+            final fit = find.descendant(
+              of: cells[i],
+              matching: find.byType(HipPosterBoundsFit),
+            );
+            final clippedArt = find.descendant(
+              of: fit,
+              matching: find.byType(ClipRect),
+            );
+            final artRect = tester.getRect(clippedArt);
+            final expected = applyBoxFit(
+              BoxFit.contain,
+              bounds.size,
+              const Size.square(44),
+            ).destination;
+            expect(artRect.width, closeTo(expected.width, .001));
+            expect(artRect.height, closeTo(expected.height, .001));
+            expect((artRect.center - source.center).distance, closeTo(0, .001));
+          }
         }
         for (final absent in choices.skip(shown.length)) {
           expect(
@@ -410,7 +444,7 @@ void main() {
             ),
         };
         final anchor = origin.bottomRight;
-        expect(origin.size, Size(58, count < 2 ? 33 : 58));
+        expect(origin.size, Size(58, count == 0 ? 33 : 58));
 
         void anchored(Rect rect) {
           expect(rect.right, closeTo(anchor.dx, .01));

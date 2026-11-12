@@ -3443,6 +3443,39 @@ void main() {
     },
   );
 
+  testWidgets('home shadow meets the visible poster and skips props', (
+    tester,
+  ) async {
+    phone(tester);
+    final bare = content.drills['n-pelvis-circle']!;
+    final mat = content.drills['s-kneel-hipflex']!;
+    final chair = content.drills['o-stand-sidebend']!;
+    final shadow = find.byKey(const ValueKey('face-contact-shadow'));
+
+    await showDeck(tester, items: [bare], palette: HipPalette.light);
+    await tester.pumpAndSettle();
+    final media = tester.getRect(find.byKey(const ValueKey('home-hero')));
+    final side = media.shortestSide;
+    final art = Rect.fromCenter(
+      center: media.center,
+      width: side,
+      height: side,
+    );
+    final contact = tester.getRect(shadow);
+    // Bundled 640px pelvis-circle poster alpha bounds: (208, 42, 413, 599).
+    expect(contact.width, closeTo(side * (413 - 208) / 640 * .6, .001));
+    expect(contact.height, 10);
+    expect(contact.center.dx, closeTo(art.left + side * 310.5 / 640, .001));
+    expect(contact.center.dy, closeTo(art.top + side * 599 / 640, .001));
+
+    for (final withProp in [mat, chair]) {
+      await showDeck(tester, items: [withProp], palette: HipPalette.light);
+      await tester.pumpAndSettle();
+      expect(shadow, findsNothing);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'home clips cards at the real screen edges outside its 14 point padding',
     (tester) async {
@@ -3462,6 +3495,11 @@ void main() {
       final box = tester.renderObject<RenderBox>(clipping);
       expect(box.localToGlobal(localClip.topLeft).dx, closeTo(0, .01));
       expect(box.localToGlobal(localClip.topRight).dx, closeTo(394, .01));
+      expect(box.localToGlobal(localClip.topLeft).dy, lessThanOrEqualTo(0));
+      expect(
+        box.localToGlobal(localClip.bottomRight).dy,
+        greaterThanOrEqualTo(853),
+      );
       final title = tester
           .widget<Text>(find.byKey(const ValueKey('home-title')))
           .data;

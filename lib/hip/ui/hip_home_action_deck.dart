@@ -572,6 +572,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                     constraints.maxWidth) /
                                 2,
                           ),
+                          MediaQuery.sizeOf(context).height,
                         ),
                         child: AnimatedBuilder(
                           animation: Listenable.merge([_position, _vertical]),
@@ -983,15 +984,23 @@ class _DeckExitSpring extends SpringSimulation {
       x(time).abs() >= exitDistance || super.isDone(time);
 }
 
-/// Home content has a 16pt inset; cards can fan out to the window edge.
+/// Clip cards at the side edges without cutting off the stack's soft shadows.
 class _DeckViewportClip extends CustomClipper<Rect> {
-  const _DeckViewportClip(this.bleed);
-  final double bleed;
+  const _DeckViewportClip(this.horizontalBleed, this.windowHeight);
+
+  final double horizontalBleed;
+  final double windowHeight;
 
   @override
-  Rect getClip(Size size) =>
-      Rect.fromLTRB(-bleed, 0, size.width + bleed, size.height);
+  Rect getClip(Size size) => Rect.fromLTRB(
+    -horizontalBleed,
+    -windowHeight,
+    size.width + horizontalBleed,
+    size.height + windowHeight,
+  );
 
   @override
-  bool shouldReclip(_DeckViewportClip oldClipper) => oldClipper.bleed != bleed;
+  bool shouldReclip(_DeckViewportClip oldClipper) =>
+      oldClipper.horizontalBleed != horizontalBleed ||
+      oldClipper.windowHeight != windowHeight;
 }

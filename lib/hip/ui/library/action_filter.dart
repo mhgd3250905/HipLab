@@ -16,6 +16,7 @@ import '../../data/hip_shared_library.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../hip_icons.dart';
+import '../hip_poster_bounds_fit.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import 'lib_text.dart';
@@ -1184,34 +1185,10 @@ class _LibraryPoster extends StatelessWidget {
 
     // Keep the existing decoded thumbnail, but lay out its visible alpha
     // rectangle instead of the surrounding transparent square.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final fitted = applyBoxFit(
-          BoxFit.contain,
-          bounds.size,
-          constraints.biggest,
-        ).destination;
-        final scale = fitted.width / bounds.width;
-        final side = libraryPosterPixels * scale;
-        return Center(
-          child: SizedBox.fromSize(
-            size: fitted,
-            child: ClipRect(
-              child: OverflowBox(
-                alignment: Alignment.topLeft,
-                minWidth: side,
-                maxWidth: side,
-                minHeight: side,
-                maxHeight: side,
-                child: Transform.translate(
-                  offset: -bounds.topLeft * scale,
-                  child: image,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+    return HipPosterBoundsFit(
+      sourceSize: const Size.square(libraryPosterPixels),
+      bounds: bounds,
+      child: image,
     );
   }
 }
