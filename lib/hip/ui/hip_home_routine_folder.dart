@@ -16,6 +16,8 @@ import 'hip_widgets.dart' show HipCard, HipPressable;
 import 'library/lib_text.dart';
 
 const _folderColumns = 2;
+const _folderCoverFade = Interval(0, .25);
+const _folderContentFade = Interval(0, .35);
 
 abstract final class _FolderPreview {
   static const radius = 14.0;
@@ -163,7 +165,6 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
         height: box.size.height,
       ),
       choices: List.of(widget.choices),
-      miniatures: _miniatures,
       selectedId: widget.selectedId,
       sceneLabel: widget.sceneLabel,
       onChooseGroups: widget.onChooseGroups == null
@@ -193,6 +194,8 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
   @override
   Widget build(BuildContext context) {
     final miniatures = _miniatures;
+    final progress =
+        _route?.animation ?? const AlwaysStoppedAnimation<double>(0);
     final height = miniatures.isEmpty
         ? _FolderPreview.emptyHeight
         : _FolderPreview.width;
@@ -213,19 +216,12 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
             width: _FolderPreview.width,
             height: height,
             child: AnimatedBuilder(
-              animation:
-                  _route?.animation ?? const AlwaysStoppedAnimation<double>(0),
+              animation: progress,
               builder: (context, child) => Opacity(
                 key: const ValueKey('home-routine-folder-source'),
                 // Restore in the same frame that the reverse reaches its source,
                 // before overlay disposal completes in a later microtask.
-                opacity:
-                    _route == null ||
-                        (_route!.closingCovers != null &&
-                            _route!.animation!.status ==
-                                AnimationStatus.dismissed)
-                    ? 1
-                    : 0,
+                opacity: 1 - _folderCoverFade.transform(progress.value),
                 child: child,
               ),
               child: _FolderSurface(
@@ -246,7 +242,7 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
                             ),
                             drill: miniatures[i],
                             radius: _FolderPreview.artRadius,
-                            previewProgress: miniatures.length == 1 ? 1 : 0,
+                            fitThumbnail: miniatures.length == 1,
                           ),
                         ),
                     ],
@@ -265,19 +261,16 @@ class _RoutineFolderRoute extends PopupRoute<String> {
   _RoutineFolderRoute({
     required this.origin,
     required this.choices,
-    required this.miniatures,
     required this.selectedId,
     required this.sceneLabel,
     required this.reduced,
     required this.barrierText,
     this.onChooseGroups,
-  }) : coverKeys = [for (final c in choices) GlobalKey(debugLabel: c.id)];
+  });
 
   final Rect origin;
   final List<HipHomeRoutineChoice> choices;
-  final List<HipDrill?> miniatures;
-  final List<GlobalKey> coverKeys;
-  final viewportKey = GlobalKey();
+  late final CurvedAnimation _motion;
   final String selectedId;
   final String sceneLabel;
   final bool reduced;
@@ -286,45 +279,36 @@ class _RoutineFolderRoute extends PopupRoute<String> {
 
   /// The grid holds the scene's 套路 only; 「训练组选择」 lives in the header.
   int get itemCount => choices.length;
-  List<Rect?>? closingCovers;
 
   @override
   Duration get transitionDuration =>
-      reduced ? Duration.zero : const Duration(milliseconds: 360);
+      reduced ? Duration.zero : const Duration(milliseconds: 340);
   @override
   Duration get reverseTransitionDuration =>
-      reduced ? Duration.zero : const Duration(milliseconds: 300);
+      reduced ? Duration.zero : const Duration(milliseconds: 260);
   @override
-  Color get barrierColor => Colors.black.withValues(alpha: .28);
+  Color get barrierColor => Colors.transparent;
   @override
   bool get barrierDismissible => true;
   @override
   String get barrierLabel => barrierText;
 
   @override
-  bool didPop(String? result) {
-    final viewportBox = viewportKey.currentContext?.findRenderObject();
-    final viewport = viewportBox is RenderBox && viewportBox.hasSize
-        ? viewportBox.localToGlobal(Offset.zero) & viewportBox.size
-        : null;
-    closingCovers = [
-      for (final key in coverKeys)
-        if (key.currentContext?.findRenderObject() case final RenderBox box
-            when box.attached && box.hasSize)
-          if (viewport != null &&
-              viewport.contains(box.localToGlobal(Offset.zero)) &&
-              viewport.contains(
-                box.localToGlobal(
-                  box.size.bottomRight(Offset.zero) - const Offset(.01, .01),
-                ),
-              ))
-            box.localToGlobal(Offset.zero) & box.size
-          else
-            null
-        else
-          null,
-    ];
-    return super.didPop(result);
+  Animation<double> createAnimation() {
+    final progress = super.createAnimation();
+    _motion = CurvedAnimation(
+      parent: progress,
+      curve: Curves.easeOutCubic,
+      // Route progress runs backwards when closing.
+      reverseCurve: Curves.easeInCubic.flipped,
+    );
+    return progress;
+  }
+
+  @override
+  void dispose() {
+    _motion.dispose();
+    super.dispose();
   }
 
   @override
@@ -370,9 +354,8 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                       math.max(media.padding.bottom, media.viewInsets.bottom) -
                       20,
                 );
-                // Grow left/up from the original folder's bottom-right. Only
-                // clamp when a window/keyboard change puts that anchor outside
-                // the current safe bounds; never recenter a normal opening.
+                // Keep the open panel aligned with the folder's bottom-right
+                // corner, subject to the current window and keyboard bounds.
                 final anchor = Offset(
                   origin.right.clamp(
                     available.left + 64,
@@ -411,9 +394,6 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   choices: choices,
                   selectedId: selectedId,
                   sceneLabel: sceneLabel,
-                  coverKeys: coverKeys,
-                  viewportKey: viewportKey,
-                  animation: animation,
                   tileHeight: tileHeight,
                   onChooseGroups: onChooseGroups,
                   onSelect: (id) {
@@ -424,100 +404,73 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   animation: animation,
                   child: panel,
                   builder: (context, child) {
-                    final t = Curves.easeInOutCubic.transform(animation.value);
-                    final current = Rect.lerp(origin, target, t)!;
-                    final reveal = const Interval(
-                      .28,
-                      .82,
-                      curve: Curves.easeOut,
-                    ).transform(t);
-                    final handover = const Interval(.65, .94).transform(t);
+                    final t = _motion.value;
+                    final startScale = origin.width / target.width;
+                    final scale = lerpDouble(startScale, 1, t)!;
+                    final offset =
+                        Offset.lerp(origin.center, target.center, t)! -
+                        target.center;
+                    final interactive =
+                        animation.status == AnimationStatus.completed;
+                    // Interpolate in screen units, then let the panel transform
+                    // bring the shadow back to that size.
+                    final shadows = HipColors.cardShadow
+                        ?.map((shadow) => shadow.scale((1 + .25 * t) / scale))
+                        .toList();
                     return Stack(
                       children: [
-                        Positioned.fromRect(
-                          rect: current,
-                          child: _FolderSurface(
-                            key: const ValueKey('home-routine-folder-surface'),
-                            radius: lerpDouble(_FolderPreview.radius, 32, t)!,
-                          ),
-                        ),
-                        ClipRRect(
-                          clipper: _FolderRevealClip(
-                            current,
-                            lerpDouble(_FolderPreview.radius, 32, t)!,
-                          ),
-                          child: SizedBox.expand(
-                            child: Stack(
-                              children: [
-                                Positioned.fromRect(
-                                  rect: target,
-                                  child: IgnorePointer(
-                                    ignoring:
-                                        animation.status !=
-                                        AnimationStatus.completed,
-                                    child: Opacity(
-                                      opacity: reveal,
-                                      child: child,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: ColoredBox(
+                              color: Colors.black.withValues(alpha: .28 * t),
                             ),
                           ),
                         ),
-                        for (var i = 0; i < miniatures.length; i++)
-                          Positioned.fromRect(
-                            rect: Rect.lerp(
-                              _FolderPreview.artworkRect(
-                                i,
-                                miniatures.length,
-                              ).shift(origin.topLeft),
-                              closingCovers != null && closingCovers![i] == null
-                                  ? _FolderPreview.artworkRect(
-                                      i,
-                                      miniatures.length,
-                                    ).shift(origin.topLeft)
-                                  : closingCovers?.elementAtOrNull(i) ??
-                                        Rect.fromLTWH(
-                                          target.left +
-                                              20 +
-                                              (i % _folderColumns) *
-                                                  (tileWidth + 14),
-                                          target.top +
-                                              headerHeight +
-                                              (i ~/ _folderColumns) *
-                                                  (tileHeight + 14),
-                                          tileWidth,
-                                          coverHeight,
-                                        ),
-                              t,
-                            )!,
+                        Positioned.fromRect(
+                          rect: target,
+                          child: Transform(
+                            key: const ValueKey(
+                              'home-routine-folder-transform',
+                            ),
+                            alignment: Alignment.center,
+                            transform: Matrix4.translationValues(
+                              offset.dx,
+                              offset.dy,
+                              0,
+                            )..scaleByDouble(scale, scale, 1, 1),
                             child: IgnorePointer(
+                              ignoring: !interactive,
                               child: ExcludeSemantics(
+                                excluding: !interactive,
                                 child: Opacity(
-                                  opacity:
-                                      closingCovers != null &&
-                                          closingCovers![i] == null
-                                      ? 1 - const Interval(0, .4).transform(t)
-                                      : 1 - handover,
-                                  child: _FolderArtwork(
-                                    key: ValueKey(
-                                      'home-routine-flying-${choices[i].id}',
+                                  opacity: _folderCoverFade.transform(
+                                    animation.value,
+                                  ),
+                                  child: _FolderSurface(
+                                    key: const ValueKey(
+                                      'home-routine-folder-surface',
                                     ),
-                                    drill: miniatures[i],
-                                    previewProgress: miniatures.length == 1
-                                        ? 1 - t
-                                        : 0,
                                     radius: lerpDouble(
-                                      _FolderPreview.artRadius,
-                                      18,
+                                      _FolderPreview.radius / startScale,
+                                      28,
                                       t,
                                     )!,
+                                    shadows: shadows,
+                                    child: Opacity(
+                                      key: const ValueKey(
+                                        'home-routine-folder-content',
+                                      ),
+                                      opacity: _folderContentFade.transform(
+                                        animation.value,
+                                      ),
+                                      child: child,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
+                        ),
                       ],
                     );
                   },
@@ -531,25 +484,21 @@ class _RoutineFolderRoute extends PopupRoute<String> {
   );
 }
 
-class _FolderRevealClip extends CustomClipper<RRect> {
-  const _FolderRevealClip(this.rect, this.radius);
-  final Rect rect;
-  final double radius;
-  @override
-  RRect getClip(Size size) =>
-      RRect.fromRectAndRadius(rect, Radius.circular(radius));
-  @override
-  bool shouldReclip(_FolderRevealClip oldClipper) =>
-      oldClipper.rect != rect || oldClipper.radius != radius;
-}
-
 class _FolderSurface extends StatelessWidget {
-  const _FolderSurface({super.key, required this.radius, this.child});
+  const _FolderSurface({
+    super.key,
+    required this.radius,
+    required this.child,
+    this.shadows,
+  });
+
   final double radius;
-  final Widget? child;
+  final Widget child;
+  final List<BoxShadow>? shadows;
+
   @override
   Widget build(BuildContext context) =>
-      HipCard(radius: radius, child: child ?? const SizedBox.expand());
+      HipCard(radius: radius, shadows: shadows, child: child);
 }
 
 class _FolderArtwork extends StatelessWidget {
@@ -557,50 +506,34 @@ class _FolderArtwork extends StatelessWidget {
     super.key,
     required this.drill,
     required this.radius,
-    this.previewProgress = 0,
+    this.fitThumbnail = false,
   });
   final HipDrill? drill;
   final double radius;
-  final double previewProgress;
+  final bool fitThumbnail;
   @override
   Widget build(BuildContext context) {
     final id = drill?.id;
     final asset = id == null
         ? null
         : HipPublicMedia.current?.posterAssetFor(id);
-    final bounds = previewProgress > 0 ? libraryPosterBounds[id] : null;
+    final bounds = fitThumbnail ? libraryPosterBounds[id] : null;
     final thumbnail = bounds == null || id == null
         ? null
         : HipPublicMedia.thumbnailAssetFor(id);
-    final poster = asset == null
-        ? Center(
-            child: HipIcon(HipGlyph.figure, size: 14, color: HipColors.muted),
-          )
-        : trainer.TrainerPoster(asset: asset);
-    const thumbnailSize = Size.square(libraryPosterPixels);
-
-    Widget artwork = poster;
+    final Widget artwork;
     if (thumbnail != null && bounds != null) {
-      final fittedThumbnail = HipPosterBoundsFit(
-        sourceSize: thumbnailSize,
-        bounds: Rect.lerp(
-          Offset.zero & thumbnailSize,
-          bounds,
-          previewProgress,
-        )!,
+      artwork = HipPosterBoundsFit(
+        sourceSize: const Size.square(libraryPosterPixels),
+        bounds: bounds,
         child: trainer.TrainerPoster(asset: thumbnail),
       );
-      // Keep the larger poster in the expanded grid. Blend to it while the
-      // single group's tightly fitted thumbnail grows out of the small card.
-      artwork = previewProgress == 1
-          ? fittedThumbnail
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                Opacity(opacity: 1 - previewProgress, child: poster),
-                Opacity(opacity: previewProgress, child: fittedThumbnail),
-              ],
-            );
+    } else if (asset != null) {
+      artwork = trainer.TrainerPoster(asset: asset);
+    } else {
+      artwork = Center(
+        child: HipIcon(HipGlyph.figure, size: 14, color: HipColors.muted),
+      );
     }
 
     return RepaintBoundary(
@@ -611,7 +544,7 @@ class _FolderArtwork extends StatelessWidget {
               (HipColors.isDark
                       ? HipColors.mediaBackdrop
                       : const Color(0xfff1f3f2))
-                  .withValues(alpha: 1 - previewProgress),
+                  .withValues(alpha: fitThumbnail ? 0 : 1),
           child: artwork,
         ),
       ),
@@ -624,9 +557,6 @@ class _FolderPanel extends StatelessWidget {
     required this.choices,
     required this.selectedId,
     required this.sceneLabel,
-    required this.coverKeys,
-    required this.viewportKey,
-    required this.animation,
     required this.tileHeight,
     required this.onSelect,
     this.onChooseGroups,
@@ -634,9 +564,6 @@ class _FolderPanel extends StatelessWidget {
   final List<HipHomeRoutineChoice> choices;
   final String selectedId;
   final String sceneLabel;
-  final List<GlobalKey> coverKeys;
-  final GlobalKey viewportKey;
-  final Animation<double> animation;
   final double tileHeight;
   final ValueChanged<String> onSelect;
   final VoidCallback? onChooseGroups;
@@ -705,123 +632,105 @@ class _FolderPanel extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: SizedBox(
-            key: viewportKey,
-            child: GridView.builder(
-              key: const ValueKey('home-routine-folder-grid'),
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _folderColumns,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                mainAxisExtent: tileHeight,
-              ),
-              itemCount: choices.length,
-              itemBuilder: (context, i) {
-                final choice = choices[i];
-                final selected = choice.id == selectedId;
-                final scene = choice.sceneLabel;
-                return HipPressable(
-                  key: ValueKey('home-routine-choice-${choice.id}'),
-                  semanticLabel: t.isEn
-                      ? '${scene.isEmpty ? '' : '$scene, '}${choice.title}, ${t.minutes(choice.minutes)}, ${t.movesCount(choice.drills.length)}'
-                      : '${scene.isEmpty ? '' : '$scene，'}${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
-                  selected: selected,
-                  inMutuallyExclusiveGroup: true,
-                  onTap: () => onSelect(choice.id),
-                  scale: .97,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: AnimatedBuilder(
-                          animation: animation,
-                          builder: (context, _) => Opacity(
-                            opacity: i < 4
-                                ? const Interval(.65, .94).transform(
-                                    Curves.easeInOutCubic.transform(
-                                      animation.value,
-                                    ),
-                                  )
-                                : 1,
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                SizedBox(
-                                  key: coverKeys[i],
-                                  child: _FolderArtwork(
-                                    drill: choice.drills.firstOrNull,
-                                    radius: 18,
-                                  ),
-                                ),
-                                if (scene.isNotEmpty)
-                                  Positioned(
-                                    top: 8,
-                                    left: 8,
-                                    child: _SceneChip(label: scene),
-                                  ),
-                                if (selected) ...[
-                                  DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
-                                        color: HipColors.jade,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: HipColors.jade,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: HipIcon(
-                                        HipGlyph.check,
-                                        size: 13,
-                                        color: HipColors.onJade,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 9),
-                      Text(
-                        choice.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
-                          height: 1.35,
-                          fontWeight: FontWeight.w600,
-                          color: HipColors.text,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        '${LibText.of(context).minutes(choice.minutes)} · ${LibText.of(context).movesCount(choice.drills.length)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          height: 1.4,
-                          color: HipColors.muted,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                );
-              },
+          child: GridView.builder(
+            key: const ValueKey('home-routine-folder-grid'),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _folderColumns,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 14,
+              mainAxisExtent: tileHeight,
             ),
+            itemCount: choices.length,
+            itemBuilder: (context, i) {
+              final choice = choices[i];
+              final selected = choice.id == selectedId;
+              final scene = choice.sceneLabel;
+              return HipPressable(
+                key: ValueKey('home-routine-choice-${choice.id}'),
+                semanticLabel: t.isEn
+                    ? '${scene.isEmpty ? '' : '$scene, '}${choice.title}, ${t.minutes(choice.minutes)}, ${t.movesCount(choice.drills.length)}'
+                    : '${scene.isEmpty ? '' : '$scene，'}${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
+                selected: selected,
+                inMutuallyExclusiveGroup: true,
+                onTap: () => onSelect(choice.id),
+                scale: .97,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _FolderArtwork(
+                            drill: choice.drills.firstOrNull,
+                            radius: 18,
+                          ),
+                          if (scene.isNotEmpty)
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: _SceneChip(label: scene),
+                            ),
+                          if (selected) ...[
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: HipColors.jade,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  color: HipColors.jade,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: HipIcon(
+                                  HipGlyph.check,
+                                  size: 13,
+                                  color: HipColors.onJade,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Text(
+                      choice.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.35,
+                        fontWeight: FontWeight.w600,
+                        color: HipColors.text,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${LibText.of(context).minutes(choice.minutes)} · ${LibText.of(context).movesCount(choice.drills.length)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        height: 1.4,
+                        color: HipColors.muted,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ],
