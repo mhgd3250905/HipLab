@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-12 iOS 会员页 v2 +67
+
+会员页 v2 的 iOS 签名候选已加入 TestFlight 的 `Internal Testing`。新版保留 App Store 续订披露和系统订阅入口，试用状态来自 RevenueCat，短周期有效期显示到分钟。[版本交付台账](version-ledger.md#ios-testflight-内测)
+
 ## 2026-11-12 会员阶段收束 +67
 
 会员卡采用两行展示有效期与续订状态。日期使用 RevenueCat 已验证权益的最近购买时间和到期时间，短周期额外展示本地时分。同步版本、台账和[会员页设计规范](ui-design-standard.md#7-会员页-v2)，从当前入口移除失效的 +61 构建口径与旧媒体同步命令。

@@ -2,6 +2,8 @@
 
 ## 2026-11-12 会员阶段收束 +67
 
+macOS 的 iOS 候选 `f397fdec` 静态分析无问题，会员相关测试 19 项通过、1 项截图导出按条件跳过，iOS 工程检查和签名 IPA 核验通过。TestFlight 已回读内部测试可用，iOS 购买、恢复购买和会员 AI 待真机验收。[版本交付台账](version-ledger.md#ios-testflight-内测)
+
 2026-11-12 Windows，Flutter 3.44.7。验证时的基线是 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`，源码、锁文件、`pubspec.yaml` 与会员页测试的工作树差异 SHA-256 为 `ab04154c9cd728f2373c685cc649fdd3c18bd55da56a2e7a78ede31491ca78f1`。
 
 - `flutter pub get --offline --enforce-lockfile` 通过，锁文件无差异。

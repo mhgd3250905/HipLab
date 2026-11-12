@@ -2,6 +2,12 @@
 
 ## 2026-11-12 会员阶段收束 +67
 
+### iOS TestFlight 内测
+
+`com.ugk.hipinterlude` 的 `1.1.2 (67)` 从 `feat/membership@f397fdec36bb1cb10e36bb6c743c3470280f9753` 构建，App Store 分发签名验证通过。IPA SHA-256 为 `f32b282d31f5f01952351013839ea32fc35b8833b65800e742e6acad0181c53d`。Apple 构建处理状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
+
+### Android 签名商店包
+
 源码 `1.1.2+67`，Git 标签 `v1.1.2+67`，基线 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`。会员卡按购买起止时间显示有效期，并列出续订、取消或试用状态。标签指向 `f42b79b7586cae066b7cd6cbc52c94da77d45781`。该源码已构建 `com.ugk.hiplab` 商店 AAB，版本码 `67`，大小 99,121,068 字节，SHA-256 为 `b635f3668f5855533be26c2adf9591498feb74ea645070de1abc9bf91c35fb46`。`bundletool validate` 通过，上传证书与 +62 一致。产物位于 `E:/AII-3D/hiplab-releases/membership-67/hiplab-1.1.2+67-membership-store-release.aab`。Play 内测最后发布的包见 +66 条目。[验证台账](verification.md#2026-11-12-会员阶段收束-67)
 
 ## 2026-11-12 会员卡有效期真机包
