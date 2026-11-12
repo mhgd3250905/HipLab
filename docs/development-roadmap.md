@@ -1,5 +1,9 @@
 # 开发事项台账
 
+## 2026-11-12 iOS 会员 +65
+
+月付和年付已接入 TestFlight 内测。后续在真机验收购买、恢复购买和会员 AI，并确认 App Store Connect 中订阅的审核准备状态。[当前状态](current-state.md#2026-11-12-ios-会员-65)
+
 ## 2026-11-11 Android 会员 +65
 
 Android 月付和年付客户端、训练组与 AI 门禁已接入。Play 商品、内测轨道和网关已启用。Hip 的 RevenueCat Play 服务账号凭据已验证有效，下一步真机验收购买、恢复和会员 AI。[接入记录](android-membership-2026-11-11.md)

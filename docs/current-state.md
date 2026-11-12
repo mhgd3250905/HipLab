@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-12 iOS 会员 +65
+
+HipLab iOS `1.1.2 (65)` 已加入 TestFlight 的 `Internal Testing`，状态为 `IN_BETA_TESTING`。订阅的审核截图已处理，两个商品仍显示 `MISSING_METADATA`。购买、恢复购买和会员 AI 待真机验证。[版本交付台账](version-ledger.md#2026-11-12-ios-会员-65)
+
 ## 2026-11-11 Android 会员 +65
 
 `1.1.2+65` 已发布 Play 内测，仅 `wrist-test` 两人。网关在线 402 已验证，Hip 的 RevenueCat 凭据显示 Valid credentials。购买、恢复和会员 AI 待真机验证。[接入与验证记录](android-membership-2026-11-11.md)
