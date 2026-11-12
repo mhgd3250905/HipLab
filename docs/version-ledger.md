@@ -2,7 +2,9 @@
 
 ## 2026-11-12 首次 AI 数据共享同意 +68 候选
 
-候选共用版本为 `1.1.2+68`。Android 商店版预期版本码 `68`，iOS 预期为 `1.1.2 (68)`。本条登记源码候选。Android 签名 AAB、Play 内测回执和 iOS 构建身份待各自完成后追加。[本轮验证](verification.md#2026-11-12-首次-ai-数据共享同意-68-候选)
+候选共用版本为 `1.1.2+68`。Android 商店版预期版本码为 `68`。[本轮验证](verification.md#2026-11-12-首次-ai-数据共享同意-68-候选)
+
+`com.ugk.hipinterlude` 的 `1.1.2 (68)` 从 `feat/membership@a21cb400843623f437d78dde176780768222f8a0` 构建，App Store 分发签名验证通过。IPA SHA-256 为 `285e4936f3c9247dce888fc30151c232760ee38777570f1c514860860215d5b6`。Apple 构建状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
 
 ## 2026-11-12 会员阶段收束 +67
 

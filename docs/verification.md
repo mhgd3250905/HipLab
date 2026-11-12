@@ -9,6 +9,8 @@ Windows 使用 Flutter 3.44.7，`flutter pub get --enforce-lockfile` 保持锁�
 
 本轮验证使用测试客户端。真实 Android、iOS 设备上的同意、撤回和会员 AI 请求待内测包验收。
 
+Mac 从 `a21cb40` 构建 iOS Build 68。静态分析无问题，27 项测试通过，1 项截图导出按条件跳过。iOS 工程检查和签名 IPA 验证通过，TestFlight 已回读内部组可用。
+
 ## 2026-11-12 会员阶段收束 +67
 
 macOS 的 iOS 候选 `f397fdec` 静态分析无问题，会员相关测试 19 项通过、1 项截图导出按条件跳过，iOS 工程检查和签名 IPA 核验通过。TestFlight 已回读内部测试可用，iOS 购买、恢复购买和会员 AI 待真机验收。[版本交付台账](version-ledger.md#ios-testflight-内测)
