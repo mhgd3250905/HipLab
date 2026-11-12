@@ -1,5 +1,21 @@
 # 当前状态
 
+## 2026-11-12 会员阶段收束 +67
+
+| 对象 | 已核对的版本与状态 |
+| --- | --- |
+| 会员分支源码 | `feat/membership` · `1.1.2+67` · `v1.1.2+67`，包含已验收的会员卡有效期改动 |
+| 开发主线 | `main` · `98f891b` · `1.1.0+62` |
+| Android Play 内测 | `1.1.2+66`，版本码 `66`，来源 `f335800`，仅 `wrist-test` 两人 |
+| Android 自用真机 | `1.1.2+66`，版本码 `2066`，用户确认会员卡有效期验收通过 |
+| iOS TestFlight 内测 | `1.1.2 (65)`，来源 `44da9c2`，最后回读为 `IN_BETA_TESTING` |
+
++67 的版本、标签和产物按[版本台账](version-ledger.md)登记。真机验收范围为会员卡有效期，其他购买与会员流程按[验证台账](verification.md)及[开发事项](development-roadmap.md)继续跟踪。Android RevenueCat 的 Play 凭据及实时开发者测试通知已通过核对，见[接入记录](android-membership-2026-11-11.md#2026-11-12-实时开发者通知)。
+
+## 2026-11-12 Android 会员页 v2 +66
+
+`1.1.2+66` 已发布 Google Play 内测，测试组仅选中 `wrist-test` 两人。源码 `f335800` 已推送到 `feat/membership`。该条登记 Play 内测发布。有效期改动的自用包验收见上方当前状态。[交付记录](version-ledger.md#2026-11-12-android-会员页-v2-66)
+
 ## 2026-11-12 iOS 会员 +65
 
 HipLab iOS `1.1.2 (65)` 已加入 TestFlight 的 `Internal Testing`，状态为 `IN_BETA_TESTING`。订阅的审核截图已处理，两个商品仍显示 `MISSING_METADATA`。购买、恢复购买和会员 AI 待真机验证。[版本交付台账](version-ledger.md#2026-11-12-ios-会员-65)

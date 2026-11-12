@@ -1,5 +1,19 @@
 # 验证台账
 
+## 2026-11-12 会员阶段收束 +67
+
+2026-11-12 Windows，Flutter 3.44.7。验证时的基线是 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`，源码、锁文件、`pubspec.yaml` 与会员页测试的工作树差异 SHA-256 为 `ab04154c9cd728f2373c685cc649fdd3c18bd55da56a2e7a78ede31491ca78f1`。
+
+- `flutter pub get --offline --enforce-lockfile` 通过，锁文件无差异。
+- `flutter analyze --no-pub --fatal-infos` 为 0 问题。
+- `flutter test --no-pub -j 1 --reporter expanded test/hip/hip_membership_page_test.dart test/hip/hip_membership_test.dart test/hip/hip_group_membership_test.dart test/hip/hip_membership_gateway_test.dart` 为 18 通过、1 条截图导出按条件跳过、0 失败。
+- 版本码 `2066` 的自用包安装后，用户确认会员卡有效期真机验收通过。APK 身份和运行差异见[版本台账](version-ledger.md#2026-11-12-会员卡有效期真机包)。之前开启截图导出的会员专项为 19 项通过。
+- `f335800` 的 663 项全量通过属于 +66 Play 内测基线。+67 本轮重新验证了受影响的会员流程和界面。
+
+## 2026-11-12 Android 会员页 v2 +66
+
+整合提交 `f335800` 静态分析 0 问题，17 个分片覆盖 89 个测试文件，663 项通过、71 项跳过、0 失败。两张 1080 像素宽的会员页截图采用测试数据。自用有效期包的真机结果另见上方 +67 收束记录。
+
 ## 2026-11-12 iOS 会员 +65
 
 静态分析、15 项会员相关测试、iOS 工程检查及签名 IPA 核验通过。iOS 26.5 的 iPhone 17 Pro 模拟器读到了美区月付 $2.99、年付 $19.99，以及符合资格时的 3 天和 7 天试用。已核对两种方案的续订说明并保存实际会员页截图。[版本交付台账](version-ledger.md#2026-11-12-ios-会员-65)

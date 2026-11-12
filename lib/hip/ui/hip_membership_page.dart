@@ -907,29 +907,55 @@ class _MemberCard extends StatelessWidget {
   final MembershipSnapshot active;
   final HipText text;
 
-  String? _detail() {
-    final term = active.term;
-    final expiration = active.expiresAt?.toLocal();
-    final date = expiration?.toIso8601String().split('T').first;
-    final label = term == null ? null : _termLabel(text, term);
-    if (date == null) return label;
-    final action = switch (active.willRenew) {
-      false => text.pick('$date 到期', 'Expires $date'),
-      true when active.isTrial => text.pick(
-        '$date 起扣费',
-        'Billing starts $date',
-      ),
-      true => text.pick('$date 自动续订', 'Renews $date'),
-      null => date,
+  String _formatDate(DateTime date, bool withTime) {
+    final iso = date.toLocal().toIso8601String();
+    final separator = iso.indexOf('T');
+    if (!withTime) return iso.substring(0, separator);
+    return '${iso.substring(0, separator)} ${iso.substring(separator + 1, separator + 6)}';
+  }
+
+  ({String? period, String? status}) _details() {
+    final purchase = active.latestPurchaseAt;
+    final expiry = active.expiresAt;
+    final start =
+        purchase != null && expiry != null && !purchase.isAfter(expiry)
+        ? purchase
+        : null;
+    final withTime =
+        start != null && expiry!.difference(start) < const Duration(hours: 48);
+    final from = start == null ? null : _formatDate(start, withTime);
+    final end = expiry == null ? null : _formatDate(expiry, withTime);
+    final range = from == null || end == null
+        ? end
+        : text.pick('$from 至 $end', '$from – $end');
+    final term = switch (active.term) {
+      MembershipTerm.annual => text.pick('年付', 'Annual'),
+      MembershipTerm.monthly => text.pick('月付', 'Monthly'),
+      null => null,
     };
-    return label == null ? action : '$label · $action';
+    final status = switch (active.willRenew) {
+      false => text.pick(
+        '已取消续订，到期后失效',
+        end == null ? 'Cancelled' : 'Cancelled, ends on $end',
+      ),
+      true when active.isTrial && end != null => text.pick(
+        '免费试用中 · $end 起扣费',
+        'Free trial · billing starts $end',
+      ),
+      _ when active.isTrial => text.pick('免费试用中', 'Free trial'),
+      true => text.pick('到期自动续订', 'Renews automatically'),
+      null => null,
+    };
+    return (
+      period: term == null || range == null ? term ?? range : '$term · $range',
+      status: status,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final detail = _detail();
+    final details = _details();
     return Container(
-      height: 180,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
@@ -962,48 +988,64 @@ class _MemberCard extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              top: 20,
-              left: 20,
-              right: 20,
-              bottom: 43,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: AlignmentDirectional.topStart,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _GoldPill(
-                      active.isTrial
-                          ? text.pick('试用中', 'In trial')
-                          : text.pick('生效中', 'Active'),
-                      size: 12,
-                    ),
-                    const SizedBox(height: 22),
-                    Text(
-                      text.pick('HipLab 会员', 'HipLab Pro'),
-                      style: _style(24, Colors.white, weight: FontWeight.w800),
-                    ),
-                    if (detail != null) ...[
-                      const SizedBox(height: 6),
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 180),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _GoldPill(
+                        active.isTrial
+                            ? text.pick('试用中', 'In trial')
+                            : text.pick('生效中', 'Active'),
+                        size: 12,
+                      ),
+                      const SizedBox(height: 22),
                       Text(
-                        detail,
-                        style: _style(14, Colors.white.withValues(alpha: .82)),
+                        text.pick('HipLab 会员', 'HipLab Pro'),
+                        style: _style(
+                          24,
+                          Colors.white,
+                          weight: FontWeight.w800,
+                          height: 1.125,
+                        ),
+                      ),
+                      if (details.period case final period?) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          period,
+                          style: _style(
+                            14,
+                            Colors.white.withValues(alpha: .82),
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                      if (details.status case final status?) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          status,
+                          style: _style(
+                            12,
+                            Colors.white.withValues(alpha: .60),
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                      const Spacer(),
+                      Text(
+                        'PRO MEMBER',
+                        style: _style(
+                          12,
+                          Colors.white.withValues(alpha: .60),
+                          height: 1.1,
+                          letterSpacing: 2,
+                        ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 20,
-              bottom: 18,
-              child: Text(
-                'PRO MEMBER',
-                style: _style(
-                  12,
-                  Colors.white.withValues(alpha: .60),
-                  letterSpacing: 2,
+                  ),
                 ),
               ),
             ),

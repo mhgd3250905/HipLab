@@ -1,6 +1,6 @@
 # HipLab UI 实现与复用手册
 
-这套手册把已经在 HipLab 中落地、经逐轮真机反馈修正的界面拆成可阅读的设计规则、组件合同、接入配方和失败案例。参考源码固定为 main `84202688b3c43015c0f8c66d8b9d7b07988f3e8b`，对应用户验收的 +61 运行内容。它是 Flutter 绘制的仿 iOS 主体语言，不是调用一套系统原生 UIKit 控件，也不是“套个 CupertinoTheme”就完成。
+这套手册把已经在 HipLab 中落地、经逐轮真机反馈修正的界面拆成可阅读的设计规则、组件合同、接入配方和失败案例。通用画廊与迁移配方沿用用户验收的 +61，参考源码为 main `84202688b3c43015c0f8c66d8b9d7b07988f3e8b`。它用 Flutter 绘制仿 iOS 主体界面。会员页 v2 直接参考本仓库当前页面及测试。
 
 先看规则，再运行例子，再按依赖边界迁移。此目录没有发布独立 Pub 包；`.dart` 示例在本仓库中可分析，并通过`gallery.dart`开发入口运行，跨 App 使用前需要迁移它们引用的组件及主题/语言适配。不能只复制一个页面、漏掉它依赖的返回键和动画层。
 
@@ -13,6 +13,7 @@
 | 设置分组、开关/分段/滑块、确认框、图标和插画 | [03 列表与控件](03-controls.md) | [设置页](examples/controls_example.dart) |
 | 卡片/文件夹、视频持帧、防闪烁与物理退场 | [04 动效与媒体](04-media-motion.md) | [共享媒体子树教学页](examples/media_handoff_example.dart) |
 | 其它 App 怎样分批接入、怎样判断做没做歪 | [05 移植与验收](05-adoption-validation.md) | [样例验证](examples/gallery_test.dart) |
+| 会员页两态、固定操作区与有效期 | [会员页 v2](../ui-design-standard.md#7-会员页-v2) | [当前页面](../../lib/hip/ui/hip_membership_page.dart)、[组件测试](../../test/hip/hip_membership_page_test.dart) |
 
 HipLab 的当前设计数值仍以[UI 设计规范](../ui-design-standard.md)为项目内唯一规范入口；本手册解释为什么、如何接入及如何复用。以后修改设计，应先改规范，再同步这里的样例/参数，不在两个地方分别发明数值。历史交付报告只说明当时发生了什么。
 
@@ -50,6 +51,16 @@ flutter run -t docs/ui-kit/examples/gallery.dart -d DEVICE_ID \
 | 长按吸附、竖向匀速或把甩速全部压至900 | 长按专门行为已撤回；当前任意方向拖动和投影离屏弹簧 |
 | 文件夹四图凑数、两项居中、外14/内8圆角 | 真实组数、两个在上排、外12/内6，右下锚定 |
 | 将功能按钮都画成微型立体插画 | 立体图标用于列表装饰；返回/关闭/播放等功能图形保持简洁 |
+
+## 会员页 v2
+
+会员页的当前规范、色值和布局参数见[会员页 v2](../ui-design-standard.md#7-会员页-v2)。复用时从 [HipMembershipPage](../../lib/hip/ui/hip_membership_page.dart) 查看两种状态如何共用滚动区、固定底栏、权益卡和法律链接。页面从有效 entitlement 展示方案、有效期和续订状态，权益判定、价格与交易由宿主已有的会员和商店层提供。
+
+有效期起止使用 entitlement 的最近购买时间与到期时间，短周期格式和取消续订文案见规范。卡片以 180dp 为最小高度，窄屏放大字号时由内容增高。[组件测试](../../test/hip/hip_membership_page_test.dart) 使用固定时钟和模拟商店覆盖两种页面、续订状态、47/48 小时时间格式以及 Android／iOS 的 360dp、1.5 倍字号。设置 `HIPLAB_MEMBERSHIP_ARTIFACT_DIR` 可在同一测试中导出 1080px 宽的两态截图。
+
+```bash
+flutter test --no-pub test/hip/hip_membership_page_test.dart
+```
 
 ## 源码定位
 

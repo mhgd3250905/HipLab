@@ -81,6 +81,7 @@ class HipRevenueCatStore implements MembershipStore {
     return MembershipSnapshot(
       uid,
       expiry == null ? null : DateTime.tryParse(expiry),
+      latestPurchaseAt: DateTime.tryParse(entitlement.latestPurchaseDate),
       term: _usesAppStore
           ? switch (entitlement.productIdentifier) {
               _iosMonthlyProduct => MembershipTerm.monthly,

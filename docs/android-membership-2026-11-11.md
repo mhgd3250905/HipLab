@@ -41,4 +41,8 @@ RevenueCat 的 Hip 项目已创建 Android 应用、`premium` 权益及当前 `d
 
 已启用 Google Cloud 项目 `symmetric-sylph-514407-b2` 的 Cloud Pub/Sub API。RevenueCat 重新验证 HipLab Android 已保存的凭据，显示 **Valid credentials**，确认可读取 Play 应用内商品目录、订阅目录和基础方案。[HipLab Android 配置](https://app.revenuecat.com/projects/c2e6f2e3/apps/app6666552c0b)
 
-Google Play 实时开发者通知尚未连接。购买、恢复和会员 AI 待真机验证。
+该次凭据核对时，实时开发者通知仍待连接。
+
+## 2026-11-12 实时开发者通知
+
+已将 HipLab Play 实时开发者通知接到 RevenueCat 生成的 `Play-Store-Notifications` 主题。Play Console 回读测试通知已发送，RevenueCat 的 `Last received` 为 00:22（北京时间）。购买、恢复和会员 AI 的实际验收分别登记在[验证台账](verification.md)。

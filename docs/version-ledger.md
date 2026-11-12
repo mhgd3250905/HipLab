@@ -1,5 +1,19 @@
 # 版本交付台账
 
+## 2026-11-12 会员阶段收束 +67
+
+源码 `1.1.2+67`，Git 标签 `v1.1.2+67`，基线 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`。会员卡按购买起止时间显示有效期，并列出续订、取消或试用状态。标签登记本阶段源码身份，构建、安装和各渠道状态按实际回执另记。[验证台账](verification.md#2026-11-12-会员阶段收束-67)
+
+## 2026-11-12 会员卡有效期真机包
+
+`1.1.2+66` 自用 arm64 APK 的版本码为 `2066`，源码为 `f3358005468bc6cb3181e2f80f6d3b29c83c2165` 加会员卡有效期改动，运行差异 SHA-256 为 `c72e5525e17174d3f3fe312cefe64de35c8f4234690c2dec9551c3822454e3e6`。11:02（北京时间）同签覆盖手机的 `2065` 并启动，应用 ID、用户数据目录和首次安装时间均已核对保留。用户已确认会员卡有效期真机验收通过。
+
+APK 路径为 `E:/AII-3D/hiplab-releases/membership-66/validity-device/hiplab-1.1.2+66-validity-device-arm64-release.apk`，大小 56,683,056 字节，SHA-256 为 `2d9d1ea40a6dab898c4919c5a2d58de1b99af1bdecdf418da4711366712b8d6f`。
+
+## 2026-11-12 Android 会员页 v2 +66
+
+签名商店 AAB 来自 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`，包名 `com.ugk.hiplab`，版本码 `66`，大小 99,116,740 字节，SHA-256 为 `6f8e0d660411b5593f97eea146512d87bc8e2c81928ac67eff05baf1ae30f00d`。通过 bundletool 校验，与 +62 上传证书一致。Play Console 回读已面向 `wrist-test` 内部测试人员发布。[加入内测](https://play.google.com/apps/internaltest/4701079694408471816)
+
 ## 2026-11-12 iOS 会员 +65
 
 - 候选为 `com.ugk.hipinterlude` `1.1.2 (65)`，构建源为 `feat/membership@44da9c22c161ae9755a61daf4b83b0e4f5b096f6`。

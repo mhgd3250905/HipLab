@@ -90,7 +90,11 @@ void main() {
   final annual = find.byKey(const ValueKey('membership-annual'));
   final monthly = find.byKey(const ValueKey('membership-monthly'));
   final now = DateTime(2026, 11, 12, 12);
+  final annualStart = DateTime(2025, 12, 12, 12);
   final expiresAt = DateTime(2026, 12, 12, 12);
+
+  Finder memberCard(Finder range) =>
+      find.ancestor(of: range, matching: find.byType(ClipRRect)).first;
 
   setUpAll(() async {
     await (FontLoader(
@@ -252,12 +256,18 @@ void main() {
       try {
         store.snapshot = MembershipSnapshot(
           'test',
-          expiresAt,
+          now.add(const Duration(hours: 47)),
           term: MembershipTerm.annual,
-          willRenew: true,
+          willRenew: false,
+          latestPurchaseAt: now,
         );
         await membership.refresh();
         await tester.pumpAndSettle();
+        final range = find.text('Annual · 2026-11-12 12:00 – 2026-11-14 11:00');
+        final status = find.text('Cancelled, ends on 2026-11-14 11:00');
+        expect(tester.widget<Text>(range).style?.fontSize, 14);
+        expect(tester.widget<Text>(status).style?.fontSize, 12);
+        expect(tester.getSize(memberCard(range)).height, greaterThan(180));
         final manageBottom = tester.getBottomLeft(manage).dy;
         expect(manage.hitTestable(), findsOneWidget);
         await tester.dragFrom(const Offset(180, 340), const Offset(0, -200));
@@ -274,7 +284,7 @@ void main() {
     }),
   );
 
-  testWidgets('active member sees renewal status and can open each benefit', (
+  testWidgets('active member sees validity and can open each benefit', (
     tester,
   ) async {
     final store = _Store(() async => [_month, _year]);
@@ -289,22 +299,21 @@ void main() {
       onWorkout: () => actions.add('workout'),
     );
 
-    Future<void> update({required bool willRenew, bool isTrial = false}) async {
+    try {
       store.snapshot = MembershipSnapshot(
         'test',
         expiresAt,
         term: MembershipTerm.annual,
-        willRenew: willRenew,
-        isTrial: isTrial,
+        willRenew: true,
+        latestPurchaseAt: annualStart,
       );
       await membership.refresh();
       await tester.pumpAndSettle();
-    }
-
-    try {
-      await update(willRenew: true);
       expect(find.text('生效中'), findsOneWidget);
-      expect(find.textContaining('2026-12-12 自动续订'), findsOneWidget);
+      final range = find.text('年付 · 2025-12-12 至 2026-12-12');
+      expect(range, findsOneWidget);
+      expect(tester.getSize(memberCard(range)).height, 180);
+      expect(find.text('到期自动续订'), findsOneWidget);
       expect(find.text('管理订阅'), findsOneWidget);
       expect(tester.getSize(manage).height, 48);
       expect(find.text('恢复购买'), findsOneWidget);
@@ -315,13 +324,103 @@ void main() {
         await tester.tap(find.textContaining(label));
       }
       expect(actions, ['coach', 'plan', 'workout']);
+    } finally {
+      membership.rejectPremium();
+    }
+  });
 
-      await update(willRenew: false);
-      expect(find.textContaining('2026-12-12 到期'), findsOneWidget);
+  testWidgets('shows the purchased validity range and renewal status', (
+    tester,
+  ) async {
+    final store = _Store(() async => [_month, _year]);
+    final membership = HipMembership(store, now: () => now);
+    await mount(tester, membership);
 
-      await update(willRenew: true, isTrial: true);
-      expect(find.text('试用中'), findsOneWidget);
-      expect(find.textContaining('2026-12-12 起扣费'), findsOneWidget);
+    Future<void> check({
+      required MembershipTerm term,
+      required DateTime start,
+      required DateTime end,
+      required bool willRenew,
+      required String range,
+      required String status,
+      bool isTrial = false,
+    }) async {
+      store.snapshot = MembershipSnapshot(
+        'test',
+        end,
+        term: term,
+        willRenew: willRenew,
+        isTrial: isTrial,
+        latestPurchaseAt: start,
+      );
+      await membership.refresh();
+      await tester.pumpAndSettle();
+
+      expect(find.text(range), findsOneWidget);
+      expect(find.text(status), findsOneWidget);
+    }
+
+    try {
+      await check(
+        term: MembershipTerm.annual,
+        start: annualStart,
+        end: expiresAt,
+        willRenew: true,
+        range: 'Annual · 2025-12-12 – 2026-12-12',
+        status: 'Renews automatically',
+      );
+      await check(
+        term: MembershipTerm.monthly,
+        start: now,
+        end: expiresAt,
+        willRenew: true,
+        range: 'Monthly · 2026-11-12 – 2026-12-12',
+        status: 'Renews automatically',
+      );
+      await check(
+        term: MembershipTerm.annual,
+        start: DateTime(2026, 11, 9, 12),
+        end: DateTime(2026, 11, 16, 12),
+        willRenew: true,
+        isTrial: true,
+        range: 'Annual · 2026-11-09 – 2026-11-16',
+        status: 'Free trial · billing starts 2026-11-16',
+      );
+      expect(find.text('In trial'), findsOneWidget);
+      await check(
+        term: MembershipTerm.annual,
+        start: annualStart,
+        end: expiresAt,
+        willRenew: false,
+        range: 'Annual · 2025-12-12 – 2026-12-12',
+        status: 'Cancelled, ends on 2026-12-12',
+      );
+      await check(
+        term: MembershipTerm.annual,
+        start: now,
+        end: now.add(const Duration(hours: 47)),
+        willRenew: false,
+        range: 'Annual · 2026-11-12 12:00 – 2026-11-14 11:00',
+        status: 'Cancelled, ends on 2026-11-14 11:00',
+      );
+      await check(
+        term: MembershipTerm.annual,
+        start: now,
+        end: now.add(const Duration(hours: 48)),
+        willRenew: false,
+        range: 'Annual · 2026-11-12 – 2026-11-14',
+        status: 'Cancelled, ends on 2026-11-14',
+      );
+      await check(
+        term: MembershipTerm.annual,
+        start: DateTime(2026, 11, 9, 12),
+        end: DateTime(2026, 11, 16, 12),
+        willRenew: false,
+        isTrial: true,
+        range: 'Annual · 2026-11-09 – 2026-11-16',
+        status: 'Cancelled, ends on 2026-11-16',
+      );
+      expect(find.textContaining('billing starts'), findsNothing);
     } finally {
       membership.rejectPremium();
     }
@@ -373,6 +472,7 @@ void main() {
         expiresAt,
         term: MembershipTerm.annual,
         willRenew: true,
+        latestPurchaseAt: annualStart,
       );
       await membership.refresh();
       await tester.pumpAndSettle();

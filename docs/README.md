@@ -1,8 +1,10 @@
 # HipLab 文档与开发台账
 
-## 当前使用入口：+61主线与可复用UI
+## 当前使用入口
 
-截至+61的本轮日常Android UI已由用户验收并接收main；运行内容基线`8420268`，包源`7ca9617`，版本仍为`1.1.0+61`/2061。当前设计数值看[UI设计规范](ui-design-standard.md)，其它App参考实现看[UI实现与复用手册](ui-kit/README.md)（完整Flutter画廊、源码配方、失败演进与验证样例），本次文档修正和证据绑定见[阶段收束记录](ui-documentation-closeout-2026-11-07.md)。
+会员阶段源码 **1.1.2+67** 位于 `feat/membership`。从[当前状态](current-state.md)核对源码、商店和自用安装版本，从[版本管理](version-management.md)、[版本台账](version-ledger.md)、[验证台账](verification.md)核对交付身份。待验事项见[开发路线图](development-roadmap.md)，关键变更见[开发日志](development-log.md)。
+
+会员页的当前设计见[UI 设计规范](ui-design-standard.md)。通用界面接入和画廊见[UI 复用手册](ui-kit/README.md)。以下日期条目属于各自阶段的历史交付。
 
 ## 2026-11-07：已验收UI接收为main主线 / +61
 
@@ -312,11 +314,11 @@ SDK 3e949ce / c327a90，1.1.0+32（arm64 2032），analyze 0、全量 461/0/68�
 
 ## 新机器拉素材（Mac / Windows）
 
-### 当前 main：公共元数据、封面与 SDK 按需视频
+### 会员分支的公共元数据、封面与 SDK 按需视频
 
-从 Git 获取 `pubspec.yaml` / `pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。当前 main 已移除 94 个内置 MP4，`pubspec.yaml` 不打包 `assets/drill_media/`；**不要运行下方旧 ZIP 同步来回填视频**。当前r2-v1公共目录249项、209张授权封面、209条未审AI标签随仓库保存；SDK不自带App标签。`HipPublicMedia` 从这些元数据创建SDK媒体策略，视频按需获取并缓存，训练前是否可离线播放取决于所需媒体是否已缓存。引导使用三张friendly透明卡通图，旧深浅六张保留源文件但不打包。
+从 Git 获取 `pubspec.yaml`、`pubspec.lock`、`assets/public_media/`、`assets/public_posters/r2-v11/` 和 `assets/coach/ai-tags/`。stable r2-v11 目录包含 249 项，公开动作库和 AI 定制范围为 248 项，每项随包提供封面和缩略图。自测演示单列。视频由 SDK 按需下载并缓存，离线播放取决于已有缓存。
 
-两端固定 Flutter **3.44.7 / Dart 3.12.2**，先用该版本执行 `flutter pub get --enforce-lockfile`，保持锁文件当前的 `pub.dev` 源，已有解析时才用 `--no-pub` 验证；不要为使用旧镜像缓存重写 lock。Mac 不升级依赖、版本或媒体。SDK pin、范围和已验结果见[当前状态](current-state.md)及[验证台账](verification.md)。
+两端使用 Flutter **3.44.7 / Dart 3.12.2**。执行 `flutter pub get --enforce-lockfile`，保持锁文件的 `pub.dev` 源。已有依赖解析时可用 `--no-pub`。完整 SDK 固定版本和目录 SHA-256 见[版本管理](version-management.md#版本与来源身份)。
 
 ### 冻结 v0.2.0 ZIP 恢复（仅旧分支历史）
 
