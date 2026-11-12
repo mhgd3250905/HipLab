@@ -3,86 +3,77 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>开胯训练助手 HipLab — 隐私政策</title>
+<title>开胯训练助手 HipLab — 隐私政策 / Privacy Policy</title>
 <style>
   :root { color-scheme: dark; }
   body { font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif; background: #101013; color: #dfe4e8; margin: 0; line-height: 1.8; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 48px 24px 64px; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 24px 64px; }
   h1 { color: #fff; font-size: 26px; }
-  h2 { color: #3fd9ae; font-size: 18px; margin-top: 32px; }
-  p, li { font-size: 15px; color: #b9c0c7; }
-  .meta { color: #7c858d; font-size: 13px; }
+  h2 { color: #fff; font-size: 21px; }
+  h3 { color: #3fd9ae; font-size: 18px; margin-top: 32px; }
+  p { font-size: 15px; color: #b9c0c7; }
   a { color: #3fd9ae; }
   nav { margin-bottom: 28px; }
-  code { overflow-wrap: anywhere; }
   section { scroll-margin-top: 24px; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<main>
   <h1>开胯训练助手 HipLab 隐私政策</h1>
-  <p class="meta">更新日期：2026 年 10 月 24 日 · 适用范围：Android 基础版 1.0.0（构建 20），包名 com.ugk.hiplab · 开发者：Bboy Ug1yk</p>
-  <nav aria-label="政策语言"><a href="#zh-policy">中文</a> · <a href="#en-policy" lang="en">English</a></nav>
-  <section id="zh-policy" lang="zh-CN" aria-label="中文隐私政策">
-  <h2>我们如何处理信息</h2>
+  <nav aria-label="政策语言 / Policy language"><a href="#zh-policy">中文</a> · <a href="#en-policy" lang="en">English</a></nav>
+  <section id="zh-policy" aria-labelledby="zh-title">
+    <h2 id="zh-title">中文隐私政策</h2>
+    <p>更新日期为 2026 年 11 月 12 日。适用于 HipLab Android（com.ugk.hiplab）和 iOS（原 Hip Interlude，com.ugk.hipinterlude）。订阅和 AI 条款适用于提供相应功能的版本。开发者为 Bboy Ug1yk。</p>
 
-  <p>HipLab 面向成年人的日常髋部活动度与柔韧练习。此基础版无需账号，不含广告、行为分析、崩溃上报、支付或云同步功能。应用保留「AI 定制」入口，但未配置在线 AI 服务；输入需求后由本地预设方案回落，不调用在线模型。开发者不通过此基础版收集、上传、出售或分享你的训练、自测或偏好数据。</p>
+    <h3>设备上的训练记录</h3>
+    <p>HipLab 无需注册开发者账号。安全提示回答、练习身份、髋部自测、疼痛或麻木反馈、训练日期与完成记录、自定义训练组和设置保存在设备的应用私有存储中，用于训练、查看进度和恢复设置。应用不会自动把这些记录上传给开发者、订阅服务或 AI 服务。若你在 AI 对话中主动输入相关信息，AI 服务会按下文所述处理该对话。</p>
 
-  <h2>保存在设备上的信息</h2>
+    <h3>会员订阅与恢复购买</h3>
+    <p>Android 的付款和续订由 Google Play 处理，iOS 由 Apple App Store 处理。HipLab 不接收支付卡资料。配置了订阅服务的会员版会在启动和返回应用时检查会员状态，即使你尚未购买。RevenueCat SDK 自动生成随机的匿名 App 用户 ID，使用该标识和商店交易凭证或购买记录来识别订阅、验证权益、恢复购买并统计订阅情况。购买记录包括订阅商品、购买日期、试用或续订状态、有效期等。这个标识可以关联同一会员记录，无需提供姓名或邮箱。你可在购买所用商店中管理或取消订阅。</p>
 
-  <p>安全提示的回答、训练身份选择、自测结果、疼痛与麻木反馈、训练日期和完成情况、自己的训练组、提醒时间和主题及音量等偏好，通过本机应用私有存储保存。这些信息用于设备上的练习安排、进度显示和设置恢复。开发者无法通过应用远程读取这些记录。</p>
+    <h3>你主动使用的 AI 功能</h3>
+    <p>当你提交 AI 问答或训练定制时，应用通过 HTTPS 向运行在 Cloudflare Workers 上的 HipLab 网关发送你提交的文字、相关对话和用于生成回复的上下文，例如练习目标、器材或场景、语言、动作候选，以及你在对话中说明的身体限制。若你在对话中填写疼痛、伤病或恢复情况，这些内容也会随请求发送。AI 功能由你主动使用，基础训练和自测可独立使用。请只提供生成回复所需的信息，避免在对话中填写姓名、联系方式或详细医疗记录。</p>
+    <p>网关用 RevenueCat 的匿名 App 用户 ID 核验会员状态及试用或付费权益，并通过 HTTPS 把生成回复所需的请求内容转发给配置的模型服务。应用传给网关的订阅标识和客户端 IP 不作为字段或请求头转发给模型服务。网关不把聊天正文或模型回复写入自己的数据库或应用日志。应用可在本机保留 AI 对话记录，相关上下文可能随后续提问再次发送。模型服务是否保留请求或回复以及留存时限取决于该服务的适用条款和设置。</p>
 
-  <p>基础版不会为了 AI 请求生成或发送安装标识，不会向 AI 服务发送需求、对话、自测或训练记录，也不拉取远端动作目录。入口中的需求和预设回落在本机处理。若由带 AI 功能的旧测试版覆盖升级而保留了安装标识或 AI 使用记录，它们可继续留在应用私有存储中，但此基础版不会自动上传它们。</p>
+    <h3>权益缓存、次数和服务日志</h3>
+    <p>网关最多缓存有效会员权益 5 分钟，且不超过权益到期时间。为执行每日额度和防滥用限制，网关用带密钥的哈希从会员标识和 IP 派生计数键，保存时间窗口及请求次数。试用每日 30 次，付费会员每日 50 次，按 UTC 日期重置。网关还按分钟限制来自同一 IP 的请求。计数存储只保留每个键最近使用的窗口与次数，由下一窗口的请求覆盖。当前实现没有为停止使用的计数设置固定删除期限。网关的计数和权益缓存不保存原始 IP 或原始会员标识。Cloudflare 可能为网络传输、安全和运行诊断处理连接或错误元数据。</p>
 
-  <h2>保留、删除和系统备份</h2>
+    <h3>素材下载、语音与权限</h3>
+    <p>应用会联网检查公共动作目录和素材更新，并按需下载和缓存视频。素材请求含正常网络传输所需的 IP 地址和资源路径。播放器可使用只在设备上运行的媒体服务读取素材。你启动训练或语音自测后，Android 的前台服务和唤醒权限或 iOS 的后台音频用于计时和语音提示。应用不请求相机、麦克风、位置、联系人或 HealthKit／Health Connect 数据。</p>
 
-  <p>本地记录会保留到你通过系统设置清除应用存储或卸载应用。Android 系统或设备厂商可能按照你的设备、账号和备份设置备份应用数据，并在重装或迁移设备时恢复。应用未禁用系统备份。此类备份由系统或相应服务提供方控制，开发者不接收或存储这些系统备份。</p>
-
-  <p>清除本地存储或卸载并不保证删除已有的系统或云端备份。请在设备或备份服务设置中管理、关闭或删除备份。开发者无法访问或代你删除设备和系统备份中的记录。</p>
-
-  <h2>视频、语音和权限</h2>
-
-  <p>动作视频、示意图和语音随应用提供。Android 的 <code>INTERNET</code> 权限用于绑定 <code>127.0.0.1</code> 的本机媒体服务，供应用内播放器读取素材；此地址不离开本机，不用于向外部服务器上传记录。应用限制普通明文网络访问，仅允许本机回环媒体地址。</p>
-
-  <p>你主动开始跟练或自测后，应用可能使用 <code>FOREGROUND_SERVICE</code>、<code>FOREGROUND_SERVICE_MEDIA_PLAYBACK</code> 和 <code>WAKE_LOCK</code>，支持本机训练语音、会话计时和训练中的唤醒状态，并显示训练通知。结束训练、离开会话或移除任务时，程序按生命周期停止服务并释放资源。这些权限不用于持续追踪、采集健康传感器数据、定位、广告或上传。</p>
-
-  <p>应用不请求相机、麦克风、位置、联系人、身体传感器、Health Connect、健康记录、短信、通话记录或共享存储访问权限。耳机由 Android 系统负责路由，应用不会为了播放而读取联系人、扫描蓝牙设备或录音。久坐提醒设置目前仅保存安排，不投递系统提醒通知。</p>
-
-  <h2>外部链接和主动联系</h2>
-
-  <p>隐私页提供公开政策地址及支持方式。你主动在浏览器访问公开网站，或通过邮件、GitHub Issues 联系我们时，相关服务提供方会按各自政策处理你主动提交的内容和访问请求。请勿在公开 Issues 中填写敏感健康或身份信息。此类主动联系不等于应用自动上传训练记录。</p>
-
-  <h2>成年人健身和安全</h2>
-
-  <p>本应用面向成年人提供一般健身信息，不面向儿童，不是医疗器械，不能诊断、治疗、治愈或预防疾病，也不能替代医疗建议。如有疼痛、麻木、受伤或其他不适，请停止练习并咨询合格的医疗专业人员。</p>
-
-  <h2>政策变更和联系</h2>
-
-  <p>如数据处理方式变化，我们会更新应用内说明及公开政策。本政策描述此基础版的数据处理方式。若后续提供数据处理方式不同的版本，我们会在提供相应功能前更新政策并说明差异。</p>
-
-  <p>开发者：Bboy Ug1yk。支持与隐私邮箱：<a href="mailto:mhgd3250905@gmail.com">mhgd3250905@gmail.com</a>。项目 Issues：<a href="https://github.com/mhgd3250905/HipLab/issues">https://github.com/mhgd3250905/HipLab/issues</a>。</p>
+    <h3>保留、删除与联系</h3>
+    <p>设备上的训练、设置和聊天记录保留在应用存储，直到你删除相关记录或应用数据。Android 的清除存储或卸载、iOS 的「删除 App」可移除本机应用数据。iOS 的「卸载 App」可保留数据。系统或设备备份可能根据你的设置保存并恢复应用数据，备份由相应系统或备份服务管理。</p>
+    <p>删除应用不会取消商店订阅或自动删除服务端购买记录。购买记录由所用商店及 RevenueCat 按各自适用条款和留存要求处理。如需查询或请求删除由 HipLab 管理的服务端数据，请通过下方邮箱联系。商店账单、退款与取消订阅请通过 Google Play 或 Apple 办理。</p>
+    <p>HipLab 面向成年人提供一般健身练习，不用于诊断、治疗或预防疾病。出现疼痛、麻木或其他不适时，请停止练习并咨询合格的医疗专业人员。若你通过邮件或 GitHub Issues 主动联系，相应服务和接收者会处理你主动提供的内容。请勿在公开 Issues 中发布健康资料、订阅标识或身份信息。数据处理方式变化时，我们会更新本政策。</p>
+    <p><a href="mailto:mhgd3250905@gmail.com">联系开发者 Bboy Ug1yk</a> · <a href="https://github.com/mhgd3250905/HipLab/issues">GitHub Issues</a></p>
   </section>
 
-  <section id="en-policy" lang="en" aria-label="English privacy policy">
-  <h2>Privacy policy (English)</h2>
-  <p>Updated October 24, 2026. Applies to the Android basic release <code>1.0.0+20</code>, package <code>com.ugk.hiplab</code>, built without an AI key. Developer: Bboy Ug1yk.</p>
+  <section id="en-policy" lang="en" aria-labelledby="en-title">
+    <h2 id="en-title">Privacy policy</h2>
+    <p>Updated November 12, 2026. This policy covers HipLab on Android (com.ugk.hiplab) and iOS (formerly Hip Interlude, com.ugk.hipinterlude). The subscription and AI sections apply to releases that offer those features. The developer is Bboy Ug1yk.</p>
 
-  <p>HipLab provides general hip mobility and flexibility practice for adults. This basic release has no accounts, ads, analytics, crash reporting, payments or cloud sync. The AI customization entry remains visible, but no online AI service is configured. Requests entered there use on-device preset fallbacks without calling an online model or fetching a remote catalog. The developer does not use this release to automatically collect, upload, sell or share your training records, self-check answers or preferences.</p>
+    <h3>Training records on your device</h3>
+    <p>HipLab does not require a developer account. Safety answers, practice profiles, hip self-checks, pain or numbness feedback, practice dates, completed sessions, custom routines and settings are stored in the app’s private storage. They support training, progress and settings on your device. The app does not automatically upload these records to the developer, subscription services or AI services. If you choose to type this information into an AI conversation, the AI service processes that conversation as described below.</p>
 
-  <p>Safety answers, selected training profile, self-checks, pain or numbness feedback, practice dates, session results, personal training groups, reminder schedules and preferences are stored in the app&#x27;s private local storage. They support on-device planning, progress and settings. The developer cannot remotely read these records. This basic release does not create or send an AI installation identifier. Data retained when upgrading from a previous AI-enabled test build may remain locally but is not automatically transmitted by this release.</p>
+    <h3>Membership and restoring purchases</h3>
+    <p>Google Play handles Android payments and renewals. Apple’s App Store handles them on iOS. HipLab does not receive your payment card details. Membership releases configured for subscriptions check membership at startup and when you return to the app, including before you buy anything. The RevenueCat SDK generates a random anonymous App User ID and uses it with store transaction receipts or purchase history to identify subscriptions, verify access, restore purchases and measure subscription activity. Purchase history includes details such as the subscription product, purchase date, trial or renewal status and expiration. The ID can link records for the same membership without requiring your name or email. You can manage or cancel a subscription in the store where you bought it.</p>
 
-  <p>Local records remain until you clear app storage or uninstall. Android or your device manufacturer may back up and restore app data according to your system and backup settings. System backup is not disabled by the app. These backups are controlled by the system or backup provider, not received by the developer. Removing local data does not necessarily remove existing backups; manage those through the relevant system or provider settings.</p>
+    <h3>AI features you choose to use</h3>
+    <p>When you submit an AI question or ask for a personalized routine, the app sends your text, relevant conversation and context over HTTPS to the HipLab gateway running on Cloudflare Workers. Context may include exercise goals, equipment or setting, language, exercise candidates and limitations you mention in the conversation. If you describe pain, an injury or recovery in the conversation, that information is sent with the request. Basic training and self-checks work independently of AI. Provide only the details needed for the reply and avoid sending names, contact details or detailed medical records.</p>
+    <p>The gateway uses the anonymous RevenueCat App User ID to verify membership and trial or paid access. It forwards the content needed to generate a reply over HTTPS to the configured model service. The gateway does not forward the app’s subscription identifier or your client IP address as fields or headers to the model service. Its own databases and application logs do not store chat text or model replies. The app can keep conversation history on your device and may send relevant context again when you ask a follow-up. Whether the model service retains requests or replies, and for how long, depends on the terms and settings for that service.</p>
 
-  <p>Videos and spoken cues are bundled. The Android internet permission supports a media server bound to the device&#x27;s <code>127.0.0.1</code> loopback address. It does not send your records to an external server. Ordinary cleartext network access is restricted to local media addresses.</p>
+    <h3>Membership cache, usage limits and service logs</h3>
+    <p>The gateway caches active membership for up to five minutes and never beyond the entitlement’s expiry. To enforce daily quotas and prevent abuse, it stores a time window and request count under cryptographically derived keys for the subscriber and the IP address. The AI quota is 30 requests per day during a trial and 50 for paid membership, resetting at midnight UTC. A separate limit applies to requests from the same IP address each minute. Each counter stores the latest window and count for its key, which a request in a later window overwrites. Inactive counters have no fixed deletion deadline in the current implementation. The counters and membership cache do not store raw IP addresses or raw subscriber identifiers. Cloudflare may process connection or error metadata for delivery, security and operational diagnostics.</p>
 
-  <p>When you start guided practice or a self-check, foreground-service, media-playback and wake-lock permissions support local audio, timing and an active training notification. Session termination releases the service and related resources through the app lifecycle. These permissions are not used for tracking, health sensors, location, advertising or uploading data. The app does not request camera, microphone, location, contacts, body sensors, Health Connect, SMS, call-log or shared-storage access. Android manages headphone audio routing. Reminder settings currently save a schedule without delivering reminders.</p>
+    <h3>Media downloads, audio and permissions</h3>
+    <p>The app checks for updates to the public exercise catalog and assets, and downloads and caches videos as needed. Media requests include the IP address and resource path used for network delivery. The player can use an on-device media service to read assets. When you start a workout or spoken self-check, Android foreground service and wake permissions or iOS background audio support timing and voice cues. The app does not request camera, microphone, location, contacts, HealthKit or Health Connect data.</p>
 
-  <p>If you choose to open a website or contact us by email or GitHub Issues, those services process the visit and the information you submit under their own policies. Avoid posting sensitive personal or health information in public Issues.</p>
-
-  <p>HipLab is intended for adults and general fitness. It has no medical-device function, provides no diagnosis or treatment, and makes no disease-curing or prevention claims. Seek qualified medical advice and stop exercising if you experience pain, numbness, injury or other discomfort.</p>
-
-  <p>We will update the in-app and public policy when data practices change. If a later version handles data differently, we will update this policy and explain the differences before offering those features. Contact Bboy Ug1yk at <a href="mailto:mhgd3250905@gmail.com">mhgd3250905@gmail.com</a> or <a href="https://github.com/mhgd3250905/HipLab/issues">https://github.com/mhgd3250905/HipLab/issues</a>.</p>
+    <h3>Retention, deletion and contact</h3>
+    <p>Training records, settings and chat history remain in app storage until you remove the relevant records or app data. Clearing storage or uninstalling on Android, or choosing Delete App on iOS, removes local app data. Offload App on iOS may keep it. Your operating system or backup provider may back up and restore app data according to your settings and manages those backups.</p>
+    <p>Deleting the app does not cancel your store subscription or automatically remove server-side purchase records. The store and RevenueCat handle purchase records under their applicable terms and retention requirements. To ask about or request deletion of server-side data managed by HipLab, contact us using the email below. For billing, refunds and cancellations, use Google Play or Apple.</p>
+    <p>HipLab offers general fitness practice for adults and is not intended to diagnose, treat or prevent disease. Stop exercising and seek qualified medical advice if you experience pain, numbness or other discomfort. If you contact us by email or through GitHub Issues, the relevant service and recipient process the information you choose to provide. Keep health information, subscription identifiers and identifying details out of public issues. We update this policy when our data practices change.</p>
+    <p><a href="mailto:mhgd3250905@gmail.com">Email the developer, Bboy Ug1yk</a> · <a href="https://github.com/mhgd3250905/HipLab/issues">GitHub Issues</a></p>
   </section>
-</div>
+</main>
 </body>
 </html>
