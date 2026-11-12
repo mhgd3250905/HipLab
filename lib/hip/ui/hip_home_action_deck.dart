@@ -47,6 +47,7 @@ class HipHomeActionDeck extends StatefulWidget {
 class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     with TickerProviderStateMixin {
   static const _aspect = .62;
+  static const _cardScale = .9;
   // HipHome already provides 14dp horizontal padding.
   static const _sideInset = 8.0;
   static const _rearAngle = 3.5 * math.pi / 180;
@@ -234,8 +235,14 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
 
   int _at(int offset) => (_index + offset) % widget.drills.length;
 
-  double _cardLeft(double stageWidth) =>
-      math.max(_sideInset, (stageWidth - _cardWidth) / 2 - 18);
+  double _cardLeft(double stageWidth) {
+    final originalWidth = _cardWidth / _cardScale;
+    final originalLeft = math.max(
+      _sideInset,
+      (stageWidth - originalWidth) / 2 - 18,
+    );
+    return originalLeft + (originalWidth - _cardWidth) / 2;
+  }
 
   void _floatFront() {
     if (_reduced || _floating) return;
@@ -550,15 +557,18 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
               if (available < 110 || constraints.maxWidth <= 2 * _sideInset) {
                 return const SizedBox.shrink();
               }
-              _cardWidth = math.min(
+              final availableWidth = math.min(
                 constraints.maxWidth - 2 * _sideInset,
                 available * _aspect,
               );
+              _cardWidth = availableWidth * _cardScale;
               _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
               _switchDistance = MediaQuery.sizeOf(context).width * .26;
               final cardHeight = _cardWidth / _aspect;
-              return Align(
+              final verticalInset = (availableWidth - _cardWidth) / _aspect / 2;
+              return Container(
                 alignment: Alignment.bottomCenter,
+                padding: EdgeInsets.only(bottom: verticalInset),
                 child: OverlayPortal.overlayChildLayoutBuilder(
                   controller: _overlay,
                   overlayLocation: OverlayChildLocation.rootOverlay,
@@ -726,9 +736,9 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                         key: const ValueKey('home-deck-pose'),
                         alignment: Alignment.topLeft,
                         transform: pose,
-                        // Unpack RGB/alpha in the video's local coordinates,
-                        // then transform the composed card as one GPU image.
-                        filterQuality: FilterQuality.low,
+                        // Isolate the packed-alpha shader from swipe tilt.
+                        // Opening and closing only translate this layer.
+                        filterQuality: _floating ? FilterQuality.low : null,
                         child: IgnorePointer(
                           ignoring:
                               !(ModalRoute.isCurrentOf(context) ?? true) ||

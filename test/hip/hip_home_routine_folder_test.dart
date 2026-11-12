@@ -457,10 +457,10 @@ void main() {
         await tester.tap(find.byKey(_entry));
         await tester.pump();
         final route = ModalRoute.of(tester.element(panel))!;
-        expect(route.transitionDuration, const Duration(milliseconds: 340));
+        expect(route.transitionDuration, const Duration(milliseconds: 420));
         expect(
           route.reverseTransitionDuration,
-          const Duration(milliseconds: 260),
+          const Duration(milliseconds: 360),
         );
         final targetSize = tester.getSize(surface);
         final panelSize = tester.getSize(panel);
@@ -493,11 +493,26 @@ void main() {
           );
           expect(
             tester.widget<Opacity>(content).opacity,
-            closeTo(const Interval(0, .35).transform(progress), .001),
+            closeTo(
+              const Interval(
+                .12,
+                .56,
+                curve: Curves.easeInOut,
+              ).transform(progress),
+              .001,
+            ),
           );
           expect(
             sourceOpacity(tester),
-            closeTo(1 - const Interval(0, .25).transform(progress), .001),
+            closeTo(
+              1 -
+                  const Interval(
+                    0,
+                    .36,
+                    curve: Curves.easeInOut,
+                  ).transform(progress),
+              .001,
+            ),
           );
         }
 
@@ -524,13 +539,13 @@ void main() {
         checkFrame(0, 0);
         expect(panelIgnoresPointer(), isTrue);
         var previousElapsed = 0;
-        for (final elapsed in [42, 85, 102, 119, 204, 340]) {
+        for (final elapsed in [50, 126, 151, 210, 252, 420]) {
           await tester.pump(Duration(milliseconds: elapsed - previousElapsed));
-          final progress = elapsed / 340;
-          checkFrame(progress, Curves.easeOutCubic.transform(progress));
+          final progress = elapsed / 420;
+          checkFrame(progress, Curves.easeInOut.transform(progress));
           previousElapsed = elapsed;
           if (exportFrames &&
-              (elapsed == 102 || elapsed == 204 || elapsed == 340)) {
+              (elapsed == 126 || elapsed == 252 || elapsed == 420)) {
             await exportExpanded(tester, 'folder-motion-opening-${elapsed}ms');
           }
         }
@@ -547,12 +562,12 @@ void main() {
         checkFrame(1, 1);
         expect(panelIgnoresPointer(), isTrue);
         previousElapsed = 0;
-        for (final elapsed in [78, 156, 195, 227, 259]) {
+        for (final elapsed in [72, 108, 180, 216, 288, 359]) {
           await tester.pump(Duration(milliseconds: elapsed - previousElapsed));
-          final closeProgress = elapsed / 260;
+          final closeProgress = elapsed / 360;
           checkFrame(
             1 - closeProgress,
-            1 - Curves.easeInCubic.transform(closeProgress),
+            Curves.easeInOut.transform(1 - closeProgress),
           );
           previousElapsed = elapsed;
         }
@@ -630,7 +645,7 @@ void main() {
       final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
       expect(
         route.reverseTransitionDuration,
-        const Duration(milliseconds: 260),
+        const Duration(milliseconds: 360),
       );
       final choice = find.byKey(
         ValueKey('home-routine-choice-${choices[2].id}'),
@@ -640,7 +655,7 @@ void main() {
       await tester.tap(choice);
       expect(selected, isEmpty);
       await tester.pump();
-      for (var frame = 0; frame < 15; frame++) {
+      for (var frame = 0; frame < 22; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
         expect(selected, isEmpty);
       }

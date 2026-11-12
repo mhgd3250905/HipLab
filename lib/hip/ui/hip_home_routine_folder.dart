@@ -16,8 +16,8 @@ import 'hip_widgets.dart' show HipCard, HipPressable;
 import 'library/lib_text.dart';
 
 const _folderColumns = 2;
-const _folderCoverFade = Interval(0, .25);
-const _folderContentFade = Interval(0, .35);
+const _folderCoverFade = Interval(0, .36, curve: Curves.easeInOut);
+const _folderContentFade = Interval(.12, .56, curve: Curves.easeInOut);
 
 abstract final class _FolderPreview {
   static const radius = 14.0;
@@ -282,10 +282,10 @@ class _RoutineFolderRoute extends PopupRoute<String> {
 
   @override
   Duration get transitionDuration =>
-      reduced ? Duration.zero : const Duration(milliseconds: 340);
+      reduced ? Duration.zero : const Duration(milliseconds: 420);
   @override
   Duration get reverseTransitionDuration =>
-      reduced ? Duration.zero : const Duration(milliseconds: 260);
+      reduced ? Duration.zero : const Duration(milliseconds: 360);
   @override
   Color get barrierColor => Colors.transparent;
   @override
@@ -296,12 +296,7 @@ class _RoutineFolderRoute extends PopupRoute<String> {
   @override
   Animation<double> createAnimation() {
     final progress = super.createAnimation();
-    _motion = CurvedAnimation(
-      parent: progress,
-      curve: Curves.easeOutCubic,
-      // Route progress runs backwards when closing.
-      reverseCurve: Curves.easeInCubic.flipped,
-    );
+    _motion = CurvedAnimation(parent: progress, curve: Curves.easeInOut);
     return progress;
   }
 

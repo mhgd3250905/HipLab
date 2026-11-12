@@ -1,5 +1,29 @@
 # 版本交付台账
 
+## 2026-11-12 Hip 界面 v2 首页两处开合动效
+
+`1.1.2+68` arm64 性能分析包，版本码 `2068`。从 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动构建，运行源码差异 SHA-256 为 `384163c75cc98138b233cffe711478640e833418ed6fca7254164f20bc4da01e`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间与数据目录保留。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-home-motion-app-arm64-profile.apk` 的 SHA-256 均为 `fa4c75476d45385130a5ba8717efc2aa9403cacb965e5d428326a9d51dbebb6b`。
+
+## 2026-11-12 Hip 界面 v2 返回前台亮度闪动修复
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动，运行源码差异 SHA-256 为 `b685d8e4c0e95f49d6d1287735f43155f5d7b85a76b71524135be43c5fc3b081`。Xiaomi 13 Ultra 同签覆盖安装，设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-resume-opacity-app-arm64-debug.apk` 的 SHA-256 均为 `33e3f249ee6294156bebe9a622443366c5bce56f6b05ee8f612acdc4e796430a`。
+
+## 2026-11-12 Hip 界面 v2 首页卡片缩小 10%
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动，运行源码差异 SHA-256 为 `d2e557c8c855587d902e2a1632dfd6097a3aa5c5f67f4862fc10d35582151096`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间和数据目录保留。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-deck-90-app-arm64-debug.apk` 的 SHA-256 均为 `5327a71e7ee72be06b407fdf2d0f432e0b66177550b7b5528aa4c2e06be89f23`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡前后台恢复
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地布局及恢复修复，运行源码差异 SHA-256 为 `7077cd72bae24f91b10f7d917b51026c692125a332614a78bd09e3a7d3755d8d`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-resume-app-arm64-debug.apk` 的 SHA-256 均为 `8c19d2b06078eb80bde3b2c5168dad579e20e91537bd87e03ab7cc038b04dab7`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡说明精简
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地布局改动，差异 SHA-256 为 `364b91c18803c376d0ab227543c46ce443193eb92bd04198737776651bdc1105`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-notes-app-arm64-debug.apk` 的 SHA-256 均为 `49e8d408e3a8322f1b87af2068bcda3a10a8963b0cf8f2edaa458152a0e80c9a`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡布局
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。从 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地展开动作卡布局改动构建，运行源码差异 SHA-256 为 `b4aaaf4fb051285fbcf896b4baff24be63652109d36211c3aee4d84f11d7ee47`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间和数据目录保留。设备 APK 与本机文件 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-layout-app-arm64-debug.apk` 的 SHA-256 一致，均为 `e71d3a731dced2c04d0af8100e6e7336443871066b2f024c3cc901e1acab9099`。
+
 ## 2026-11-12 Hip 界面 v2 首页训练组开合动画
 
 `1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `72b403b62219cdbb985466cf9cf560934b46d316`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-folder-motion-app-arm64-debug.apk`，SHA-256 为 `8a740c4f12ff81407b41aeef24d209d06d86b695a2586685720e9c745f9a6bf9`。

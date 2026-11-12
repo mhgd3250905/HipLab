@@ -66,6 +66,7 @@ class _LabelMetrics {
 
 class _HipHomeActionFaceState extends State<HipHomeActionFace> {
   _TypeMetrics? _types;
+  ({Object key, double height})? _article;
   final _labels = <String, _LabelMetrics>{};
 
   static TextStyle _titleStyle(Color color) => TextStyle(
@@ -94,7 +95,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
     String text,
     TextStyle style,
     double width,
-    int lines,
+    int? lines,
     TextScaler scaler,
     TextDirection direction,
   ) {
@@ -307,19 +308,80 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
           types.cue +
           (widget.dose.isEmpty ? 0 : 11) +
           (widget.cue.isEmpty ? 0 : 9);
-      // Reserve readable article space even for two-line names and cues.
-      final mediaLimit = expandedHeight - 90 - 18 - expandedMeta - 20 - 48 - 80;
+      final description =
+          (widget.description.trim().isNotEmpty
+                  ? widget.description
+                  : copy.isEn
+                  ? ''
+                  : drill.note)
+              .trim();
+      final body = description == widget.cue.trim() ? '' : description;
+      final notesHeading = copy.isEn ? 'TECHNIQUE NOTES' : '动作要领';
+      final headingStyle = TextStyle(
+        fontSize: 10,
+        height: 1.4,
+        letterSpacing: 1.4,
+        fontWeight: FontWeight.w600,
+        color: HipColors.jadeText,
+      );
+      final bodyStyle = TextStyle(
+        fontSize: 14,
+        height: 1.7,
+        color: HipColors.text,
+      );
+      const notesGap = 8.0;
+      const expandedMediaTop = 90.0;
+      const expandedTitleGap = 18.0;
+      const expandedArticleGap = 20.0;
+      const articleBottom = 48.0;
+      final expandedMediaWidth = expandedWidth - 20;
+      final mediaAndArticleHeight =
+          expandedHeight -
+          expandedMediaTop -
+          expandedTitleGap -
+          expandedMeta -
+          expandedArticleGap -
+          articleBottom;
+      double articleHeight = 0;
+      if (active && body.isNotEmpty) {
+        final defaultStyle = DefaultTextStyle.of(context).style;
+        final articleKey = (
+          typeWidth,
+          scaler,
+          direction,
+          defaultStyle,
+          notesHeading,
+          body,
+        );
+        if (_article?.key != articleKey) {
+          double measure(String text, TextStyle style) => _measure(
+            text,
+            defaultStyle.merge(style),
+            typeWidth,
+            null,
+            scaler,
+            direction,
+          );
+          _article = (
+            key: articleKey,
+            height:
+                measure(notesHeading, headingStyle) +
+                notesGap +
+                measure(body, bodyStyle),
+          );
+        }
+        // Let short notes end at the footer. Longer notes can scroll while
+        // retaining a readable viewport even on narrow phones.
+        articleHeight = math.min(
+          _article!.height,
+          math.max(80, mediaAndArticleHeight - expandedMediaWidth),
+        );
+      }
       final largeMedia = Rect.fromLTWH(
         10,
-        90,
-        expandedWidth - 20,
-        math.max(
-          60,
-          math.min(
-            math.min(expandedWidth - 20, expandedHeight * .46),
-            mediaLimit,
-          ),
-        ),
+        expandedMediaTop,
+        expandedMediaWidth,
+        math.max(60, mediaAndArticleHeight - articleHeight),
       );
       final media = Rect.lerp(smallMedia, largeMedia, t)!;
       final artSide = math.min(media.width, media.height);
@@ -332,19 +394,12 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
           ? HipPublicMedia.current?.posterAssetFor(drill.id)
           : null;
       final silhouette = homeContactShadowBounds[poster];
-      final titleTop = media.bottom + lerpDouble(11, 18, t)!;
+      final titleTop = media.bottom + lerpDouble(11, expandedTitleGap, t)!;
       final doseTop = titleTop + titleHeight + doseGap;
       final cueTop = doseTop + doseHeight + cueGap;
-      final articleTop = cueTop + cueHeight * t + lerpDouble(8, 20, t)!;
+      final articleTop =
+          cueTop + cueHeight * t + lerpDouble(8, expandedArticleGap, t)!;
       final radius = lerpDouble(26, 28, t)!;
-      final description =
-          (widget.description.trim().isNotEmpty
-                  ? widget.description
-                  : copy.isEn
-                  ? ''
-                  : drill.note)
-              .trim();
-      final body = description == widget.cue.trim() ? '' : description;
       final detailsOpacity = const Interval(
         .45,
         1,
@@ -774,7 +829,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 left: inset,
                 right: inset,
                 top: articleTop,
-                bottom: 48,
+                bottom: articleBottom,
                 child: IgnorePointer(
                   ignoring: !widget.expanded,
                   child: ExcludeSemantics(
@@ -804,38 +859,9 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   if (body.isNotEmpty) ...[
-                                    Text(
-                                      copy.isEn ? 'TECHNIQUE NOTES' : '动作要领',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        height: 1.4,
-                                        letterSpacing: 1.4,
-                                        fontWeight: FontWeight.w600,
-                                        color: HipColors.jadeText,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      body,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        height: 1.7,
-                                        color: HipColors.text,
-                                      ),
-                                    ),
-                                  ],
-                                  if (drill.cautions.isNotEmpty) ...[
-                                    const SizedBox(height: 14),
-                                    Container(height: .5, color: ruleColor),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      '${copy.isEn ? 'Mind' : '留意'} · ${drill.cautions.map(copy.text).join(copy.isEn ? ', ' : '、')}',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        height: 1.5,
-                                        color: HipColors.muted,
-                                      ),
-                                    ),
+                                    Text(notesHeading, style: headingStyle),
+                                    const SizedBox(height: notesGap),
+                                    Text(body, style: bodyStyle),
                                   ],
                                 ],
                               ),

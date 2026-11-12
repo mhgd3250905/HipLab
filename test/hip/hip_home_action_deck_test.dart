@@ -1480,6 +1480,111 @@ void main() {
   });
 
   testWidgets(
+    'an expanded card returns from background with a fully painted poster until the new first frame',
+    (tester) async {
+      phone(tester);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final platform = await readyCompactPlaybackCard(
+        tester,
+        items: [drills.first],
+        openAndClose: false,
+      );
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      final art = find.descendant(
+        of: find.byKey(const ValueKey('home-hero')),
+        matching: find.byType(HipDrillArt),
+      );
+      final artState = tester.state(art);
+      final layers = find.descendant(
+        of: art,
+        matching: find.byType(IndexedStack),
+      );
+      int? visibleLayer() => tester.widget<IndexedStack>(layers).index;
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      final before = tester.getRect(expanded);
+
+      double paintedPosterOpacity() {
+        final poster = find.descendant(
+          of: layers,
+          matching: find.byKey(
+            const ValueKey('public-action-poster'),
+            skipOffstage: false,
+          ),
+          skipOffstage: false,
+        );
+        final fade = find.descendant(
+          of: poster,
+          matching: find.byType(FadeTransition, skipOffstage: false),
+          skipOffstage: false,
+        );
+        return tester.widget<FadeTransition>(fade).opacity.value;
+      }
+
+      for (final wasPaused in [false, true]) {
+        if (wasPaused) {
+          await tester.tap(
+            find.byKey(const ValueKey('home-deck-expanded-media')),
+          );
+          await tester.pump();
+        }
+        expect(paintedPosterOpacity(), 0);
+        final oldPlayer = playerFor(tester, frontMedia());
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        if (!wasPaused) {
+          await tester.pump();
+          expect(paintedPosterOpacity(), 1);
+          expect(frontSurface(), findsNothing);
+        }
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+        expect(paintedPosterOpacity(), 1);
+        expect(tester.getRect(expanded), before);
+        expect(tester.state(art), same(artState));
+        expect(
+          tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+          wasPaused,
+        );
+
+        await tester.pumpAndSettle();
+        final newPlayer = playerFor(tester, frontMedia());
+        expect(newPlayer, isNot(oldPlayer));
+        expect(platform.commands, contains((oldPlayer, 'dispose', null)));
+        platform.emit(oldPlayer, 'first-frame');
+        platform.emit(newPlayer, 'ready');
+        await tester.pump();
+        expect(paintedPosterOpacity(), 1);
+        platform.emit(newPlayer, 'first-frame');
+        await tester.pump();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 60));
+        expect(paintedPosterOpacity(), closeTo(.5, .05));
+        expect(visibleLayer(), 1);
+        await tester.pumpAndSettle();
+        expect(visibleLayer(), 0);
+        expect(paintedPosterOpacity(), 0);
+        expect(
+          platform.commands.any(
+            (command) => command.$1 == newPlayer && command.$2 == 'play',
+          ),
+          !wasPaused,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'a cold incoming card keeps its poster after a late frame and reveals the same video only on opening',
     (tester) async {
       phone(tester);
@@ -1688,16 +1793,15 @@ void main() {
               .textureId,
           textureId,
         );
-        // Inspect the painted layer tree, not only Transform.filterQuality.
-        // The card's pose must wrap the composed texture in a matrix filter,
-        // keeping its perspective out of the packed RGB/alpha input space.
+        // Pure translation should paint the existing texture without filtering
+        // the entire card into an intermediate image.
         final pose = tester.renderObject<RenderTransform>(
           find.byKey(const ValueKey('home-deck-pose')),
         );
-        expect(pose.debugLayer, isA<ImageFilterLayer>());
-        final poseLayer = pose.debugLayer! as ImageFilterLayer;
-        expect(poseLayer.attached, isTrue);
-        final textureLayer = descendantLayers(poseLayer)
+        expect(pose.debugLayer, isNot(isA<ImageFilterLayer>()));
+        final front = tester.renderObject<RenderRepaintBoundary>(visualFront());
+        expect(front.debugLayer!.attached, isTrue);
+        final textureLayer = descendantLayers(front.debugLayer!)
             .whereType<TextureLayer>()
             .where((layer) => layer.textureId == textureId);
         expect(textureLayer, hasLength(1));
@@ -2105,13 +2209,16 @@ void main() {
     'tapping a card opens a bounded action preview that pauses without rebuilding media',
     (tester) async {
       phone(tester);
-      const description = '动作介绍：保持骨盆稳定，缓慢完成动作。';
-      const cue = '动作提示：不要屏住呼吸';
+      const viewport = Size(412, 914);
+      tester.view.physicalSize = viewport;
+      final drill = content.drills['o-stand-lunge']!;
+      const description = '扶住椅子，后侧臀部收紧，髋往前推';
+      expect(drill.cautions, isNotEmpty);
       await showDeck(
         tester,
+        items: [drill],
         descriptions: [description],
-        cues: [cue],
-        doses: ['每侧 40 秒'],
+        doses: ['每侧 30 秒'],
         videoEnabled: true,
       );
       await tester.pumpAndSettle();
@@ -2123,29 +2230,43 @@ void main() {
       expect(expanded, findsOneWidget);
       final bounds = tester.getRect(expanded);
       expect(bounds.left, greaterThan(0));
-      expect(bounds.right, lessThan(394));
+      expect(bounds.right, lessThan(viewport.width));
       expect(bounds.top, greaterThan(0));
-      expect(bounds.bottom, lessThan(853));
+      expect(bounds.bottom, lessThan(viewport.height));
       expect(
         find.descendant(of: visualFront(), matching: find.text(description)),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: visualFront(), matching: find.text(cue)),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: visualFront(),
-          matching: find.text(drills.first.name),
-        ),
+        find.descendant(of: visualFront(), matching: find.text(drill.name)),
         findsOneWidget,
       );
       final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
+      final mediaBounds = tester.getRect(mediaTap);
+      final caption = tester.getRect(
+        find.byKey(const ValueKey('home-deck-caption')),
+      );
+      final notes = find.byKey(
+        const ValueKey('home-deck-expanded-description'),
+      );
+      final notesBody = find.descendant(
+        of: notes,
+        matching: find.byType(Column),
+      );
+      final scroll = tester.widget<SingleChildScrollView>(notes).controller!;
+      expect(mediaBounds.height, greaterThan(bounds.height * .52));
+      expect(caption.top - mediaBounds.bottom, inInclusiveRange(16, 22));
+      expect(scroll.position.maxScrollExtent, closeTo(0, 1));
+      expect(find.textContaining('留意 ·'), findsNothing);
+      expect(
+        tester.getRect(notes).bottom - tester.getRect(notesBody).bottom,
+        closeTo(0, 2),
+      );
       final media = find.descendant(
         of: mediaTap,
         matching: find.byType(trainer.TrainingActionMedia),
       );
+      expect(tester.getSize(media).shortestSide, greaterThan(345));
       final mediaElement = tester.element(media);
       final mediaState = tester.state(media);
       expect(tester.widget<trainer.TrainingActionMedia>(media).playing, isTrue);
@@ -3514,47 +3635,52 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('home deck grows to the height and side margins available', (
-    tester,
-  ) async {
-    await showHome(tester, MemoryStorage());
-    final header = find.byKey(const ValueKey('home-page-header'));
-    final pagination = find.byKey(const ValueKey('home-deck-pagination'));
-    final routine = find.byKey(const ValueKey('home-routine-section'));
-    final start = find.byKey(const ValueKey('start-today'));
+  testWidgets(
+    'home deck uses 90 percent of the height and width available to the cards',
+    (tester) async {
+      await showHome(tester, MemoryStorage());
+      final header = find.byKey(const ValueKey('home-page-header'));
+      final pagination = find.byKey(const ValueKey('home-deck-pagination'));
+      final routine = find.byKey(const ValueKey('home-routine-section'));
+      final start = find.byKey(const ValueKey('start-today'));
 
-    // Exercise both the height limit and the width limit at the same width.
-    for (final height in [780.0, 980.0]) {
-      tester.view.physicalSize = Size(394, height);
-      await tester.pumpAndSettle();
+      // Exercise both the height limit and the width limit at the same width.
+      for (final height in [780.0, 980.0]) {
+        tester.view.physicalSize = Size(394, height);
+        await tester.pumpAndSettle();
 
-      final card = tester.getRect(visualFront());
-      final dots = tester.getRect(pagination);
-      final group = tester.getRect(routine);
-      final headerBottom = tester.getRect(header).bottom;
-      final availableHeight = group.top - 18 - 5 - 14 - (headerBottom + 20);
-      final widthLimitedHeight = (394 - 44) / .62;
-      expect(
-        card.height,
-        closeTo(math.min(availableHeight, widthLimitedHeight), .01),
-      );
-      expect(card.width / card.height, closeTo(.62, .001));
-      expect(card.left, greaterThanOrEqualTo(22 - .01));
-      expect(card.right, lessThanOrEqualTo(394 - 22 + .01));
-      expect(dots.top - card.bottom, closeTo(14, .01));
-      expect(dots.height, closeTo(5, .01));
-      expect(group.top - dots.bottom, closeTo(18, .01));
-      expect(tester.getRect(start).top - group.bottom, closeTo(20, .01));
-      expect(tester.getRect(start).bottom, closeTo(height - 34 - 18, .01));
-      for (final rear in [nextFace(), paperFor(2)]) {
-        expect(tester.getSize(rear).width, closeTo(card.width, .01));
-        expect(tester.getSize(rear).height, closeTo(card.height, .01));
+        final card = tester.getRect(visualFront());
+        final dots = tester.getRect(pagination);
+        final group = tester.getRect(routine);
+        final headerBottom = tester.getRect(header).bottom;
+        final availableHeight = group.top - 18 - 5 - 14 - (headerBottom + 20);
+        final widthLimitedHeight = (394 - 44) / .62;
+        final originalHeight = math.min(availableHeight, widthLimitedHeight);
+        expect(card.height, closeTo(originalHeight * .9, .01));
+        expect(card.width / card.height, closeTo(.62, .001));
+        expect(card.left, greaterThanOrEqualTo(22 - .01));
+        expect(card.right, lessThanOrEqualTo(394 - 22 + .01));
+        expect(dots.top - card.bottom, closeTo(14, .01));
+        expect(dots.height, closeTo(5, .01));
+        expect(
+          group.top - dots.bottom,
+          closeTo(18 + originalHeight * .05, .01),
+        );
+        final originalWidth = originalHeight * .62;
+        final originalLeft = math.max(22, (394 - originalWidth) / 2 - 18);
+        expect(card.center.dx, closeTo(originalLeft + originalWidth / 2, .01));
+        expect(tester.getRect(start).top - group.bottom, closeTo(20, .01));
+        expect(tester.getRect(start).bottom, closeTo(height - 34 - 18, .01));
+        for (final rear in [nextFace(), paperFor(2)]) {
+          expect(tester.getSize(rear).width, closeTo(card.width, .01));
+          expect(tester.getSize(rear).height, closeTo(card.height, .01));
+        }
+        expect(tester.takeException(), isNull);
       }
-      expect(tester.takeException(), isNull);
-    }
-  });
+    },
+  );
 
-  testWidgets('small home scrolls with a 400 point deck and full footer', (
+  testWidgets('small home scrolls with a 360 point card and full footer', (
     tester,
   ) async {
     await showHome(tester, MemoryStorage());
@@ -3566,7 +3692,7 @@ void main() {
     tester.view.physicalSize = const Size(394, 520);
     await tester.pumpAndSettle();
     final card = tester.getRect(visualFront());
-    expect(card.height, closeTo(400, .01));
+    expect(card.height, closeTo(360, .01));
     expect(card.width / card.height, closeTo(.62, .001));
     expect(tester.getSize(routine).height, closeTo(normalRoutineHeight, .01));
     expect(tester.getSize(start), normalStartSize);
