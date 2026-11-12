@@ -490,6 +490,7 @@ void main() {
 
       testWidgets('${phone.name}: player', (tester) async {
         await bootIos(tester, phone: phone);
+        await backHome(tester);
         await tester.tap(find.byKey(const ValueKey('start-today')));
         await pumpTrainerReady(tester);
         expect(safeAreaOffenders(tester, phone), isEmpty, reason: 'prep');
