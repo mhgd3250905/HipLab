@@ -20,6 +20,96 @@ import 'hip_text.dart';
 
 export 'hip_tactile.dart';
 
+/// The v2 paper background shared by the home and host navigation pages.
+class HipPageBackdrop extends StatelessWidget {
+  const HipPageBackdrop({super.key});
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [HipColors.background, HipColors.pageBottom],
+        ),
+        image: const DecorationImage(
+          image: AssetImage('assets/hip/ui-v2-grain.png'),
+          repeat: ImageRepeat.repeat,
+          opacity: .03,
+          filterQuality: FilterQuality.none,
+        ),
+      ),
+      child: const SizedBox.expand(),
+    ),
+  );
+}
+
+/// Shared v2 white material, with the same inset highlight at every radius.
+class HipCard extends StatelessWidget {
+  const HipCard({
+    super.key,
+    required this.child,
+    this.radius = 16,
+    this.padding = EdgeInsets.zero,
+    this.innerHighlight = true,
+    this.shadows,
+  });
+
+  final Widget child;
+  final double radius;
+  final EdgeInsetsGeometry padding;
+  final bool innerHighlight;
+  final List<BoxShadow>? shadows;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = HipColors.isDark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: dark
+              ? [HipColors.surfaceHigh, HipColors.surface]
+              : const [Colors.white, Color(0xfffafbfa)],
+        ),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: (dark ? Colors.white : Colors.black).withValues(alpha: .06),
+          width: .5,
+        ),
+        boxShadow: shadows == null
+            ? HipColors.cardShadow
+            : HipColors.shadows(shadows),
+      ),
+      child: Stack(
+        children: [
+          if (innerHighlight)
+            Positioned.fill(
+              left: 1,
+              right: 1,
+              top: 1,
+              bottom: 1,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(radius - 1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: dark ? .08 : .78),
+                      width: .5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Padding(padding: padding, child: child),
+        ],
+      ),
+    );
+  }
+}
+
 /// Video playback is off in widget tests (no platform view host there).
 class HipMediaPolicy extends InheritedWidget {
   const HipMediaPolicy({
@@ -235,6 +325,7 @@ class HipDrillArt extends StatefulWidget {
     this.play = false,
     this.holdVideo = false,
     this.revealPausedFrame = true,
+    this.stage,
     this.onFrameReadyChanged,
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
@@ -253,6 +344,7 @@ class HipDrillArt extends StatefulWidget {
   /// Ordinary library artwork keeps its existing poster-only behavior.
   final bool holdVideo;
   final bool revealPausedFrame;
+  final Color? stage;
   final ValueChanged<bool>? onFrameReadyChanged;
   final BoxFit fit;
   final bool showPendingLabel;
@@ -332,7 +424,7 @@ class _HipDrillArtState extends State<HipDrillArt> {
       onFrameReadyChanged: widget.onFrameReadyChanged,
       mirrored: widget.mirror,
       radius: 0,
-      stage: HipColors.mediaBackdrop,
+      stage: widget.stage ?? HipColors.mediaBackdrop,
     );
   }
 }
@@ -1143,7 +1235,7 @@ class HipPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final fg = enabled ? HipColors.onJade : HipColors.muted;
-    final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
+    final fill = enabled ? HipColors.primaryAction : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
       height: 50,
@@ -1317,12 +1409,14 @@ class HipStartButton extends StatelessWidget {
     this.width,
     this.label = '开始',
     this.glass = false,
+    this.flatDisc = false,
   });
   final VoidCallback? onTap;
 
   /// Jade liquid glass disc floating over imagery (首页 dock, m3): blurred
   /// backdrop, translucent jade fill, thin bright rim.
   final bool glass;
+  final bool flatDisc;
 
   /// Palette of what the button sits on (the dark media stage).
   final HipPalette stage;
@@ -1360,6 +1454,56 @@ class HipStartButton extends StatelessWidget {
         color: fg,
       ),
     );
+    if (flatDisc && !pill) {
+      return HipPressable(
+        key: buttonKey,
+        semanticLabel: label,
+        onTap: onTap,
+        child: RepaintBoundary(
+          child: SizedBox.square(
+            dimension: size,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: enabled
+                    ? HipColors.primaryAction
+                    : HipColors.surfaceHigh,
+                shape: BoxShape.circle,
+                boxShadow: enabled
+                    ? HipColors.shadows([
+                        BoxShadow(
+                          color: HipColors.jade.withValues(alpha: .30),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ])
+                    : null,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HipIcon(
+                      HipGlyph.play,
+                      size: 18,
+                      filled: true,
+                      color: enabled ? Colors.white : fg,
+                    ),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: enabled ? Colors.white : fg,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (glass && !pill) {
       return HipPressable(
         semanticLabel: label,

@@ -10,19 +10,18 @@ import '../domain/hip_models.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_theme.dart';
-import 'hip_widgets.dart' show HipPressable;
+import 'hip_widgets.dart' show HipCard, HipPressable;
 import 'library/lib_text.dart';
 
 const _folderColumns = 2;
 
 abstract final class _FolderPreview {
-  // Paired corners: outer radius = art radius + the surrounding inset.
-  static const radius = 12.0;
+  static const radius = 14.0;
   static const artRadius = 6.0;
 
   static const _inset = 6.0;
-  static const _cellSize = 24.0;
-  static const _stride = 28.0;
+  static const _cellSize = 21.0;
+  static const _stride = 25.0;
   static const singleRowHeight = 2 * _inset + _cellSize;
   static const width = singleRowHeight + (_folderColumns - 1) * _stride;
 
@@ -526,13 +525,8 @@ class _FolderSurface extends StatelessWidget {
   final double radius;
   final Widget? child;
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: HipColors.background.withValues(alpha: .80),
-      borderRadius: BorderRadius.circular(radius),
-    ),
-    child: HipGlass(radius: radius, blur: true, sigma: 18, child: child),
-  );
+  Widget build(BuildContext context) =>
+      HipCard(radius: radius, child: child ?? const SizedBox.expand());
 }
 
 class _FolderArtwork extends StatelessWidget {
@@ -548,7 +542,9 @@ class _FolderArtwork extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
         child: ColoredBox(
-          color: HipColors.mediaBackdrop,
+          color: HipColors.isDark
+              ? HipColors.mediaBackdrop
+              : const Color(0xfff1f3f2),
           child: asset == null
               ? Center(
                   child: HipIcon(
@@ -559,7 +555,7 @@ class _FolderArtwork extends StatelessWidget {
                 )
               : trainer.TrainerPoster(
                   asset: asset,
-                  stageColor: HipColors.mediaBackdrop,
+                  stageColor: Colors.transparent,
                 ),
         ),
       ),

@@ -116,6 +116,9 @@ void main() {
     VoidCallback? onWorkout,
   }) async {
     addTearDown(membership.dispose);
+    final palette = HipColors.palette;
+    HipColors.palette = HipPalette.light;
+    addTearDown(() => HipColors.palette = palette);
     tester.view
       ..physicalSize = size
       ..devicePixelRatio = 1
@@ -169,7 +172,11 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(tester.getSize(subscribe).height, 56);
+      expect(tester.getSize(subscribe).height, 52);
+      expect(tester.getSize(annual).height, 72);
+      expect(tester.getSize(monthly).height, 72);
+      final heading = find.text('Unlock HipLab Pro');
+      expect(tester.getSize(memberCard(heading)).height, 166);
 
       await tester.tap(monthly);
       await tester.pumpAndSettle();
@@ -265,8 +272,8 @@ void main() {
         await tester.pumpAndSettle();
         final range = find.text('Annual · 2026-11-12 12:00 – 2026-11-14 11:00');
         final status = find.text('Cancelled, ends on 2026-11-14 11:00');
-        expect(tester.widget<Text>(range).style?.fontSize, 14);
-        expect(tester.widget<Text>(status).style?.fontSize, 12);
+        expect(tester.widget<Text>(range).style?.fontSize, 13.5);
+        expect(tester.widget<Text>(status).style?.fontSize, 13.5);
         expect(tester.getSize(memberCard(range)).height, greaterThan(180));
         final manageBottom = tester.getBottomLeft(manage).dy;
         expect(manage.hitTestable(), findsOneWidget);
@@ -312,8 +319,9 @@ void main() {
       expect(find.text('生效中'), findsOneWidget);
       final range = find.text('年付 · 2025-12-12 至 2026-12-12');
       expect(range, findsOneWidget);
-      expect(tester.getSize(memberCard(range)).height, 180);
+      expect(tester.getSize(memberCard(range)).height, 192);
       expect(find.text('到期自动续订'), findsOneWidget);
+      expect(find.text('动作、疼痛、进度，随时问'), findsOneWidget);
       expect(find.text('管理订阅'), findsOneWidget);
       expect(tester.getSize(manage).height, 48);
       expect(find.text('恢复购买'), findsOneWidget);

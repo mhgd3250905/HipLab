@@ -536,129 +536,133 @@ class _HipHomeState extends State<HipHome> {
     // The folder stays visible with just one 套路 because it also holds the
     // 「训练组选择」 entry.
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _topBar(),
-              ),
-              if (plan != null && plan.steps.isNotEmpty)
-                Expanded(
-                  child: HipHomeActionDeck(
-                    key: const ValueKey('home-deck'),
-                    identity:
-                        '${dayKey(store.now())}/${store.scene.id}/$routineId',
-                    drills: [for (final step in plan.steps) step.drill],
-                    doses: [
-                      for (final step in plan.steps)
-                        HipContentText.of(context).text(step.dose),
-                    ],
-                    cues: [
-                      for (final step in plan.steps)
-                        HipContentText.of(context).text(step.tip),
-                    ],
-                    descriptions: [
-                      for (final step in plan.steps)
-                        drillPoint(
-                          store.content,
-                          step.drill,
-                          HipText.of(context).languageTag,
-                        ),
-                    ],
-                  ),
-                )
-              else
-                const Spacer(),
-              for (final a in alerts) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: a,
-                ),
-                const SizedBox(height: 10),
-              ],
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (plan != null)
-                      Expanded(child: _headline(routineId, plan))
-                    else
-                      Expanded(
-                        child: Text(
-                          LibText.of(context).homeFolderEmpty,
-                          key: const ValueKey('home-title'),
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: HipColors.muted,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: 12),
-                    _routineFolder(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              _dock(plan),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// The reference dock: one floating liquid-glass capsule (办公 / 居家 with
-  /// a sliding inner pill, 更多) and, apart from it, the round jade glass
-  /// 开始 — the only accent.
-  Widget _dock(TrainingPlan? plan) {
-    // m4 (开哥 19:17: "操作栏不要这么大，要精致有质感"): 54pt.
-    const h = 54.0;
-    final idle = HipColors.text.withValues(alpha: .62);
-    return SizedBox(
-      height: h,
-      child: Row(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          Expanded(
-            child: HipGlass(
-              key: const ValueKey('home-dock'),
-              shape: HipGlassShape.capsule,
-              blur: true,
-              sigma: 20,
-              padding: const EdgeInsets.all(4),
-              child: Row(
+          const HipPageBackdrop(),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 6, 14, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(flex: 2, child: _scenePicker(h - 8)),
-                  Expanded(
-                    child: HipPressable(
-                      key: const ValueKey('home-more'),
-                      semanticLabel: HipText.of(context).pick("更多", "More"),
-                      onTap: _openMore,
-                      scale: .94,
-                      child: _dockItem(
-                        HipGlyph.grid,
-                        HipText.of(context).pick("更多", "More"),
-                        idle,
-                        0,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: _topBar(),
+                  ),
+                  if (plan != null && plan.steps.isNotEmpty)
+                    Expanded(
+                      child: HipHomeActionDeck(
+                        key: const ValueKey('home-deck'),
+                        identity:
+                            '${dayKey(store.now())}/${store.scene.id}/$routineId',
+                        drills: [for (final step in plan.steps) step.drill],
+                        doses: [
+                          for (final step in plan.steps)
+                            HipContentText.of(context).text(step.dose),
+                        ],
+                        cues: [
+                          for (final step in plan.steps)
+                            HipContentText.of(context).text(step.tip),
+                        ],
+                        descriptions: [
+                          for (final step in plan.steps)
+                            drillPoint(
+                              store.content,
+                              step.drill,
+                              HipText.of(context).languageTag,
+                            ),
+                        ],
                       ),
+                    )
+                  else
+                    const Spacer(),
+                  for (final a in alerts) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: a,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (plan != null)
+                          Expanded(child: _headline(routineId, plan))
+                        else
+                          Expanded(
+                            child: Text(
+                              LibText.of(context).homeFolderEmpty,
+                              key: const ValueKey('home-title'),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: HipColors.muted,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 12),
+                        _routineFolder(),
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  _dock(plan),
                 ],
               ),
             ),
           ),
-          if (plan != null) ...[
-            const SizedBox(width: 8),
-            _startButton(plan, h),
-          ],
         ],
       ),
     );
   }
+
+  Widget _dock(TrainingPlan? plan) => SizedBox(
+    height: 52,
+    child: Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 274,
+              height: 48,
+              child: HipGlass(
+                key: const ValueKey('home-dock'),
+                shape: HipGlassShape.capsule,
+                blur: true,
+                sigma: 20,
+                dock: true,
+                padding: const EdgeInsets.all(6),
+                child: Row(
+                  children: [
+                    Expanded(flex: 2, child: _scenePicker(36)),
+                    Expanded(
+                      child: HipPressable(
+                        key: const ValueKey('home-more'),
+                        semanticLabel: HipText.of(context).pick('更多', 'More'),
+                        onTap: _openMore,
+                        scale: .94,
+                        child: _dockItem(
+                          HipGlyph.grid,
+                          HipText.of(context).pick('更多', 'More'),
+                          HipColors.muted,
+                          0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (plan != null) ...[const SizedBox(width: 6), _startButton(plan, 52)],
+      ],
+    ),
+  );
 
   // FittedBox: at large text sizes (×2.0) the 46pt dock row would overflow by
   // a pixel; scale the glyph + label down instead (no change at ×1).
@@ -678,7 +682,7 @@ class _HipHomeState extends State<HipHome> {
               fontSize: 10.5,
               height: 1.2,
               letterSpacing: .3,
-              fontWeight: t > .5 ? FontWeight.w600 : FontWeight.w500,
+              fontWeight: t > .5 ? FontWeight.w700 : FontWeight.w500,
               color: fg,
             ),
           ),
@@ -736,20 +740,36 @@ class _HipHomeState extends State<HipHome> {
   }
 
   Widget _topBar() => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Expanded(
-        child: Text(
-          _greeting(store.now()),
-          key: const ValueKey('home-greeting'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            height: 1.3,
-            letterSpacing: .3,
-            fontWeight: FontWeight.w500,
-            color: HipColors.text.withValues(alpha: .72),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _greeting(store.now()),
+              key: const ValueKey('home-greeting'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.3,
+                color: HipColors.muted,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              HipText.of(context).pick('今天练一会儿', 'A little movement today'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+                color: HipColors.text,
+              ),
+            ),
+          ],
         ),
       ),
       const SizedBox(width: 12),
@@ -757,7 +777,6 @@ class _HipHomeState extends State<HipHome> {
     ],
   );
 
-  /// Keep the 24pt badge, with a full 44pt target for the records shortcut.
   Widget _streakChip() => HipPressable(
     key: const ValueKey('home-streak-button'),
     semanticLabel: HipText.of(context).pick(
@@ -772,39 +791,43 @@ class _HipHomeState extends State<HipHome> {
         widthFactor: 1,
         heightFactor: 1,
         child: SizedBox(
-          height: 24,
-          child: HipGlass(
-            key: const ValueKey('home-streak'),
-            shape: HipGlassShape.capsule,
-            radius: 12,
-            blur: true,
-            sigma: 14,
-            shadow: false,
-            padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HipIcon(
-                  HipGlyph.flame,
-                  size: 12,
-                  filled: true,
-                  color: HipColors.tight,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  HipText.of(context).pick(
-                    '${store.streak} 天',
-                    '${store.streak} ${store.streak == 1 ? 'day' : 'days'}',
+          key: const ValueKey('home-streak'),
+          width: 56,
+          height: 26,
+          child: HipCard(
+            radius: 13,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      HipIcon(
+                        HipGlyph.flame,
+                        size: 13,
+                        filled: true,
+                        color: HipColors.tight,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        HipText.of(context).pick(
+                          '${store.streak} 天',
+                          "${store.streak} ${store.streak == 1 ? 'day' : 'days'}",
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: HipColors.text,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
                   ),
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.2,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.text,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -888,11 +911,11 @@ class _HipHomeState extends State<HipHome> {
           Text(
             kicker,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               height: 1.2,
               letterSpacing: 1.5,
-              fontWeight: FontWeight.w600,
-              color: HipColors.jadeText,
+              fontWeight: FontWeight.w700,
+              color: HipColors.jade,
             ),
           ),
           const SizedBox(height: 6),
@@ -902,7 +925,7 @@ class _HipHomeState extends State<HipHome> {
             maxLines: HipText.of(context).isEn ? 2 : 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 31,
+              fontSize: 27,
               height: 1.12,
               letterSpacing: 1,
               fontWeight: FontWeight.w700,
@@ -918,7 +941,7 @@ class _HipHomeState extends State<HipHome> {
                   ).pick('${plan.minutes} 分钟', '${plan.minutes} min'),
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    color: HipColors.text.withValues(alpha: .85),
+                    color: HipColors.muted,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -928,10 +951,10 @@ class _HipHomeState extends State<HipHome> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               height: 1.4,
               letterSpacing: .2,
-              color: HipColors.text.withValues(alpha: .7),
+              color: HipColors.muted,
             ),
           ),
         ],
@@ -945,14 +968,14 @@ class _HipHomeState extends State<HipHome> {
     buttonKey: const ValueKey('start-today'),
     stage: HipColors.palette,
     size: size,
-    glass: true,
+    flatDisc: true,
     onTap: plan.steps.isEmpty
         ? null
         : () => _startPlan(
             plan,
             from: _startKey.currentContext,
             radius: size / 2,
-            originColor: HipColors.jade,
+            originColor: HipColors.primaryAction,
           ),
   );
 
@@ -1005,6 +1028,7 @@ class _HipHomeState extends State<HipHome> {
     keyPrefix: 'scene',
     glass: true,
     bare: true,
+    accentSelection: true,
     duration: HipCalmMotion.swap,
     curve: HipCalmMotion.curve,
     height: height,

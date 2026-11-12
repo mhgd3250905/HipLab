@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -251,10 +250,7 @@ void main() {
     // Floating bar: the title sits in the 44pt row below the status inset.
     final page = tester.element(find.byType(HipNavPage).last);
     final topInset = MediaQuery.paddingOf(page).top;
-    expect(
-      title.center.dy,
-      closeTo(topInset + HipNavBar.height / 2, 14),
-    );
+    expect(title.center.dy, closeTo(topInset + HipNavBar.height / 2, 14));
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.
     final card = tester.getRect(find.byKey(const ValueKey('route-card')));
@@ -311,17 +307,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(store.theme, HipThemeChoice.light);
     expect(HipColors.palette, HipPalette.light);
-    // Glass m2: sub-pages paint the page colour in their depth backdrop
-    // (the Scaffold itself is transparent over it).
-    final page = tester.widget<ColoredBox>(
+    final page = tester.widget<DecoratedBox>(
       find
           .descendant(
-            of: find.byType(HipGlassBackdrop).last,
-            matching: find.byType(ColoredBox),
+            of: find.byType(HipPageBackdrop).last,
+            matching: find.byType(DecoratedBox),
           )
           .first,
     );
-    expect(page.color, HipPalette.light.background);
+    final gradient =
+        (page.decoration as BoxDecoration).gradient! as LinearGradient;
+    expect(gradient.colors, [
+      HipPalette.light.background,
+      const Color(0xffeff1ee),
+    ]);
     // The tab and scroll position survive the switch.
     expect(find.byKey(const ValueKey('appearance-settings')), findsOneWidget);
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;

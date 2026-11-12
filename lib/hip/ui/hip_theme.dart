@@ -109,18 +109,18 @@ class HipPalette {
 
   static const light = HipPalette(
     brightness: Brightness.light,
-    background: Color(0xfff4f5f3),
+    background: Color(0xfff8f9f7),
     surface: Color(0xffffffff),
     surfaceHigh: Color(0xffeef0ee),
     line: Color(0xffe1e4e1),
-    jade: Color(0xff14a37b),
-    jadeDeep: Color(0xff0d6e53),
+    jade: Color(0xff14966f),
+    jadeDeep: Color(0xff0e6f56),
     onJade: Color(0xffffffff),
     glow: Color(0xff1aa6cf),
-    text: Color(0xff121614),
-    muted: Color(0xff5d6661),
-    faint: Color(0xff9aa29e),
-    tight: Color(0xffd27a1e),
+    text: Color(0xff181e1c),
+    muted: Color(0xff7a837f),
+    faint: Color(0xffaab1ae),
+    tight: Color(0xffc26a00),
     pain: Color(0xffd43f3f),
     scrim: Color(0xccffffff),
     shadow: Color(0x121d2b25),
@@ -169,6 +169,13 @@ abstract final class HipColors {
   static Color get faint => palette.faint;
   static Color get tight => palette.tight;
   static Color get pain => palette.pain;
+  static Color get primaryAction =>
+      isDark ? palette.jade : const Color(0xff16946f);
+  static Color get cardDivider => isDark
+      ? Colors.white.withValues(alpha: .08)
+      : Colors.black.withValues(alpha: .055);
+  static Color get pageBottom =>
+      isDark ? palette.surface : const Color(0xffeff1ee);
   static Color get scrim => palette.scrim;
   static Color get shadow => palette.shadow;
   static Color get mediaBackdrop => palette.mediaBackdrop;
@@ -182,13 +189,13 @@ abstract final class HipColors {
       ? null
       : [
           BoxShadow(
-            color: palette.shadow,
-            blurRadius: 24,
+            color: Color(0xff14281f).withValues(alpha: .07),
+            blurRadius: 28,
             offset: const Offset(0, 8),
           ),
-          const BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 2,
+          BoxShadow(
+            color: Color(0xff14281f).withValues(alpha: .05),
+            blurRadius: 3,
             offset: Offset(0, 1),
           ),
         ];

@@ -101,17 +101,17 @@ void main() {
       await tester.pumpAndSettle();
       final p = HipColors.palette;
 
-      // Home m3: the one accent is the 开始 jade glass disc beside the
-      // dock (reference liquid glass), so nothing on home is tactile.
+      // The v2 start disc is a solid accent with a soft shadow.
       _expectBudget(tester, p, 'home');
       final start = find.byKey(const ValueKey('start-today'));
+      expect(tester.getSize(start), const Size.square(52));
       expect(
-        tester.widget<HipStartButton>(find.byType(HipStartButton)).glass,
+        tester.widget<HipStartButton>(find.byType(HipStartButton)).flatDisc,
         isTrue,
       );
       expect(
         find.descendant(of: start, matching: find.byType(BackdropFilter)),
-        findsOneWidget,
+        findsNothing,
       );
       expect(find.byType(HipTactile), findsNothing);
 

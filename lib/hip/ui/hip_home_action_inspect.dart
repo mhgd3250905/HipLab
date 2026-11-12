@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'dart:ui' show lerpDouble;
+import 'dart:ui' show ImageFilter, lerpDouble;
 
 import 'package:flutter/material.dart';
 
@@ -16,6 +16,7 @@ class HipHomeActionFace extends StatefulWidget {
     super.key,
     required this.drill,
     required this.number,
+    required this.total,
     required this.restingSize,
     this.stackDepth = 0,
     this.front = true,
@@ -37,7 +38,7 @@ class HipHomeActionFace extends StatefulWidget {
   });
 
   final HipDrill drill;
-  final int number;
+  final int number, total;
   final Size restingSize;
   final double stackDepth;
   final double expansion;
@@ -81,7 +82,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
     fontFamily: hipFontFamily,
     fontSize: 16,
     height: 1.35,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     color: color,
   );
   static TextStyle _cueStyle(Color color) => TextStyle(
@@ -231,7 +232,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
         math.max(0.0, view.size.height - view.padding.vertical - 48),
       );
       final source = widget.restingSize;
-      final inset = lerpDouble(compact ? 10 : 22, 26, t)!;
+      final inset = lerpDouble(compact ? 10 : 20, 26, t)!;
       final typeWidth = math.max(
         100.0,
         math.min(460.0, MediaQuery.sizeOf(context).width - 40) - 52,
@@ -279,17 +280,23 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
       }
       final types = _types!;
       final typeScale = (w - 2 * inset) / typeWidth;
-      final titleHeight = types.title * typeScale;
-      final doseHeight = types.dose * typeScale;
+      final titleScale = math.min(typeScale, lerpDouble(23 / 30, 1, t)!);
+      final doseIndent = 10 * (1 - t);
+      final doseScale = math.min(
+        (w - 2 * inset - doseIndent) / typeWidth,
+        lerpDouble(12.5 / 16, 1, t)!,
+      );
+      final titleHeight = types.title * titleScale;
+      final doseHeight = types.dose * doseScale;
       final cueHeight = types.cue * typeScale;
       final doseGap = widget.dose.isEmpty ? 0.0 : lerpDouble(7, 11, t)!;
-      final cueGap = widget.cue.isEmpty ? 0.0 : lerpDouble(5, 9, t)!;
-      final sourceScale = (source.width - 2 * (compact ? 10 : 22)) / typeWidth;
+      final cueGap = widget.cue.isEmpty ? 0.0 : 9 * t;
+      final sourceScale = (source.width - 2 * (compact ? 10 : 20)) / typeWidth;
       final sourceFooter =
-          (types.title + types.dose + types.cue) * sourceScale +
+          types.title * math.min(sourceScale, 23 / 30) +
+          types.dose * math.min(sourceScale, 12.5 / 16) +
           (widget.dose.isEmpty ? 0 : 7) +
-          (widget.cue.isEmpty ? 0 : 5) +
-          (compact ? 12 : 22);
+          (compact ? 14 : 29);
       final header = compact ? 28.0 : 60.0;
       final smallMedia = Rect.fromLTWH(
         0,
@@ -318,11 +325,11 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
         ),
       );
       final media = Rect.lerp(smallMedia, largeMedia, t)!;
-      final titleTop = media.bottom + lerpDouble(4, 18, t)!;
+      final titleTop = media.bottom + lerpDouble(11, 18, t)!;
       final doseTop = titleTop + titleHeight + doseGap;
       final cueTop = doseTop + doseHeight + cueGap;
-      final articleTop = cueTop + cueHeight + lerpDouble(8, 20, t)!;
-      final radius = lerpDouble(22, 28, t)!;
+      final articleTop = cueTop + cueHeight * t + lerpDouble(8, 20, t)!;
+      final radius = lerpDouble(26, 28, t)!;
       final description =
           (widget.description.trim().isNotEmpty
                   ? widget.description
@@ -341,20 +348,33 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
 
       return DecoratedBox(
         decoration: BoxDecoration(
-          color: HipColors.mediaBackdrop,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: HipColors.isDark
+                ? [HipColors.surfaceHigh, HipColors.surface]
+                : front
+                ? const [Colors.white, Color(0xfffafbfa)]
+                : List.filled(
+                    2,
+                    Color.lerp(
+                      const Color(0xfffbfcfb),
+                      const Color(0xfff6f7f6),
+                      (2 * depth - 1).clamp(0, 1),
+                    )!,
+                  ),
+          ),
           borderRadius: BorderRadius.circular(radius),
           boxShadow: HipColors.shadows([
-            BoxShadow(
-              color: Colors.black.withValues(
-                alpha: HipColors.isDark ? .32 : .085,
-              ),
-              blurRadius: lerpDouble(lerpDouble(20, 12, depth), 34, t)!,
-              offset: Offset(0, lerpDouble(lerpDouble(7, 4, depth), 14, t)!),
+            const BoxShadow(
+              color: Color(0x2114281f),
+              blurRadius: 44,
+              offset: Offset(0, 14),
             ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .035),
+            const BoxShadow(
+              color: Color(0x0d14281f),
               blurRadius: 3,
-              offset: const Offset(0, 1),
+              offset: Offset(0, 1),
             ),
           ]),
         ),
@@ -390,7 +410,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                   letterSpacing: 2.5,
                                   color: HipColors.jadeText,
                                 ),
-                                lerpDouble(compact ? 8 : 10, 11, t)! / 11,
+                                lerpDouble(compact ? 8 : 9.5, 11, t)! / 11,
                               ),
                               SizedBox(width: 12 * t),
                               Expanded(
@@ -419,7 +439,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                                     ? (copy.isEn ? 'Movement practice' : '动作练习')
                                     : classification,
                                 TextStyle(fontSize: 11, color: HipColors.muted),
-                                lerpDouble(10, 11, t)! / 11,
+                                1,
                               ),
                             ),
                         ],
@@ -430,33 +450,61 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
               ),
               Positioned(
                 key: const ValueKey('face-number'),
-                left: lerpDouble(w - inset - 44, w - 132, t),
+                left: lerpDouble(w - inset - 48, w - 132, t),
                 top: lerpDouble(compact ? 8 : 24, 21, t),
-                width: lerpDouble(44, 66, t),
+                width: lerpDouble(48, 66, t),
                 height: lerpDouble(28, 56, t),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: _printedLabel(
-                    context,
-                    'number',
-                    widget.number.toString().padLeft(2, '0'),
-                    TextStyle(
-                      fontSize: 46,
-                      height: 1,
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: -.8,
-                      color: Color.lerp(
-                        HipColors.muted,
-                        HipColors.jadeText.withValues(alpha: .65),
-                        t,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      right: 20 * (1 - t),
+                      top: 0,
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: _printedLabel(
+                          context,
+                          'number',
+                          widget.number.toString().padLeft(2, '0'),
+                          TextStyle(
+                            fontSize: 46,
+                            height: 1,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -.8,
+                            color: Color.lerp(
+                              HipColors.text,
+                              HipColors.jadeText.withValues(alpha: .65),
+                              t,
+                            ),
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                          lerpDouble(compact ? 10 : 15, 46, t)! / 46,
+                          key: front
+                              ? const ValueKey('home-deck-position')
+                              : ValueKey('back-position-${widget.number}'),
+                        ),
                       ),
-                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
-                    lerpDouble(compact ? 10 : 17, 46, t)! / 46,
-                    key: front
-                        ? const ValueKey('home-deck-position')
-                        : ValueKey('back-position-${widget.number}'),
-                  ),
+                    Positioned(
+                      right: 0,
+                      width: 20,
+                      top: 2,
+                      child: Opacity(
+                        opacity: 1 - t,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '/ ${widget.total.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: HipColors.faint,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (front)
@@ -517,6 +565,55 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   ),
                 ),
               ),
+              if (front && !HipColors.isDark)
+                Positioned.fromRect(
+                  rect: media,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 1 - t,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ImageFiltered(
+                            imageFilter: ImageFilter.blur(
+                              sigmaX: 34,
+                              sigmaY: 34,
+                            ),
+                            child: Container(
+                              width: media.width * .68,
+                              height: media.height * .66,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffe8eeeb),
+                                borderRadius: BorderRadius.all(
+                                  Radius.elliptical(media.width, media.height),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Align(
+                            alignment: const Alignment(0, .75),
+                            child: ImageFiltered(
+                              imageFilter: ImageFilter.blur(
+                                sigmaX: 5,
+                                sigmaY: 5,
+                              ),
+                              child: Container(
+                                width: math.min(100, media.width * .42),
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xff14281f,
+                                  ).withValues(alpha: .27),
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               Positioned.fromRect(
                 key: const ValueKey('face-media'),
                 rect: media,
@@ -556,6 +653,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                           revealPausedFrame: widget.revealPausedFrame,
                           onFrameReadyChanged: widget.onFrameReadyChanged,
                           showPendingLabel: false,
+                          stage: Colors.transparent,
                         ),
                       ),
                     ),
@@ -592,19 +690,22 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                 key: const ValueKey('face-title-rule'),
                 left: inset,
                 top: titleTop - 11,
-                width: 26,
-                height: 2,
+                right: lerpDouble(inset, w - inset - 26, t),
+                height: lerpDouble(.5, 2, t),
                 child: IgnorePointer(
-                  child: Opacity(
-                    opacity: t,
-                    child: ColoredBox(color: HipColors.jadeText),
+                  child: ColoredBox(
+                    color: Color.lerp(
+                      HipColors.cardDivider,
+                      HipColors.jadeText,
+                      t,
+                    )!,
                   ),
                 ),
               ),
               Positioned(
                 key: const ValueKey('face-title'),
                 left: inset,
-                right: inset,
+                width: titleScale * typeWidth,
                 top: titleTop,
                 height: titleHeight,
                 child: _type(
@@ -618,11 +719,25 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                       : ValueKey('back-caption-${widget.number}'),
                 ),
               ),
-              if (widget.dose.isNotEmpty)
+              if (widget.dose.isNotEmpty) ...[
+                Positioned(
+                  left: inset,
+                  top: doseTop + (doseHeight - 5) / 2,
+                  child: Opacity(
+                    opacity: 1 - t,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: HipColors.jade,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const SizedBox.square(dimension: 5),
+                    ),
+                  ),
+                ),
                 Positioned(
                   key: const ValueKey('face-dose'),
-                  left: inset,
-                  right: inset,
+                  left: inset + doseIndent,
+                  width: doseScale * typeWidth,
                   top: doseTop,
                   height: doseHeight,
                   child: _type(
@@ -636,6 +751,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                         : ValueKey('back-dose-${widget.number}'),
                   ),
                 ),
+              ],
               if (widget.cue.isNotEmpty)
                 Positioned(
                   key: const ValueKey('face-cue'),
@@ -643,12 +759,15 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                   right: inset,
                   top: cueTop,
                   height: cueHeight,
-                  child: _type(
-                    widget.cue,
-                    _cueStyle(HipColors.muted),
-                    typeWidth,
-                    types.cue,
-                    2,
+                  child: Opacity(
+                    opacity: t,
+                    child: _type(
+                      widget.cue,
+                      _cueStyle(HipColors.muted),
+                      typeWidth,
+                      types.cue,
+                      2,
+                    ),
                   ),
                 ),
               Positioned(

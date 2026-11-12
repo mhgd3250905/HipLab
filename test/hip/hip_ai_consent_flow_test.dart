@@ -121,7 +121,10 @@ void main() {
     await _tap(tester, find.byKey(const ValueKey('more-membership')));
     expect(paywall, findsOneWidget);
 
-    await _tap(tester, find.text('去提问 ›'));
+    await _tap(
+      tester,
+      find.descendant(of: paywall, matching: find.text('去提问')),
+    );
     expect(consentTitle, findsOneWidget);
     expect(chatPage, findsNothing);
     expect(app.client.requests, isEmpty);
@@ -137,7 +140,10 @@ void main() {
     expect(await app.consent.read(), isFalse);
     expect(app.client.requests, isEmpty);
 
-    await _tap(tester, find.text('去定制 ›'));
+    await _tap(
+      tester,
+      find.descendant(of: paywall, matching: find.text('去定制')),
+    );
     expect(consentTitle, findsOneWidget);
     await _tap(tester, privacyLink);
     expect(find.byType(HipPrivacyPage), findsOneWidget);

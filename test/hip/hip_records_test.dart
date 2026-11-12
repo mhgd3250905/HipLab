@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_progress.dart';
 import 'package:hiplab/hip/ui/hip_records_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer.dart' show TrainerPoster;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
@@ -110,6 +112,78 @@ void main() {
     );
     final dynamic painter = paint.painter;
     expect(painter.levels[15][now.weekday - 1], 2);
+  });
+
+  testWidgets('records shows three recent rows and opens all saved history', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 3090);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final now = DateTime(2026, 11, 12, 16);
+    final content = loadContent();
+    final store = HipStore(
+      content: content,
+      storage: MemoryStorage(),
+      clock: () => now,
+    );
+    const action = 'o-stand-lunge';
+    store.sessions.addAll([
+      for (var i = 1; i <= 5; i++)
+        SessionRecord(
+          at: now.subtract(Duration(days: 5 - i)),
+          source: i == 5 ? PlanSource.custom : PlanSource.single,
+          refId: i == 5 ? null : action,
+          title: '训练 $i',
+          seconds: 60,
+          completed: i != 5,
+          trainerResult: i == 5
+              ? {
+                  'items': [
+                    {'exerciseId': action},
+                  ],
+                }
+              : null,
+        ),
+    ]);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        supportedLocales: const [Locale('zh'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(body: HipRecordsView(store: store)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('训练 2'), findsNothing);
+    expect(find.text('训练 3'), findsOneWidget);
+    expect(find.text('训练 5'), findsOneWidget);
+    expect(find.text('今天 16:00 · 未完成', findRichText: true), findsOneWidget);
+    final tiles = tester.widgetList<TrainerPoster>(find.byType(TrainerPoster));
+    expect(tiles, hasLength(3));
+    expect(
+      tiles.map((tile) => tile.asset),
+      everyElement(HipPublicMedia.coverAssetFor(action)),
+    );
+    expect(
+      tiles.map((tile) => tile.stageColor),
+      everyElement(Colors.transparent),
+    );
+    expect(
+      tester.getSize(find.byType(TrainerPoster).first),
+      const Size(38, 40),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('records-all')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('records-all-list')), findsOneWidget);
+    expect(find.text('训练 1'), findsOneWidget);
+    expect(find.text('训练 5'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('records empty state offers one start action', (tester) async {

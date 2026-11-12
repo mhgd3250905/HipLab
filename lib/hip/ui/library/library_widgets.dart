@@ -236,19 +236,16 @@ class LibSearchField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onChanged,
+    this.libraryStyle = false,
   });
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final bool libraryStyle;
   @override
   Widget build(BuildContext context) {
     final t = LibText.of(context);
-    return Container(
-      constraints: const BoxConstraints(minHeight: 36),
+    final content = Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 2, 4),
-      decoration: BoxDecoration(
-        color: HipColors.track,
-        borderRadius: BorderRadius.circular(10),
-      ),
       child: Row(
         children: [
           HipIcon(HipGlyph.search, size: 16, color: HipColors.muted),
@@ -266,7 +263,10 @@ class LibSearchField extends StatelessWidget {
                 hintText: libLargeText(context)
                     ? t.searchHintShort
                     : t.searchHint,
-                hintStyle: TextStyle(fontSize: 14, color: HipColors.faint),
+                hintStyle: TextStyle(
+                  fontSize: libraryStyle ? 13 : 14,
+                  color: HipColors.faint,
+                ),
               ),
             ),
           ),
@@ -289,6 +289,16 @@ class LibSearchField extends StatelessWidget {
         ],
       ),
     );
+    return libraryStyle
+        ? HipCard(radius: 14, child: content)
+        : Container(
+            constraints: const BoxConstraints(minHeight: 36),
+            decoration: BoxDecoration(
+              color: HipColors.track,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: content,
+          );
   }
 }
 

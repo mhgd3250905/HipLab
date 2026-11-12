@@ -279,8 +279,8 @@ void main() {
         await mount(tester, items: items);
         final source = tester.getRect(find.byKey(_source));
         final trigger = tester.getRect(find.byKey(_entry));
-        expect(source.size, Size(64, count < 2 ? 36 : 64));
-        expect(trigger.size, Size(64, count < 2 ? 44 : 64));
+        expect(source.size, Size(58, count < 2 ? 33 : 58));
+        expect(trigger.size, Size(58, count < 2 ? 44 : 58));
         expect(source.bottomRight, trigger.bottomRight);
         final shown = items.take(4).toList();
         expect(find.byType(trainer.TrainerPoster), findsNWidgets(shown.length));
@@ -302,10 +302,10 @@ void main() {
           expect(
             tester.getRect(cells[i]),
             Rect.fromLTWH(
-              source.left + 6 + (i % 2) * 28,
-              source.top + 6 + (i ~/ 2) * 28,
-              24,
-              24,
+              source.left + 6 + (i % 2) * 25,
+              source.top + 6 + (i ~/ 2) * 25,
+              21,
+              21,
             ),
             reason: 'group count must not recenter the fixed folder slots',
           );
@@ -410,7 +410,7 @@ void main() {
             ),
         };
         final anchor = origin.bottomRight;
-        expect(origin.size, Size(64, count < 2 ? 36 : 64));
+        expect(origin.size, Size(58, count < 2 ? 33 : 58));
 
         void anchored(Rect rect) {
           expect(rect.right, closeTo(anchor.dx, .01));

@@ -1851,10 +1851,10 @@ void main() {
         final restingPlacement = placement();
         final restingScale = inspectPrintedLabels();
         expect(restingPlacement.$2, height == 300 ? 8 : 24);
-        expect(restingPlacement.$3, 44);
+        expect(restingPlacement.$3, 48);
         expect(restingPlacement.$4, 28);
-        expect(restingScale[0], closeTo((height == 300 ? 10 : 17) / 46, 1e-8));
-        expect(restingScale[1], closeTo((height == 300 ? 8 : 10) / 11, 1e-8));
+        expect(restingScale[0], closeTo((height == 300 ? 10 : 15) / 46, 1e-8));
+        expect(restingScale[1], closeTo((height == 300 ? 8 : 9.5) / 11, 1e-8));
 
         await openActionCard(tester);
         var previousScale = restingScale;
@@ -2254,7 +2254,7 @@ void main() {
       }
       expect(
         tester.widget<trainer.TrainingActionMedia>(frontMedia()).stage,
-        HipPalette.light.mediaBackdrop,
+        Colors.transparent,
       );
       await showDeck(
         tester,
@@ -3398,7 +3398,7 @@ void main() {
       expect(tester.getSize(badge).height, greaterThanOrEqualTo(44));
       expect(
         tester.getSize(find.byKey(const ValueKey('home-streak'))).height,
-        24,
+        26,
       );
       final semantics = tester.ensureSemantics();
       try {
@@ -3444,11 +3444,11 @@ void main() {
   );
 
   testWidgets(
-    'home clips cards at the real screen edges outside its 16 point padding',
+    'home clips cards at the real screen edges outside its 14 point padding',
     (tester) async {
       final store = await showHome(tester, MemoryStorage());
       final deck = find.byType(HipHomeActionDeck);
-      expect(tester.getTopLeft(deck).dx, 16);
+      expect(tester.getTopLeft(deck).dx, 14);
       final clipping = find
           .descendant(
             of: find.byType(HipHomeActionDeck),

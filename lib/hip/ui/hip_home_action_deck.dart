@@ -36,6 +36,13 @@ class HipHomeActionDeck extends StatefulWidget {
 
 class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     with TickerProviderStateMixin {
+  static const _restingWidth = 280.0;
+  static const _restingHeight = 464.0;
+  static const _stageInset = 58.0;
+  static const _cardTop = 28.0;
+  static const _rearAngle = 3.5 * math.pi / 180;
+  static const _aspect = _restingWidth / _restingHeight;
+
   late final AnimationController _position;
   late final AnimationController _vertical;
   late final AnimationController _flight;
@@ -445,7 +452,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       final vertical = _flightDirection.dy.abs() < .001
           ? double.infinity
           : bounds == null
-          ? (view.height + _cardWidth * 1.62) / _flightDirection.dy.abs()
+          ? (view.height + _cardWidth / _aspect) / _flightDirection.dy.abs()
           : (_flightDirection.dy < 0
                     ? bounds.bottom + 48
                     : view.height - bounds.top + 48) /
@@ -525,17 +532,20 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
           },
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final available = math.max(0.0, constraints.maxHeight - 110);
+              final available = math.max(
+                0.0,
+                constraints.maxHeight - _stageInset,
+              );
               if (available < 110) return const SizedBox.shrink();
               _cardWidth = math.min(
-                constraints.maxWidth * .78,
-                math.max(156, available / 1.62),
+                _restingWidth,
+                math.min(constraints.maxWidth * .85, available * _aspect),
               );
               _exitDistance = (constraints.maxWidth + _cardWidth) / 2 + 70;
               _switchDistance = MediaQuery.sizeOf(context).width * .26;
-              final cardHeight = math.min(available, _cardWidth * 1.62);
+              final cardHeight = _cardWidth / _aspect;
               return Align(
-                alignment: const Alignment(0, .2),
+                alignment: Alignment.center,
                 child: OverlayPortal.overlayChildLayoutBuilder(
                   controller: _overlay,
                   overlayLocation: OverlayChildLocation.rootOverlay,
@@ -546,7 +556,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                   ),
                   child: SizedBox(
                     key: const ValueKey('home-deck-stage'),
-                    height: cardHeight + 100,
+                    height: cardHeight + _stageInset,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       dragStartBehavior: DragStartBehavior.down,
@@ -605,15 +615,15 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       final source = Matrix4.copy(anchor)
         ..translateByDouble(
           (width - _cardWidth) / 2 - 18 + x,
-          74 - lift * 18 + y,
+          _cardTop - lift * 18 + y,
           0,
           1,
         )
         ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
-        ..rotateZ(-.025 + travel * .18)
+        ..rotateZ(travel * .18)
         ..multiply(Matrix4.identity()..setEntry(3, 2, .0012))
-        ..rotateX(.018 + (y / _cardWidth).clamp(-1, 1) * -.04)
-        ..rotateY(-.10 + travel * .19)
+        ..rotateX((y / _cardWidth).clamp(-1, 1) * -.04)
+        ..rotateY(travel * .19)
         ..scaleByDouble(1 + lift * .018, 1 + lift * .018, 1, 1)
         ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1);
       final view = MediaQuery.of(context);
@@ -731,6 +741,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                                       ),
                                       drill: widget.drills[_index],
                                       number: _index + 1,
+                                      total: widget.drills.length,
                                       mediaKey: _mediaKey(_index),
                                       revealPausedFrame: !_posterLocked
                                           .contains(_index),
@@ -849,6 +860,33 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
           ),
         for (var layer = count - 1; layer >= 1; layer--)
           _card(_at(layer * _toward), layer - progress, width, height),
+        if (_multiple)
+          Positioned(
+            left: (width - _cardWidth) / 2 - 18,
+            bottom: 8,
+            width: _cardWidth,
+            child: ExcludeSemantics(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  spacing: 12,
+                  children: [
+                    for (var index = 0; index < widget.drills.length; index++)
+                      Container(
+                        width: index == _index ? 14 : 5,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: index == _index
+                              ? HipColors.text
+                              : const Color(0xffcdd3d0),
+                          borderRadius: BorderRadius.circular(2.5),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -863,10 +901,6 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double opacity = 1,
   }) {
     final warm = !replenishing && _videoEnabled && _warmIndices.contains(index);
-    final tilt = Matrix4.identity()
-      ..setEntry(3, 2, .0012)
-      ..rotateX(.018)
-      ..rotateY(-.10);
     return Positioned(
       key: ValueKey(
         warmingOnly
@@ -874,7 +908,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
             : 'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
       ),
       left: (width - _cardWidth) / 2 - 18 + depth * 16,
-      top: 74 - depth * 26,
+      top: _cardTop - depth * 9,
       width: _cardWidth,
       height: height,
       child: Opacity(
@@ -882,37 +916,29 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         opacity: opacity,
         child: Transform.rotate(
           alignment: const Alignment(0, .8),
-          angle: -.025 + depth * .105,
-          child: Transform(
-            alignment: const Alignment(0, .8),
-            transform: tilt,
-            child: Transform.scale(
-              alignment: const Alignment(0, .8),
-              scale: 1 - depth * .045,
-              child: ExcludeSemantics(
-                child: IgnorePointer(
-                  child: RepaintBoundary(
-                    child: HipHomeActionFace(
-                      key: ValueKey('back-face-$index'),
-                      front: false,
-                      warmVideo: warm,
-                      mediaKey: warm ? _mediaKey(index) : null,
-                      mediaLabelKey: warmingOnly
-                          ? ValueKey('warm-art-${index + 1}')
-                          : null,
-                      revealPausedFrame: !_posterLocked.contains(index),
-                      onFrameReadyChanged: warm ? _readyCallback(index) : null,
-                      drill: widget.drills[index],
-                      number: index + 1,
-                      restingSize: Size(_cardWidth, height),
-                      stackDepth: depth,
-                      compact: height < 330,
-                      dose: widget.doses.elementAtOrNull(index) ?? '',
-                      cue: widget.cues.elementAtOrNull(index) ?? '',
-                      description:
-                          widget.descriptions.elementAtOrNull(index) ?? '',
-                    ),
-                  ),
+          angle: -depth * _rearAngle,
+          child: ExcludeSemantics(
+            child: IgnorePointer(
+              child: RepaintBoundary(
+                child: HipHomeActionFace(
+                  key: ValueKey('back-face-$index'),
+                  front: false,
+                  warmVideo: warm,
+                  mediaKey: warm ? _mediaKey(index) : null,
+                  mediaLabelKey: warmingOnly
+                      ? ValueKey('warm-art-${index + 1}')
+                      : null,
+                  revealPausedFrame: !_posterLocked.contains(index),
+                  onFrameReadyChanged: warm ? _readyCallback(index) : null,
+                  drill: widget.drills[index],
+                  number: index + 1,
+                  total: widget.drills.length,
+                  restingSize: Size(_cardWidth, height),
+                  stackDepth: depth,
+                  compact: height < 330,
+                  dose: widget.doses.elementAtOrNull(index) ?? '',
+                  cue: widget.cues.elementAtOrNull(index) ?? '',
+                  description: widget.descriptions.elementAtOrNull(index) ?? '',
                 ),
               ),
             ),

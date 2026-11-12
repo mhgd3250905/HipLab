@@ -37,6 +37,7 @@ class HipGlass extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.shadow = true,
     this.tint,
+    this.dock = false,
   });
 
   final Widget? child;
@@ -53,6 +54,7 @@ class HipGlass extends StatelessWidget {
 
   /// Optional colour tint mixed into the fill (e.g. jade for the AI card).
   final Color? tint;
+  final bool dock;
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +71,15 @@ class HipGlass extends StatelessWidget {
           tint: tint,
         );
         Widget body = DecoratedBox(
-          decoration: BoxDecoration(gradient: fill),
+          decoration: dock && !dark
+              ? BoxDecoration(color: Colors.white.withValues(alpha: .47))
+              : BoxDecoration(gradient: fill),
           child: CustomPaint(
             foregroundPainter: HipGlassRimPainter(
               radius: r,
               dark: dark,
               high: high,
+              dock: dock,
             ),
             child: Padding(padding: padding, child: child),
           ),
@@ -89,7 +94,17 @@ class HipGlass extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: rr,
-              boxShadow: shadow ? HipGlassStyle.shadow(dark: dark) : null,
+              boxShadow: dock
+                  ? HipColors.shadows([
+                      const BoxShadow(
+                        color: Color(0x0f000000),
+                        blurRadius: 32,
+                        offset: Offset(0, 6),
+                      ),
+                    ])
+                  : shadow
+                  ? HipGlassStyle.shadow(dark: dark)
+                  : null,
             ),
             child: ClipRRect(borderRadius: rr, child: body),
           ),
@@ -252,11 +267,13 @@ class HipGlassRimPainter extends CustomPainter {
     required this.dark,
     this.high = false,
     this.strength = 1,
+    this.dock = false,
   });
   final double radius;
   final bool dark;
   final bool high;
   final double strength;
+  final bool dock;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -266,6 +283,23 @@ class HipGlassRimPainter extends CustomPainter {
       rect.deflate(.25),
       Radius.circular((r - .25).clamp(0, r).toDouble()),
     );
+    if (dock && !dark && !high) {
+      canvas.drawRRect(
+        rrect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .5
+          ..color = Colors.black.withValues(alpha: .06),
+      );
+      canvas.drawRRect(
+        rrect.deflate(.7),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = .7
+          ..color = Colors.white.withValues(alpha: .67),
+      );
+      return;
+    }
     final a = ((high ? .6 : .18) * strength).clamp(0, 1).toDouble();
     // Light: white glass on a light page needs a faint dark edge instead.
     final color = dark
@@ -285,7 +319,8 @@ class HipGlassRimPainter extends CustomPainter {
       old.radius != radius ||
       old.dark != dark ||
       old.high != high ||
-      old.strength != strength;
+      old.strength != strength ||
+      old.dock != dock;
 }
 
 /// Page depth behind glass: the current routine cover, tiny-decoded (so

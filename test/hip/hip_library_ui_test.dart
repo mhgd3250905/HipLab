@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
+import 'package:hiplab/hip/data/hip_library_poster_bounds.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
@@ -14,6 +15,7 @@ import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
@@ -141,6 +143,37 @@ void main() {
       await pumpApp(tester);
       await toPractice(tester);
       expect(find.byType(trainer.TrainingLibraryPage), findsNothing);
+
+      final cards = find.byType(ActionCard);
+      final first = tester.getRect(cards.at(0));
+      final second = tester.getRect(cards.at(1));
+      expect(first.size, const Size(154, 196));
+      expect(second.size, first.size);
+      expect(second.top, first.top);
+      expect(second.left - first.right, 12);
+      final artwork = find.descendant(
+        of: cards.first,
+        matching: find.byType(ClipRect),
+      );
+      final id = tester.widget<ActionCard>(cards.first).item.id;
+      final fitted = applyBoxFit(
+        BoxFit.contain,
+        libraryPosterBounds[id]!.size,
+        const Size(126, 88),
+      ).destination;
+      final artworkRect = tester.getRect(artwork);
+      expect(artworkRect.width, closeTo(fitted.width, .001));
+      expect(artworkRect.height, closeTo(fitted.height, .001));
+      expect(artworkRect.center.dx, closeTo(first.center.dx, .001));
+      expect(artworkRect.center.dy, closeTo(first.top + 88, .001));
+      final image = tester.widget<Image>(
+        find.descendant(of: artwork, matching: find.byType(Image)),
+      );
+      expect(
+        (image.image as AssetImage).assetName,
+        HipPublicMedia.thumbnailAssetFor(id),
+      );
+
       String count() => tester
           .widget<Text>(find.byKey(const ValueKey('actions-count')))
           .data!;

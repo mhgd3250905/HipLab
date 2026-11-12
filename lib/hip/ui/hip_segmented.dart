@@ -42,6 +42,7 @@ class HipSegmented<T> extends StatefulWidget {
     this.glass = false,
     this.blur = false,
     this.bare = false,
+    this.accentSelection = false,
     this.ios = false,
     this.duration,
     this.curve,
@@ -70,6 +71,7 @@ class HipSegmented<T> extends StatefulWidget {
   /// With [glass]: no track surface of its own — it sits inside a glass
   /// capsule that also holds other items (首页 dock, m3).
   final bool bare;
+  final bool accentSelection;
 
   /// iOS system look: a system-grey track and a flat white / grey thumb with
   /// one soft shadow, 13pt semibold selection. Used by the settings page;
@@ -114,7 +116,9 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
     if (inside != _pointerInside) setState(() => _pointerInside = inside);
   }
 
-  Color get _selectedFg => widget.glass || widget.ios
+  Color get _selectedFg => widget.accentSelection
+      ? HipColors.jadeText
+      : widget.glass || widget.ios
       ? HipColors.text
       : widget.standalone
       ? HipColors.jadeText
@@ -133,6 +137,20 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
   /// reference tactile tile (button audit 2026-10-18): lit from above, a 1px
   /// top light, a hairline edge and a tight contact shadow.
   Widget _thumb(bool pressed) {
+    if (widget.accentSelection) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 84, maxHeight: 36),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: HipColors.jade.withValues(alpha: .09),
+            ),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+    }
     if (widget.ios) {
       return DecoratedBox(
         decoration: BoxDecoration(
@@ -176,7 +194,7 @@ class _HipSegmentedState<T> extends State<HipSegmented<T>> {
         .clamp(0, widget.values.length - 1);
     final pressed = _pointerInside && (_dragging || _pressedIndex == index);
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final idle = widget.glass
+    final idle = widget.glass && !widget.accentSelection
         ? HipColors.text.withValues(alpha: .62)
         : HipColors.muted;
     final on = _selectedFg;

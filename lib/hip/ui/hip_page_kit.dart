@@ -19,7 +19,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_routes.dart';
 import 'hip_row_icons.dart';
@@ -136,9 +135,9 @@ class HipNavBar extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 16,
                             height: 1.2,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             color: HipColors.text,
                           ),
                         ),
@@ -211,6 +210,7 @@ class HipNavBackChip extends StatelessWidget {
   Widget build(BuildContext context) {
     if (leading == HipNavLeading.none) return const SizedBox.shrink();
     final close = leading == HipNavLeading.close;
+    final size = close ? 32.0 : 36.0;
     final label = close
         ? HipText.of(context).pick('关闭', 'Close')
         : HipText.of(context).pick('返回', 'Back');
@@ -224,14 +224,22 @@ class HipNavBackChip extends StatelessWidget {
           scale: .9,
           onTap: onLeading ?? () => Navigator.of(context).maybePop(),
           child: Center(
-            child: _HipChipSurface(
+            child: HipCard(
+              radius: size / 2,
+              shadows: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .07),
+                  offset: const Offset(0, 3),
+                  blurRadius: 12,
+                ),
+              ],
               child: SizedBox.square(
-                dimension: HipNavBar.chip,
+                dimension: size,
                 child: Center(
                   child: HipIcon(
                     close ? HipGlyph.close : HipGlyph.back,
-                    size: 32,
-                    strokeWidth: 2,
+                    size: 18,
+                    strokeWidth: 1.8,
                     color: HipColors.text,
                   ),
                 ),
@@ -369,49 +377,6 @@ class _HipBarGlass extends StatelessWidget {
   );
 }
 
-/// The back / close chip: flat frosted glass — a uniform translucent tint
-/// over a backdrop blur and one hairline rim. No gradient, no shadow.
-class _HipChipSurface extends StatelessWidget {
-  const _HipChipSurface({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final dark = HipColors.isDark;
-    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
-    // Flat frosted glass (开哥 2026-11-05): one uniform translucent tint over
-    // a real backdrop blur and one hairline rim. No gradient body, no bevel,
-    // no shadow — the chip sits in the bar plane, it is not a raised button.
-    final fill = high
-        ? (dark ? const Color(0xFF1C1C1E) : Colors.white)
-        : (dark
-              ? Colors.white.withValues(alpha: .12)
-              : Colors.white.withValues(alpha: .38));
-    final rim = dark
-        ? Colors.white.withValues(alpha: high ? .45 : .16)
-        : Colors.black.withValues(alpha: high ? .35 : .10);
-    return DecoratedBox(
-      position: DecorationPosition.foreground,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: rim, width: high ? 1 : .75),
-      ),
-      child: ClipOval(
-        child: high
-            ? ColoredBox(color: fill, child: child)
-            : BackdropFilter(
-                filter: ui.ImageFilter.blur(
-                  sigmaX: 12,
-                  sigmaY: 12,
-                  tileMode: TileMode.mirror,
-                ),
-                child: ColoredBox(color: fill, child: child),
-              ),
-      ),
-    );
-  }
-}
-
 /// A pushed page: backdrop, body, and [HipNavBar] overlaid on top of it. With
 /// [bodyScrollsUnderBar] the body reaches the top of the screen and the page's
 /// scrollable clears [hipNavInset]; otherwise a spacer keeps the body below
@@ -494,7 +459,7 @@ class _HipNavPageState extends State<HipNavPage> {
 
   @override
   Widget build(BuildContext context) {
-    final backdrop = widget.backdrop ?? const HipGlassBackdrop();
+    final backdrop = widget.backdrop ?? const HipPageBackdrop();
     final route = ModalRoute.of(context);
     final hip = route is HipRoute ? route : null;
     final shared = hip?.transition == HipTransition.content;
@@ -608,6 +573,39 @@ class _HipNavPageState extends State<HipNavPage> {
   }
 }
 
+/// Title and optional metadata aligned inside a v2 card.
+class HipCardHeading extends StatelessWidget {
+  const HipCardHeading(this.title, {super.key, this.trailing});
+
+  final String title;
+  final String? trailing;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: HipColors.text,
+          ),
+        ),
+      ),
+      if (trailing != null)
+        Text(
+          trailing!,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: HipColors.jade,
+          ),
+        ),
+    ],
+  );
+}
+
 /// Group title above a [HipListGroup].
 class HipSection extends StatelessWidget {
   const HipSection(this.title, {super.key, this.first = false, this.trailing});
@@ -674,7 +672,7 @@ class HipListGroup extends StatelessWidget {
                   child: Divider(
                     height: .5,
                     thickness: .5,
-                    color: HipColors.text.withValues(alpha: .1),
+                    color: HipColors.cardDivider,
                   ),
                 ),
               c,

@@ -107,7 +107,7 @@ void main() {
             .toList();
         expect(faces, hasLength(1));
         final face = faces.single as ShapeDecoration;
-        expect(face.color, p.jade);
+        expect(face.color, HipColors.primaryAction);
         expect(face.gradient, isNull);
         expect(face.shadows, anyOf(isNull, isEmpty));
         // No ink splash: nothing repaints mid-tap (container transform).
