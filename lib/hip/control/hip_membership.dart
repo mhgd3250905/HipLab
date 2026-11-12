@@ -23,10 +23,19 @@ class MembershipOffer {
 }
 
 class MembershipSnapshot {
-  const MembershipSnapshot(this.appUserId, this.expiresAt);
+  const MembershipSnapshot(
+    this.appUserId,
+    this.expiresAt, {
+    this.term,
+    this.willRenew,
+    this.isTrial = false,
+  });
 
   final String appUserId;
   final DateTime? expiresAt;
+  final MembershipTerm? term;
+  final bool? willRenew;
+  final bool isTrial;
 
   bool isActiveAt(DateTime time) =>
       appUserId.trim().isNotEmpty && (expiresAt?.isAfter(time) ?? false);
@@ -56,6 +65,7 @@ class HipMembership extends ChangeNotifier {
   bool get busy => _busy;
   bool get isPremium => !_disposed && (_snapshot?.isActiveAt(_now()) ?? false);
   String? get activeAppUserId => isPremium ? _snapshot?.appUserId : null;
+  MembershipSnapshot? get activeSnapshot => isPremium ? _snapshot : null;
 
   Future<List<MembershipOffer>> offers() => _store.offers();
 

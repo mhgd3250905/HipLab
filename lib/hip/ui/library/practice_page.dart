@@ -352,40 +352,7 @@ class _PracticePageState extends State<PracticePage> {
     ];
   }
 
-  Future<void> _newGroup() async {
-    if (!await ensureHipPremium(context) || !mounted) return;
-    final store = actions.store;
-    final draft = CustomRoutine(
-      id: store.newCustomId(),
-      name: store.nextCustomName(language: LibText.of(context).lang),
-      steps: const [],
-    );
-    // 新建 goes straight to picking moves, then the editor.
-    final ids = await Navigator.of(context).push<List<String>>(
-      HipRoute.content(
-        (_) => DrillPickerPage(
-          actions: actions,
-          groupName: draft.name,
-          existing: const [],
-        ),
-      ),
-    );
-    if (ids == null || ids.isEmpty || !mounted) return;
-    if (!await ensureHipPremium(context) || !mounted) return;
-    await Navigator.of(context).push(
-      HipRoute.content<void>(
-        (_) => GroupEditorPage(
-          actions: actions,
-          initial: draft.copyWith(
-            steps: [
-              for (final id in ids.take(CustomRoutine.maxSteps)) CustomStep(id),
-            ],
-          ),
-          isNew: true,
-        ),
-      ),
-    );
-  }
+  Future<void> _newGroup() => openHipNewGroup(context, actions);
 
   Widget _emptyMine(LibText t) => hipFlatCard(
     key: const ValueKey('mine-empty'),
@@ -411,6 +378,44 @@ class _PracticePageState extends State<PracticePage> {
           onTap: () => setState(() => mem.segment = 1),
         ),
       ],
+    ),
+  );
+}
+
+Future<void> openHipNewGroup(
+  BuildContext context,
+  LibraryActions actions,
+) async {
+  if (!await ensureHipPremium(context) || !context.mounted) return;
+  final store = actions.store;
+  final draft = CustomRoutine(
+    id: store.newCustomId(),
+    name: store.nextCustomName(language: LibText.of(context).lang),
+    steps: const [],
+  );
+  // 新建 goes straight to picking moves, then the editor.
+  final ids = await Navigator.of(context).push<List<String>>(
+    HipRoute.content(
+      (_) => DrillPickerPage(
+        actions: actions,
+        groupName: draft.name,
+        existing: const [],
+      ),
+    ),
+  );
+  if (ids == null || ids.isEmpty || !context.mounted) return;
+  if (!await ensureHipPremium(context) || !context.mounted) return;
+  await Navigator.of(context).push(
+    HipRoute.content<void>(
+      (_) => GroupEditorPage(
+        actions: actions,
+        initial: draft.copyWith(
+          steps: [
+            for (final id in ids.take(CustomRoutine.maxSteps)) CustomStep(id),
+          ],
+        ),
+        isNew: true,
+      ),
     ),
   );
 }

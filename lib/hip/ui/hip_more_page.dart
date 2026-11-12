@@ -123,7 +123,8 @@ class HipMorePage extends StatelessWidget {
               glyph: HipGlyph.bolt,
               title: t.pick('HipLab 会员', 'HipLab Premium'),
               meta: membership.isPremium ? t.pick('已开通', 'Active') : null,
-              onTap: () => openHipMembership(context, membership),
+              onTap: () =>
+                  openHipMembership(context, membership, actions: actions),
             ),
           HipListRow(
             key: const ValueKey('more-settings'),

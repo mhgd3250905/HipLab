@@ -72,6 +72,13 @@ class HipRevenueCatStore implements MembershipStore {
     return MembershipSnapshot(
       uid,
       expiry == null ? null : DateTime.tryParse(expiry),
+      term: switch (entitlement.productPlanIdentifier) {
+        'monthly' => MembershipTerm.monthly,
+        'annual' => MembershipTerm.annual,
+        _ => null,
+      },
+      willRenew: entitlement.willRenew,
+      isTrial: entitlement.periodType == rc.PeriodType.trial,
     );
   }
 

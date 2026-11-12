@@ -32,14 +32,21 @@ bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
 
 /// Only the route, lifecycle and dependency lookup belong to HipLab.
 class HipCoachChatPage extends StatefulWidget {
-  const HipCoachChatPage({super.key, required this.actions});
+  const HipCoachChatPage({
+    super.key,
+    required this.actions,
+    this.composeOnOpen = false,
+  });
+
   final LibraryActions actions;
+  final bool composeOnOpen;
   @override
   State<HipCoachChatPage> createState() => _HipCoachChatPageState();
 }
 
 class _HipCoachChatPageState extends State<HipCoachChatPage> {
   Future<CoachChatController>? _loading;
+  bool _composeRequested = false;
 
   @override
   void initState() {
@@ -112,12 +119,24 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
           body: Center(
             child: HipPrimaryButton(
               label: t.pick('查看会员', 'View membership'),
-              onPressed: () => openHipMembership(context, membership),
+              onPressed: () => openHipMembership(
+                context,
+                membership,
+                actions: widget.actions,
+              ),
             ),
           ),
         );
       }
       if (snapshot.data case final chat?) {
+        if (widget.composeOnOpen && !_composeRequested) {
+          _composeRequested = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && ModalRoute.of(context)?.isCurrent == true) {
+              chat.requestCompose();
+            }
+          });
+        }
         return CoachChatPage(controller: chat);
       }
       final failed =
@@ -400,6 +419,18 @@ Future<void> startHipSavedCoachPlan(
   );
 }
 
+Future<void> openHipCoachChat(
+  BuildContext context,
+  LibraryActions actions, {
+  bool composeOnOpen = false,
+}) async {
+  if (!await ensureHipPremium(context) || !context.mounted) return;
+  await _push(
+    context,
+    HipCoachChatPage(actions: actions, composeOnOpen: composeOnOpen),
+  );
+}
+
 class HipCoachChatEntryCard extends StatelessWidget {
   const HipCoachChatEntryCard({super.key, required this.actions});
   final LibraryActions actions;
@@ -413,9 +444,6 @@ class HipCoachChatEntryCard extends StatelessWidget {
       '说说想拉伸哪里，用髋部动作排一套训练',
       'Tell us your goals and build a guided workout',
     ),
-    onTap: () async {
-      if (!await ensureHipPremium(context) || !context.mounted) return;
-      await _push(context, HipCoachChatPage(actions: actions));
-    },
+    onTap: () => openHipCoachChat(context, actions),
   );
 }
