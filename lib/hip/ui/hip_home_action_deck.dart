@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter, lerpDouble;
+import 'dart:ui' show ImageFilter, PathFillType, lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -10,7 +10,7 @@ import '../domain/hip_models.dart';
 import 'hip_content_text.dart';
 import 'hip_home_action_inspect.dart';
 import 'hip_theme.dart';
-import 'hip_widgets.dart' show HipMediaPolicy;
+import 'hip_widgets.dart' show HipDrillArt, HipMediaPolicy;
 
 /// The ordered action deck with a persistent video front face.
 /// The local index never leaves this widget or changes a training plan.
@@ -834,33 +834,46 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     final offset = _reduced ? 0.0 : raw;
     final progress = (offset.abs() / _cardWidth).clamp(0.0, 1.0);
     final count = math.min(3, widget.drills.length);
-    final rearIndices = {
-      for (var layer = 1; layer < count; layer++) _at(layer * _toward),
-    };
+    final bottomDepth = (count - 1).toDouble();
+    final replenishing = count > 1 && progress > 0;
     return Stack(
       clipBehavior: Clip.none,
       fit: StackFit.expand,
       children: [
-        // Prepare the opposite neighbor as well, before the user chooses a
-        // direction. Opacity keeps its native node alive without drawing it;
-        // Offstage/TickerMode would retire the frame we're preparing.
+        // Keep decoded neighbors available for the next turn without painting
+        // their content, card surfaces or shadows in the visual stack.
         for (final index in _warmIndices)
-          if (index != _index && !rearIndices.contains(index))
-            _card(index, 1, width, height, warmingOnly: true, opacity: 0),
-        // Replenish underneath the last card while the stack advances. Starting
-        // at that card's resting pose lets its movement uncover the new face;
-        // the final pose is already correct when the front index commits.
-        if (count > 1 && progress > 0)
-          _card(
+          if (index != _index) _warmMedia(index, height),
+        if (count > 1 && !HipColors.flatShadows)
+          _rearPose(
+            depth: bottomDepth,
+            width: width,
+            height: height,
+            child: const IgnorePointer(
+              child: CustomPaint(
+                key: ValueKey('home-deck-stack-shadow'),
+                painter: _DeckSoftShadow(),
+              ),
+            ),
+          ),
+        if (replenishing)
+          _rearCard(
             _at(count * _toward),
-            (count - 1).toDouble(),
+            bottomDepth,
             width,
             height,
             replenishing: true,
-            opacity: Curves.easeOut.transform((progress / .3).clamp(0, 1)),
+            bottom: true,
+            opacity: Curves.easeOut.transform(progress),
           ),
         for (var layer = count - 1; layer >= 1; layer--)
-          _card(_at(layer * _toward), layer - progress, width, height),
+          _rearCard(
+            _at(layer * _toward),
+            layer - progress,
+            width,
+            height,
+            bottom: !replenishing && layer == count - 1,
+          ),
         if (_multiple)
           Positioned(
             left: (width - _cardWidth) / 2 - 18,
@@ -892,62 +905,127 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     );
   }
 
-  Widget _card(
+  Widget _warmMedia(int index, double height) => Positioned(
+    key: ValueKey('home-deck-warm-$index'),
+    left: 0,
+    top: 0,
+    width: math.min(_cardWidth, height),
+    height: math.min(_cardWidth, height),
+    child: ExcludeSemantics(
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: 0,
+          child: HipDrillArt(
+            key: _mediaKey(index),
+            drill: widget.drills[index],
+            holdVideo: true,
+            revealPausedFrame: !_posterLocked.contains(index),
+            onFrameReadyChanged: _readyCallback(index),
+            showPendingLabel: false,
+            stage: Colors.transparent,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _rearCard(
     int index,
     double depth,
     double width,
     double height, {
+    required bool bottom,
     bool replenishing = false,
-    bool warmingOnly = false,
     double opacity = 1,
-  }) {
-    final warm = !replenishing && _videoEnabled && _warmIndices.contains(index);
-    return Positioned(
-      key: ValueKey(
-        warmingOnly
-            ? 'home-deck-warm-$index'
-            : 'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
-      ),
-      left: (width - _cardWidth) / 2 - 18 + depth * 16,
-      top: _cardTop - depth * 9,
-      width: _cardWidth,
-      height: height,
-      child: Opacity(
-        key: ValueKey('home-deck-opacity-$index'),
-        opacity: opacity,
-        child: Transform.rotate(
-          alignment: const Alignment(0, .8),
-          angle: -depth * _rearAngle,
-          child: ExcludeSemantics(
-            child: IgnorePointer(
-              child: RepaintBoundary(
-                child: HipHomeActionFace(
-                  key: ValueKey('back-face-$index'),
-                  front: false,
-                  warmVideo: warm,
-                  mediaKey: warm ? _mediaKey(index) : null,
-                  mediaLabelKey: warmingOnly
-                      ? ValueKey('warm-art-${index + 1}')
-                      : null,
-                  revealPausedFrame: !_posterLocked.contains(index),
-                  onFrameReadyChanged: warm ? _readyCallback(index) : null,
-                  drill: widget.drills[index],
-                  number: index + 1,
-                  total: widget.drills.length,
-                  restingSize: Size(_cardWidth, height),
-                  stackDepth: depth,
-                  compact: height < 330,
-                  dose: widget.doses.elementAtOrNull(index) ?? '',
-                  cue: widget.cues.elementAtOrNull(index) ?? '',
-                  description: widget.descriptions.elementAtOrNull(index) ?? '',
-                ),
-              ),
+  }) => _rearPose(
+    key: ValueKey(
+      'home-deck-card-$index${replenishing && widget.drills.length <= 3 ? '-reserve' : ''}',
+    ),
+    depth: depth,
+    width: width,
+    height: height,
+    child: Opacity(
+      key: ValueKey('home-deck-opacity-$index'),
+      opacity: opacity,
+      child: IgnorePointer(
+        child: DecoratedBox(
+          key: ValueKey('home-deck-paper-$index'),
+          decoration: BoxDecoration(
+            color: Color.lerp(
+              const Color(0xfffbfcfb),
+              const Color(0xfff6f7f6),
+              (depth - 1).clamp(0, 1),
             ),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(
+              color: Colors.black.withValues(alpha: .06),
+              width: .5,
+            ),
+            boxShadow: bottom
+                ? null
+                : HipColors.shadows([
+                    BoxShadow(
+                      color: const Color(0xff14281f).withValues(alpha: .05),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]),
           ),
+          child: const SizedBox.expand(),
         ),
       ),
+    ),
+  );
+
+  Widget _rearPose({
+    Key? key,
+    required double depth,
+    required double width,
+    required double height,
+    required Widget child,
+  }) => Positioned(
+    key: key,
+    left: (width - _cardWidth) / 2 - 18 + depth * 16,
+    top: _cardTop - depth * 9,
+    width: _cardWidth,
+    height: height,
+    child: Transform.rotate(
+      alignment: const Alignment(0, .8),
+      angle: -depth * _rearAngle,
+      child: child,
+    ),
+  );
+}
+
+/// The bottom pose is shared by the resting card and its replacement. Paint
+/// the broad shadow once, excluding the paper so the fading card cannot show
+/// a dark silhouette from its own shadow.
+class _DeckSoftShadow extends CustomPainter {
+  const _DeckSoftShadow();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paper = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(26),
     );
+    final shadow = BoxShadow(
+      color: const Color(0xff14281f).withValues(alpha: .13),
+      blurRadius: 44,
+      offset: const Offset(0, 14),
+    );
+    canvas.save();
+    final outsidePaper = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect((Offset.zero & size).inflate(3 * shadow.blurRadius))
+      ..addRRect(paper);
+    canvas.clipPath(outsidePaper);
+    canvas.drawRRect(paper.shift(shadow.offset), shadow.toPaint());
+    canvas.restore();
   }
+
+  @override
+  bool shouldRepaint(_DeckSoftShadow oldDelegate) => false;
 }
 
 class _DeckTurnIntent extends Intent {
