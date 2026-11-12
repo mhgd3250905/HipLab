@@ -13,14 +13,25 @@ import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipPressable;
 import 'library/lib_text.dart';
 
+const _folderColumns = 2;
+
 abstract final class _FolderPreview {
   // Paired corners: outer radius = art radius + the surrounding inset.
   static const radius = 12.0;
   static const artRadius = 6.0;
 
-  static Rect cell(int index) {
-    return Rect.fromLTWH(6 + (index % 2) * 28, 6 + (index ~/ 2) * 28, 24, 24);
-  }
+  static const _inset = 6.0;
+  static const _cellSize = 24.0;
+  static const _stride = 28.0;
+  static const singleRowHeight = 2 * _inset + _cellSize;
+  static const width = singleRowHeight + (_folderColumns - 1) * _stride;
+
+  static Rect cell(int index) => Rect.fromLTWH(
+    _inset + (index % _folderColumns) * _stride,
+    _inset + (index ~/ _folderColumns) * _stride,
+    _cellSize,
+    _cellSize,
+  );
 }
 
 @immutable
@@ -173,6 +184,9 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
   @override
   Widget build(BuildContext context) {
     final miniatures = _miniatures;
+    final height = miniatures.length < _folderColumns
+        ? _FolderPreview.singleRowHeight
+        : _FolderPreview.width;
     return PopScope(
       canPop: _route == null,
       child: HipPressable(
@@ -183,42 +197,47 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
             ? _open
             : null,
         scale: .95,
-        child: SizedBox.square(
-          dimension: 64,
-          child: AnimatedBuilder(
-            animation:
-                _route?.animation ?? const AlwaysStoppedAnimation<double>(0),
-            builder: (context, child) => Opacity(
-              key: const ValueKey('home-routine-folder-source'),
-              // Restore in the same frame that the reverse reaches its source,
-              // before overlay disposal completes in a later microtask.
-              opacity:
-                  _route == null ||
-                      (_route!.closingCovers != null &&
-                          _route!.animation!.status ==
-                              AnimationStatus.dismissed)
-                  ? 1
-                  : 0,
-              child: child,
-            ),
-            child: _FolderSurface(
-              key: _face,
-              radius: _FolderPreview.radius,
-              child: SizedBox.expand(
-                child: Stack(
-                  children: [
-                    for (var i = 0; i < miniatures.length; i++)
-                      Positioned.fromRect(
-                        rect: _FolderPreview.cell(i),
-                        child: _FolderArtwork(
-                          key: ValueKey(
-                            'home-routine-preview-${widget.choices[i].id}',
+        // Keep a 44 pt tap target and the same bottom-right anchor.
+        child: Padding(
+          padding: EdgeInsets.only(top: math.max(0.0, 44 - height)),
+          child: SizedBox(
+            width: _FolderPreview.width,
+            height: height,
+            child: AnimatedBuilder(
+              animation:
+                  _route?.animation ?? const AlwaysStoppedAnimation<double>(0),
+              builder: (context, child) => Opacity(
+                key: const ValueKey('home-routine-folder-source'),
+                // Restore in the same frame that the reverse reaches its source,
+                // before overlay disposal completes in a later microtask.
+                opacity:
+                    _route == null ||
+                        (_route!.closingCovers != null &&
+                            _route!.animation!.status ==
+                                AnimationStatus.dismissed)
+                    ? 1
+                    : 0,
+                child: child,
+              ),
+              child: _FolderSurface(
+                key: _face,
+                radius: _FolderPreview.radius,
+                child: SizedBox.expand(
+                  child: Stack(
+                    children: [
+                      for (var i = 0; i < miniatures.length; i++)
+                        Positioned.fromRect(
+                          rect: _FolderPreview.cell(i),
+                          child: _FolderArtwork(
+                            key: ValueKey(
+                              'home-routine-preview-${widget.choices[i].id}',
+                            ),
+                            drill: miniatures[i],
+                            radius: _FolderPreview.artRadius,
                           ),
-                          drill: miniatures[i],
-                          radius: _FolderPreview.artRadius,
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -356,13 +375,11 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   420.0,
                   math.min(available.width, anchor.dx - available.left),
                 );
-                // A single 套路 still fills the two-column grid instead of
-                // leaving half a row empty.
-                final columns = itemCount <= 1 ? 1 : 2;
-                final tileWidth = (width - 40 - (columns - 1) * 14) / columns;
+                final tileWidth =
+                    (width - 40 - (_folderColumns - 1) * 14) / _folderColumns;
                 final coverHeight = tileWidth / 1.2;
                 final tileHeight = coverHeight + 59;
-                final rows = (itemCount / columns).ceil();
+                final rows = (itemCount / _folderColumns).ceil();
                 const headerHeight = 76.0;
                 final height = math.min(
                   headerHeight +
@@ -384,7 +401,6 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   coverKeys: coverKeys,
                   viewportKey: viewportKey,
                   animation: animation,
-                  columns: columns,
                   tileHeight: tileHeight,
                   onChooseGroups: onChooseGroups,
                   onSelect: (id) {
@@ -446,10 +462,11 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                                         Rect.fromLTWH(
                                           target.left +
                                               20 +
-                                              (i % columns) * (tileWidth + 14),
+                                              (i % _folderColumns) *
+                                                  (tileWidth + 14),
                                           target.top +
                                               headerHeight +
-                                              (i ~/ columns) *
+                                              (i ~/ _folderColumns) *
                                                   (tileHeight + 14),
                                           tileWidth,
                                           coverHeight,
@@ -558,7 +575,6 @@ class _FolderPanel extends StatelessWidget {
     required this.coverKeys,
     required this.viewportKey,
     required this.animation,
-    required this.columns,
     required this.tileHeight,
     required this.onSelect,
     this.onChooseGroups,
@@ -569,7 +585,6 @@ class _FolderPanel extends StatelessWidget {
   final List<GlobalKey> coverKeys;
   final GlobalKey viewportKey;
   final Animation<double> animation;
-  final int columns;
   final double tileHeight;
   final ValueChanged<String> onSelect;
   final VoidCallback? onChooseGroups;
@@ -644,7 +659,7 @@ class _FolderPanel extends StatelessWidget {
               key: const ValueKey('home-routine-folder-grid'),
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
+                crossAxisCount: _folderColumns,
                 mainAxisSpacing: 14,
                 crossAxisSpacing: 14,
                 mainAxisExtent: tileHeight,

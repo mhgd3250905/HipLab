@@ -4,6 +4,8 @@
 
 Windows 使用 Flutter 3.44.7。`flutter pub get --enforce-lockfile` 通过，锁文件一致。`flutter analyze --no-pub --fatal-infos` 为 0 问题，`flutter test --no-pub -j 1` 全量 674 通过、69 条件跳过、0 失败。会员门禁、有效期、AI 同意与撤回、首启及首页文件夹均在本轮软件检查范围内。
 
+首页文件夹紧凑布局追加验证：静态分析 0 问题，首页文件夹、首页动作卡和训练组页面共 83 项测试通过，覆盖空文件夹入口、单组收起和展开、多组布局及右下角转场锚点。开哥已在 Xiaomi 13 Ultra 调试包上确认收起和展开布局通过。
+
 ## 2026-11-12 首次 AI 数据共享同意 +68 候选
 
 Windows 使用 Flutter 3.44.7，`flutter pub get --enforce-lockfile` 保持锁文件，`flutter analyze --no-pub --fatal-infos` 为 0 问题。九个相关测试文件共 58 通过、1 项可选截图导出跳过、0 失败。

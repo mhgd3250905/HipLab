@@ -101,7 +101,7 @@ class _FolderHostState extends State<_FolderHost> {
                     child: HipHomeRoutineFolder(
                       key: _entry,
                       choices: choices,
-                      selectedId: widget.choices.first.id,
+                      selectedId: widget.choices.firstOrNull?.id ?? '',
                       sceneLabel: scene,
                       onSelected: widget.onSelected,
                       onChooseGroups: widget.onChooseGroups,
@@ -274,11 +274,14 @@ void main() {
   testWidgets(
     'closed folder previews real groups in fixed row-first slots without invented cells',
     (tester) async {
-      for (var count = 1; count <= 5; count++) {
+      for (var count = 0; count <= 5; count++) {
         final items = choices.take(count).toList();
         await mount(tester, items: items);
-        final source = tester.getRect(find.byKey(_entry));
-        expect(source.size, const Size.square(64));
+        final source = tester.getRect(find.byKey(_source));
+        final trigger = tester.getRect(find.byKey(_entry));
+        expect(source.size, Size(64, count < 2 ? 36 : 64));
+        expect(trigger.size, Size(64, count < 2 ? 44 : 64));
+        expect(source.bottomRight, trigger.bottomRight);
         final shown = items.take(4).toList();
         expect(find.byType(trainer.TrainerPoster), findsNWidgets(shown.length));
         final posters = tester
@@ -390,6 +393,7 @@ void main() {
         (const Size(394, 853), 5),
         (const Size(740, 360), 5),
         (const Size(394, 853), 2),
+        (const Size(394, 853), 1),
       ]) {
         final (size, count) = scenario;
         final items = choices.take(count).toList();
@@ -398,7 +402,7 @@ void main() {
           size: size,
           items: items,
         );
-        final origin = tester.getRect(find.byKey(_entry));
+        final origin = tester.getRect(find.byKey(_source));
         final closedCells = {
           for (final choice in items.take(4))
             choice.id: tester.getRect(
@@ -406,7 +410,7 @@ void main() {
             ),
         };
         final anchor = origin.bottomRight;
-        expect(origin.size, const Size.square(64));
+        expect(origin.size, Size(64, count < 2 ? 36 : 64));
 
         void anchored(Rect rect) {
           expect(rect.right, closeTo(anchor.dx, .01));
@@ -465,7 +469,7 @@ void main() {
           final floating = find.byKey(_surface);
           final current = floating.evaluate().isNotEmpty
               ? tester.getRect(floating)
-              : tester.getRect(find.byKey(_entry));
+              : tester.getRect(find.byKey(_source));
           anchored(current);
           expect(current.width, lessThanOrEqualTo(previous.width + .01));
           expect(current.height, lessThanOrEqualTo(previous.height + .01));
@@ -497,7 +501,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byKey(_panel), findsNothing);
         expect(previous, origin);
-        expect(tester.getRect(find.byKey(_entry)), origin);
+        expect(tester.getRect(find.byKey(_source)), origin);
         expect(sourceOpacity(tester), 1);
         expect(navigator.currentState!.canPop(), isFalse);
         expect(tester.takeException(), isNull);
@@ -683,7 +687,7 @@ void main() {
     'corner add button opens the 训练组 entry; pure fixtures keep no close button',
     (tester) async {
       var opens = 0;
-      await mount(tester, onChooseGroups: () => opens++);
+      await mount(tester, items: const [], onChooseGroups: () => opens++);
       await open(tester);
       final entry = find.byKey(const ValueKey('home-routine-choose-groups'));
       expect(entry, findsOneWidget);
@@ -796,7 +800,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a single 套路 fills the panel instead of half a row', (
+  testWidgets('a single 套路 occupies the first column of the two-column grid', (
     tester,
   ) async {
     final solo = [
@@ -814,11 +818,11 @@ void main() {
     final tile = find.byKey(const ValueKey('home-routine-choice-only'));
     expect(
       tester.getSize(tile).width,
-      closeTo(tester.getSize(grid).width - 40, .5),
+      closeTo((tester.getSize(grid).width - 40 - 14) / 2, .5),
     );
     // No scene chip: the header names the scene 首页 is already on.
     expect(find.text('居家 · 首页文件夹'), findsOneWidget);
-    expect(tester.getRect(tile).right, lessThanOrEqualTo(394 - 20));
+    expect(tester.getRect(tile).left, tester.getRect(grid).left + 20);
     await tester.tap(tile);
     await tester.pumpAndSettle();
     expect(selected, ['only']);
