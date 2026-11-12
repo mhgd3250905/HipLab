@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import '../../data/hip_shared_library.dart';
@@ -7,6 +9,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import '../../coach/coach_config.dart';
 import '../../coach/hip_coach_chat_storage.dart';
 import '../../coach/membership_gateway.dart';
+import '../../control/hip_ai_consent.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_session.dart';
 import '../../trainer/hip_sdk_session_builder.dart';
@@ -26,6 +29,7 @@ import '../library/drill_detail_page.dart';
 import '../library/group_editor_page.dart';
 import '../library/library_actions.dart';
 import '../library/practice_page.dart';
+import 'hip_ai_consent_sheet.dart';
 
 bool aiCoachAvailable(BuildContext context, {bool? configured}) =>
     configured ?? CoachConfig.fromEnvironment.configured;
@@ -47,15 +51,19 @@ class HipCoachChatPage extends StatefulWidget {
 class _HipCoachChatPageState extends State<HipCoachChatPage> {
   Future<CoachChatController>? _loading;
   bool _composeRequested = false;
+  late final _consent = widget.actions.coach!.consent;
 
   @override
   void initState() {
     super.initState();
+    _consent.addListener(_consentChanged);
+    unawaited(_consent.read());
     widget.actions.coach?.gatewayNotice.addListener(_showGatewayNotice);
   }
 
   @override
   void dispose() {
+    _consent.removeListener(_consentChanged);
     widget.actions.coach?.gatewayNotice.removeListener(_showGatewayNotice);
     super.dispose();
   }
@@ -90,7 +98,22 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loading = hasHipPremium(context) ? _load() : null;
+    _refreshChat();
+  }
+
+  void _consentChanged() {
+    if (mounted) setState(_refreshChat);
+  }
+
+  void _refreshChat() {
+    _loading = hasHipPremium(context) && _consent.granted ? _load() : null;
+  }
+
+  Future<void> _requestConsentAgain() async {
+    final accepted = await _requestAiConsent(context, _consent);
+    if (!accepted && mounted && ModalRoute.of(context)?.isCurrent != false) {
+      await Navigator.of(context).maybePop();
+    }
   }
 
   Future<CoachChatController> _load() async {
@@ -124,6 +147,18 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
                 membership,
                 actions: widget.actions,
               ),
+            ),
+          ),
+        );
+      }
+      if (!_consent.granted) {
+        final t = HipText.of(context);
+        return HipNavPage(
+          title: t.pick('HipLab 训练助手', 'HipLab Coach'),
+          body: Center(
+            child: HipPrimaryButton(
+              label: t.pick('使用 AI', 'Use AI'),
+              onPressed: _requestConsentAgain,
             ),
           ),
         );
@@ -425,11 +460,29 @@ Future<void> openHipCoachChat(
   bool composeOnOpen = false,
 }) async {
   if (!await ensureHipPremium(context) || !context.mounted) return;
+  final consent = actions.coach?.consent;
+  if (consent == null) return;
+  final accepted = await _requestAiConsent(context, consent);
+  if (!accepted ||
+      !context.mounted ||
+      !consent.granted ||
+      ModalRoute.of(context)?.isCurrent == false ||
+      !hasHipPremium(context)) {
+    return;
+  }
   await _push(
     context,
     HipCoachChatPage(actions: actions, composeOnOpen: composeOnOpen),
   );
 }
+
+Future<bool> _requestAiConsent(BuildContext context, HipAiConsent consent) =>
+    consent.request(() async {
+      if (!context.mounted || ModalRoute.of(context)?.isCurrent == false) {
+        return false;
+      }
+      return showHipAiConsentSheet(context, consent);
+    });
 
 class HipCoachChatEntryCard extends StatelessWidget {
   const HipCoachChatEntryCard({super.key, required this.actions});

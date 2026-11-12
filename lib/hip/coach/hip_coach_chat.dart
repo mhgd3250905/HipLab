@@ -9,10 +9,12 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/engine.dart' as trainer;
 
 import '../../core/storage/local_state_storage.dart';
+import '../control/hip_ai_consent.dart';
 import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import 'coach_config.dart';
 import 'coach_device_id.dart';
+import 'hip_ai_consent_client.dart';
 import 'hip_coach_chat_storage.dart';
 import 'hip_coach_profile.dart';
 import 'hip_coach_ai_tags.dart';
@@ -24,6 +26,7 @@ class HipCoachChat {
     required this.store,
     this.config = CoachConfig.fromEnvironment,
     this.membership,
+    HipAiConsent? consent,
     this.gateway,
     this.storage,
     this.bundle,
@@ -31,12 +34,13 @@ class HipCoachChat {
     this.onRawInput,
     this.beforeNewConversation,
     this.replyDelay = const Duration(milliseconds: 450),
-  });
+  }) : consent = consent ?? HipAiConsent();
 
   static const namespace = 'hiplab';
   final HipStore store;
   final CoachConfig config;
   final HipMembership? membership;
+  final HipAiConsent consent;
   final CoachGatewayBinding? gateway;
   final LocalStateStorage? storage;
   final AssetBundle? bundle;
@@ -71,7 +75,10 @@ class HipCoachChat {
   coach.OpenAiCompatibleClient _createClient() {
     final member = membership;
     if (member == null) {
-      return config.createClient(deviceId: CoachDeviceId.device.load);
+      return config.createClient(
+        deviceId: CoachDeviceId.device.load,
+        httpClient: HipAiConsentClient(consent),
+      );
     }
     final baseUrl = MembershipGateway.baseUrl;
     if (baseUrl == null) throw StateError('HipLab AI gateway is unavailable');
@@ -83,6 +90,7 @@ class HipCoachChat {
       auth: const coach.NoAuth(),
       httpClient: MembershipGateway(
         baseUri: Uri.parse(baseUrl),
+        consent: consent,
         readUserId: () => member.activeAppUserId,
         onNotice: _notifyGateway,
       ),

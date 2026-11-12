@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
+import '../control/hip_ai_consent.dart';
 import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
@@ -24,6 +25,7 @@ import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
 import '../voice/voice_queue.dart';
+import 'hip_ai_consent_scope.dart';
 import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
 import 'hip_glass.dart';
@@ -80,6 +82,7 @@ class HipApp extends StatefulWidget {
 
 class _HipAppState extends State<HipApp> {
   final _audioRoutes = RouteObserver<ModalRoute<dynamic>>();
+  late final _aiConsent = widget.coach?.consent ?? HipAiConsent();
   HipLanguage _loadingLanguage = HipLanguage.zh;
   late Future<(HipStore, HipVoice)> _loading = _load();
 
@@ -184,6 +187,7 @@ class _HipAppState extends State<HipApp> {
                     store: store,
                     coach: widget.coach,
                     membership: widget.membership,
+                    aiConsent: _aiConsent,
                   )
                 : HipOnboarding(store: store),
             language: store.language,
@@ -229,7 +233,9 @@ class _HipAppState extends State<HipApp> {
       if (widget.membership case final membership?) {
         content = HipMembershipScope(membership: membership, child: content);
       }
-      return _PaletteScope(child: content);
+      return _PaletteScope(
+        child: HipAiConsentScope(consent: _aiConsent, child: content),
+      );
     },
     home: home,
   );
@@ -668,12 +674,19 @@ class _HipOnboardingState extends State<HipOnboarding> {
 // else lives in 「更多」 (top-right ⋯).
 
 class HipHome extends StatefulWidget {
-  const HipHome({super.key, required this.store, this.coach, this.membership});
+  const HipHome({
+    super.key,
+    required this.store,
+    this.coach,
+    this.membership,
+    this.aiConsent,
+  });
   final HipStore store;
 
   /// AI 定制 service; null = built from --dart-define.
   final HipCoachChat? coach;
   final HipMembership? membership;
+  final HipAiConsent? aiConsent;
   @override
   State<HipHome> createState() => _HipHomeState();
 }
@@ -740,7 +753,12 @@ class _HipHomeState extends State<HipHome> {
 
   /// AI 定制 conversation: survives leaving the page and a session.
   late final _coach =
-      widget.coach ?? HipCoachChat(store: store, membership: widget.membership);
+      widget.coach ??
+      HipCoachChat(
+        store: store,
+        membership: widget.membership,
+        consent: widget.aiConsent,
+      );
   late final _library = LibraryActions(
     store: store,
     startPlan: _startPlan,

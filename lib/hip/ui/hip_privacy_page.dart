@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../coach/coach_config.dart';
 import '../coach/membership_gateway.dart';
+import '../control/hip_ai_consent.dart';
+import 'hip_ai_consent_scope.dart';
 import 'hip_theme.dart';
 import 'hip_icons.dart';
 import 'hip_membership_scope.dart';
@@ -12,7 +14,9 @@ import 'hip_text.dart';
 
 /// Bundled policy remains readable without an internet connection.
 class HipPrivacyPage extends StatelessWidget {
-  const HipPrivacyPage({super.key});
+  const HipPrivacyPage({super.key, this.aiDisclosure = false});
+
+  final bool aiDisclosure;
 
   static const policyUrl = 'https://mhgd3250905.github.io/HipLab/';
   static const iosPolicyUrl =
@@ -23,7 +27,8 @@ class HipPrivacyPage extends StatelessWidget {
     final ios = Theme.of(context).platform == TargetPlatform.iOS;
     final publicPolicyUrl = ios ? iosPolicyUrl : policyUrl;
     final membership = HipMembershipScope.of(context) != null;
-    final configured = _coachConfigured(membership);
+    final consent = HipAiConsentScope.of(context);
+    final configured = aiDisclosure || _coachConfigured(membership);
     return HipNavPage(
       title: HipText.of(context).pick('隐私政策', 'Privacy policy'),
       leadingKey: const ValueKey('privacy-back'),
@@ -40,19 +45,24 @@ class HipPrivacyPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             HipText.of(context).pick(
-              '开发者：Bboy Ug1yk\n更新日期：2026 年 11 月 5 日',
-              'Developer: Bboy Ug1yk\nUpdated: November 5, 2026',
+              configured
+                  ? '开发者：Bboy Ug1yk\n更新日期：2026 年 11 月 12 日'
+                  : '开发者：Bboy Ug1yk\n更新日期：2026 年 11 月 5 日',
+              configured
+                  ? 'Developer: Bboy Ug1yk\nUpdated: November 12, 2026'
+                  : 'Developer: Bboy Ug1yk\nUpdated: November 5, 2026',
             ),
             style: TextStyle(color: HipColors.muted, height: 1.6),
           ),
           const SizedBox(height: 20),
           _PolicySection(
             title: '我们如何处理你的信息',
+            aiConfigured: configured,
             body:
                 '本应用无需账号，不含广告或行为分析。'
                 '${membership ? (ios ? 'iOS 会员订阅由 App Store 处理。' : '安卓会员订阅由 Google Play 处理。') : '此版本不含支付功能。'}'
                 '日常训练和自测记录保存在本机，不会自动上传。'
-                '${configured ? '只有你主动使用 AI 定制时，才会向 AI 服务发送请求。' : '此基础版不启用在线 AI 或云端同步，不向开发者服务器发送训练记录。'}',
+                '${configured ? '只有你同意 AI 数据共享并主动使用 AI 时，才会向 AI 服务发送请求。' : '此基础版不启用在线 AI 或云端同步，不向开发者服务器发送训练记录。'}',
           ),
           const _PolicySection(
             title: '只在设备上保存的记录',
@@ -87,14 +97,15 @@ class HipPrivacyPage extends StatelessWidget {
           if (configured)
             _PolicySection(
               title: 'AI 定制与设备标识',
-              body:
-                  '使用 AI 定制时，你输入的需求和当前对话会发送给 AI 服务生成计划。'
-                  '${membership
-                      ? 'AI 网关会使用 RevenueCat 的匿名标识核对会员权限和用量。'
-                      : ios
-                      ? (CoachConfig.fromEnvironment.authMode == 'worker' ? '请求会附带首次使用时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。' : '此连接模式不附带 AI 安装标识。')
-                      : '请求会附带首次启动时随机生成并保存在本机的安装标识，用于识别设备请求。该标识不是手机硬件序列号。'}'
-                  'App 不会自动发送本机自测结果或训练历史。',
+              body: _aiPolicyBody(HipText.zh, membership: membership, ios: ios),
+              englishBody: _aiPolicyBody(
+                HipText.en,
+                membership: membership,
+                ios: ios,
+              ),
+              action: consent == null
+                  ? null
+                  : _WithdrawAiConsentButton(consent: consent),
             )
           else
             const _PolicySection(
@@ -105,6 +116,7 @@ class HipPrivacyPage extends StatelessWidget {
             ),
           _PolicySection(
             title: '视频、网络与权限',
+            aiConfigured: configured,
             body:
                 '动作目录与封面随应用提供。动作视频从公共素材服务按需下载并缓存在设备上；'
                 '开始训练前可能需要联网准备视频，尚未缓存的视频在离线时可能无法播放。'
@@ -188,10 +200,19 @@ class HipPrivacyPage extends StatelessWidget {
 }
 
 class _PolicySection extends StatelessWidget {
-  const _PolicySection({required this.title, required this.body});
+  const _PolicySection({
+    required this.title,
+    required this.body,
+    this.englishBody,
+    this.aiConfigured,
+    this.action,
+  });
 
   final String title;
   final String body;
+  final String? englishBody;
+  final bool? aiConfigured;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -205,12 +226,113 @@ class _PolicySection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         SelectableText(
-          HipText.of(context).pick(body, _privacyBody(context, title)),
+          HipText.of(context).pick(
+            body,
+            englishBody ?? _privacyBody(context, title, aiConfigured),
+          ),
           style: const TextStyle(height: 1.65),
         ),
+        ?action,
       ],
     ),
   );
+}
+
+class _WithdrawAiConsentButton extends StatefulWidget {
+  const _WithdrawAiConsentButton({required this.consent});
+
+  final HipAiConsent consent;
+
+  @override
+  State<_WithdrawAiConsentButton> createState() =>
+      _WithdrawAiConsentButtonState();
+}
+
+class _WithdrawAiConsentButtonState extends State<_WithdrawAiConsentButton> {
+  bool _withdrawing = false;
+
+  Future<void> _withdraw() async {
+    if (_withdrawing) return;
+    setState(() => _withdrawing = true);
+    final text = HipText.of(context);
+    String message;
+    try {
+      await widget.consent.withdraw();
+      message = text.pick(
+        '已撤回，下次使用 AI 时会再次询问',
+        'Consent withdrawn. We’ll ask again the next time you use AI.',
+      );
+    } catch (_) {
+      message = text.pick(
+        '未能撤回同意，请重试。',
+        'Could not withdraw consent. Try again.',
+      );
+    }
+    if (!mounted) return;
+    setState(() => _withdrawing = false);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  @override
+  Widget build(BuildContext context) => TextButton(
+    key: const ValueKey('withdraw-ai-consent'),
+    onPressed: _withdrawing ? null : _withdraw,
+    style: TextButton.styleFrom(
+      foregroundColor: HipColors.jadeText,
+      textStyle: const TextStyle(fontSize: 14),
+    ),
+    child: Text(
+      HipText.of(
+        context,
+      ).pick('撤回 AI 数据共享同意', 'Withdraw AI data sharing consent'),
+    ),
+  );
+}
+
+({String intro, String conversation, String details, String local})
+hipAiDisclosure(HipText text) => text.isEn
+    ? (
+        intro:
+            'To generate answers and routines, HipLab sends the following to a third-party large language model provider (currently DeepSeek models):',
+        conversation: 'The text you enter and this conversation',
+        details:
+            'Goals, equipment, physical limitations or discomfort you mention.',
+        local:
+            'Not sent: your on-device training records or self-check results.',
+      )
+    : (
+        intro: '为了生成回答和训练方案，HipLab 会把以下内容发送给第三方大语言模型服务商（当前使用 DeepSeek 模型）处理：',
+        conversation: '你输入的文字和本次对话内容',
+        details: '你提到的练习目标、器材、身体限制或不适',
+        local: '不会发送：本机训练记录、自测结果。',
+      );
+
+String _aiPolicyBody(
+  HipText text, {
+  required bool membership,
+  required bool ios,
+}) {
+  final disclosure = hipAiDisclosure(text);
+  final identity = membership
+      ? text.pick(
+          'AI 网关会使用 RevenueCat 的匿名标识核对会员权限和用量。',
+          'The AI gateway uses the RevenueCat anonymous identifier to verify membership and usage limits.',
+        )
+      : ios && CoachConfig.fromEnvironment.authMode != 'worker'
+      ? text.pick(
+          '此连接模式不附带 AI 安装标识。',
+          'This connection mode does not attach an AI installation identifier.',
+        )
+      : text.pick(
+          'AI 请求会附带随机生成并保存在本机的安装标识，用于识别设备请求。',
+          'AI requests include a randomly generated installation identifier stored on your device.',
+        );
+  return '${disclosure.intro}\n'
+      '• ${disclosure.conversation}\n'
+      '• ${disclosure.details}\n'
+      '${disclosure.local}\n\n$identity';
 }
 
 const _privacyTitles = <String, String>{
@@ -231,9 +353,9 @@ bool _coachConfigured(bool membership) => membership
     ? MembershipGateway.baseUrl != null
     : CoachConfig.fromEnvironment.configured;
 
-String _privacyBody(BuildContext context, String section) {
+String _privacyBody(BuildContext context, String section, bool? aiConfigured) {
   final membership = HipMembershipScope.of(context) != null;
-  final configured = _coachConfigured(membership);
+  final configured = aiConfigured ?? _coachConfigured(membership);
   final ios = Theme.of(context).platform == TargetPlatform.iOS;
   final platform = ios ? 'iOS' : 'Android';
   return switch (section) {
@@ -241,7 +363,7 @@ String _privacyBody(BuildContext context, String section) {
       'No account is required. This app contains no advertising or behavioral analytics. '
           '${membership ? (ios ? 'The App Store processes iOS subscriptions. ' : 'Google Play processes Android subscriptions. ') : 'This version has no payment features. '}'
           'Your routine training and check-up records stay on your device and are not uploaded automatically. '
-          '${configured ? 'Requests are sent to the AI service only when you choose to use AI training.' : 'This basic edition does not enable online AI or cloud sync and does not send training records to a developer server.'}',
+          '${configured ? 'Requests are sent to the AI service only after you consent to AI data sharing and choose to use AI.' : 'This basic edition does not enable online AI or cloud sync and does not send training records to a developer server.'}',
     '只在设备上保存的记录' =>
       'Your safety answers, training profile, check-up results (including pain feedback), training dates, '
           'pain and numbness feedback, reminder times and training preferences are stored in the app’s private '
@@ -259,14 +381,6 @@ String _privacyBody(BuildContext context, String section) {
     '安卓会员订阅' =>
       'Google Play processes purchases and renewals. RevenueCat uses a randomly generated anonymous identifier '
           'to check subscription status and restore purchases. The app does not receive payment card details.',
-    'AI 定制与设备标识' =>
-      'When you use AI training, your request and current conversation are sent to the AI service to generate a plan. '
-          '${membership
-              ? 'The AI gateway uses the RevenueCat anonymous identifier to verify membership and usage limits. '
-              : ios && CoachConfig.fromEnvironment.authMode != 'worker'
-              ? 'This connection mode does not attach an AI installation identifier. '
-              : 'Requests include an installation identifier generated randomly at first launch and stored locally to identify device requests. It is not your phone’s hardware serial number. '}'
-          'The app does not automatically send your local check-up results or training history.',
     '在线 AI 未启用' =>
       'This version has no AI credentials configured, so AI training and usage entries are hidden. '
           'No conversations are sent to an AI service, and no installation identifier is created for this feature.',

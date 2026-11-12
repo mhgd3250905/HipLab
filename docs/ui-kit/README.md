@@ -64,6 +64,8 @@ flutter test --no-pub test/hip/hip_membership_page_test.dart
 
 ## 源码定位
 
+- [首次 AI 数据共享同意](../ui-design-standard.md#首次-ai-数据共享同意)采用系统底部弹层。会员校验完成后展示说明，应用内隐私页处理撤回，发送层在每次请求前检查同意。
+
 - 导航、分组行、开关/滑块/确认框：[hip_page_kit.dart](../../lib/hip/ui/hip_page_kit.dart)、[hip_routes.dart](../../lib/hip/ui/hip_routes.dart)。
 - Token、字体、曲线：[hip_theme.dart](../../lib/hip/ui/hip_theme.dart)；通用按压/按钮/媒体宿主：[hip_widgets.dart](../../lib/hip/ui/hip_widgets.dart)。
 - 分段、图标、玻璃：[hip_segmented.dart](../../lib/hip/ui/hip_segmented.dart)、[hip_row_icons.dart](../../lib/hip/ui/hip_row_icons.dart)、[hip_glass.dart](../../lib/hip/ui/hip_glass.dart)。

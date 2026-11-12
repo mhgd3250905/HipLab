@@ -1,3 +1,4 @@
+import 'package:http/http.dart' as http;
 import 'package:ugk_coach/ugk_coach.dart' as uc;
 
 /// HipLab relay settings. No credential has a bundled default. Builds without
@@ -73,8 +74,10 @@ class CoachConfig {
 
   uc.OpenAiCompatibleClient createClient({
     required Future<String> Function() deviceId,
+    http.Client? httpClient,
   }) => uc.OpenAiCompatibleClient(
     config: llmConfig,
+    httpClient: httpClient,
     auth: switch (authMode) {
       'worker' => uc.UgkWorkerAuth(appKey: appKey.trim(), deviceId: deviceId),
       'bearer' => uc.ApiKeyAuth(token.trim()),

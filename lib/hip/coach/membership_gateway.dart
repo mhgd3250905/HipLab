@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../control/hip_ai_consent.dart';
+import 'hip_ai_consent_client.dart';
+
 enum GatewayRejection { premiumRequired, dailyQuota, rateLimit }
 
 typedef GatewayNotice = ({GatewayRejection kind, int? limit});
@@ -10,10 +13,11 @@ typedef GatewayNotice = ({GatewayRejection kind, int? limit});
 class MembershipGateway extends http.BaseClient {
   MembershipGateway({
     required this.baseUri,
+    required HipAiConsent consent,
     required this.readUserId,
     required this.onNotice,
     http.Client? client,
-  }) : _client = client ?? http.Client();
+  }) : _client = HipAiConsentClient(consent, client: client);
 
   static const configuredUrl = String.fromEnvironment('HIP_AI_GATEWAY_URL');
   final Uri baseUri;

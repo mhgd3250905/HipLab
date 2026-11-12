@@ -258,6 +258,10 @@ Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()
 
 已取消续订的试用保留试用标签，第二行优先显示取消状态。360dp 宽、1.5 倍字号下有效期与状态可换行，保持 14/12sp 字级并由卡片增高容纳，底栏保持固定。验收覆盖年付、月付、试用、取消续订、47 小时与恰好 48 小时两侧。[组件测试](../test/hip/hip_membership_page_test.dart)
 
+### 首次 AI 数据共享同意
+
+沿用系统底部弹层，250 ms、`easeOutCubic`，顶部圆角 24。白色正文使用深色主题的卡片底色。内容左右内边距 24，上 28，下 24 加安全区，内容超高可滚动。标题 20sp 半粗，正文 15sp、白 80%、行高 1.5，标题与正文间距 12，条目左缩进 16、间距 6。正文下隔 12 为 14sp 品牌绿下划线隐私链接。按钮区上方留 24，主按钮满宽、高 52、圆角 14、品牌绿底和深色 16sp 半粗字。下隔 8 为满宽、高 48 的 15sp 白 70% 文字按钮。弹层由两个按钮关闭。隐私页中的撤回按钮用 14sp 品牌绿。[组件源码](../lib/hip/ui/coach/hip_ai_consent_sheet.dart) · [交互测试](../test/hip/hip_ai_consent_flow_test.dart)
+
 ---
 
 ## 8. 变更记录

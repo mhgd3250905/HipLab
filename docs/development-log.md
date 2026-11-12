@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-12 首次 AI 数据共享同意 +68
+
+问答与定制共用双语告知。明确同意后在本机保存 `hip_ai_consent_v1` 和 UTC 时间，隐私页撤回时清除两项。AI 的 HTTP 客户端在每次发送前读取同意状态，会员门禁保留原顺序。[本轮验证](verification.md#2026-11-12-首次-ai-数据共享同意-68-候选)
+
 ## 2026-11-12 iOS 会员页 v2 +67
 
 会员页 v2 的 iOS 签名候选已加入 TestFlight 的 `Internal Testing`。新版保留 App Store 续订披露和系统订阅入口，试用状态来自 RevenueCat，短周期有效期显示到分钟。[版本交付台账](version-ledger.md#ios-testflight-内测)
