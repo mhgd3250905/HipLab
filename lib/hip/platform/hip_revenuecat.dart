@@ -4,20 +4,26 @@ import 'package:purchases_flutter/purchases_flutter.dart' as rc;
 
 import '../control/hip_membership.dart';
 
-typedef _Quote = ({MembershipOffer offer, rc.SubscriptionOption option});
+typedef _Quote = ({
+  MembershipOffer offer,
+  rc.SubscriptionOption? option,
+  rc.Package? package,
+});
 
-/// The Android store for HipLab's single anonymous RevenueCat identity.
+/// The store for HipLab's single anonymous RevenueCat identity.
 class HipRevenueCatStore implements MembershipStore {
   HipRevenueCatStore([this.publicKey = defaultPublicKey]);
 
   static const defaultPublicKey = String.fromEnvironment('HIP_RC_ANDROID_KEY');
+  static const iosPublicKey = String.fromEnvironment('HIP_RC_IOS_KEY');
   final String publicKey;
+  bool get _usesAppStore => defaultTargetPlatform == TargetPlatform.iOS;
   Future<void>? _configuration;
   Map<MembershipTerm, _Quote> _quotes = const {};
 
   bool get isAvailable =>
       !kIsWeb &&
-      defaultTargetPlatform == TargetPlatform.android &&
+      (_usesAppStore || defaultTargetPlatform == TargetPlatform.android) &&
       publicKey.trim().isNotEmpty;
 
   Future<void> _configure() =>
@@ -62,7 +68,8 @@ class HipRevenueCatStore implements MembershipStore {
     final entitlement = info.entitlements.active['premium'];
     if (entitlement == null ||
         !entitlement.isActive ||
-        entitlement.store != rc.Store.playStore ||
+        entitlement.store !=
+            (_usesAppStore ? rc.Store.appStore : rc.Store.playStore) ||
         (entitlement.verification != rc.VerificationResult.verified &&
             entitlement.verification !=
                 rc.VerificationResult.verifiedOnDevice)) {
@@ -99,7 +106,9 @@ class HipRevenueCatStore implements MembershipStore {
     ]) {
       final package = offering.getPackage(packageId);
       if (package == null) continue;
-      final quote = _quote(package.storeProduct, term, trialDays);
+      final quote = _usesAppStore
+          ? await _appStoreQuote(package, term, trialDays)
+          : _quote(package.storeProduct, term, trialDays);
       if (quote != null) quotes[term] = quote;
     }
     return quotes;
@@ -157,6 +166,58 @@ class HipRevenueCatStore implements MembershipStore {
         trialDays: trial == null ? null : trialDays,
       ),
       option: trial ?? base,
+      package: null,
+    );
+  }
+
+  Future<_Quote?> _appStoreQuote(
+    rc.Package package,
+    MembershipTerm term,
+    int trialDays,
+  ) async {
+    final product = package.storeProduct;
+    final expectedId = switch (term) {
+      MembershipTerm.monthly => 'com.ugk.hipinterlude.premium.monthly',
+      MembershipTerm.annual => 'com.ugk.hipinterlude.premium.annual',
+    };
+    if (product.identifier != expectedId ||
+        !_matchesTerm(product.subscriptionPeriod, term) ||
+        !product.price.isFinite ||
+        product.price <= 0 ||
+        product.priceString.isEmpty ||
+        product.currencyCode.isEmpty) {
+      return null;
+    }
+    final intro = product.introductoryPrice;
+    var eligible = false;
+    if (intro != null &&
+        intro.price == 0 &&
+        intro.cycles == 1 &&
+        (intro.period == 'P${trialDays}D' ||
+            (trialDays == 7 && intro.period == 'P1W'))) {
+      try {
+        final status =
+            await rc.Purchases.checkTrialOrIntroductoryPriceEligibility([
+              product.identifier,
+            ]);
+        eligible =
+            status[product.identifier]?.status ==
+            rc.IntroEligibilityStatus.introEligibilityStatusEligible;
+      } on Exception {
+        // An unknown eligibility must never promise a trial.
+      }
+    }
+    return (
+      offer: MembershipOffer(
+        term: term,
+        price: product.price,
+        currency: product.currencyCode,
+        localizedPrice: product.priceString,
+        localizedMonthlyPrice: product.pricePerMonthString,
+        trialDays: eligible ? trialDays : null,
+      ),
+      option: null,
+      package: package,
     );
   }
 
@@ -193,29 +254,35 @@ class HipRevenueCatStore implements MembershipStore {
   }
 
   @override
-  Future<MembershipSnapshot?> purchase(MembershipTerm term) => _withStore(
-    () async {
-      final shown = _quotes[term];
-      final uid = await _anonymousUserId();
-      final current = (await _loadQuotes())[term];
-      if (shown == null || current == null || shown.option != current.option) {
-        // Ask the paywall to reload when pricing or eligibility has changed.
-        throw const MembershipStoreUnavailable();
-      }
-      try {
-        final result = await rc.Purchases.purchase(
-          rc.PurchaseParams.subscriptionOption(current.option),
-        );
-        return _snapshot(uid, result.customerInfo);
-      } on PlatformException catch (error) {
-        if (rc.PurchasesErrorHelper.getErrorCode(error) ==
-            rc.PurchasesErrorCode.purchaseCancelledError) {
-          return null;
+  Future<MembershipSnapshot?> purchase(MembershipTerm term) =>
+      _withStore(() async {
+        final shown = _quotes[term];
+        final uid = await _anonymousUserId();
+        final current = (await _loadQuotes())[term];
+        if (shown == null ||
+            current == null ||
+            shown.option != current.option ||
+            (_usesAppStore &&
+                (shown.package != current.package ||
+                    shown.offer.trialDays != current.offer.trialDays))) {
+          // Ask the paywall to reload when pricing or eligibility has changed.
+          throw const MembershipStoreUnavailable();
         }
-        rethrow;
-      }
-    },
-  );
+        try {
+          final result = await rc.Purchases.purchase(
+            _usesAppStore
+                ? rc.PurchaseParams.package(current.package!)
+                : rc.PurchaseParams.subscriptionOption(current.option!),
+          );
+          return _snapshot(uid, result.customerInfo);
+        } on PlatformException catch (error) {
+          if (rc.PurchasesErrorHelper.getErrorCode(error) ==
+              rc.PurchasesErrorCode.purchaseCancelledError) {
+            return null;
+          }
+          rethrow;
+        }
+      });
 
   @override
   Future<MembershipSnapshot> restore() => _withStore(() async {

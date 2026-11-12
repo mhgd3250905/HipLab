@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,6 +14,14 @@ final _playSubscriptions = Uri.https(
   '/store/account/subscriptions',
   {'sku': 'hip_premium', 'package': 'com.ugk.hiplab'},
 );
+
+final _appStoreSubscriptions = Uri.https(
+  'apps.apple.com',
+  '/account/subscriptions',
+);
+
+bool get _usesAppStore =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
 class HipMembershipPage extends StatefulWidget {
   const HipMembershipPage({super.key, required this.membership});
@@ -79,7 +88,7 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
       if (mounted &&
           membership == widget.membership &&
           ModalRoute.of(context)?.isCurrent == true) {
-        // Play may have returned a different quote or trial eligibility.
+        // The store may have returned a different quote or trial eligibility.
         if (term != null) _reloadOffers();
         _showMessage(_storeUnavailable);
       }
@@ -89,7 +98,7 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
   Future<void> _manage() async {
     try {
       if (await launchUrl(
-        _playSubscriptions,
+        _usesAppStore ? _appStoreSubscriptions : _playSubscriptions,
         mode: LaunchMode.externalApplication,
       )) {
         return;
@@ -314,11 +323,16 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
           const SizedBox(height: 4),
         ],
         Text(
-          text.pick(
-            '订阅将自动续订，可随时在 Google Play 取消。${trial == null ? '' : '在试用结束前取消则不会扣费。'}',
-            'Subscription renews automatically. Cancel anytime in Google Play.'
-                '${trial == null ? '' : " Cancel before the trial ends and you won’t be charged."}',
-          ),
+          _usesAppStore
+              ? text.pick(
+                  '除非在当前周期结束前至少 24 小时取消，否则订阅将自动续订；可在 App Store 账户设置中管理或取消。',
+                  'Subscription renews automatically unless canceled at least 24 hours before the end of the current period. Manage or cancel in your App Store account settings.',
+                )
+              : text.pick(
+                  '订阅将自动续订，可随时在 Google Play 取消。${trial == null ? '' : '在试用结束前取消则不会扣费。'}',
+                  'Subscription renews automatically. Cancel anytime in Google Play.'
+                      '${trial == null ? '' : " Cancel before the trial ends and you won’t be charged."}',
+                ),
           style: TextStyle(fontSize: 12, height: 1.4, color: HipColors.muted),
         ),
         const SizedBox(height: 4),
