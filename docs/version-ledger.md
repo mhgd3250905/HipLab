@@ -2,7 +2,7 @@
 
 ## 2026-11-12 会员阶段收束 +67
 
-源码 `1.1.2+67`，Git 标签 `v1.1.2+67`，基线 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`。会员卡按购买起止时间显示有效期，并列出续订、取消或试用状态。标签指向 `f42b79b7586cae066b7cd6cbc52c94da77d45781`。该源码已构建 `com.ugk.hiplab` 商店 AAB，版本码 `67`，大小 99,121,068 字节，SHA-256 为 `b635f3668f5855533be26c2adf9591498feb74ea645070de1abc9bf91c35fb46`。`bundletool validate` 通过，上传证书与 +62 一致。产物位于 `E:/AII-3D/hiplab-releases/membership-67/hiplab-1.1.2+67-membership-store-release.aab`。Play 内测最后发布的包见 +66 条目。[验证台账](verification.md#2026-11-12-会员阶段收束-67)
+源码 `1.1.2+67`，Git 标签 `v1.1.2+67`，基线 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`。会员卡按购买起止时间显示有效期，并列出续订、取消或试用状态。标签指向 `f42b79b7586cae066b7cd6cbc52c94da77d45781`。该源码已构建 `com.ugk.hiplab` 商店 AAB，版本码 `67`，大小 99,121,068 字节，SHA-256 为 `b635f3668f5855533be26c2adf9591498feb74ea645070de1abc9bf91c35fb46`。`bundletool validate` 通过，上传证书与 +62 一致。产物位于 `E:/AII-3D/hiplab-releases/membership-67/hiplab-1.1.2+67-membership-store-release.aab`。2026-11-12 11:53（北京时间），Play Console 回读已面向内部测试人员发布，名单仅勾选 `wrist-test` 两人。[加入内测](https://play.google.com/apps/internaltest/4701079694408471816)[验证台账](verification.md#2026-11-12-会员阶段收束-67)
 
 ## 2026-11-12 会员卡有效期真机包
 

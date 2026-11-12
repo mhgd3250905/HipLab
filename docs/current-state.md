@@ -6,11 +6,11 @@
 | --- | --- |
 | 会员分支源码 | `feat/membership` · `1.1.2+67` · `v1.1.2+67`，包含已验收的会员卡有效期改动 |
 | 开发主线 | `main` · `98f891b` · `1.1.0+62` |
-| Android Play 内测 | `1.1.2+66`，版本码 `66`，来源 `f335800`，仅 `wrist-test` 两人 |
+| Android Play 内测 | `1.1.2+67`，版本码 `67`，来源 `f42b79b`，仅 `wrist-test` 两人 |
 | Android 自用真机 | `1.1.2+66`，版本码 `2066`，用户确认会员卡有效期验收通过 |
 | iOS TestFlight 内测 | `1.1.2 (65)`，来源 `44da9c2`，最后回读为 `IN_BETA_TESTING` |
 
-+67 已从标签源码构建签名 AAB，Play 内测当前记录为 +66。+67 包身份见[版本台账](version-ledger.md)。真机验收范围为会员卡有效期，其他购买与会员流程按[验证台账](verification.md)及[开发事项](development-roadmap.md)继续跟踪。Android RevenueCat 的 Play 凭据及实时开发者测试通知已通过核对，见[接入记录](android-membership-2026-11-11.md#2026-11-12-实时开发者通知)。
++67 已从标签源码构建签名 AAB 并发布到 Play 内测。[加入内测](https://play.google.com/apps/internaltest/4701079694408471816)+67 包身份见[版本台账](version-ledger.md)。真机验收范围为会员卡有效期，其他购买与会员流程按[验证台账](verification.md)及[开发事项](development-roadmap.md)继续跟踪。Android RevenueCat 的 Play 凭据及实时开发者测试通知已通过核对，见[接入记录](android-membership-2026-11-11.md#2026-11-12-实时开发者通知)。
 
 ## 2026-11-12 Android 会员页 v2 +66
 

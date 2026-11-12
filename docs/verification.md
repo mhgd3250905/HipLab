@@ -9,7 +9,7 @@
 - `flutter test --no-pub -j 1 --reporter expanded test/hip/hip_membership_page_test.dart test/hip/hip_membership_test.dart test/hip/hip_group_membership_test.dart test/hip/hip_membership_gateway_test.dart` 为 18 通过、1 条截图导出按条件跳过、0 失败。
 - 版本码 `2066` 的自用包安装后，用户确认会员卡有效期真机验收通过。APK 身份和运行差异见[版本台账](version-ledger.md#2026-11-12-会员卡有效期真机包)。之前开启截图导出的会员专项为 19 项通过。
 - `f335800` 的 663 项全量通过属于 +66 Play 内测基线。+67 本轮重新验证了受影响的会员流程和界面。
-- 2026-11-12，`flutter build appbundle --release --no-pub` 从标签源码 `f42b79b7586cae066b7cd6cbc52c94da77d45781` 构建签名 AAB。`bundletool validate`、版本码 67、上传证书、计费权限和 r2-v11 目录核对通过。[包身份](version-ledger.md#2026-11-12-会员阶段收束-67)
+- 2026-11-12，`flutter build appbundle --release --no-pub` 从标签源码 `f42b79b7586cae066b7cd6cbc52c94da77d45781` 构建签名 AAB。`bundletool validate`、版本码 67、上传证书、计费权限和 r2-v11 目录核对通过。11:53（北京时间）回读 Play 内测为已发布，发布后核对仅勾选 `wrist-test` 两人。[包身份](version-ledger.md#2026-11-12-会员阶段收束-67)
 
 ## 2026-11-12 Android 会员页 v2 +66
 
