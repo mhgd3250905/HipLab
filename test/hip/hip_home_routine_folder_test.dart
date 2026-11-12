@@ -18,7 +18,6 @@ const _entry = ValueKey('home-rotate');
 const _panel = ValueKey('home-routine-folder-panel');
 const _surface = ValueKey('home-routine-folder-surface');
 const _source = ValueKey('home-routine-folder-source');
-const _close = ValueKey('home-routine-folder-close');
 
 class _FolderHost extends StatefulWidget {
   const _FolderHost({
@@ -27,11 +26,13 @@ class _FolderHost extends StatefulWidget {
     required this.onSelected,
     required this.navigatorKey,
     this.reduced = false,
+    this.onChooseGroups,
   });
   final List<HipHomeRoutineChoice> choices;
   final ValueChanged<String> onSelected;
   final GlobalKey<NavigatorState> navigatorKey;
   final bool reduced;
+  final VoidCallback? onChooseGroups;
 
   @override
   State<_FolderHost> createState() => _FolderHostState();
@@ -103,6 +104,7 @@ class _FolderHostState extends State<_FolderHost> {
                       selectedId: widget.choices.first.id,
                       sceneLabel: scene,
                       onSelected: widget.onSelected,
+                      onChooseGroups: widget.onChooseGroups,
                     ),
                   ),
               ],
@@ -164,6 +166,7 @@ void main() {
     HipPalette palette = HipPalette.dark,
     bool reduced = false,
     List<HipHomeRoutineChoice>? items,
+    VoidCallback? onChooseGroups,
   }) async {
     tester.view
       ..physicalSize = size
@@ -181,6 +184,7 @@ void main() {
         navigatorKey: navigator,
         reduced: reduced,
         onSelected: selected.add,
+        onChooseGroups: onChooseGroups,
       ),
     );
     await tester.pumpAndSettle();
@@ -453,7 +457,7 @@ void main() {
           await exportExpanded(tester, 'folder-anchor-open');
         }
 
-        await tester.tap(find.byKey(_close));
+        await tester.tapAt(const Offset(2, 2));
         await tester.pump();
         previous = gridLayout;
         for (var frame = 0; frame < 24; frame++) {
@@ -502,67 +506,58 @@ void main() {
     },
   );
 
-  testWidgets(
-    'close, barrier, Escape, Android back and early back cancel safely',
-    (tester) async {
-      final (_, navigator, selected) = await mount(tester);
-      var exitRequests = 0;
-      final messenger = tester.binding.defaultBinaryMessenger;
-      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'SystemNavigator.pop') exitRequests++;
-        return null;
-      });
-      addTearDown(
-        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
-      );
-      for (final method in [
-        'close',
-        'barrier',
-        'escape',
-        'back',
-        'early-back',
-      ]) {
-        if (method == 'early-back') {
-          await tester.tap(find.byKey(_entry));
-          await tester.pump();
-          await tester.pump(const Duration(milliseconds: 64));
-        } else {
-          await open(tester);
-        }
-        final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
-        switch (method) {
-          case 'close':
-            await tester.tap(find.byKey(_close));
-          case 'barrier':
-            await tester.tapAt(const Offset(5, 5));
-          case 'escape':
-            await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-          case 'back' || 'early-back':
-            await tester.binding.handlePopRoute();
-            await tester.pump(const Duration(milliseconds: 32));
-            await tester.binding.handlePopRoute();
-            await tester.pump(const Duration(milliseconds: 16));
-            await tester.binding.handlePopRoute();
-        }
-        await closeFrames(tester, route);
-        expect(
-          selected,
-          isEmpty,
-          reason: '$method must not choose a training group',
-        );
-        expect(navigator.currentState!.canPop(), isFalse);
-        expect(find.text('今天的训练'), findsOneWidget);
-        expect(
-          exitRequests,
-          0,
-          reason: 'repeated closing Back must not exit Home',
-        );
-        expect(find.byType(trainer.TrainingActionMedia), findsNothing);
-        expect(fixture.requested, isEmpty);
-        expect(tester.takeException(), isNull);
+  testWidgets('barrier, Escape, Android back and early back cancel safely', (
+    tester,
+  ) async {
+    final (_, navigator, selected) = await mount(tester);
+    var exitRequests = 0;
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'SystemNavigator.pop') exitRequests++;
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    for (final method in ['barrier', 'escape', 'back', 'early-back']) {
+      if (method == 'early-back') {
+        await tester.tap(find.byKey(_entry));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 64));
+      } else {
+        await open(tester);
       }
-    },
-  );
+      final route = ModalRoute.of(tester.element(find.byKey(_panel)))!;
+      switch (method) {
+        case 'barrier':
+          await tester.tapAt(const Offset(5, 5));
+        case 'escape':
+          await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        case 'back' || 'early-back':
+          await tester.binding.handlePopRoute();
+          await tester.pump(const Duration(milliseconds: 32));
+          await tester.binding.handlePopRoute();
+          await tester.pump(const Duration(milliseconds: 16));
+          await tester.binding.handlePopRoute();
+      }
+      await closeFrames(tester, route);
+      expect(
+        selected,
+        isEmpty,
+        reason: '$method must not choose a training group',
+      );
+      expect(navigator.currentState!.canPop(), isFalse);
+      expect(find.text('今天的训练'), findsOneWidget);
+      expect(
+        exitRequests,
+        0,
+        reason: 'repeated closing Back must not exit Home',
+      );
+      expect(find.byType(trainer.TrainingActionMedia), findsNothing);
+      expect(fixture.requested, isEmpty);
+      expect(tester.takeException(), isNull);
+    }
+  });
 
   testWidgets(
     'selection reports once only after the return animation finishes',
@@ -634,7 +629,7 @@ void main() {
                   : 'folder-light-expanded',
             );
           }
-          await tester.tap(find.byKey(_close));
+          await tester.tapAt(const Offset(2, 2));
           await tester.pumpAndSettle();
           expect(selected, isEmpty);
           expect(navigator.currentState!.canPop(), isFalse);
@@ -685,6 +680,47 @@ void main() {
   });
 
   testWidgets(
+    'corner add button opens the 训练组 entry; pure fixtures keep no close button',
+    (tester) async {
+      var opens = 0;
+      await mount(tester, onChooseGroups: () => opens++);
+      await open(tester);
+      final entry = find.byKey(const ValueKey('home-routine-choose-groups'));
+      expect(entry, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('home-routine-folder-close')),
+        findsNothing,
+      );
+      // The entry sits in the header, above the scrollable grid.
+      expect(
+        tester.getRect(entry).bottom,
+        lessThanOrEqualTo(
+          tester
+              .getTopLeft(
+                find.byKey(const ValueKey('home-routine-folder-grid')),
+              )
+              .dy,
+        ),
+      );
+      await tester.tap(entry);
+      await tester.pumpAndSettle();
+      expect(find.byKey(_panel), findsNothing);
+      expect(opens, 1);
+      expect(find.byKey(_entry), findsOneWidget);
+
+      // Component fixtures without the callback keep a pure selection panel.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await mount(tester);
+      await open(tester);
+      expect(
+        find.byKey(const ValueKey('home-routine-choose-groups')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'changed scene, unavailable choices and unmount retire the open snapshot',
     (tester) async {
       final (host, navigator, selected) = await mount(tester);
@@ -715,4 +751,77 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('scene chips name each 套路 and the header lists the scenes', (
+    tester,
+  ) async {
+    const scenes = ['办公', '居家'];
+    final pair = [
+      for (var i = 0; i < scenes.length; i++)
+        HipHomeRoutineChoice(
+          id: 'scene-$i',
+          sceneLabel: scenes[i],
+          title: choices[i].title,
+          subtitle: choices[i].subtitle,
+          minutes: choices[i].minutes,
+          drills: choices[i].drills,
+        ),
+    ];
+    final (_, _, selected) = await mount(tester, items: pair);
+    await open(tester);
+    expect(find.text('首页训练组'), findsOneWidget);
+    expect(find.text('居家 · 首页文件夹'), findsOneWidget);
+    for (final scene in scenes) {
+      expect(find.text(scene), findsOneWidget);
+    }
+    final grid = find.byKey(const ValueKey('home-routine-folder-grid'));
+    final first = find.byKey(const ValueKey('home-routine-choice-scene-0'));
+    final second = find.byKey(const ValueKey('home-routine-choice-scene-1'));
+    // Two 套路 share one row: neither is stretched to the whole panel.
+    expect(
+      tester.getSize(first).width,
+      closeTo((tester.getSize(grid).width - 40 - 14) / 2, .5),
+    );
+    expect(tester.getTopLeft(first).dy, tester.getTopLeft(second).dy);
+    final semantics = tester.ensureSemantics();
+    try {
+      await tester.pump();
+      expect(find.bySemanticsLabel(RegExp('居家，')), findsOneWidget);
+    } finally {
+      semantics.dispose();
+    }
+    await tester.tap(second);
+    await tester.pumpAndSettle();
+    expect(selected, ['scene-1']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a single 套路 fills the panel instead of half a row', (
+    tester,
+  ) async {
+    final solo = [
+      HipHomeRoutineChoice(
+        id: 'only',
+        title: choices.first.title,
+        subtitle: choices.first.subtitle,
+        minutes: choices.first.minutes,
+        drills: choices.first.drills,
+      ),
+    ];
+    final (_, _, selected) = await mount(tester, items: solo);
+    await open(tester);
+    final grid = find.byKey(const ValueKey('home-routine-folder-grid'));
+    final tile = find.byKey(const ValueKey('home-routine-choice-only'));
+    expect(
+      tester.getSize(tile).width,
+      closeTo(tester.getSize(grid).width - 40, .5),
+    );
+    // No scene chip: the header names the scene 首页 is already on.
+    expect(find.text('居家 · 首页文件夹'), findsOneWidget);
+    expect(tester.getRect(tile).right, lessThanOrEqualTo(394 - 20));
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+    expect(selected, ['only']);
+    expect(tester.takeException(), isNull);
+  });
 }

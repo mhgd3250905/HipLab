@@ -19,7 +19,6 @@ class TrainingProfile {
     this.directionScores = const {},
     this.recommendedRoutine,
     this.dancerUnlocked = false,
-    this.blocked = false,
   });
 
   /// 1 = 入门, 2 = 基础, 3 = 进阶. No assessment yet → 入门.
@@ -33,14 +32,10 @@ class TrainingProfile {
   final String? recommendedRoutine;
   final bool dancerUnlocked;
 
-  /// A safety card was answered "有": browse only, no generated training.
-  final bool blocked;
-
   factory TrainingProfile.from(
     AssessmentResult? r, {
     HipIdentity identity = HipIdentity.other,
     Set<HipDirection> extraLocks = const {},
-    bool blocked = false,
   }) => TrainingProfile(
     level: r?.level.level ?? 1,
     identity: identity,
@@ -49,7 +44,6 @@ class TrainingProfile {
     directionScores: r?.directionScores ?? const {},
     recommendedRoutine: r?.route?.routineId,
     dancerUnlocked: r?.dancerUnlocked ?? false,
-    blocked: blocked,
   );
 }
 
@@ -267,15 +261,11 @@ class TrainingPlanner {
     return false;
   }
 
-  /// Returns null when the user is blocked by a safety card.
   TrainingPlan? plan({
     required int minutes,
     required HipScene scene,
     required TrainingProfile profile,
-  }) {
-    if (profile.blocked) return null;
-    return planFor(pickRoutines(minutes, scene, profile), profile);
-  }
+  }) => planFor(pickRoutines(minutes, scene, profile), profile);
 
   TrainingPlan planFor(
     List<HipRoutine> routines,
@@ -336,12 +326,9 @@ class TrainingPlanner {
     );
   }
 
-  /// A routine picked in 练习 · 套路 (same rules as the home plan). Null when
-  /// blocked by a safety card.
+  /// A routine picked in 练习 · 套路 (same rules as the home plan).
   TrainingPlan? routinePlan(HipRoutine r, TrainingProfile profile) =>
-      profile.blocked
-      ? null
-      : planFor([r], profile, source: PlanSource.routine);
+      planFor([r], profile, source: PlanSource.routine);
 
   /// Relax-only this week (pain in the assessment or a 7-day lock): only
   /// relax drills of that direction may run.
@@ -350,10 +337,8 @@ class TrainingPlanner {
       p.lockedDirections.contains(d.directions.first) &&
       !d.isRelax;
 
-  /// 单练: one step at the user's dose. Null when a safety card blocks
-  /// training, the drill is a self-test demo, or its direction is relax-only
-  /// this week. Advanced / gated drills are not swapped (拍板 4: advise, still
-  /// allowed); no tight-side extra set (the user picked the dose).
+  /// 单练: one step at the user's dose. Self-test demos and non-relax drills
+  /// under a direction lock are excluded. Advanced drills keep the picked dose.
   TrainingPlan? singlePlan(
     HipDrill drill,
     LibraryDose dose,
@@ -362,7 +347,6 @@ class TrainingPlanner {
     final kit = content.kit(drill.id);
     if (kit == null ||
         assessmentOnlyDrills.contains(drill.id) ||
-        profile.blocked ||
         lockedOut(drill, profile)) {
       return null;
     }
@@ -419,9 +403,8 @@ class TrainingPlanner {
 
   /// 我的训练组: the steps as saved, minus relax-only directions. Advanced
   /// drills are not swapped (拍板 4). The tight side gets one more set, as
-  /// in the routines. Null when blocked by a safety card.
+  /// in the routines.
   TrainingPlan? customPlan(CustomRoutine r, TrainingProfile profile) {
-    if (profile.blocked) return null;
     if (r.coachPlan != null) return _sdkCustomPlan(r, profile);
     if (r.mixed(content)) {
       // M6 mixed group: relax-only directions are skipped as in local groups,

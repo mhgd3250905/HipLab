@@ -11,6 +11,7 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
+import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -338,15 +339,15 @@ void main() {
         await pumpApp(tester);
         await openSettings(tester);
         await tester.pumpAndSettle();
-        await tester.scrollUntilVisible(find.text('重新看安全提示'), 200);
+        await tester.scrollUntilVisible(find.text('隐私政策'), 200);
         await tester.drag(find.byType(ListView).first, const Offset(0, -300));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('重新看安全提示'));
+        await tester.tap(find.text('隐私政策'));
         await tester.pump();
         await tester.pump(HipMotion.page ~/ 3);
-        expect(find.byType(HipOnboarding), findsOneWidget);
+        expect(find.byType(HipPrivacyPage), findsOneWidget);
         final route =
-            ModalRoute.of(tester.element(find.byType(HipOnboarding)))!
+            ModalRoute.of(tester.element(find.byType(HipPrivacyPage)))!
                 as HipRoute;
         expect(route.transition, HipTransition.content);
         // 设置页有返回键，目标页的胶囊钉住。
@@ -369,7 +370,7 @@ void main() {
         );
         final bar = tester.getRect(
           find.descendant(
-            of: find.byType(HipOnboarding),
+            of: find.byType(HipPrivacyPage),
             matching: find.byType(HipNavBar),
           ),
         );
@@ -377,21 +378,21 @@ void main() {
         final slide = tester.widget<SlideTransition>(
           find
               .descendant(
-                of: find.byType(HipOnboarding),
+                of: find.byType(HipPrivacyPage),
                 matching: find.byType(SlideTransition),
               )
               .first,
         );
         expect(slide.position.value.dx, greaterThan(0));
         await tester.pumpAndSettle();
-        expect(find.byType(HipOnboarding), findsOneWidget);
+        expect(find.byType(HipPrivacyPage), findsOneWidget);
         // Edge swipe back.
         final gesture = await tester.startGesture(const Offset(5, 400));
         await gesture.moveBy(const Offset(20, 0));
         await gesture.moveBy(const Offset(280, 0));
         await gesture.up();
         await tester.pumpAndSettle();
-        expect(find.byType(HipOnboarding), findsNothing);
+        expect(find.byType(HipPrivacyPage), findsNothing);
         expect(
           find.byKey(const ValueKey('appearance-settings')),
           findsOneWidget,

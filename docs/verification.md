@@ -1,5 +1,9 @@
 # 验证台账
 
+## 2026-11-12 首页训练组文件夹合入会员分支
+
+Windows 使用 Flutter 3.44.7。`flutter pub get --enforce-lockfile` 通过，锁文件一致。`flutter analyze --no-pub --fatal-infos` 为 0 问题，`flutter test --no-pub -j 1` 全量 674 通过、69 条件跳过、0 失败。会员门禁、有效期、AI 同意与撤回、首启及首页文件夹均在本轮软件检查范围内。
+
 ## 2026-11-12 首次 AI 数据共享同意 +68 候选
 
 Windows 使用 Flutter 3.44.7，`flutter pub get --enforce-lockfile` 保持锁文件，`flutter analyze --no-pub --fatal-infos` 为 0 问题。九个相关测试文件共 58 通过、1 项可选截图导出跳过、0 失败。

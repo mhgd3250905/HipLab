@@ -31,6 +31,7 @@ class HipHomeRoutineChoice {
     required this.subtitle,
     required this.minutes,
     required this.drills,
+    this.sceneLabel = '',
   });
 
   final String id;
@@ -38,6 +39,10 @@ class HipHomeRoutineChoice {
   final String subtitle;
   final int minutes;
   final List<HipDrill> drills;
+
+  /// 办公 / 居家 chip on the cover. Empty hides it: the folder lists the
+  /// current scene's 套路 only, and the header already names that scene.
+  final String sceneLabel;
 }
 
 /// A bounded folder, not a trainer or another copy of the home video deck.
@@ -49,12 +54,17 @@ class HipHomeRoutineFolder extends StatefulWidget {
     required this.selectedId,
     required this.sceneLabel,
     required this.onSelected,
+    this.onChooseGroups,
   });
 
   final List<HipHomeRoutineChoice> choices;
   final String selectedId;
   final String sceneLabel;
   final ValueChanged<String> onSelected;
+
+  /// 「训练组选择」 tile: opens 训练组 so entries can be added to 首页.
+  /// null keeps the folder a pure selection panel (component fixtures).
+  final VoidCallback? onChooseGroups;
 
   @override
   State<HipHomeRoutineFolder> createState() => _HipHomeRoutineFolderState();
@@ -106,6 +116,9 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
       Iterable.generate(a.length).every((i) {
         final x = a[i], y = b[i];
         return x.id == y.id &&
+            x.title == y.title &&
+            x.subtitle == y.subtitle &&
+            x.sceneLabel == y.sceneLabel &&
             x.minutes == y.minutes &&
             x.drills.length == y.drills.length &&
             Iterable.generate(
@@ -114,10 +127,15 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
       });
 
   Future<void> _open() async {
-    if (_route != null || widget.choices.isEmpty) return;
+    if (_route != null ||
+        (widget.choices.isEmpty && widget.onChooseGroups == null)) {
+      return;
+    }
     final box = _face.currentContext?.findRenderObject();
     if (box is! RenderBox || !box.hasSize) return;
-    final route = _RoutineFolderRoute(
+    final navigator = Navigator.of(context);
+    late final _RoutineFolderRoute route;
+    route = _RoutineFolderRoute(
       // The tap's press scale must not move the folder's resting anchor.
       origin: Rect.fromCenter(
         center: box.localToGlobal(box.size.center(Offset.zero)),
@@ -128,6 +146,15 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
       miniatures: _miniatures,
       selectedId: widget.selectedId,
       sceneLabel: widget.sceneLabel,
+      onChooseGroups: widget.onChooseGroups == null
+          ? null
+          : () async {
+              // Close the folder first so 训练组 is pushed from 首页, and so
+              // its return does not leave a stale grid above the new page.
+              navigator.pop();
+              await route.completed;
+              if (mounted) widget.onChooseGroups!();
+            },
       reduced: MediaQuery.disableAnimationsOf(context),
       barrierText: MaterialLocalizations.of(context).modalBarrierDismissLabel,
     );
@@ -150,7 +177,11 @@ class _HipHomeRoutineFolderState extends State<HipHomeRoutineFolder> {
       canPop: _route == null,
       child: HipPressable(
         semanticLabel: LibText.of(context).isEn ? 'Choose a workout' : '选择训练组',
-        onTap: _route == null && widget.choices.isNotEmpty ? _open : null,
+        onTap:
+            _route == null &&
+                (widget.choices.isNotEmpty || widget.onChooseGroups != null)
+            ? _open
+            : null,
         scale: .95,
         child: SizedBox.square(
           dimension: 64,
@@ -207,6 +238,7 @@ class _RoutineFolderRoute extends PopupRoute<String> {
     required this.sceneLabel,
     required this.reduced,
     required this.barrierText,
+    this.onChooseGroups,
   }) : coverKeys = [for (final c in choices) GlobalKey(debugLabel: c.id)];
 
   final Rect origin;
@@ -218,6 +250,10 @@ class _RoutineFolderRoute extends PopupRoute<String> {
   final String sceneLabel;
   final bool reduced;
   final String barrierText;
+  final VoidCallback? onChooseGroups;
+
+  /// The grid holds the scene's 套路 only; 「训练组选择」 lives in the header.
+  int get itemCount => choices.length;
   List<Rect?>? closingCovers;
 
   @override
@@ -320,10 +356,13 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   420.0,
                   math.min(available.width, anchor.dx - available.left),
                 );
-                final tileWidth = (width - 40 - 14) / 2;
+                // A single 套路 still fills the two-column grid instead of
+                // leaving half a row empty.
+                final columns = itemCount <= 1 ? 1 : 2;
+                final tileWidth = (width - 40 - (columns - 1) * 14) / columns;
                 final coverHeight = tileWidth / 1.2;
                 final tileHeight = coverHeight + 59;
-                final rows = (choices.length / 2).ceil();
+                final rows = (itemCount / columns).ceil();
                 const headerHeight = 76.0;
                 final height = math.min(
                   headerHeight +
@@ -345,12 +384,11 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                   coverKeys: coverKeys,
                   viewportKey: viewportKey,
                   animation: animation,
+                  columns: columns,
                   tileHeight: tileHeight,
+                  onChooseGroups: onChooseGroups,
                   onSelect: (id) {
                     if (isCurrent) navigator?.pop(id);
-                  },
-                  onClose: () {
-                    if (isCurrent) navigator?.pop();
                   },
                 );
                 return AnimatedBuilder(
@@ -408,10 +446,11 @@ class _RoutineFolderRoute extends PopupRoute<String> {
                                         Rect.fromLTWH(
                                           target.left +
                                               20 +
-                                              (i % 2) * (tileWidth + 14),
+                                              (i % columns) * (tileWidth + 14),
                                           target.top +
                                               headerHeight +
-                                              (i ~/ 2) * (tileHeight + 14),
+                                              (i ~/ columns) *
+                                                  (tileHeight + 14),
                                           tileWidth,
                                           coverHeight,
                                         ),
@@ -519,9 +558,10 @@ class _FolderPanel extends StatelessWidget {
     required this.coverKeys,
     required this.viewportKey,
     required this.animation,
+    required this.columns,
     required this.tileHeight,
     required this.onSelect,
-    required this.onClose,
+    this.onChooseGroups,
   });
   final List<HipHomeRoutineChoice> choices;
   final String selectedId;
@@ -529,177 +569,222 @@ class _FolderPanel extends StatelessWidget {
   final List<GlobalKey> coverKeys;
   final GlobalKey viewportKey;
   final Animation<double> animation;
+  final int columns;
   final double tileHeight;
   final ValueChanged<String> onSelect;
-  final VoidCallback onClose;
+  final VoidCallback? onChooseGroups;
 
   @override
-  Widget build(BuildContext context) => Column(
-    key: const ValueKey('home-routine-folder-panel'),
-    children: [
-      SizedBox(
-        height: 76,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 14, 12, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      LibText.of(context).isEn
-                          ? '$sceneLabel workouts'
-                          : '$sceneLabel训练',
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 21,
-                        height: 1.3,
-                        fontWeight: FontWeight.w700,
-                        color: HipColors.text,
+  Widget build(BuildContext context) {
+    final t = LibText.of(context);
+    final subtitle = t.isEn
+        ? '$sceneLabel · ${t.homeFolderScene}'
+        : '$sceneLabel · ${t.homeFolderScene}';
+    return Column(
+      key: const ValueKey('home-routine-folder-panel'),
+      children: [
+        SizedBox(
+          height: 76,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 14, 12, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        t.isEn ? 'Home workouts' : '首页训练组',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 21,
+                          height: 1.3,
+                          fontWeight: FontWeight.w700,
+                          color: HipColors.text,
+                        ),
                       ),
-                    ),
-                    Text(
-                      LibText.of(context).isEn
-                          ? 'RECOMMENDED WORKOUTS'
-                          : '推荐训练组',
-                      style: TextStyle(
-                        fontSize: 11,
-                        height: 1.5,
-                        letterSpacing: 1,
-                        color: HipColors.muted,
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 1.5,
+                          letterSpacing: 1,
+                          color: HipColors.muted,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              HipGlassRoundButton(
-                key: const ValueKey('home-routine-folder-close'),
-                semanticLabel: LibText.of(context).isEn
-                    ? 'Close workouts'
-                    : '关闭训练组',
-                size: 32,
-                onTap: onClose,
-                child: HipIcon(HipGlyph.close, size: 17, color: HipColors.text),
-              ),
-            ],
+                if (onChooseGroups != null)
+                  // The folder closes on a barrier tap or Back, so the corner
+                  // button is the 训练组 entry rather than a close button.
+                  HipGlassRoundButton(
+                    key: const ValueKey('home-routine-choose-groups'),
+                    semanticLabel: t.homeFolderEntry,
+                    size: 32,
+                    onTap: onChooseGroups!,
+                    child: HipIcon(
+                      HipGlyph.plus,
+                      size: 17,
+                      color: HipColors.jade,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-      Expanded(
-        child: SizedBox(
-          key: viewportKey,
-          child: GridView.builder(
-            key: const ValueKey('home-routine-folder-grid'),
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 14,
-              mainAxisExtent: tileHeight,
-            ),
-            itemCount: choices.length,
-            itemBuilder: (context, i) {
-              final choice = choices[i];
-              final selected = choice.id == selectedId;
-              return HipPressable(
-                key: ValueKey('home-routine-choice-${choice.id}'),
-                semanticLabel: LibText.of(context).isEn
-                    ? '${choice.title}, ${LibText.of(context).minutes(choice.minutes)}, ${LibText.of(context).movesCount(choice.drills.length)}'
-                    : '${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
-                selected: selected,
-                inMutuallyExclusiveGroup: true,
-                onTap: () => onSelect(choice.id),
-                scale: .97,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, _) => Opacity(
-                          opacity: i < 4
-                              ? const Interval(.65, .94).transform(
-                                  Curves.easeInOutCubic.transform(
-                                    animation.value,
-                                  ),
-                                )
-                              : 1,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              SizedBox(
-                                key: coverKeys[i],
-                                child: _FolderArtwork(
-                                  drill: choice.drills.firstOrNull,
-                                  radius: 18,
-                                ),
-                              ),
-                              if (selected) ...[
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(18),
-                                    border: Border.all(
-                                      color: HipColors.jade,
-                                      width: 1.5,
+        Expanded(
+          child: SizedBox(
+            key: viewportKey,
+            child: GridView.builder(
+              key: const ValueKey('home-routine-folder-grid'),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                mainAxisExtent: tileHeight,
+              ),
+              itemCount: choices.length,
+              itemBuilder: (context, i) {
+                final choice = choices[i];
+                final selected = choice.id == selectedId;
+                final scene = choice.sceneLabel;
+                return HipPressable(
+                  key: ValueKey('home-routine-choice-${choice.id}'),
+                  semanticLabel: t.isEn
+                      ? '${scene.isEmpty ? '' : '$scene, '}${choice.title}, ${t.minutes(choice.minutes)}, ${t.movesCount(choice.drills.length)}'
+                      : '${scene.isEmpty ? '' : '$scene，'}${choice.title}，${choice.minutes}分钟，${choice.drills.length}个动作',
+                  selected: selected,
+                  inMutuallyExclusiveGroup: true,
+                  onTap: () => onSelect(choice.id),
+                  scale: .97,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, _) => Opacity(
+                            opacity: i < 4
+                                ? const Interval(.65, .94).transform(
+                                    Curves.easeInOutCubic.transform(
+                                      animation.value,
                                     ),
+                                  )
+                                : 1,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                SizedBox(
+                                  key: coverKeys[i],
+                                  child: _FolderArtwork(
+                                    drill: choice.drills.firstOrNull,
+                                    radius: 18,
                                   ),
                                 ),
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    width: 22,
-                                    height: 22,
+                                if (scene.isNotEmpty)
+                                  Positioned(
+                                    top: 8,
+                                    left: 8,
+                                    child: _SceneChip(label: scene),
+                                  ),
+                                if (selected) ...[
+                                  DecoratedBox(
                                     decoration: BoxDecoration(
-                                      color: HipColors.jade,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: HipIcon(
-                                      HipGlyph.check,
-                                      size: 13,
-                                      color: HipColors.onJade,
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: HipColors.jade,
+                                        width: 1.5,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: HipColors.jade,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: HipIcon(
+                                        HipGlyph.check,
+                                        size: 13,
+                                        color: HipColors.onJade,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 9),
-                    Text(
-                      choice.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 15,
-                        height: 1.35,
-                        fontWeight: FontWeight.w600,
-                        color: HipColors.text,
+                      const SizedBox(height: 9),
+                      Text(
+                        choice.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600,
+                          color: HipColors.text,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${LibText.of(context).minutes(choice.minutes)} · ${LibText.of(context).movesCount(choice.drills.length)}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        height: 1.4,
-                        color: HipColors.muted,
+                      const SizedBox(height: 3),
+                      Text(
+                        '${LibText.of(context).minutes(choice.minutes)} · ${LibText.of(context).movesCount(choice.drills.length)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          height: 1.4,
+                          color: HipColors.muted,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              );
-            },
+                      const SizedBox(height: 12),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// 办公 / 居家 on the cover: the folder lists only the current scene's 套路,
+/// but the chip still makes the scene explicit.
+class _SceneChip extends StatelessWidget {
+  const _SceneChip({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: HipColors.background.withValues(alpha: .78),
+      borderRadius: BorderRadius.circular(7),
+      border: Border.all(color: HipColors.line.withValues(alpha: .55)),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(
+        fontSize: 10.5,
+        height: 1.2,
+        fontWeight: FontWeight.w600,
+        letterSpacing: .2,
+        color: HipColors.text,
       ),
-    ],
+    ),
   );
 }

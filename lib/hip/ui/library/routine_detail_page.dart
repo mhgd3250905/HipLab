@@ -45,7 +45,6 @@ class RoutineDetailPage extends StatelessWidget {
     final plan = store.planner.planFor([r], profile);
     final swapped = plan.steps.where((s) => s.replaced != null).length;
     final dropped = r.steps.length - plan.steps.length;
-    final blocked = profile.blocked;
     return HipNavPage(
       leadingKey: const ValueKey('routine-back'),
       title: routineShortName(r, t.lang),
@@ -85,14 +84,7 @@ class RoutineDetailPage extends StatelessWidget {
               _stat('${plan.transitionSeconds}', t.statRest),
             ],
           ),
-          if (blocked) ...[
-            const SizedBox(height: 12),
-            LibNotice(
-              text: t.noticeBlocked,
-              color: HipColors.tight,
-              icon: HipGlyph.shield,
-            ),
-          ] else if (swapped + dropped > 0) ...[
+          if (swapped + dropped > 0) ...[
             const SizedBox(height: 12),
             LibNotice(
               key: const ValueKey('routine-adapted'),
@@ -126,9 +118,9 @@ class RoutineDetailPage extends StatelessWidget {
               child: RepaintBoundary(
                 child: HipPrimaryButton(
                   key: const ValueKey('routine-start'),
-                  label: blocked ? t.askDoctorFirst : t.start,
-                  icon: blocked ? null : HipGlyph.play,
-                  onPressed: blocked || plan.steps.isEmpty
+                  label: t.start,
+                  icon: HipGlyph.play,
+                  onPressed: plan.steps.isEmpty
                       ? null
                       : () {
                           final p = store.planner.routinePlan(r, profile);

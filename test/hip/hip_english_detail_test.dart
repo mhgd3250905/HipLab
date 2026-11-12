@@ -115,11 +115,24 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text(language == HipLanguage.en ? 'Office workouts' : '办公训练'),
+        find.text(language == HipLanguage.en ? 'Home workouts' : '首页训练组'),
+        findsOneWidget,
+      );
+      // Only the current 办公 scene's 套路 is listed, plus the groups tile.
+      expect(find.byKey(const ValueKey('home-routine-choice-D')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('home-routine-choose-groups')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          language == HipLanguage.en ? 'Office · Home folder' : '办公 · 首页文件夹',
+        ),
         findsOneWidget,
       );
       await capture(tester, '${language.id}-home-folder-expanded');
-      await tester.tap(find.byKey(const ValueKey('home-routine-folder-close')));
+      // The folder no longer has an X; a barrier tap closes it.
+      await tester.tapAt(const Offset(5, 5));
       await tester.pumpAndSettle();
       await tester.tapAt(
         tester.getCenter(find.byKey(const ValueKey('home-hero'))),

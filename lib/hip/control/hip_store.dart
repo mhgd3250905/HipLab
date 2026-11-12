@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:ugk_trainer_runtime/engine.dart' show SessionResult;
 
 import '../../core/storage/local_state_storage.dart';
+import '../data/hip_routine_scope.dart';
 import '../domain/hip_assessment.dart';
 import '../domain/hip_library.dart';
 import '../domain/hip_models.dart';
@@ -45,9 +46,11 @@ class HipStore extends ChangeNotifier {
 
   DateTime now() => _clock();
 
-  /// card id → answered "有". Null until the first-launch cards are done.
+  /// Legacy field retained only so old saved state still decodes without
+  /// migration. The first-launch safety cards were removed: nothing reads or
+  /// writes this, and it never gates training again.
   Map<String, bool>? safety;
-  HipIdentity? identity;
+  HipIdentity identity = HipIdentity.other;
   final List<({DateTime at, Map<String, ItemAnswer> answers})> assessments = [];
   final Set<String> doneDays = {};
   final List<PainEvent> painEvents = [];
@@ -60,6 +63,17 @@ class HipStore extends ChangeNotifier {
   /// holds for the rest of that day; otherwise the scene follows the time
   /// of day (home redesign r1, 2026-11-02).
   DateTime? sceneChosenAt;
+
+  /// 首页 folder membership (开哥 2026-11-11): the ids of 编排套路 and
+  /// 我的训练组 added to each scene's folder, in the order they were added.
+  /// Nothing here is a whitelist — 训练组 can add any 编排套路 or custom group.
+  /// A fresh install starts with the two default 编排套路 (one per scene).
+  final Map<HipScene, List<String>> homeRoutineIds = {
+    for (final s in HipScene.values) s: [...?hiplabDefaultHomeRoutineIds[s]],
+  };
+
+  /// The selected 套路 in each scene's folder, kept across launches.
+  final Map<HipScene, String> sceneRoutinePicks = {};
 
   /// 外观: 跟随系统 / 浅色 / 深色 (#14).
   HipThemeChoice theme = HipThemeChoice.system;
@@ -84,12 +98,15 @@ class HipStore extends ChangeNotifier {
   /// Practice history, newest last, at most [SessionRecord.keep].
   final List<SessionRecord> sessions = [];
 
-  bool get onboarded => safety != null && identity != null;
-  bool get blocked => safety?.values.any((v) => v) ?? false;
+  /// No first-launch gate any more: every launch lands on the home page.
+  bool get onboarded => true;
+
+  /// The old safety-card veto is gone; training is never blocked by it.
+  bool get blocked => false;
 
   AssessmentResult? get latestResult => assessments.isEmpty
       ? null
-      : scorer.score(assessments.last.answers, identity ?? HipIdentity.other);
+      : scorer.score(assessments.last.answers, identity);
 
   Map<HipDirection, DateTime> get lockedDirections =>
       PainHistory(painEvents).lockedUntil(now());
@@ -103,9 +120,8 @@ class HipStore extends ChangeNotifier {
 
   TrainingProfile get profile => TrainingProfile.from(
     latestResult,
-    identity: identity ?? HipIdentity.other,
+    identity: identity,
     extraLocks: lockedDirections.keys.toSet(),
-    blocked: blocked,
   );
 
   TrainingPlan? get todayPlan =>
@@ -133,38 +149,86 @@ class HipStore extends ChangeNotifier {
     return _save();
   }
 
-  /// The routines 首页 recommends for [s], best first: the check-up's
-  /// recommendation, then the closest to [minutes]. 办公 also offers the
-  /// 2-minute chair routine so 「换一套」 has somewhere to go.
-  List<HipRoutine> sceneRoutines(HipScene s) {
-    final p = profile;
-    final pool =
-        content.routines
-            .where((r) => !r.micro && r.scene == s)
-            .where(
-              (r) =>
-                  r.id != 'F' ||
-                  p.identity == HipIdentity.dancer ||
-                  p.recommendedRoutine == 'F',
-            )
-            .toList()
-          ..sort((a, b) {
-            if (a.id == p.recommendedRoutine) return -1;
-            if (b.id == p.recommendedRoutine) return 1;
-            final c = (a.minutes - minutes).abs().compareTo(
-              (b.minutes - minutes).abs(),
-            );
-            return c != 0 ? c : a.minutes.compareTo(b.minutes);
-          });
-    return [...pool, ...content.routines.where((r) => r.micro && r.scene == s)];
+  /// Every 编排套路 in the content pack, including the 久坐提醒 micro set.
+  /// 训练组 offers all of these (plus 我的训练组) for adding to 首页.
+  List<HipRoutine> get libraryRoutines => [for (final r in content.routines) r];
+
+  /// An entry that can live in a 首页 folder: an authored 套路 or a 我的训练组.
+  /// Both resolve to the same playable [TrainingPlan], so 首页 needs no new
+  /// trainer path to host custom groups.
+  bool homeRoutineExists(String id) =>
+      content.routines.any((r) => r.id == id) ||
+      customRoutines.any((r) => r.id == id);
+
+  /// The playable plan for any folder entry id, or null when the id is gone
+  /// or the profile leaves it with no steps (a relax-only lock, for example).
+  TrainingPlan? planForHomeRoutine(String id) {
+    final routine = content.routines.where((r) => r.id == id).firstOrNull;
+    if (routine != null) return planForRoutine(routine);
+    final group = customRoutine(id);
+    if (group == null) return null;
+    return planner.customPlan(group, profile);
   }
 
-  /// One routine as a session, or null when a safety card blocks training.
-  TrainingPlan? planForRoutine(HipRoutine r) =>
-      blocked ? null : planner.planFor([r], profile);
+  /// The ids actually available in [s]'s folder: stale ids (a deleted group
+  /// or a 套路 no longer in the pack) and profiles that empty a plan are
+  /// filtered out at read time, never written back into the saved membership.
+  List<String> homeRoutines(HipScene s) => [
+    for (final id in homeRoutineIds[s] ?? const <String>[])
+      if (homeRoutineExists(id))
+        if (planForHomeRoutine(id) case final plan? when plan.steps.isNotEmpty)
+          id,
+  ];
+
+  /// The 套路 首页 resolves for [s]: the selected folder entry, else the first
+  /// available one. A stale selected id falls back instead of crashing.
+  String? homeRoutineId(HipScene s) {
+    final list = homeRoutines(s);
+    if (list.isEmpty) return null;
+    final picked = sceneRoutinePicks[s];
+    return picked != null && list.contains(picked) ? picked : list.first;
+  }
+
+  /// Legacy/home helper kept for callers that only need the resolved plan.
+  TrainingPlan? sceneRoutinePlan(HipScene s) {
+    final id = homeRoutineId(s);
+    return id == null ? null : planForHomeRoutine(id);
+  }
+
+  /// Add/remove a 编排套路 or 我的训练组 from [s]'s 首页 folder. Adding selects
+  /// it; removing selects the next remaining entry. Unknown ids are ignored.
+  Future<void> setHomeRoutine(HipScene s, String id, {required bool added}) {
+    if (!homeRoutineExists(id)) return Future<void>.value();
+    final list = homeRoutineIds[s]!;
+    if (added) {
+      if (!list.contains(id)) list.add(id);
+      sceneRoutinePicks[s] = id;
+    } else {
+      list.remove(id);
+      if (sceneRoutinePicks[s] == id) {
+        final remaining = homeRoutines(s);
+        if (remaining.isEmpty) {
+          sceneRoutinePicks.remove(s);
+        } else {
+          sceneRoutinePicks[s] = remaining.first;
+        }
+      }
+    }
+    return _save();
+  }
+
+  /// 首页 folder tap: remember the selected entry without switching scenes —
+  /// the folder only ever lists the current scene's entries.
+  Future<void> pickSceneRoutine(HipScene s, String id) {
+    if (!homeRoutines(s).contains(id)) return Future<void>.value();
+    sceneRoutinePicks[s] = id;
+    return _save();
+  }
+
+  /// One routine as a session.
+  TrainingPlan? planForRoutine(HipRoutine r) => planner.planFor([r], profile);
 
   TrainingPlan? get microPlan {
-    if (blocked) return null;
     final m = content.routines.where((r) => r.micro).firstOrNull;
     return m == null ? null : planner.planFor([m], profile);
   }
@@ -184,8 +248,10 @@ class HipStore extends ChangeNotifier {
   void _apply(Map<String, dynamic> j) {
     final s = j['safety'];
     safety = s == null ? null : Map<String, bool>.from(s as Map);
+    // The identity picker was removed with the first-launch flow. Old saved
+    // values are tolerated but no new state is written from a picker.
     identity = j['identity'] == null
-        ? null
+        ? HipIdentity.other
         : HipIdentity.byId(j['identity'] as String);
     assessments
       ..clear()
@@ -225,6 +291,53 @@ class HipStore extends ChangeNotifier {
         : 10;
     scene = j['scene'] == 'chair' ? HipScene.chair : HipScene.home;
     sceneChosenAt = DateTime.tryParse(j['sceneChosenAt'] as String? ?? '');
+    homeRoutineIds
+      ..clear()
+      ..addEntries([for (final s in HipScene.values) MapEntry(s, <String>[])]);
+    if (j['homeRoutineIds'] is Map) {
+      for (final e in (j['homeRoutineIds'] as Map).entries) {
+        final s = HipScene.values
+            .where((value) => value.id == e.key)
+            .firstOrNull;
+        if (s == null || e.value is! List) continue;
+        homeRoutineIds[s] = [
+          for (final id in e.value as List)
+            if (id is String) id,
+        ];
+      }
+    } else {
+      // Pre-folder state (or the one-id-per-scene draft): start from the
+      // shipped defaults plus any earlier explicit scene choices.
+      for (final s in HipScene.values) {
+        homeRoutineIds[s] = [
+          for (final r in hiplabDefaultHomeRoutines(content, s)) r.id,
+        ];
+      }
+      if (j['sceneRoutinePicks'] is Map) {
+        for (final e in (j['sceneRoutinePicks'] as Map).entries) {
+          final s = HipScene.values
+              .where((value) => value.id == e.key)
+              .firstOrNull;
+          final id = e.value;
+          if (s == null ||
+              id is! String ||
+              libraryRoutines.every((r) => r.id != id)) {
+            continue;
+          }
+          if (!homeRoutineIds[s]!.contains(id)) homeRoutineIds[s]!.add(id);
+        }
+      }
+    }
+    sceneRoutinePicks.clear();
+    if (j['sceneRoutinePicks'] is Map) {
+      for (final e in (j['sceneRoutinePicks'] as Map).entries) {
+        // An unknown scene key or a non-string id is dropped, not fatal.
+        final s = HipScene.values
+            .where((value) => value.id == e.key)
+            .firstOrNull;
+        if (s != null && e.value is String) sceneRoutinePicks[s] = e.value;
+      }
+    }
     theme = HipThemeChoice.byId(j['theme'] as String?);
     language = HipLanguage.byId(j['language'] as String?);
     if (j['voice'] is Map) {
@@ -247,7 +360,7 @@ class HipStore extends ChangeNotifier {
   Map<String, Object?> toJson() => {
     'v': 1,
     'safety': safety,
-    'identity': identity?.id,
+    'identity': identity.id,
     'assessments': [
       for (final a in assessments)
         {
@@ -264,6 +377,12 @@ class HipStore extends ChangeNotifier {
     'minutes': minutes,
     'scene': scene.id,
     'sceneChosenAt': sceneChosenAt?.toIso8601String(),
+    'homeRoutineIds': {
+      for (final e in homeRoutineIds.entries) e.key.id: e.value,
+    },
+    'sceneRoutinePicks': {
+      for (final e in sceneRoutinePicks.entries) e.key.id: e.value,
+    },
     'theme': theme.id,
     'language': language.id,
     'voice': voice.toJson(),
@@ -287,10 +406,8 @@ class HipStore extends ChangeNotifier {
     );
   }
 
-  Future<void> setSafety(Map<String, bool> answers) {
-    safety = Map.unmodifiable(answers);
-    return _save();
-  }
+  /// Kept as a no-op so legacy callers cannot re-enable the removed gate.
+  Future<void> setSafety(Map<String, bool> answers) => Future<void>.value();
 
   Future<void> setIdentity(HipIdentity value) {
     identity = value;

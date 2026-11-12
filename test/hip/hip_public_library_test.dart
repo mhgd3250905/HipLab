@@ -63,7 +63,7 @@ void main() {
   });
 
   test(
-    'public single practice preserves all 248 SDK doses and safety gate',
+    'public single practice preserves all 248 SDK doses without the legacy safety gate',
     () async {
       final content = await loadHipContent(FileAssetBundle());
       final store = HipStore(content: content, storage: MemoryStorage());
@@ -102,8 +102,9 @@ void main() {
       for (final id in assessmentOnlyDrills) {
         expect(HipSharedLibrary.planFor(actions, id), isNull, reason: id);
       }
+      // Legacy safety answers no longer veto public single practice.
       store.safety = {'pregnancy': true};
-      expect(HipSharedLibrary.canStart(actions, 'chest-A'), isFalse);
+      expect(HipSharedLibrary.canStart(actions, 'chest-A'), isTrue);
     },
   );
 

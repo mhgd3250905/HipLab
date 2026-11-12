@@ -284,8 +284,8 @@ class HiplabCoachChatHistoryStore extends CoachChatHistoryStore {
   }) => _storage.write(lastPlanKey, jsonEncode(plan.toJson()));
 }
 
-/// SDK safety acceptance is separate from HipLab's existing onboarding facts;
-/// the App's blocked state always continues to veto training.
+/// SDK safety acceptance is the only safety gate; HipLab's old onboarding
+/// veto was removed with the first-launch flow.
 class HiplabCoachChatPreferenceStore extends CoachChatPreferenceStore {
   HiplabCoachChatPreferenceStore(this.store, {LocalStateStorage? storage})
     : _storage = storage ?? SharedPreferencesLocalStateStorage();
@@ -314,7 +314,7 @@ class HiplabCoachChatPreferenceStore extends CoachChatPreferenceStore {
 
   CoachChatPreferences get _value => CoachChatPreferences(
     safetyAccepted: _accepted,
-    safetyBlocked: _blocked || store.blocked,
+    safetyBlocked: _blocked,
     safetyChecking: _checking,
     appearance: store.theme.id,
     voice: store.voice.voice,

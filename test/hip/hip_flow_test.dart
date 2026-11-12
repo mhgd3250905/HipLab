@@ -69,48 +69,30 @@ void main() {
     expect(find.text('AI 定制用量'), findsNothing);
   });
 
-  testWidgets(
-    'first launch: 3 safety cards, identity, then home with one start button',
-    (tester) async {
-      final store = await pumpApp(tester);
-      for (var i = 0; i < 3; i++) {
-        expect(find.text('你现在有这种情况吗？'), findsOneWidget);
-        expect(find.text('这是运动练习，不能替代医生的建议。'), findsOneWidget);
-        await tester.tap(find.byKey(const ValueKey('safety-no')));
-        await tester.pumpAndSettle();
-      }
-      await tester.tap(find.byKey(const ValueKey('identity-office')));
-      await tester.pumpAndSettle();
-      expect(store.onboarded, isTrue);
-      // Home r1: no tab bar, one start button, ⋯ for everything else.
-      expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
-      expect(find.byKey(const ValueKey('tab-0')), findsNothing);
-      expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('scene-HipScene.chair')));
-      await tester.pumpAndSettle();
-      expect(store.scene, HipScene.chair);
-      expect(store.sceneChosenToday, isTrue);
-      expect(store.sceneRoutines(HipScene.chair).first.id, 'A');
-      expect(find.text('工位放松'), findsOneWidget);
-    },
-  );
-
-  testWidgets('a "有" safety answer blocks training but keeps browsing', (
-    tester,
-  ) async {
+  testWidgets('first launch goes straight to the home page', (tester) async {
     final store = await pumpApp(tester);
-    await tester.tap(find.byKey(const ValueKey('safety-yes')));
+    expect(store.onboarded, isTrue);
+    // No safety cards or identity picker before 首页.
+    expect(find.byKey(const ValueKey('safety-no')), findsNothing);
+    expect(find.byKey(const ValueKey('identity-office')), findsNothing);
+    expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
+    expect(find.byKey(const ValueKey('tab-0')), findsNothing);
+    expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('scene-HipScene.chair')));
     await tester.pumpAndSettle();
-    for (var i = 0; i < 2; i++) {
-      await tester.tap(find.byKey(const ValueKey('safety-no')));
-      await tester.pumpAndSettle();
-    }
-    expect(find.textContaining('先问问医生或专业人士'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('identity-other')));
+    expect(store.scene, HipScene.chair);
+    expect(store.sceneChosenToday, isTrue);
+    expect(store.homeRoutines(HipScene.chair), ['A']);
+    expect(store.homeRoutineId(HipScene.chair), 'A');
+    expect(find.text('工位放松'), findsOneWidget);
+  });
+
+  testWidgets('legacy safety answers never block training', (tester) async {
+    final store = await pumpApp(tester);
+    await store.setSafety({'pregnancy': true});
     await tester.pumpAndSettle();
-    expect(store.blocked, isTrue);
-    expect(find.byKey(const ValueKey('start-today')), findsNothing);
-    expect(find.text('先问问医生或专业人士，再开始练习'), findsOneWidget);
+    expect(store.blocked, isFalse);
+    expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
   });
 
   testWidgets('assessment: 6 items, sides, follow-up, pain → radar + route', (

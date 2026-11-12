@@ -265,6 +265,54 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('推荐套路 offers all authored 套路 and home controls', (tester) async {
+    final a = await actions();
+    await openPage(
+      tester,
+      PracticePage(
+        actions: a,
+        memory: PracticeMemory()..segment = 1,
+        homeScene: HipScene.chair,
+        onStartAssessment: ({from, radius = 31, color}) {},
+      ),
+    );
+    expect(a.store.libraryRoutines.map((r) => r.id), [
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'M',
+    ]);
+    expect(find.text(LibText.zh.routinesCount(7)), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-scene-note')), findsOneWidget);
+    // A is the 办公 default; B is not yet in the folder.
+    expect(find.byKey(const ValueKey('home-added-routine-A')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-toggle-routine-A')), findsOneWidget);
+    expect(find.byKey(const ValueKey('home-added-routine-B')), findsNothing);
+    // Removing is a destructive action: red text, the add pill stays jade.
+    Color pillText(String id) => tester
+        .widget<Text>(
+          find.descendant(
+            of: find.byKey(ValueKey('home-toggle-routine-$id')),
+            matching: find.byType(Text),
+          ),
+        )
+        .style!
+        .color!;
+    expect(pillText('A'), HipColors.pain);
+    expect(pillText('B'), HipColors.jadeText);
+    final add = find.byKey(const ValueKey('home-toggle-routine-B'));
+    await tester.ensureVisible(add);
+    await tester.pumpAndSettle();
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+    expect(a.store.homeRoutines(HipScene.chair), ['A', 'B']);
+    expect(find.byKey(const ValueKey('home-added-routine-B')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'routine card and detail show the same adapted timing and count',
     (tester) async {
@@ -353,7 +401,7 @@ void main() {
     },
   );
 
-  testWidgets('assessment intro keeps its safety-blocked start disabled', (
+  testWidgets('assessment intro start stays enabled with legacy safety data', (
     tester,
   ) async {
     final a = await actions();
@@ -362,8 +410,8 @@ void main() {
     final start = tester.widget<HipPrimaryButton>(
       find.byKey(const ValueKey('assessment-start')),
     );
-    expect(start.onPressed, isNull);
-    expect(start.label, '先问问医生再来');
+    expect(start.onPressed, isNotNull);
+    expect(start.label, isNot('先问问医生再来'));
     expect(tester.takeException(), isNull);
   });
 

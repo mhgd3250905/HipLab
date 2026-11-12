@@ -175,6 +175,8 @@ class LibPill extends StatelessWidget {
     this.icon,
     this.height = 28,
     this.radius = 14,
+    this.foreground,
+    this.background,
   });
   final String label;
   final String? semanticLabel;
@@ -184,10 +186,14 @@ class LibPill extends StatelessWidget {
   /// UI r2 compact action pill: 32 high, radius 8.
   final double height;
   final double radius;
+
+  /// Optional enabled-state colours. Defaults keep the jade action tint.
+  final Color? foreground;
+  final Color? background;
   @override
   Widget build(BuildContext context) {
     final on = onTap != null;
-    final fg = on ? HipColors.jadeText : HipColors.faint;
+    final fg = on ? (foreground ?? HipColors.jadeText) : HipColors.faint;
     return HipPressable(
       semanticLabel: semanticLabel ?? label,
       onTap: onTap,
@@ -196,7 +202,9 @@ class LibPill extends StatelessWidget {
         height: height,
         padding: EdgeInsets.symmetric(horizontal: height > 28 ? 12 : 10),
         decoration: BoxDecoration(
-          color: on ? tintOf(HipColors.jade) : HipColors.surfaceHigh,
+          color: on
+              ? (background ?? tintOf(HipColors.jade))
+              : HipColors.surfaceHigh,
           borderRadius: BorderRadius.circular(radius),
         ),
         child: Row(
