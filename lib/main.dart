@@ -23,9 +23,13 @@ Future<void> main() async {
   // Generate only for an AI-enabled build, before the AI page is opened. A coach
   // request awaits this same operation; storage errors keep offline use working
   // and can be retried before any network request sends a device ID.
-  final membership = !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-      ? HipMembership(HipRevenueCatStore())
-      : null;
+  final membership = switch ((kIsWeb, defaultTargetPlatform)) {
+    (false, TargetPlatform.android) => HipMembership(HipRevenueCatStore()),
+    (false, TargetPlatform.iOS) => HipMembership(
+      HipRevenueCatStore(HipRevenueCatStore.iosPublicKey),
+    ),
+    _ => null,
+  };
   if (membership == null && CoachConfig.fromEnvironment.configured) {
     unawaited(
       CoachDeviceId.device.load().then<void>(

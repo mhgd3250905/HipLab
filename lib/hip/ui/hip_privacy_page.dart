@@ -50,7 +50,7 @@ class HipPrivacyPage extends StatelessWidget {
             title: '我们如何处理你的信息',
             body:
                 '本应用无需账号，不含广告或行为分析。'
-                '${membership ? '安卓会员订阅由 Google Play 处理。' : '此版本不含支付功能。'}'
+                '${membership ? (ios ? 'iOS 会员订阅由 App Store 处理。' : '安卓会员订阅由 Google Play 处理。') : '此版本不含支付功能。'}'
                 '日常训练和自测记录保存在本机，不会自动上传。'
                 '${configured ? '只有你主动使用 AI 定制时，才会向 AI 服务发送请求。' : '此基础版不启用在线 AI 或云端同步，不向开发者服务器发送训练记录。'}',
           ),
@@ -72,7 +72,13 @@ class HipPrivacyPage extends StatelessWidget {
                 '本应用未禁用系统备份。你可以在设备的系统备份设置中管理相关备份。'
                 '我们无法访问或代你删除设备及系统备份中的记录。',
           ),
-          if (membership)
+          if (membership && ios)
+            const _PolicySection(
+              title: 'iOS 会员订阅',
+              body:
+                  'App Store 处理购买和续订。RevenueCat 使用随机生成的匿名标识处理订阅状态及恢复购买。应用不会收到支付卡信息。',
+            )
+          else if (membership)
             const _PolicySection(
               title: '安卓会员订阅',
               body:
@@ -212,6 +218,7 @@ const _privacyTitles = <String, String>{
   '只在设备上保存的记录': 'Records stored only on your device',
   '保留、删除与系统备份': 'Retention, deletion and system backups',
   '安卓会员订阅': 'Android membership',
+  'iOS 会员订阅': 'iOS membership',
   'AI 定制与设备标识': 'AI training and installation identifier',
   '在线 AI 未启用': 'Online AI is not enabled',
   '视频、网络与权限': 'Video, network access and permissions',
@@ -232,7 +239,7 @@ String _privacyBody(BuildContext context, String section) {
   return switch (section) {
     '我们如何处理你的信息' =>
       'No account is required. This app contains no advertising or behavioral analytics. '
-          '${membership ? 'Google Play processes Android subscriptions. ' : 'This version has no payment features. '}'
+          '${membership ? (ios ? 'The App Store processes iOS subscriptions. ' : 'Google Play processes Android subscriptions. ') : 'This version has no payment features. '}'
           'Your routine training and check-up records stay on your device and are not uploaded automatically. '
           '${configured ? 'Requests are sent to the AI service only when you choose to use AI training.' : 'This basic edition does not enable online AI or cloud sync and does not send training records to a developer server.'}',
     '只在设备上保存的记录' =>
@@ -246,6 +253,9 @@ String _privacyBody(BuildContext context, String section) {
           'and restore it when you reinstall. This app has not disabled system backups. You can manage backups '
           'in your device’s system backup settings. We cannot access or delete records on your device or '
           'in system backups on your behalf.',
+    'iOS 会员订阅' =>
+      'The App Store processes purchases and renewals. RevenueCat uses a randomly generated anonymous identifier '
+          'to check subscription status and restore purchases. The app does not receive payment card details.',
     '安卓会员订阅' =>
       'Google Play processes purchases and renewals. RevenueCat uses a randomly generated anonymous identifier '
           'to check subscription status and restore purchases. The app does not receive payment card details.',

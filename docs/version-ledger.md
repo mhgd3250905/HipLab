@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-12 iOS 会员 +65
+
+- 候选为 `com.ugk.hipinterlude` `1.1.2 (65)`，构建源为 `feat/membership@44da9c22c161ae9755a61daf4b83b0e4f5b096f6`。
+- 已验证 App Store 分发签名。IPA SHA-256 为 `6ff3e9b2926bfcf591961caddcb236e92d69502a455d36df37c2d350b7474aa4`。
+- Apple 构建处理状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
+
 ## 2026-11-11 Android 会员 +65
 
 Android `1.1.2+65` 签名商店包已发布 Play 内测。构建源为 `6c739c3`，签名匹配 +62 上传证书。[构建与发布证据](android-membership-2026-11-11.md#2026-11-11-play-内测和网关部署)

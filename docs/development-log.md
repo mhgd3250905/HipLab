@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-12 iOS 会员 +65
+
+接入 iOS 内购、会员续订说明和本地 StoreKit 测试方案。RevenueCat 的两个 iOS 商品关联 Hip 项目的 `premium` 权益和 `default` 套餐。App Store Connect 的两个订阅排除中国大陆，已上传审核截图及备注。[验证台账](verification.md#2026-11-12-ios-会员-65)
+
 ## 2026-11-12 Android 会员凭据验证
 
 启用 Play 服务账号所属 Google Cloud 项目的 Cloud Pub/Sub API。HipLab 的 RevenueCat 凭据验证通过，商品目录、订阅目录和基础方案可读取。[验证回执](android-membership-2026-11-11.md)
