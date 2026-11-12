@@ -1,5 +1,11 @@
 # 验证台账
 
+## 2026-11-12 Hip 界面 v2 候选
+
+Windows 使用 Flutter 3.44.7。严格锁文件 `pub get` 和 `flutter analyze --no-pub --fatal-infos` 通过，全量测试 675 通过、69 条件跳过、0 失败。
+
+Xiaomi 13 Ultra 同签覆盖安装 `1.1.2+68` 调试包并启动。首页、训练记录和动作库截图来自正常调试入口。会员两态使用同一页面的本地示例方案和权益数据，截图后恢复正常调试包。五张 1440×3200 原始 PNG 位于截图分支的 `v2/`，提交 `ee1af1349236175bb8cab6445c6114e2f1814c84`。
+
 ## 2026-11-12 首页训练组文件夹合入会员分支
 
 Windows 使用 Flutter 3.44.7。`flutter pub get --enforce-lockfile` 通过，锁文件一致。`flutter analyze --no-pub --fatal-infos` 为 0 问题，`flutter test --no-pub -j 1` 全量 674 通过、69 条件跳过、0 失败。会员门禁、有效期、AI 同意与撤回、首启及首页文件夹均在本轮软件检查范围内。
