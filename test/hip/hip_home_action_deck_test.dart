@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -157,9 +158,9 @@ void main() {
     ),
   );
 
-  Finder artFor(HipDrill drill) => find.byWidgetPredicate(
-    (widget) => widget is HipDrillArt && widget.drill.id == drill.id,
-  );
+  Finder paperFor(int index) => find.byKey(ValueKey('home-deck-paper-$index'));
+
+  Finder stackShadow() => find.byKey(const ValueKey('home-deck-stack-shadow'));
 
   Finder sourceCards() => find.byWidgetPredicate(
     (widget) =>
@@ -387,7 +388,8 @@ void main() {
     await showDeck(tester);
     await tester.pumpAndSettle();
     for (var i = 0; i < drills.length; i++) {
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsOneWidget);
       expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
       expect(frontId(tester), drills[i].id);
       expect(position(tester), '0${i + 1}');
@@ -473,15 +475,17 @@ void main() {
   );
 
   testWidgets(
-    'new bottom card emerges behind the moving stack before the turn commits',
+    'new bottom paper fades in without contents or another stack shadow',
     (tester) async {
       phone(tester);
       await showDeck(tester);
       await tester.pumpAndSettle();
       final replenishing = find.byKey(const ValueKey('home-deck-opacity-3'));
+      final incoming = paperFor(3);
       expect(replenishing, findsNothing);
-      expect(artFor(drills[3]), findsNothing);
-      final previousBottom = tester.getRect(artFor(drills[2]));
+      expect(incoming, findsNothing);
+      expect(stackShadow(), findsOneWidget);
+      final previousBottom = tester.getRect(paperFor(2));
       final width = tester
           .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
           .width!;
@@ -492,27 +496,29 @@ void main() {
       expect(frontId(tester), drills.first.id);
       expect(sourceCards(), findsNWidgets(4));
       expect(replenishing, findsOneWidget);
+      expect(stackShadow(), findsOneWidget);
+      expect(find.byType(HipDrillArt), findsOneWidget);
       final beginningOpacity = tester.widget<Opacity>(replenishing).opacity;
       expect(beginningOpacity, greaterThan(0));
       expect(beginningOpacity, lessThan(1));
-      final incomingRect = tester.getRect(artFor(drills[3]));
+      final incomingRect = tester.getRect(incoming);
       final incomingOpacityElement = tester.element(replenishing);
-      final incomingArtElement = tester.element(artFor(drills[3]));
-      final incomingMediaElement = tester.element(
-        find.descendant(
-          of: artFor(drills[3]),
-          matching: find.byType(trainer.TrainingLibraryActionArt),
-        ),
-      );
+      final incomingPaperElement = tester.element(incoming);
 
-      moveCard(drag, -width * .97);
+      moveCard(drag, -width * .42);
+      await tester.pump();
+      final middleOpacity = tester.widget<Opacity>(replenishing).opacity;
+      expect(middleOpacity, greaterThan(beginningOpacity));
+      expect(middleOpacity, lessThan(1));
+      expect(stackShadow(), findsOneWidget);
+
+      moveCard(drag, -width * .55);
       await tester.pump();
       expect(frontId(tester), drills.first.id);
       expect(tester.widget<Opacity>(replenishing).opacity, 1);
-      expect(tester.getRect(artFor(drills[3])), incomingRect);
-      expect(tester.getRect(artFor(drills[2])), isNot(previousBottom));
-      // The incoming artwork is already in its final bottom position. Committing
-      // the turn must keep that pose rather than suddenly adding another card.
+      expect(tester.getRect(incoming), incomingRect);
+      expect(tester.getRect(paperFor(2)), isNot(previousBottom));
+      // The reserve paper is already in the final bottom pose at handoff.
       drag.onPanEnd!(
         DragEndDetails(
           velocity: const Velocity(pixelsPerSecond: Offset(-800, 0)),
@@ -521,20 +527,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(frontId(tester), drills[1].id);
-      expect(replenishing, findsOneWidget);
       expect(tester.element(replenishing), same(incomingOpacityElement));
-      expect(tester.element(artFor(drills[3])), same(incomingArtElement));
-      expect(
-        tester.element(
-          find.descendant(
-            of: artFor(drills[3]),
-            matching: find.byType(trainer.TrainingLibraryActionArt),
-          ),
-        ),
-        same(incomingMediaElement),
-      );
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
-      final settledRect = tester.getRect(artFor(drills[3]));
+      expect(tester.element(incoming), same(incomingPaperElement));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsOneWidget);
+      expect(stackShadow(), findsOneWidget);
+      final settledRect = tester.getRect(incoming);
       expect(settledRect.left, closeTo(incomingRect.left, .01));
       expect(settledRect.top, closeTo(incomingRect.top, .01));
       expect(settledRect.right, closeTo(incomingRect.right, .01));
@@ -544,76 +542,62 @@ void main() {
     },
   );
 
-  testWidgets(
-    'an arriving card keeps its media and title proportions when it becomes the front',
-    (tester) async {
-      phone(tester);
-      await showDeck(
-        tester,
-        doses: List.filled(drills.length, '每侧 40 秒'),
-        cues: List.filled(drills.length, '轻松呼吸，保持骨盆稳定'),
-      );
-      await tester.pumpAndSettle();
-      final incoming = find.byKey(const ValueKey('home-deck-card-1'));
-      final backArt = find.byKey(const ValueKey('back-art-2'));
-      final backTitle = find.byKey(const ValueKey('back-caption-2'));
-      Rect proportions(Finder card, Finder content) {
-        final boundary = find
-            .descendant(of: card, matching: find.byType(RepaintBoundary))
-            .first;
-        final face = tester.renderObject<RenderBox>(boundary);
-        final item = tester.renderObject<RenderBox>(content);
-        final localRect = MatrixUtils.transformRect(
-          item.getTransformTo(face),
-          Offset.zero & item.size,
-        );
-        final topLeft = localRect.topLeft;
-        final bottomRight = localRect.bottomRight;
-        return Rect.fromLTRB(
-          topLeft.dx / face.size.width,
-          topLeft.dy / face.size.height,
-          bottomRight.dx / face.size.width,
-          bottomRight.dy / face.size.height,
-        );
-      }
+  testWidgets('resting rear cards paint only opaque, thin-bordered paper', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester, palette: HipPalette.light);
+    await tester.pumpAndSettle();
 
-      void sameProportions(Rect actual, Rect expected) {
-        expect(actual.left, closeTo(expected.left, .002));
-        expect(actual.top, closeTo(expected.top, .002));
-        expect(actual.width, closeTo(expected.width, .002));
-        expect(actual.height, closeTo(expected.height, .002));
-      }
+    expect(sourceCards(), findsNWidgets(3));
+    expect(stackShadow(), findsOneWidget);
+    for (final (index, color, angle) in [
+      (1, const Color(0xfffbfcfb), -3.5),
+      (2, const Color(0xfff6f7f6), -7.0),
+    ]) {
+      final card = find.byKey(ValueKey('home-deck-card-$index'));
+      final rotation = tester.widget<Transform>(
+        find.descendant(of: card, matching: find.byType(Transform)),
+      );
+      final matrix = rotation.transform;
+      expect(
+        math.atan2(matrix.entry(1, 0), matrix.entry(0, 0)),
+        closeTo(angle * math.pi / 180, 1e-8),
+      );
+      expect(keyedOpacity(tester, 'home-deck-opacity-$index'), 1);
+      final decoration =
+          tester.widget<DecoratedBox>(paperFor(index)).decoration
+              as BoxDecoration;
+      expect(decoration.color, color);
+      expect(decoration.gradient, isNull);
+      final border = (decoration.border! as Border).top;
+      expect(border.width, .5);
+      expect(border.color.withValues(alpha: 1), Colors.black);
+      expect(border.color.a, closeTo(.06, .003));
 
-      final mediaBefore = proportions(incoming, backArt);
-      final titleBefore = proportions(incoming, backTitle);
-      final width = tester.widget<Positioned>(incoming).width!;
-      final drag = deckDrag(tester);
-      drag.onPanStart!(DragStartDetails());
-      moveCard(drag, -width * 1.05);
-      await tester.pump();
-      // Compare in the paper's local coordinates, so fanning and perspective do
-      // not confuse a layout change with an axis-aligned bounding-box change.
-      final mediaAtTop = proportions(incoming, backArt);
-      final titleAtTop = proportions(incoming, backTitle);
-      sameProportions(mediaAtTop, mediaBefore);
-      sameProportions(titleAtTop, titleBefore);
-      expect(frontId(tester), drills.first.id);
-      drag.onPanEnd!(DragEndDetails());
-      await tester.pumpAndSettle();
-      expect(frontId(tester), drills[1].id);
-      final front = find.byKey(const ValueKey('home-deck-card-1'));
-      sameProportions(
-        proportions(front, find.byKey(const ValueKey('home-hero'))),
-        mediaAtTop,
+      final shadows = decoration.boxShadow ?? const [];
+      if (index == 1) {
+        final contact = shadows.single;
+        expect(contact.offset, const Offset(0, 1));
+        expect(contact.blurRadius, 3);
+        expect(contact.spreadRadius, 0);
+        expect(contact.color.a, closeTo(.05, .003));
+      } else {
+        expect(shadows, isEmpty);
+      }
+      expect(
+        find.descendant(of: card, matching: find.byType(HipDrillArt)),
+        findsNothing,
       );
-      sameProportions(
-        proportions(front, find.byKey(const ValueKey('home-deck-caption'))),
-        titleAtTop,
+      expect(
+        find.descendant(of: card, matching: find.byType(Text)),
+        findsNothing,
       );
-      expect(fixture.requested, isEmpty);
-      expect(tester.takeException(), isNull);
-    },
-  );
+    }
+    expect(paperFor(3), findsNothing);
+    expect(fixture.requested, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('cancelled drags withdraw the new bottom card in both directions', (
     tester,
@@ -625,7 +609,7 @@ void main() {
     final width = tester
         .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
         .width!;
-    final rest = tester.getRect(artFor(drills[2]));
+    final rest = tester.getRect(paperFor(2));
     for (final direction in [-1, 1]) {
       final drag = deckDrag(tester);
       drag.onPanStart!(DragStartDetails());
@@ -638,11 +622,12 @@ void main() {
       expect(position(tester), '01');
       expect(frontId(tester), drills.first.id);
       expect(replenishing, findsNothing);
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsOneWidget);
       // The rightward preview uses the reverse ordered stack. It may remain
       // ordered that way after cancellation, but the next left drag must restore
       // the same card geometry and never leave an extra card mounted.
-      if (direction == -1) expect(tester.getRect(artFor(drills[2])), rest);
+      if (direction == -1) expect(tester.getRect(paperFor(2)), rest);
       expect(tester.takeException(), isNull);
     }
     expect(fixture.requested, isEmpty);
@@ -685,7 +670,8 @@ void main() {
           expectedIndex = (expectedIndex + direction) % count;
           expect(frontId(tester), items[expectedIndex].id);
           expect(position(tester), '0${expectedIndex + 1}');
-          expect(find.byType(HipDrillArt), findsNWidgets(count));
+          expect(sourceCards(), findsNWidgets(count));
+          expect(find.byType(HipDrillArt), findsOneWidget);
           expect(reserve, findsNothing);
           expect(tester.takeException(), isNull);
         }
@@ -1443,7 +1429,9 @@ void main() {
         tester,
         neighborsReady: false,
       );
-      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingMedia = mediaOn(
+        find.byKey(const ValueKey('home-deck-warm-1')),
+      );
       final incomingState = tester.state(incomingMedia);
       final incomingSurface = find.descendant(
         of: incomingMedia,
@@ -1502,7 +1490,9 @@ void main() {
       final platform = await readyCompactPlaybackCard(tester);
       final originalState = tester.state(frontMedia());
       final originalSurface = tester.element(frontSurface());
-      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingMedia = mediaOn(
+        find.byKey(const ValueKey('home-deck-warm-1')),
+      );
       final incomingState = tester.state(incomingMedia);
       final incomingSurface = tester.element(
         find.descendant(
@@ -2245,13 +2235,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(frontId(tester), drills[1].id);
       expect(position(tester), '02');
-      for (final art in tester.widgetList<trainer.TrainingLibraryActionArt>(
-        find.byType(trainer.TrainingLibraryActionArt),
-      )) {
-        expect(art.theme!.brightness, Brightness.light);
-        expect(art.theme!.mediaStage, HipPalette.light.mediaBackdrop);
-        expect(art.playing, isFalse);
-      }
+      expect(find.byType(trainer.TrainingLibraryActionArt), findsNothing);
       expect(
         tester.widget<trainer.TrainingActionMedia>(frontMedia()).stage,
         Colors.transparent,

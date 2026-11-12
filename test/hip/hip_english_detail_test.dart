@@ -143,8 +143,7 @@ void main() {
         findsOneWidget,
       );
       final front = find.byWidgetPredicate(
-        (widget) =>
-            widget is HipHomeActionFace && widget.front && widget.expanded,
+        (widget) => widget is HipHomeActionFace && widget.expanded,
       );
       expect(front, findsOneWidget);
       expect(
