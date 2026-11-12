@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-12 Hip 界面 v2 真机验收修订
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `5dd34daba150dcf0caf70aecfa37526e9d550a16`。Xiaomi 13 Ultra 已同签覆盖安装并启动。
+
+APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-review-app-arm64-debug.apk`，SHA-256 为 `1260bbd84261daa8e6ac230e0b4a5c44b1f5c0eb8999d5f797ace560c50bd2cc`。
+
 ## 2026-11-12 Hip 界面 v2 候选
 
 `1.1.2+68` arm64 调试包，版本码 `2068`，源码 `27d205625b04a8d797558b35e0f1fd912d6e1289`。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-app-arm64-debug.apk`，SHA-256 为 `b4078288f26eb4c326d342e6968d4a26cd18e625c7d37ff4dbf8451852e6d8c2`。Xiaomi 13 Ultra 已覆盖安装并打开首页。[验收记录](verification.md#2026-11-12-hip-界面-v2-候选)

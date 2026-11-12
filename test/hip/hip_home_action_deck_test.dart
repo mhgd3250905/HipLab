@@ -3449,7 +3449,7 @@ void main() {
     phone(tester);
     final bare = content.drills['n-pelvis-circle']!;
     final mat = content.drills['s-kneel-hipflex']!;
-    final chair = content.drills['o-stand-sidebend']!;
+    final chair = content.drills['o-seated-fig4']!;
     final shadow = find.byKey(const ValueKey('face-contact-shadow'));
 
     await showDeck(tester, items: [bare], palette: HipPalette.light);

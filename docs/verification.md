@@ -1,5 +1,11 @@
 # 验证台账
 
+## 2026-11-12 Hip 界面 v2 真机验收修订
+
+Windows Flutter 3.44.7 静态分析 0 问题。首页、训练组、动作库、会员页与 AI 同意回归共 93 通过、1 项可选截图导出跳过、0 失败。地影透明边界生成器检查通过。
+
+Xiaomi 13 Ultra 核对居家垫子图、办公无器械图和单套封面，复拍 `v2/01-home.png`。使用本地示例权益拍摄单行副标题 `v2/05-member-active.png`，随后恢复正常调试包。截图提交 `4e6856bb38fc8a04d0b92d5bdde9ee280159c821`。
+
 ## 2026-11-12 Hip 界面 v2 候选
 
 Windows 使用 Flutter 3.44.7。严格锁文件 `pub get` 和 `flutter analyze --no-pub --fatal-infos` 通过，全量测试 675 通过、69 条件跳过、0 失败。
