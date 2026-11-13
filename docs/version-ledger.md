@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-14 SDK 训练播放器 V1 安卓候选
+
+`1.1.2+68` arm64 调试 APK，版本码 `2068`。构建源码 `85f555ac6527a15208fdf3d3e42cf169e243d239`，SDK 锁定 `72309f207c0545b9f275a39ccbf87cd559af2fef`。Android 真机 2602BRT18C 覆盖安装后保留原安装时间和数据目录，设备 APK 哈希回读与本机一致。本机 APK `E:/AII-3D/hiplab-releases/player-ui-sdk-20261113/hiplab-1.1.2+68-player-ui-sdk-arm64-debug.apk`，SHA-256 `c7ac2bdfd37532c002a2360152603dcce372996b5ba0e6d0965ea0333768c361`。
+
 ## 2026-11-12 Hip 界面 v2 首页两处开合动效
 
 `1.1.2+68` arm64 性能分析包，版本码 `2068`。从 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动构建，运行源码差异 SHA-256 为 `384163c75cc98138b233cffe711478640e833418ed6fca7254164f20bc4da01e`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间与数据目录保留。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-home-motion-app-arm64-profile.apk` 的 SHA-256 均为 `fa4c75476d45385130a5ba8717efc2aa9403cacb965e5d428326a9d51dbebb6b`。
