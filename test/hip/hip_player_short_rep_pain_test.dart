@@ -100,13 +100,10 @@ void main() {
 
       // Halving leaves 4s/side, shorter than one 7s lift-hold-lower cycle.
       // The current action must be skipped, rather than starting a partial rep.
-      expect(find.text(next.drill.name), findsOneWidget);
+      expect(find.text('即将开始 · ${next.drill.name}'), findsOneWidget);
       expect(
-        tester
-            .widget<Semantics>(find.byKey(const ValueKey('index')))
-            .properties
-            .label,
-        '2 / ${plan.steps.length}',
+        find.text('1/${plan.steps.length}', findRichText: true),
+        findsOneWidget,
       );
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
       expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
@@ -137,11 +134,8 @@ void main() {
       expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
       expect(
-        tester
-            .widget<Semantics>(find.byKey(const ValueKey('index')))
-            .properties
-            .label,
-        '2 / ${plan.steps.length}',
+        find.text('2/${plan.steps.length}', findRichText: true),
+        findsOneWidget,
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

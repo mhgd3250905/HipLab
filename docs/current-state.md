@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-14 SDK 训练播放器 V1 安卓候选
+
+`feat/player-ui-sdk` 从 `feat/ui-v2@53a6bd6` 派生，四个 SDK 依赖与 coach override 固定 `72309f207c0545b9f275a39ccbf87cd559af2fef`。训练播放器使用 SDK V1 默认浅色主题，保留 HipLab 反馈文案。此 SDK 提交的 iOS 媒体回退为静态封面。
+
 ## 2026-11-12 Hip 界面 v2 首页两处开合动效
 
 首页动作卡开合时直接绘制移动中的卡片，避免整卡滤镜合成。训练组文件夹打开 420 ms、关闭 360 ms，双向缓起缓停。开哥已在 Xiaomi 13 Ultra 验收两处开合手感。[验证台账](verification.md#2026-11-12-hip-界面-v2-首页两处开合动效)

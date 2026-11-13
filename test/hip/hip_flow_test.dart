@@ -170,11 +170,8 @@ void main() {
     expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
     expect(find.text(plan.steps.first.drill.name), findsWidgets);
     expect(
-      tester
-          .widget<Semantics>(find.byKey(const ValueKey('index')))
-          .properties
-          .label,
-      '1 / ${plan.steps.length}',
+      find.text('1/${plan.steps.length}', findRichText: true),
+      findsOneWidget,
     );
     await tester.tap(find.byKey(const ValueKey('skip')));
     await tester.pumpAndSettle();
@@ -205,7 +202,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     }
     await tester.pumpAndSettle();
-    expect(find.text('练完了！'), findsOneWidget);
+    expect(find.text('练完了，干得漂亮'), findsOneWidget);
     expect(store.sessions.single.completed, isTrue);
     expect(store.streak, 1);
     await tester.tap(find.byKey(const ValueKey('finish')));

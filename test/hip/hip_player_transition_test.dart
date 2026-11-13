@@ -1,6 +1,5 @@
-// Trainer 0.2 stage: the App supplies media and a rest feedback pendant;
-// the SDK owns the top information card and transport. Answering the
-// feedback never skips or shortens the rest countdown.
+// The SDK owns the V1 stage and transport. HipLab provides rest feedback
+// that records an answer without skipping or shortening the countdown.
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,7 +46,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('start-today')));
+    final start = find.byKey(const ValueKey('start-today'));
+    await tester.ensureVisible(start);
+    await tester.pumpAndSettle();
+    await tester.tap(start);
     await pumpTrainerReady(tester);
     return store;
   }
@@ -158,7 +160,7 @@ void main() {
     );
   });
 
-  testWidgets('rest: App feedback pendant records without skipping', (
+  testWidgets('rest: HipLab feedback in the V1 dock records without skipping', (
     tester,
   ) async {
     final store = await start(tester);
@@ -167,39 +169,30 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
     await tester.pump(const Duration(seconds: 2));
-    expect(
-      tester
-          .widget<Semantics>(find.byKey(const ValueKey('index')))
-          .properties
-          .label,
-      '2 / ${plan.steps.length}',
+    final completedNumber = find.text(
+      '1/${plan.steps.length}',
+      findRichText: true,
     );
+    final nextMove = find.text(
+      '${trainer.TrainerStrings.zh().upcomingLabel} · ${plan.steps[1].drill.name}',
+    );
+    expect(completedNumber, findsOneWidget);
+    expect(nextMove, findsOneWidget);
     final ok = find.byKey(const ValueKey('feel-ok'));
     expect(ok, findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(trainer.TrainingActionMedia),
-        matching: ok,
-      ),
-      findsNothing,
-    );
-    // The SDK places this HUD tag on the stage edge; the App does not own
-    // whether that edge overlaps the video rectangle at a given viewport.
-    expect(find.byKey(const ValueKey('tag-next')), findsOneWidget);
+    final dock = find.byKey(const ValueKey('player-v1-dock'));
+    expect(find.descendant(of: dock, matching: ok), findsOneWidget);
+    expect(onMedia(ok), findsNothing);
+    expect(onMedia(nextMove), findsNothing);
     final before = ringSeconds(tester);
     await tester.tap(ok);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('已记录'), findsOneWidget);
     await tester.pump(const Duration(seconds: 2));
-    // still the rest before drill 2: same step, countdown kept going
+    // The V1 header stays on the completed move while the rest clock runs.
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
-    expect(
-      tester
-          .widget<Semantics>(find.byKey(const ValueKey('index')))
-          .properties
-          .label,
-      '2 / ${plan.steps.length}',
-    );
+    expect(completedNumber, findsOneWidget);
+    expect(nextMove, findsOneWidget);
     final after = ringSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));

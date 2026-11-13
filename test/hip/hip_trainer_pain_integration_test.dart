@@ -128,10 +128,11 @@ void main() {
       20,
       reason: 'first pinch halves the current authored time, not another item',
     );
-    expect(find.byKey(const ValueKey('name-glute-max-A')), findsOneWidget);
+    expect(find.text(content.drill(firstId).name), findsOneWidget);
 
     await pinch(tester);
-    expect(find.byKey(ValueKey('name-$alternative')), findsOneWidget);
+    expect(find.text(content.drill(alternative).name), findsOneWidget);
+    expect(find.byKey(ValueKey('media-$alternative')), findsOneWidget);
     final substituted = player(tester).sessionBuilder!
         .phases(player(tester).plan)
         .where((p) => p.isWork && p.itemIndex < 2);
@@ -143,11 +144,10 @@ void main() {
 
     await pinch(tester);
     expect(
-      find.byKey(const ValueKey('name-s-butterfly')),
+      find.text('即将开始 · ${content.drill(otherId).name}'),
       findsOneWidget,
       reason: 'the same-direction second item was omitted from the live tail',
     );
-    expect(find.byKey(ValueKey('name-$alternative')), findsNothing);
     await finishNaturally(tester, store);
     final record = store.sessions.single;
     final result = record.trainerResult!;
@@ -200,12 +200,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
     expect(find.byKey(const ValueKey('feel-pain')), findsOneWidget);
-    expect(find.byKey(const ValueKey('name-s-butterfly')), findsOneWidget);
+    expect(find.text('即将开始 · ${content.drill(nextId).name}'), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
     final before = int.parse(
       tester
-          .widget<trainer.TrainerRollingNumber>(
-            find.byKey(const ValueKey('counter')),
+          .widget<trainer.TrainerCountdownDigits>(
+            find.byType(trainer.TrainerCountdownDigits),
           )
           .value,
     );
@@ -214,8 +214,8 @@ void main() {
     await pinch(tester, fromFeedback: true);
     final after = int.parse(
       tester
-          .widget<trainer.TrainerRollingNumber>(
-            find.byKey(const ValueKey('counter')),
+          .widget<trainer.TrainerCountdownDigits>(
+            find.byType(trainer.TrainerCountdownDigits),
           )
           .value,
     );
@@ -225,8 +225,8 @@ void main() {
       reason:
           'the pain sheet pauses and resumes the current rest, never restarts it',
     );
-    expect(find.byKey(const ValueKey('name-s-butterfly')), findsOneWidget);
-    expect(find.byKey(const ValueKey('name-s-pigeon')), findsNothing);
+    expect(find.text('即将开始 · ${content.drill(nextId).name}'), findsOneWidget);
+    expect(find.text(content.drill(firstId).name), findsOneWidget);
     expect(find.text('已记录'), findsOneWidget);
 
     await finishNaturally(tester, store);

@@ -90,13 +90,10 @@ Future<void> _restThenNext(
   TrainingPlan plan,
   String next,
 ) async {
-  expect(find.text(next), findsOneWidget);
+  expect(find.text('即将开始 · $next'), findsOneWidget);
   expect(
-    tester
-        .widget<Semantics>(find.byKey(const ValueKey('index')))
-        .properties
-        .label,
-    '2 / ${plan.steps.length}',
+    find.text('1/${plan.steps.length}', findRichText: true),
+    findsOneWidget,
   );
   expect(find.byKey(const ValueKey('discomfort')), findsNothing);
   expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
@@ -118,11 +115,8 @@ Future<void> _restThenNext(
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
   expect(
-    tester
-        .widget<Semantics>(find.byKey(const ValueKey('index')))
-        .properties
-        .label,
-    '2 / ${plan.steps.length}',
+    find.text('2/${plan.steps.length}', findRichText: true),
+    findsOneWidget,
   );
 }
 
@@ -161,7 +155,7 @@ void main() {
         // Halved, no set fits one full squat: no 8 s countdown without cues.
         expect(find.byType(trainer.TrainerCountdownDigits), findsNothing);
         expect(find.byKey(const ValueKey('player-done-note')), findsOneWidget);
-        expect(find.text('练完了！'), findsOneWidget);
+        expect(find.text('练完了，干得漂亮'), findsOneWidget);
         expect(store.sessions.single.completed, isFalse);
         expect(store.sessions.single.trainerResult!['full'], isFalse);
         expect(find.byKey(const ValueKey('player-again')), findsOneWidget);

@@ -436,30 +436,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
   }
 
-  trainer.TrainerTheme get _theme {
-    final p = HipColors.palette;
-    return trainer.TrainerTheme(
-      brightness: p.brightness,
-      background: p.background,
-      surface: p.surface,
-      surfaceHigh: p.surfaceHigh,
-      border: p.line,
-      shadow: p.shadow,
-      track: p.track,
-      ringKnob: p.thumb,
-      accent: p.jade,
-      accentSubtle: p.jade.withValues(alpha: .12),
-      accentText: HipColors.jadeText,
-      onAccent: p.onJade,
-      text: p.text,
-      muted: p.muted,
-      faint: p.faint,
-      caution: p.tight,
-      danger: p.pain,
-      mediaStage: p.mediaBackdrop,
-      fontFamily: hipFontFamily,
-    );
-  }
+  trainer.TrainerTheme get _theme =>
+      trainer.TrainerTheme.playerV1.copyWith(fontFamily: hipFontFamily);
 
   @override
   Widget build(BuildContext context) {
