@@ -14,6 +14,7 @@
 | 卡片/文件夹、视频持帧、防闪烁与物理退场 | [04 动效与媒体](04-media-motion.md) | [共享媒体子树教学页](examples/media_handoff_example.dart) |
 | 其它 App 怎样分批接入、怎样判断做没做歪 | [05 移植与验收](05-adoption-validation.md) | [样例验证](examples/gallery_test.dart) |
 | 会员页两态、固定操作区与有效期 | [会员页 v2](../ui-design-standard.md#7-会员页-v2) | [当前页面](../../lib/hip/ui/hip_membership_page.dart)、[组件测试](../../test/hip/hip_membership_page_test.dart) |
+| 训练播放器休息反馈 | [SDK 卡片与宿主职责](../ui-design-standard.md#训练播放器休息反馈) | [接入代码](../../lib/hip/ui/hip_player_page.dart)、[播放器测试](../../test/hip/hip_player_transition_test.dart) |
 
 HipLab 的当前设计数值仍以[UI 设计规范](../ui-design-standard.md)为项目内唯一规范入口；本手册解释为什么、如何接入及如何复用。以后修改设计，应先改规范，再同步这里的样例/参数，不在两个地方分别发明数值。历史交付报告只说明当时发生了什么。
 

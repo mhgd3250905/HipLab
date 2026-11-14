@@ -106,7 +106,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-      expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+        findsOneWidget,
+      );
       expect(
         find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
         findsNothing,
@@ -122,7 +125,9 @@ void main() {
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
 
       // Optional feedback still records without skipping the next rest.
-      await tester.tap(find.byKey(const ValueKey('feel-ok')));
+      await tester.tap(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('已记录'), findsOneWidget);
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
@@ -130,7 +135,10 @@ void main() {
       await tester.pump(
         trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
-      expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+        findsNothing,
+      );
       expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
       expect(

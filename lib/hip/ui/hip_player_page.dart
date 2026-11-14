@@ -368,71 +368,50 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
 
   Widget _restFeedback(BuildContext context, trainer.TrainerRestFeedback at) {
     final index = at.completedPhase.itemIndex;
+    final text = HipText.of(context);
     return StatefulBuilder(
-      builder: (context, update) => LayoutBuilder(
-        builder: (context, box) => FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            width: box.maxWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _felt.containsKey(index)
-                      ? HipText.of(context).pick('已记录', 'Recorded')
-                      : HipText.of(
-                          context,
-                        ).pick('刚才感觉怎么样？', 'How did that feel?'),
-                  key: const ValueKey('feel-prompt'),
-                  style: const TextStyle(
-                    fontFamily: hipFontFamily,
-                    fontSize: 13,
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (final (value, label) in [
-                      ('ok', HipText.of(context).pick('舒服', 'Good')),
-                      ('tight', HipText.of(context).pick('有点紧', 'Tight')),
-                      ('pain', HipText.of(context).pick('疼', 'Pain')),
-                    ])
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: OutlinedButton(
-                          key: ValueKey('feel-$value'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(70, 36),
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            foregroundColor: _felt[index] == value
-                                ? HipColors.jade
-                                : HipColors.text,
-                            textStyle: const TextStyle(
-                              fontFamily: hipFontFamily,
-                              fontSize: 14,
-                            ),
-                          ),
-                          child: Text(
-                            label,
-                            style: const TextStyle(
-                              fontFamily: hipFontFamily,
-                              fontSize: 14,
-                            ),
-                          ),
-                          onPressed: () async {
-                            update(() => _felt[index] = value);
-                            if (value == 'pain') await at.reportDiscomfort();
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
+      builder: (context, update) {
+        Future<void> select(String value) async {
+          update(() => _felt[index] = value);
+          if (value == 'pain') await at.reportDiscomfort();
+        }
+
+        return trainer.TrainerRestFeedbackPanel(
+          theme: trainer.TrainerTheme.playerV1,
+          title: text.pick('刚才感觉怎么样？', 'How did that feel?'),
+          recordedTitle: text.pick('已记录', 'Recorded'),
+          description: text.pick(
+            '选一个，下一组帮你调整',
+            "Pick one to help us adjust the next set.",
           ),
-        ),
-      ),
+          selected: switch (_felt[index]) {
+            'ok' => trainer.TrainerRestFeedbackChoice.comfortable,
+            'tight' => trainer.TrainerRestFeedbackChoice.tight,
+            'pain' => trainer.TrainerRestFeedbackChoice.pain,
+            _ => null,
+          },
+          options: [
+            trainer.TrainerRestFeedbackOption(
+              choice: trainer.TrainerRestFeedbackChoice.comfortable,
+              label: text.pick('舒服', 'Good'),
+              tone: trainer.TrainerRestFeedbackTone.positive,
+              onPressed: () => select('ok'),
+            ),
+            trainer.TrainerRestFeedbackOption(
+              choice: trainer.TrainerRestFeedbackChoice.tight,
+              label: text.pick('有点紧', 'Tight'),
+              tone: trainer.TrainerRestFeedbackTone.neutral,
+              onPressed: () => select('tight'),
+            ),
+            trainer.TrainerRestFeedbackOption(
+              choice: trainer.TrainerRestFeedbackChoice.pain,
+              label: text.pick('疼', 'Pain'),
+              tone: trainer.TrainerRestFeedbackTone.negative,
+              onPressed: () => select('pain'),
+            ),
+          ],
+        );
+      },
     );
   }
 

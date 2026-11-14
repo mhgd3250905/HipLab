@@ -264,6 +264,10 @@ Navigator.of(context).push(HipRoute.content<void>((_) => const HipSettingsPage()
 
 ---
 
+### 训练播放器休息反馈
+
+feat/player-ui-sdk 的休息区使用 SDK V1 的 TrainerRestFeedbackPanel。舒服、有点紧、疼分别使用 SDK 默认的 positive、neutral、negative 颜色及图标，尺寸由 SDK 统一。HipLab 提供本地化文案和按动作保存的选择，选择「疼」进入原有疼痛处理。
+
 ## 8. 变更记录
 
 | 日期 | 变更 |

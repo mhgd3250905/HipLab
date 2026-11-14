@@ -96,7 +96,10 @@ Future<void> _restThenNext(
     findsOneWidget,
   );
   expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-  expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+  expect(
+    find.byKey(const ValueKey('player-v1-rest-comfortable')),
+    findsOneWidget,
+  );
   final before = _secondsLeft(tester);
   expect(
     before,
@@ -104,14 +107,17 @@ Future<void> _restThenNext(
   );
   await tester.pump(const Duration(seconds: 2));
   expect(_secondsLeft(tester), inInclusiveRange(before - 3, before - 1));
-  await tester.tap(find.byKey(const ValueKey('feel-ok')));
+  await tester.tap(find.byKey(const ValueKey('player-v1-rest-comfortable')));
   await tester.pump(const Duration(milliseconds: 300));
   expect(find.text('已记录'), findsOneWidget);
   await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
   await tester.pump(
     trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
   );
-  expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
+  expect(
+    find.byKey(const ValueKey('player-v1-rest-comfortable')),
+    findsNothing,
+  );
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
   expect(

@@ -82,7 +82,7 @@ void main() {
 
   Future<void> pinch(WidgetTester tester, {bool fromFeedback = false}) async {
     final control = find.byKey(
-      ValueKey(fromFeedback ? 'feel-pain' : 'discomfort'),
+      ValueKey(fromFeedback ? 'player-v1-rest-pain' : 'discomfort'),
     );
     await pumpTrainerControl(tester, control);
     await tester.tap(control.hitTestable());
@@ -185,7 +185,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('rest feel-pain targets the just-completed exercise, preserves '
+  testWidgets('the rest pain card targets the just-completed exercise, preserves '
       'the rest clock, and saves the final feedback', (tester) async {
     const firstId = 's-pigeon';
     const nextId = 's-butterfly';
@@ -196,12 +196,13 @@ void main() {
     final store = await openPlayer(tester, training);
     for (
       var i = 0;
-      i < 30 && find.byKey(const ValueKey('feel-pain')).evaluate().isEmpty;
+      i < 30 &&
+          find.byKey(const ValueKey('player-v1-rest-pain')).evaluate().isEmpty;
       i++
     ) {
       await tester.pump(const Duration(milliseconds: 500));
     }
-    expect(find.byKey(const ValueKey('feel-pain')), findsOneWidget);
+    expect(find.byKey(const ValueKey('player-v1-rest-pain')), findsOneWidget);
     expect(find.text('即将开始 · ${content.drill(nextId).name}'), findsOneWidget);
     await tester.pump(const Duration(seconds: 3));
     final before = int.parse(

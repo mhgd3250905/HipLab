@@ -1,12 +1,10 @@
 // The SDK owns the V1 stage and transport. HipLab provides rest feedback
 // that records an answer without skipping or shortening the countdown.
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/hip_theme.dart';
 
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
@@ -90,7 +88,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(skip); // work → rest
     // V1 expands the dock before showing and enabling the feedback choices.
-    await pumpTrainerControl(tester, find.byKey(const ValueKey('feel-ok')));
+    await pumpTrainerControl(
+      tester,
+      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+    );
   }
 
   testWidgets('prep: the top card and App demo follow the shared stage', (
@@ -122,48 +123,56 @@ void main() {
     expect(find.textContaining(first.dose), findsWidgets);
   });
 
-  testWidgets('rest: all feedback labels render in the bundled font at 14', (
+  testWidgets('rest: SDK cards render HipLab labels with semantic colors', (
     tester,
   ) async {
     await start(tester);
     await enterRest(tester);
 
-    final renderedStyles = <String, TextStyle>{};
-    final inheritedStyles = <String, TextStyle>{};
-    for (final key in ['ok', 'tight', 'pain']) {
-      final button = find.byKey(ValueKey('feel-$key'));
-      expect(button, findsOneWidget);
-      final label = find.descendant(of: button, matching: find.byType(Text));
-      expect(label, findsOneWidget);
-      final richText = find.descendant(
-        of: button,
-        matching: find.byType(RichText),
+    final panel = tester.widget<trainer.TrainerRestFeedbackPanel>(
+      find.byType(trainer.TrainerRestFeedbackPanel),
+    );
+    expect(panel.selected, isNull);
+    final theme = trainer.TrainerTheme.playerV1;
+    expect(
+      panel.options!.map(
+        (option) => (option.choice, option.label, option.tone),
+      ),
+      [
+        (
+          trainer.TrainerRestFeedbackChoice.comfortable,
+          '舒服',
+          trainer.TrainerRestFeedbackTone.positive,
+        ),
+        (
+          trainer.TrainerRestFeedbackChoice.tight,
+          '有点紧',
+          trainer.TrainerRestFeedbackTone.neutral,
+        ),
+        (
+          trainer.TrainerRestFeedbackChoice.pain,
+          '疼',
+          trainer.TrainerRestFeedbackTone.negative,
+        ),
+      ],
+    );
+    for (final (choice, label, color) in [
+      (
+        trainer.TrainerRestFeedbackChoice.comfortable,
+        '舒服',
+        theme.feedbackPositive,
+      ),
+      (trainer.TrainerRestFeedbackChoice.tight, '有点紧', theme.feedbackNeutral),
+      (trainer.TrainerRestFeedbackChoice.pain, '疼', theme.feedbackNegative),
+    ]) {
+      final card = find.byKey(ValueKey('player-v1-rest-${choice.name}'));
+      expect(
+        find.descendant(of: card, matching: find.text(label)),
+        findsOneWidget,
       );
-      expect(richText, findsOneWidget);
-      // Check the final paragraph, after Text/Button/Material inheritance,
-      // rather than the ButtonStyle that happened to produce it.
-      final paragraph = tester.renderObject<RenderParagraph>(richText);
-      renderedStyles[key] = paragraph.text.style!;
-      inheritedStyles[key] = DefaultTextStyle.of(tester.element(label)).style;
+      final icon = find.descendant(of: card, matching: find.byType(Icon));
+      expect(tester.widget<Icon>(icon).color, color);
     }
-    debugPrint(
-      'feedback rendered family/size: '
-      '${renderedStyles.map((key, style) => MapEntry(key, '${style.fontFamily}/${style.fontSize}'))}; '
-      'inherited family: '
-      '${inheritedStyles.map((key, style) => MapEntry(key, style.fontFamily))}',
-    );
-    expect(
-      renderedStyles.values.map((style) => style.fontSize),
-      everyElement(14),
-      reason: 'All three actual rest feedback labels retain their 14px size.',
-    );
-    expect(
-      renderedStyles.values.map((style) => style.fontFamily),
-      everyElement(hipFontFamily),
-      reason:
-          'The first feedback frame must use bundled NotoSansSC rather than '
-          'request a fallback font when the rest row first appears.',
-    );
   });
 
   testWidgets('rest: HipLab feedback in the V1 dock records without skipping', (
@@ -181,7 +190,7 @@ void main() {
     );
     expect(completedNumber, findsOneWidget);
     expect(nextMove, findsOneWidget);
-    final ok = find.byKey(const ValueKey('feel-ok'));
+    final ok = find.byKey(const ValueKey('player-v1-rest-comfortable'));
     expect(ok, findsOneWidget);
     final dock = find.byKey(const ValueKey('player-v1-dock'));
     expect(find.descendant(of: dock, matching: ok), findsOneWidget);
@@ -191,23 +200,40 @@ void main() {
     await tester.tap(ok);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('已记录'), findsOneWidget);
+    expect(
+      tester
+          .widget<trainer.TrainerRestFeedbackPanel>(
+            find.byType(trainer.TrainerRestFeedbackPanel),
+          )
+          .selected,
+      trainer.TrainerRestFeedbackChoice.comfortable,
+    );
     await tester.pump(const Duration(seconds: 2));
     // The V1 header stays on the completed move while the rest clock runs.
-    expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      findsOneWidget,
+    );
     expect(completedNumber, findsOneWidget);
     expect(nextMove, findsOneWidget);
     final after = countdownSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
-    await tester.tap(find.byKey(const ValueKey('feel-tight')));
+    await tester.tap(find.byKey(const ValueKey('player-v1-rest-tight')));
     await tester.pump(const Duration(seconds: 1));
-    expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      findsOneWidget,
+    );
     // the countdown ends on its own → the drill starts, the row goes away
     await tester.pump(Duration(seconds: after + 1));
     await tester.pump(
       trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
     );
-    expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      findsNothing,
+    );
     expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   });
 
@@ -217,13 +243,16 @@ void main() {
     await start(tester);
     await enterRest(tester);
     final before = countdownSeconds(tester);
-    await tester.tap(find.byKey(const ValueKey('feel-pain')));
+    await tester.tap(find.byKey(const ValueKey('player-v1-rest-pain')));
     await pumpPainSheet(tester);
     expect(find.text('哪种疼？'), findsOneWidget);
     // dismiss without choosing
     await tester.tapAt(const Offset(195, 80));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      findsOneWidget,
+    );
     expect(countdownSeconds(tester), closeTo(before, 1));
   });
 
@@ -240,14 +269,16 @@ void main() {
       expect(tester.takeException(), isNull);
       await enterRest(tester);
       expect(tester.takeException(), isNull);
-      for (final k in ['ok', 'tight', 'pain']) {
-        final control = find.byKey(ValueKey('feel-$k'));
-        expect(control.hitTestable(), findsOneWidget, reason: k);
+      for (final choice in trainer.TrainerRestFeedbackChoice.values) {
+        final control = find.byKey(ValueKey('player-v1-rest-${choice.name}'));
+        expect(control.hitTestable(), findsOneWidget, reason: choice.name);
         final r = tester.getRect(control);
-        expect(r.bottom, lessThanOrEqualTo(size.height), reason: k);
-        expect(r.right, lessThanOrEqualTo(size.width), reason: k);
+        expect(r.bottom, lessThanOrEqualTo(size.height), reason: choice.name);
+        expect(r.right, lessThanOrEqualTo(size.width), reason: choice.name);
       }
-      await tester.tap(find.byKey(const ValueKey('feel-ok')));
+      await tester.tap(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('已记录'), findsOneWidget);
       expect(tester.takeException(), isNull);
