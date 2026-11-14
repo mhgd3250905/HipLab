@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-14 SDK 训练播放器 V1 动效更新 +69
+
+`feat/player-ui-sdk` 的 Android 候选为 `1.1.2+69`，四个 SDK 依赖与 coach override 锁定 `92833cb99d8b83d2e09f68bea02882293c46d769`。真机已覆盖安装 Profile 包。[验证台账](verification.md#2026-11-14-sdk-训练播放器-v1-动效更新-69)
+
 ## 2026-11-14 SDK 训练播放器 V1 安卓候选
 
 `feat/player-ui-sdk` 从 `feat/ui-v2@53a6bd6` 派生，四个 SDK 依赖与 coach override 固定 `72309f207c0545b9f275a39ccbf87cd559af2fef`。训练播放器使用 SDK V1 默认浅色主题，保留 HipLab 反馈文案。此 SDK 提交的 iOS 媒体回退为静态封面。

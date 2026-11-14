@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-14 SDK 训练播放器 V1 动效更新 +69
+
+`1.1.2+69`，Android arm64 版本码 `2069`。Profile APK 构建提交 `40b0e5c47f316881e250f1a13320f628e8a1a23c`，覆盖安装至 2602BRT18C，原安装时间及数据目录保留。APK `E:/AII-3D/hiplab-releases/player-ui-sdk-69-20261114/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk`，本机与设备 APK SHA-256 均为 `a35029ccf97d8a6dcc8a1af00cab1aaea137c0421705a8a9990ffabcc45ea027`。
+
 ## 2026-11-14 SDK 训练播放器 V1 安卓候选
 
 `1.1.2+68` arm64 调试 APK，版本码 `2068`。构建源码 `85f555ac6527a15208fdf3d3e42cf169e243d239`，SDK 锁定 `72309f207c0545b9f275a39ccbf87cd559af2fef`。Android 真机 2602BRT18C 覆盖安装后保留原安装时间和数据目录，设备 APK 哈希回读与本机一致。本机 APK `E:/AII-3D/hiplab-releases/player-ui-sdk-20261113/hiplab-1.1.2+68-player-ui-sdk-arm64-debug.apk`，SHA-256 `c7ac2bdfd37532c002a2360152603dcce372996b5ba0e6d0965ea0333768c361`。
