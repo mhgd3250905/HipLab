@@ -3653,19 +3653,16 @@ void main() {
         final dots = tester.getRect(pagination);
         final group = tester.getRect(routine);
         final headerBottom = tester.getRect(header).bottom;
-        final availableHeight = group.top - 18 - 5 - 14 - (headerBottom + 20);
+        final availableHeight = group.top - 6 - 5 - 26 - (headerBottom + 20);
         final widthLimitedHeight = (394 - 44) / .62;
         final originalHeight = math.min(availableHeight, widthLimitedHeight);
         expect(card.height, closeTo(originalHeight * .9, .01));
         expect(card.width / card.height, closeTo(.62, .001));
         expect(card.left, greaterThanOrEqualTo(22 - .01));
         expect(card.right, lessThanOrEqualTo(394 - 22 + .01));
-        expect(dots.top - card.bottom, closeTo(14, .01));
+        expect(dots.top - card.bottom, closeTo(26, .01));
         expect(dots.height, closeTo(5, .01));
-        expect(
-          group.top - dots.bottom,
-          closeTo(18 + originalHeight * .05, .01),
-        );
+        expect(group.top - dots.bottom, closeTo(6 + originalHeight * .05, .01));
         final originalWidth = originalHeight * .62;
         final originalLeft = math.max(22, (394 - originalWidth) / 2 - 18);
         expect(card.center.dx, closeTo(originalLeft + originalWidth / 2, .01));

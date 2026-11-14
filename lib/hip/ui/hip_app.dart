@@ -577,7 +577,7 @@ class _HipHomeState extends State<HipHome> {
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: plan.steps.length > 1 ? 6 : 18),
         ] else
           const Spacer(),
         Padding(
