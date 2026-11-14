@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
+/// Advance the player's motion until the requested control can receive input.
+Future<void> pumpTrainerControl(WidgetTester tester, Finder control) async {
+  final hittable = control.hitTestable();
+  const frame = Duration(milliseconds: 16);
+  await tester.pump();
+  for (var i = 0; i < 125 && hittable.evaluate().isEmpty; i++) {
+    await tester.pump(frame);
+  }
+  expect(hittable, findsOneWidget, reason: 'Player control must be tappable.');
+}
+
 /// SDK play/pause controls deliberately breathe while the player is paused.
 /// A pain sheet pauses the player, so global pumpAndSettle cannot complete.
 /// Wait only until the real pain choice is mounted and receives pointer hits.

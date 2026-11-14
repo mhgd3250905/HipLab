@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-14 SDK 训练播放器 V1 专项回归
+
+`feat/player-ui-sdk` 当前锁定 SDK `5ce08160356340953a4f0f6fe819e33863c36545`，版本 `1.1.2+69`。播放器专项回归 38 项通过。[验证台账](verification.md#2026-11-14-sdk-训练播放器-v1-专项回归)
+
 ## 2026-11-14 SDK 训练播放器 V1 动效更新 +69
 
 `feat/player-ui-sdk` 的 Android 候选为 `1.1.2+69`，四个 SDK 依赖与 coach override 锁定 `92833cb99d8b83d2e09f68bea02882293c46d769`。真机已覆盖安装 Profile 包。[验证台账](verification.md#2026-11-14-sdk-训练播放器-v1-动效更新-69)

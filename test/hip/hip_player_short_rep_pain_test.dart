@@ -14,8 +14,8 @@ import 'public_media_fixture.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<trainer.TrainerCountdownDigits>(
-        find.byType(trainer.TrainerCountdownDigits),
+      .widget<trainer.TrainerV1PhaseCountdown>(
+        find.byType(trainer.TrainerV1PhaseCountdown),
       )
       .value,
 );
@@ -85,8 +85,8 @@ void main() {
       expect(work.fold<double>(0, (sum, p) => sum + p.seconds), target.seconds);
       expect(
         tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
+            .widget<trainer.TrainerV1PhaseCountdown>(
+              find.byType(trainer.TrainerV1PhaseCountdown),
             )
             .value,
         '1',

@@ -77,11 +77,20 @@ void main() {
     return rect.overlaps(bounds.deflate(.5));
   });
 
-  int ringSeconds(WidgetTester tester) {
-    final ring = tester.widget<trainer.TrainerCountdownDigits>(
-      find.byType(trainer.TrainerCountdownDigits),
+  int countdownSeconds(WidgetTester tester) {
+    final clock = tester.widget<trainer.TrainerV1PhaseCountdown>(
+      find.byType(trainer.TrainerV1PhaseCountdown),
     );
-    return int.parse(ring.value);
+    return int.parse(clock.value);
+  }
+
+  Future<void> enterRest(WidgetTester tester) async {
+    final skip = find.byKey(const ValueKey('skip'));
+    await tester.tap(skip); // prep → work
+    await tester.pumpAndSettle();
+    await tester.tap(skip); // work → rest
+    // V1 expands the dock before showing and enabling the feedback choices.
+    await pumpTrainerControl(tester, find.byKey(const ValueKey('feel-ok')));
   }
 
   testWidgets('prep: the top card and App demo follow the shared stage', (
@@ -117,10 +126,7 @@ void main() {
     tester,
   ) async {
     await start(tester);
-    await tester.tap(find.byKey(const ValueKey('skip'))); // prep → work
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
-    await tester.pump(const Duration(seconds: 2));
+    await enterRest(tester);
 
     final renderedStyles = <String, TextStyle>{};
     final inheritedStyles = <String, TextStyle>{};
@@ -165,10 +171,7 @@ void main() {
   ) async {
     final store = await start(tester);
     final plan = store.todayPlan!;
-    await tester.tap(find.byKey(const ValueKey('skip'))); // prep → work
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('skip'))); // work → rest
-    await tester.pump(const Duration(seconds: 2));
+    await enterRest(tester);
     final completedNumber = find.text(
       '1/${plan.steps.length}',
       findRichText: true,
@@ -184,7 +187,7 @@ void main() {
     expect(find.descendant(of: dock, matching: ok), findsOneWidget);
     expect(onMedia(ok), findsNothing);
     expect(onMedia(nextMove), findsNothing);
-    final before = ringSeconds(tester);
+    final before = countdownSeconds(tester);
     await tester.tap(ok);
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('已记录'), findsOneWidget);
@@ -193,7 +196,7 @@ void main() {
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
     expect(completedNumber, findsOneWidget);
     expect(nextMove, findsOneWidget);
-    final after = ringSeconds(tester);
+    final after = countdownSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
     await tester.tap(find.byKey(const ValueKey('feel-tight')));
@@ -212,11 +215,8 @@ void main() {
     tester,
   ) async {
     await start(tester);
-    await tester.tap(find.byKey(const ValueKey('skip')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('skip')));
-    await tester.pump(const Duration(seconds: 2));
-    final before = ringSeconds(tester);
+    await enterRest(tester);
+    final before = countdownSeconds(tester);
     await tester.tap(find.byKey(const ValueKey('feel-pain')));
     await pumpPainSheet(tester);
     expect(find.text('哪种疼？'), findsOneWidget);
@@ -224,7 +224,7 @@ void main() {
     await tester.tapAt(const Offset(195, 80));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
-    expect(ringSeconds(tester), closeTo(before, 1));
+    expect(countdownSeconds(tester), closeTo(before, 1));
   });
 
   for (final (size, scale) in [
@@ -238,16 +238,12 @@ void main() {
     ) async {
       await start(tester, size: size, textScale: scale);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.byKey(const ValueKey('skip')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('skip')));
-      await tester.pump(const Duration(seconds: 2));
+      await enterRest(tester);
       expect(tester.takeException(), isNull);
-      // The shared stage keeps feedback and transport in fixed visible slots.
-      await tester.ensureVisible(find.byKey(const ValueKey('feel-ok')));
-      await tester.pump(trainer.TrainerMotion.fast);
       for (final k in ['ok', 'tight', 'pain']) {
-        final r = tester.getRect(find.byKey(ValueKey('feel-$k')));
+        final control = find.byKey(ValueKey('feel-$k'));
+        expect(control.hitTestable(), findsOneWidget, reason: k);
+        final r = tester.getRect(control);
         expect(r.bottom, lessThanOrEqualTo(size.height), reason: k);
         expect(r.right, lessThanOrEqualTo(size.width), reason: k);
       }

@@ -81,9 +81,11 @@ void main() {
       tester.widget<trainer.TrainerPlayer>(find.byType(trainer.TrainerPlayer));
 
   Future<void> pinch(WidgetTester tester, {bool fromFeedback = false}) async {
-    await tester.tap(
-      find.byKey(ValueKey(fromFeedback ? 'feel-pain' : 'discomfort')),
+    final control = find.byKey(
+      ValueKey(fromFeedback ? 'feel-pain' : 'discomfort'),
     );
+    await pumpTrainerControl(tester, control);
+    await tester.tap(control.hitTestable());
     await pumpPainSheet(tester);
     expect(find.byKey(const ValueKey('pain-pinch')), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('pain-pinch')));
@@ -204,8 +206,8 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     final before = int.parse(
       tester
-          .widget<trainer.TrainerCountdownDigits>(
-            find.byType(trainer.TrainerCountdownDigits),
+          .widget<trainer.TrainerV1PhaseCountdown>(
+            find.byType(trainer.TrainerV1PhaseCountdown),
           )
           .value,
     );
@@ -214,8 +216,8 @@ void main() {
     await pinch(tester, fromFeedback: true);
     final after = int.parse(
       tester
-          .widget<trainer.TrainerCountdownDigits>(
-            find.byType(trainer.TrainerCountdownDigits),
+          .widget<trainer.TrainerV1PhaseCountdown>(
+            find.byType(trainer.TrainerV1PhaseCountdown),
           )
           .value,
     );

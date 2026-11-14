@@ -20,8 +20,8 @@ import 'public_media_fixture.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<trainer.TrainerCountdownDigits>(
-        find.byType(trainer.TrainerCountdownDigits),
+      .widget<trainer.TrainerV1PhaseCountdown>(
+        find.byType(trainer.TrainerV1PhaseCountdown),
       )
       .value,
 );
@@ -152,8 +152,17 @@ void main() {
         expect(plan.steps.single.sets, sets);
         await _open(tester, store, plan);
         await _pinch(tester);
-        // Halved, no set fits one full squat: no 8 s countdown without cues.
-        expect(find.byType(trainer.TrainerCountdownDigits), findsNothing);
+        // The completion transition keeps the final clock mounted at zero
+        // behind the result page. No further work should run.
+        expect(
+          tester
+              .widget<trainer.TrainerV1PhaseCountdown>(
+                find.byType(trainer.TrainerV1PhaseCountdown),
+              )
+              .value,
+          '0',
+        );
+        expect(find.byKey(const ValueKey('pause')).hitTestable(), findsNothing);
         expect(find.byKey(const ValueKey('player-done-note')), findsOneWidget);
         expect(find.text('练完了，干得漂亮'), findsOneWidget);
         expect(store.sessions.single.completed, isFalse);
@@ -252,8 +261,8 @@ void main() {
       // Counted work displays a rep number; it is not a seconds countdown.
       expect(
         tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
+            .widget<trainer.TrainerV1PhaseCountdown>(
+              find.byType(trainer.TrainerV1PhaseCountdown),
             )
             .value,
         '1',
