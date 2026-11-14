@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-14 训练播放器休息反馈卡片
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建提交 f768b2a63c72b4f0f37e324491d4cb7be9a466cf，同签覆盖安装至 2602BRT18C，原安装时间和数据目录保留。APK 路径 E:/AII-3D/hiplab-releases/player-ui-sdk-69-rest-feedback/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk，本机与设备 SHA-256 均为 2d7f70b50492ca95c0445a9aab72c1c18abf044e863ff0f0ba0ef228a552a750。
+
 ## 2026-11-14 SDK 训练播放器 V1 动效更新 +69
 
 `1.1.2+69`，Android arm64 版本码 `2069`。Profile APK 构建提交 `40b0e5c47f316881e250f1a13320f628e8a1a23c`，覆盖安装至 2602BRT18C，原安装时间及数据目录保留。APK `E:/AII-3D/hiplab-releases/player-ui-sdk-69-20261114/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk`，本机与设备 APK SHA-256 均为 `a35029ccf97d8a6dcc8a1af00cab1aaea137c0421705a8a9990ffabcc45ea027`。
