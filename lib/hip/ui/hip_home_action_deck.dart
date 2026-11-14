@@ -30,7 +30,7 @@ class HipHomeActionDeck extends StatefulWidget {
   final List<String> cues;
   final List<String> descriptions;
 
-  static const _paginationGap = 14.0;
+  static const _paginationGap = 26.0;
   static const _dotHeight = 5.0;
   static const _minCardHeight = 400.0;
 
