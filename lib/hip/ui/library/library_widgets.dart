@@ -245,7 +245,9 @@ class LibSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = LibText.of(context);
     final content = Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 2, 4),
+      padding: libraryStyle
+          ? const EdgeInsets.only(left: 12, right: 2)
+          : const EdgeInsets.fromLTRB(12, 4, 2, 4),
       child: Row(
         children: [
           HipIcon(HipGlyph.search, size: 16, color: HipColors.muted),
@@ -256,9 +258,14 @@ class LibSearchField extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               textInputAction: TextInputAction.search,
-              style: TextStyle(fontSize: 14, color: HipColors.text),
+              textAlignVertical: libraryStyle ? TextAlignVertical.center : null,
+              style: TextStyle(
+                fontSize: libraryStyle ? 13 : 14,
+                color: HipColors.text,
+              ),
               decoration: InputDecoration(
                 isCollapsed: true,
+                contentPadding: libraryStyle ? EdgeInsets.zero : null,
                 border: InputBorder.none,
                 hintText: libLargeText(context)
                     ? t.searchHintShort
@@ -290,7 +297,7 @@ class LibSearchField extends StatelessWidget {
       ),
     );
     return libraryStyle
-        ? HipCard(radius: 14, child: content)
+        ? HipCard(radius: 14, child: Center(child: content))
         : Container(
             constraints: const BoxConstraints(minHeight: 36),
             decoration: BoxDecoration(

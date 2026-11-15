@@ -17,6 +17,7 @@ import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
+import 'package:hiplab/hip/ui/library/library_widgets.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
@@ -138,6 +139,87 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
+    testWidgets('library aligns search, filters, and cards to page edges', (
+      tester,
+    ) async {
+      const screen = Size(390, 844);
+      const systemBottom = 24.0;
+      tester.view.padding = const FakeViewPadding(bottom: systemBottom);
+      await pumpApp(tester, size: screen);
+      await toPractice(tester);
+
+      final search = find.byType(LibSearchField);
+      final searchField = find.byKey(const ValueKey('lib-search'));
+      final quick = find.byKey(const ValueKey('action-quick-row'));
+      final allChip = find.byKey(const ValueKey('action-part-all'));
+      final hipChip = find.byKey(const ValueKey('action-part-臀部'));
+      final filter = find.byKey(const ValueKey('action-filter'));
+      final cards = find.byType(ActionCard);
+      final searchRect = tester.getRect(search);
+      final quickRect = tester.getRect(quick);
+      final filterRect = tester.getRect(filter);
+      final allRect = tester.getRect(allChip);
+
+      expect(searchRect.height, 36);
+      expect(searchRect.left, kHipPageEdge);
+      expect(searchRect.right, screen.width - kHipPageEdge);
+      expect(tester.getRect(searchField).center.dy, searchRect.center.dy);
+      expect(quickRect.left, searchRect.left);
+      expect(allRect.left, searchRect.left);
+      expect(filterRect.right, searchRect.right);
+      expect(filterRect.left - quickRect.right, greaterThanOrEqualTo(12));
+      expect(tester.getRect(cards.first).left, searchRect.left);
+      expect(tester.getRect(cards.at(1)).right, searchRect.right);
+
+      for (final (chip, label) in [
+        (allChip, '全部'),
+        (hipChip, '臀部'),
+        (filter, '筛选'),
+      ]) {
+        final rect = tester.getRect(chip);
+        final text = find.descendant(of: chip, matching: find.text(label));
+        expect(rect.height, 32);
+        expect(rect.center.dy, filterRect.center.dy);
+        expect(tester.getRect(text).center.dy, rect.center.dy);
+        expect(rect.top - quickRect.top, greaterThanOrEqualTo(8));
+        expect(quickRect.bottom - rect.bottom, greaterThanOrEqualTo(8));
+      }
+
+      final quickScroll = find.descendant(
+        of: quick,
+        matching: find.byType(Scrollable),
+      );
+      await tester.drag(quick, const Offset(-220, 0));
+      await tester.pumpAndSettle();
+      expect(
+        tester.state<ScrollableState>(quickScroll).position.pixels,
+        greaterThan(0),
+      );
+      expect(tester.getRect(filter), filterRect);
+      expect(filter.hitTestable(), findsOneWidget);
+
+      final list = find.byKey(const ValueKey('practice-list'));
+      final verticalScroll = find.descendant(
+        of: list,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
+      );
+      final position = tester.state<ScrollableState>(verticalScroll).position;
+      // Scroll to the true end after the lazy list settles its estimated extent.
+      for (var jump = 0; jump < 6 && position.extentAfter > .001; jump++) {
+        position.jumpTo(position.maxScrollExtent);
+        await tester.pumpAndSettle();
+      }
+      expect(position.extentAfter, closeTo(0, .001));
+      final listBottom = tester.getRect(list).bottom;
+      expect(listBottom, screen.height - systemBottom);
+      expect(listBottom - tester.getRect(cards.last).bottom, closeTo(36, .001));
+      expect(cards.last.hitTestable(), findsOneWidget);
+    });
+
     testWidgets('248 scoped actions (测试演示 excluded); search and 怎么练 filter', (
       tester,
     ) async {
@@ -148,7 +230,8 @@ void main() {
       final cards = find.byType(ActionCard);
       final first = tester.getRect(cards.at(0));
       final second = tester.getRect(cards.at(1));
-      expect(first.size, const Size(154, 196));
+      final contentWidth = tester.view.physicalSize.width - 2 * kHipPageEdge;
+      expect(first.size, Size((contentWidth - 12) / 2, 196));
       expect(second.size, first.size);
       expect(second.top, first.top);
       expect(second.left - first.right, 12);
@@ -160,7 +243,7 @@ void main() {
       final fitted = applyBoxFit(
         BoxFit.contain,
         libraryPosterBounds[id]!.size,
-        const Size(126, 88),
+        Size(first.width - 28, 88),
       ).destination;
       final artworkRect = tester.getRect(artwork);
       expect(artworkRect.width, closeTo(fitted.width, .001));

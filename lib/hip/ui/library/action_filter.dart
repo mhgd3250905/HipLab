@@ -494,42 +494,53 @@ class ActionFilterBar extends StatelessWidget {
     final facets = ActionFacets(all);
     final quick = facets.quick;
     final n = filter.sheetCount;
+    const chipHeight = 32.0;
+    const shadowPadding = 10.0;
+    const fadeWidth = 30.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: libraryStyle ? 40 : 36,
+          height: 36,
           child: LibSearchField(
             controller: search,
             libraryStyle: libraryStyle,
             onChanged: (q) => onChanged(filter.copyWith(query: q)),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: libraryStyle ? 2 : 12),
         SizedBox(
-          height: libraryStyle ? 32 : 30,
+          height: libraryStyle ? chipHeight + 2 * shadowPadding : 30,
           child: Row(
             children: [
               Expanded(
                 child: ShaderMask(
-                  shaderCallback: (r) => libraryStyle
-                      ? const LinearGradient(
-                          colors: [Colors.white, Colors.transparent],
-                        ).createShader(
-                          Rect.fromLTWH(r.right - 30, 0, 30, r.height),
-                        )
-                      : const LinearGradient(
-                          colors: [
-                            Colors.white,
-                            Colors.white,
-                            Colors.transparent,
-                          ],
-                          stops: [0, .9, 1],
-                        ).createShader(r),
+                  shaderCallback: (r) => LinearGradient(
+                    colors: const [
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [
+                      0,
+                      libraryStyle && r.width > 0
+                          ? math.max(0, 1 - fadeWidth / r.width)
+                          : .9,
+                      1,
+                    ],
+                  ).createShader(r),
                   blendMode: BlendMode.dstIn,
                   child: ListView(
                     key: const ValueKey('action-quick-row'),
                     scrollDirection: Axis.horizontal,
+                    padding: libraryStyle
+                        ? const EdgeInsets.fromLTRB(
+                            0,
+                            shadowPadding,
+                            fadeWidth,
+                            shadowPadding,
+                          )
+                        : null,
                     children: [
                       HipFilterChip(
                         t.all,
@@ -551,12 +562,12 @@ class ActionFilterBar extends StatelessWidget {
                           ),
                         ),
                       ],
-                      const SizedBox(width: 16),
+                      if (!libraryStyle) const SizedBox(width: 16),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: libraryStyle ? 12 : 6),
               // Pinned at the end of the row so it is always reachable.
               HipFilterChip(
                 t.filter,
@@ -617,6 +628,9 @@ class HipFilterChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               height: 1.2,
+              leadingDistribution: libraryStyle
+                  ? TextLeadingDistribution.even
+                  : null,
               fontWeight: on
                   ? (libraryStyle ? FontWeight.w700 : FontWeight.w600)
                   : FontWeight.w400,
@@ -658,7 +672,12 @@ class HipFilterChip extends StatelessWidget {
       child: SizedBox(
         height: libraryStyle ? 32 : 30,
         child: libraryStyle && (!on || icon != null)
-            ? HipCard(radius: radius, innerHighlight: false, child: content)
+            ? HipCard(
+                radius: radius,
+                innerHighlight: false,
+                shadows: [?HipColors.cardShadow?.last],
+                child: Center(widthFactor: 1, child: content),
+              )
             : DecoratedBox(
                 decoration: BoxDecoration(
                   color: on

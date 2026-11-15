@@ -153,7 +153,7 @@ class _PracticePageState extends State<PracticePage> {
         libraryStyle: true,
         onChanged: (v) => setState(() => mem.actions = v),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: 4),
       Text(
         t.lang == 'en' ? '${shown.length} moves' : '${shown.length} 个动作',
         key: const ValueKey('actions-count'),
@@ -179,13 +179,12 @@ class _PracticePageState extends State<PracticePage> {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
-        // Two 154 dp cards, a 12 dp gap and the two page margins.
-        constraints: const BoxConstraints(
-          maxWidth: 2 * 154 + 12 + 2 * kHipPageEdge,
-        ),
+        // Use the full phone width. Limit card width on wider windows.
+        constraints: const BoxConstraints(maxWidth: 480),
         child: ListView.builder(
           key: const ValueKey('practice-list'),
-          padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
+          // HipNavPage already provides the device's bottom safe area.
+          padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 36),
           itemCount: header.length + rows.length,
           itemBuilder: (context, i) =>
               i < header.length ? header[i] : rows.row(i - header.length),
