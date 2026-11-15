@@ -8,9 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
-import 'package:hiplab/hip/ui/hip_glass.dart';
 import 'package:hiplab/hip/ui/hip_icons.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
+import 'package:hiplab/hip/ui/hip_privacy_page.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
 import 'package:hiplab/hip/ui/hip_segmented.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -34,11 +34,11 @@ Future<void> expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).dim, isTrue);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).dim, isTrue);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {
@@ -92,11 +92,16 @@ void main() {
           expect(seg.thumbRadius, seg.radius - seg.inset);
           final thumb = find.byKey(const ValueKey('scene-thumb'));
           expect(thumb, findsOneWidget);
-          // Glass m2: the selected item is the brighter inner glass pill.
-          final face = tester.widget<HipGlassPill>(
-            find.descendant(of: thumb, matching: find.byType(HipGlassPill)),
+          // The v2 selection is a flat, tinted capsule.
+          final selected = find.descendant(
+            of: thumb,
+            matching: find.byType(DecoratedBox),
           );
-          expect(face.radius, seg.thumbRadius);
+          final face = tester.widget<DecoratedBox>(selected);
+          final decoration = face.decoration as BoxDecoration;
+          expect(decoration.borderRadius, BorderRadius.circular(18));
+          expect(decoration.color, HipColors.jade.withValues(alpha: .09));
+          expect(tester.getSize(selected), const Size(84, 36));
 
           final x0 = tester.getRect(thumb).left;
           final target = tester.getRect(
@@ -225,7 +230,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await pumpTrainerReady(tester);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       // The training package owns the playback controls and its icon set.
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('pause')), findsOneWidget);
@@ -309,7 +314,7 @@ void main() {
       expect(route, isA<trainer.TrainerSlideRoute>());
       expect(route!.transitionDuration, const Duration(milliseconds: 300));
       expect(find.byKey(const ValueKey('training-slide')), findsOneWidget);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);
     });
@@ -338,15 +343,15 @@ void main() {
         await pumpApp(tester);
         await openSettings(tester);
         await tester.pumpAndSettle();
-        await tester.scrollUntilVisible(find.text('重新看安全提示'), 200);
+        await tester.scrollUntilVisible(find.text('隐私政策'), 200);
         await tester.drag(find.byType(ListView).first, const Offset(0, -300));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('重新看安全提示'));
+        await tester.tap(find.text('隐私政策'));
         await tester.pump();
         await tester.pump(HipMotion.page ~/ 3);
-        expect(find.byType(HipOnboarding), findsOneWidget);
+        expect(find.byType(HipPrivacyPage), findsOneWidget);
         final route =
-            ModalRoute.of(tester.element(find.byType(HipOnboarding)))!
+            ModalRoute.of(tester.element(find.byType(HipPrivacyPage)))!
                 as HipRoute;
         expect(route.transition, HipTransition.content);
         // 设置页有返回键，目标页的胶囊钉住。
@@ -369,7 +374,7 @@ void main() {
         );
         final bar = tester.getRect(
           find.descendant(
-            of: find.byType(HipOnboarding),
+            of: find.byType(HipPrivacyPage),
             matching: find.byType(HipNavBar),
           ),
         );
@@ -377,21 +382,21 @@ void main() {
         final slide = tester.widget<SlideTransition>(
           find
               .descendant(
-                of: find.byType(HipOnboarding),
+                of: find.byType(HipPrivacyPage),
                 matching: find.byType(SlideTransition),
               )
               .first,
         );
         expect(slide.position.value.dx, greaterThan(0));
         await tester.pumpAndSettle();
-        expect(find.byType(HipOnboarding), findsOneWidget);
+        expect(find.byType(HipPrivacyPage), findsOneWidget);
         // Edge swipe back.
         final gesture = await tester.startGesture(const Offset(5, 400));
         await gesture.moveBy(const Offset(20, 0));
         await gesture.moveBy(const Offset(280, 0));
         await gesture.up();
         await tester.pumpAndSettle();
-        expect(find.byType(HipOnboarding), findsNothing);
+        expect(find.byType(HipPrivacyPage), findsNothing);
         expect(
           find.byKey(const ValueKey('appearance-settings')),
           findsOneWidget,
@@ -515,7 +520,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await pumpTrainerReady(tester);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);

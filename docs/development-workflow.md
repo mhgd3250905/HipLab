@@ -4,7 +4,11 @@
 
 设计数值由[UI规范](ui-design-standard.md)维护；实现、依赖边界、跨App配方及完整画廊见[UI复用手册](ui-kit/README.md)。代码/设计变动时同步规范与对应样例，历史交付报告只追加事实，不把已淘汰方案当作当前接入方式。文档收束仅检查相关事实、链接、示例与diff；不因整理文档重复构建或增加版本。本阶段记录见[closeout报告](ui-documentation-closeout-2026-11-07.md)。
 
-## 2026-11-07 当前开发入口
+## 工作区与版本
+
+`main` 为开发基线，会员阶段在 `feat/membership` 收束。执行前核对当前工作树、分支和 HEAD。源码版本、各渠道和实机状态统一从[当前状态](current-state.md)及[版本台账](version-ledger.md)核对。当前素材准备从[文档入口](README.md#新机器拉素材mac--windows)开始。
+
+## 2026-11-07 开发入口快照（历史）
 
 日常目录`E:/AII-3D/3D-Hip`已切回`main`，接收完整已验收UI、首页卡片/文件夹、英文和友善安全插画。当前`1.1.0+61`/2061，SDK固定`fa957ff405cc57cd10d53987430313822ff20607`；后续从main继续，按任务建分支即可。旧UI和SDK候选分支保留，不再把`feat/ui-detail-polish`当作最新运行源。Flutter仍3.44.7，媒体r2-v1、209授权动作/封面、0内置MP4；依赖只按现有lock恢复。下方2026-11-04 main +34是历史快照。[本轮回执](ui-main-integration-2026-11-07.md)。
 

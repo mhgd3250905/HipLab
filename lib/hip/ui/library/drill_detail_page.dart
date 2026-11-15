@@ -8,6 +8,7 @@ import '../../domain/hip_models.dart';
 import '../../domain/hip_session.dart';
 import '../hip_icons.dart';
 import '../hip_content_text.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_theme.dart';
@@ -21,14 +22,10 @@ import 'library_widgets.dart';
 /// the routines (docs/training-library-2026-10-19.md §安全规则).
 class DrillAdvice {
   const DrillAdvice({
-    required this.blocked,
     required this.locked,
     required this.recentPain,
     required this.easier,
   });
-
-  /// A safety card answered 「有」: browse only.
-  final bool blocked;
 
   /// Direction relax-only this week (assessment pain or 7-day lock) and the
   /// drill is not a relax drill: 开始练 disabled.
@@ -40,7 +37,7 @@ class DrillAdvice {
   /// The routines would swap it for the easier version: hint only (拍板 4).
   final bool easier;
 
-  bool get canStart => !blocked && !locked;
+  bool get canStart => !locked;
 
   static DrillAdvice of(
     HipDrill d,
@@ -50,7 +47,6 @@ class DrillAdvice {
   ) {
     final locked = TrainingPlanner.lockedOut(d, p);
     return DrillAdvice(
-      blocked: p.blocked,
       locked: locked,
       recentPain:
           !d.isRelax && !locked && recentPain.contains(d.directions.first),
@@ -104,14 +100,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     final alt = d.alternative == null ? null : content.drills[d.alternative!];
     final dir = d.directions.first;
     final notices = <Widget>[
-      if (advice.blocked)
-        LibNotice(
-          key: const ValueKey('notice-blocked'),
-          text: t.noticeBlocked,
-          color: HipColors.tight,
-          icon: HipGlyph.shield,
-        )
-      else if (advice.locked)
+      if (advice.locked)
         LibNotice(
           key: const ValueKey('notice-locked'),
           text: t.noticeLocked(t.area(dir)),
@@ -127,7 +116,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
           action: t.seeRelax,
           onAction: () => Navigator.of(context).pop(LibraryJump(dir)),
         ),
-      if (advice.easier && !advice.blocked)
+      if (advice.easier)
         LibNotice(
           key: const ValueKey('notice-advanced'),
           text: alt != null && inLibrary(content, alt.id)
@@ -246,9 +235,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
               child: RepaintBoundary(
                 child: HipPrimaryButton(
                   key: const ValueKey('detail-start'),
-                  label: advice.blocked
-                      ? t.askDoctorFirst
-                      : advice.locked
+                  label: advice.locked
                       ? t.relaxOnlyThisWeek
                       : t.startPractice,
                   icon: advice.canStart ? HipGlyph.play : null,
@@ -305,6 +292,7 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
   }
 
   Future<void> _addToGroup(BuildContext context) async {
+    if (!await ensureHipPremium(context) || !context.mounted) return;
     final t = LibText.of(context);
     final fullPlanHint = t.isEn
         ? 'Adjust this plan in its details'
@@ -366,9 +354,10 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
         ),
       ),
     );
-    if (picked == null || !mounted) return;
+    if (picked == null || !context.mounted) return;
+    if (!await ensureHipPremium(context) || !context.mounted) return;
     if (picked.isEmpty) {
-      await Navigator.of(this.context).push(
+      await Navigator.of(context).push(
         HipRoute.content<void>(
           (_) => GroupEditorPage(
             actions: widget.actions,
@@ -385,15 +374,19 @@ class _DrillDetailPageState extends State<DrillDetailPage> {
     }
     final g = store.customRoutine(picked);
     if (g == null) return;
-    if (g.coachPlan != null) {
-      ScaffoldMessenger.of(this.context)
+    if (g.coachPlan != null || g.steps.length >= CustomRoutine.maxSteps) {
+      ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(fullPlanHint)));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(g.coachPlan != null ? fullPlanHint : t.groupFull),
+          ),
+        );
       return;
     }
     await store.saveCustomRoutine(g.copyWith(steps: [...g.steps, step]));
-    if (!mounted) return;
-    ScaffoldMessenger.of(this.context)
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(t.addedTo(g.name))));
   }

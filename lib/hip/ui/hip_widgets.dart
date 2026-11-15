@@ -20,6 +20,96 @@ import 'hip_text.dart';
 
 export 'hip_tactile.dart';
 
+/// The v2 paper background shared by the home and host navigation pages.
+class HipPageBackdrop extends StatelessWidget {
+  const HipPageBackdrop({super.key});
+
+  @override
+  Widget build(BuildContext context) => RepaintBoundary(
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [HipColors.background, HipColors.pageBottom],
+        ),
+        image: const DecorationImage(
+          image: AssetImage('assets/hip/ui-v2-grain.png'),
+          repeat: ImageRepeat.repeat,
+          opacity: .03,
+          filterQuality: FilterQuality.none,
+        ),
+      ),
+      child: const SizedBox.expand(),
+    ),
+  );
+}
+
+/// Shared v2 white material, with the same inset highlight at every radius.
+class HipCard extends StatelessWidget {
+  const HipCard({
+    super.key,
+    required this.child,
+    this.radius = 16,
+    this.padding = EdgeInsets.zero,
+    this.innerHighlight = true,
+    this.shadows,
+  });
+
+  final Widget child;
+  final double radius;
+  final EdgeInsetsGeometry padding;
+  final bool innerHighlight;
+  final List<BoxShadow>? shadows;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = HipColors.isDark;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: dark
+              ? [HipColors.surfaceHigh, HipColors.surface]
+              : const [Colors.white, Color(0xfffafbfa)],
+        ),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: (dark ? Colors.white : Colors.black).withValues(alpha: .06),
+          width: .5,
+        ),
+        boxShadow: shadows == null
+            ? HipColors.cardShadow
+            : HipColors.shadows(shadows),
+      ),
+      child: Stack(
+        children: [
+          if (innerHighlight)
+            Positioned.fill(
+              left: 1,
+              right: 1,
+              top: 1,
+              bottom: 1,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(radius - 1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: dark ? .08 : .78),
+                      width: .5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Padding(padding: padding, child: child),
+        ],
+      ),
+    );
+  }
+}
+
 /// Video playback is off in widget tests (no platform view host there).
 class HipMediaPolicy extends InheritedWidget {
   const HipMediaPolicy({
@@ -235,6 +325,7 @@ class HipDrillArt extends StatefulWidget {
     this.play = false,
     this.holdVideo = false,
     this.revealPausedFrame = true,
+    this.stage,
     this.onFrameReadyChanged,
     this.fit = BoxFit.cover,
     this.showPendingLabel = true,
@@ -253,6 +344,7 @@ class HipDrillArt extends StatefulWidget {
   /// Ordinary library artwork keeps its existing poster-only behavior.
   final bool holdVideo;
   final bool revealPausedFrame;
+  final Color? stage;
   final ValueChanged<bool>? onFrameReadyChanged;
   final BoxFit fit;
   final bool showPendingLabel;
@@ -275,16 +367,97 @@ class HipDrillArt extends StatefulWidget {
   State<HipDrillArt> createState() => _HipDrillArtState();
 }
 
-class _HipDrillArtState extends State<HipDrillArt> {
+class _HipDrillArtState extends State<HipDrillArt>
+    with SingleTickerProviderStateMixin {
   bool _retired = false;
+  AppLifecycleListener? _heldMediaLifecycle;
+  bool _heldMediaForeground = true;
+  int _heldMediaGeneration = 0;
+  bool _awaitingResumeFrame = false;
+  bool _holdingResumePoster = false;
+  AnimationController? _resumeHandoff;
+
+  // Match the pinned SDK's fade between its two transparent media layers.
+  static const _sdkFrameFade = Duration(milliseconds: 120);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.holdVideo) _observeHeldMediaLifecycle();
+  }
+
+  void _observeHeldMediaLifecycle() {
+    final state = WidgetsBinding.instance.lifecycleState;
+    _heldMediaForeground = state == null || state == AppLifecycleState.resumed;
+    _heldMediaLifecycle = AppLifecycleListener(
+      onStateChange: (state) {
+        final foreground = state == AppLifecycleState.resumed;
+        if (foreground == _heldMediaForeground) return;
+        setState(() {
+          _heldMediaForeground = foreground;
+          // The SDK drops the texture when leaving the foreground. Reset its
+          // poster transition too so the replacement starts fully visible.
+          if (!foreground) {
+            _heldMediaGeneration++;
+            _cancelResumeHandoff();
+            _awaitingResumeFrame = true;
+          }
+        });
+      },
+    );
+  }
 
   @override
   void didUpdateWidget(HipDrillArt oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.drill.id != widget.drill.id ||
+        oldWidget.holdVideo != widget.holdVideo) {
+      _cancelResumeHandoff();
+      _awaitingResumeFrame = false;
+    }
+    if (oldWidget.holdVideo != widget.holdVideo) {
+      _heldMediaLifecycle?.dispose();
+      _heldMediaLifecycle = null;
+      if (widget.holdVideo) _observeHeldMediaLifecycle();
+    }
+    if (oldWidget.drill.id != widget.drill.id ||
         (!oldWidget.play && widget.play)) {
       _retired = false;
     }
+  }
+
+  void _cancelResumeHandoff() {
+    _resumeHandoff?.stop();
+    _holdingResumePoster = false;
+  }
+
+  void _heldMediaFrameReady(bool ready) {
+    if (!mounted) return;
+    widget.onFrameReadyChanged?.call(ready);
+    if (!ready && _holdingResumePoster) {
+      setState(_cancelResumeHandoff);
+    } else if (ready && _awaitingResumeFrame && _heldMediaForeground) {
+      _awaitingResumeFrame = false;
+      if (!widget.play && !widget.revealPausedFrame) return;
+      // The readiness callback follows the first paint of the SDK fade.
+      // Keep a full-strength still visible while that fade runs offscreen.
+      final handoff = _resumeHandoff ??=
+          AnimationController(vsync: this, duration: _sdkFrameFade)
+            ..addStatusListener((status) {
+              if (status == AnimationStatus.completed) {
+                setState(() => _holdingResumePoster = false);
+              }
+            });
+      setState(() => _holdingResumePoster = true);
+      handoff.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _resumeHandoff?.dispose();
+    _heldMediaLifecycle?.dispose();
+    super.dispose();
   }
 
   Future<void> _retire() {
@@ -316,11 +489,13 @@ class _HipDrillArtState extends State<HipDrillArt> {
         playing: widget.play && !_retired && HipMediaPolicy.of(context),
       );
     }
-    return trainer.TrainingActionMedia(
+    final media = trainer.TrainingActionMedia(
+      key: widget.holdVideo ? ValueKey(_heldMediaGeneration) : null,
       actionId: widget.drill.id,
       policy: policy,
       playing:
           (widget.play || widget.holdVideo) &&
+          (!widget.holdVideo || _heldMediaForeground) &&
           !_retired &&
           HipMediaPolicy.of(context),
       paused: !widget.play,
@@ -329,10 +504,33 @@ class _HipDrillArtState extends State<HipDrillArt> {
       retainPausedSurfaceWhileCovered: widget.holdVideo,
       nativeAlpha: widget.holdVideo,
       revealPausedFrame: widget.revealPausedFrame,
-      onFrameReadyChanged: widget.onFrameReadyChanged,
+      onFrameReadyChanged: widget.holdVideo
+          ? _heldMediaFrameReady
+          : widget.onFrameReadyChanged,
       mirrored: widget.mirror,
       radius: 0,
-      stage: HipColors.mediaBackdrop,
+      stage: widget.stage ?? HipColors.mediaBackdrop,
+    );
+    if (!widget.holdVideo) return media;
+    final poster = policy.posterAssetFor(widget.drill.id);
+    final hasCover =
+        poster != null && (_awaitingResumeFrame || _holdingResumePoster);
+    final experience = trainer.TrainerExperienceScope.maybeOf(context);
+    return IndexedStack(
+      index: hasCover && _holdingResumePoster ? 1 : 0,
+      sizing: StackFit.expand,
+      children: [
+        media,
+        if (hasCover)
+          trainer.TrainerPoster(
+            key: const ValueKey('home-action-resume-poster'),
+            asset: poster,
+            mirrored: widget.mirror,
+            stageColor: widget.stage ?? HipColors.mediaBackdrop,
+            bundle: experience?.bundle,
+            decodeWidth: experience?.decodeWidth,
+          ),
+      ],
     );
   }
 }
@@ -1143,7 +1341,7 @@ class HipPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
     final fg = enabled ? HipColors.onJade : HipColors.muted;
-    final fill = enabled ? HipColors.jade : HipColors.surfaceHigh;
+    final fill = enabled ? HipColors.primaryAction : HipColors.surfaceHigh;
     return SizedBox(
       width: double.infinity,
       height: 50,
@@ -1317,12 +1515,14 @@ class HipStartButton extends StatelessWidget {
     this.width,
     this.label = '开始',
     this.glass = false,
+    this.flatDisc = false,
   });
   final VoidCallback? onTap;
 
   /// Jade liquid glass disc floating over imagery (首页 dock, m3): blurred
   /// backdrop, translucent jade fill, thin bright rim.
   final bool glass;
+  final bool flatDisc;
 
   /// Palette of what the button sits on (the dark media stage).
   final HipPalette stage;
@@ -1360,6 +1560,56 @@ class HipStartButton extends StatelessWidget {
         color: fg,
       ),
     );
+    if (flatDisc && !pill) {
+      return HipPressable(
+        key: buttonKey,
+        semanticLabel: label,
+        onTap: onTap,
+        child: RepaintBoundary(
+          child: SizedBox.square(
+            dimension: size,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: enabled
+                    ? HipColors.primaryAction
+                    : HipColors.surfaceHigh,
+                shape: BoxShape.circle,
+                boxShadow: enabled
+                    ? HipColors.shadows([
+                        BoxShadow(
+                          color: HipColors.jade.withValues(alpha: .30),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ])
+                    : null,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    HipIcon(
+                      HipGlyph.play,
+                      size: 18,
+                      filled: true,
+                      color: enabled ? Colors.white : fg,
+                    ),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: enabled ? Colors.white : fg,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (glass && !pill) {
       return HipPressable(
         semanticLabel: label,

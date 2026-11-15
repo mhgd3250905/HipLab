@@ -154,23 +154,26 @@ void main() {
   final content = loadContent().withPublicTraining(catalog, rhythms);
 
   test(
-    'real App host opts into QA v2 with draft tags and unchanged admission',
+    'real App host uses QA v2 with draft tags for the admitted library',
     () async {
       final h = await _host(content, []);
       addTearDown(h.close);
       expect(h.chat.profile.agentMode, CoachChatAgentMode.qaV2);
-      // r2-v1: all 209 authorized actions carry a draft tag.
-      expect(h.chat.profile.aiTags, hasLength(209));
+      expect(h.chat.profile.aiTags, hasLength(248));
+      expect(
+        h.chat.profile.aiTags.keys.toSet(),
+        hiplabCoachAuthorizedActionIds,
+      );
       expect(h.chat.profile.aiTags['h-squat']!['status'], 'ai-draft');
       expect(
         h.chat.profile.allowedActionIds,
         unorderedEquals(hiplabCoachAuthorizedActionIds),
       );
-      expect(h.chat.profile.allowedActionIds, hasLength(209));
+      expect(h.chat.profile.allowedActionIds, hasLength(248));
       expect(h.chat.qaAgent.index['h-squat']!.source, 'ai-tags');
-      // h-sleeper-stretch (the former untagged catalog-source example) was
-      // deleted before r2-v1; every remaining authorized action is tagged.
       expect(h.chat.qaAgent.index['n-leg-circles']!.source, 'ai-tags');
+      expect(h.chat.qaAgent.index['h-band-biceps-curl']!.source, 'ai-tags');
+      expect(h.chat.qaAgent.index['n-thomas-test'], isNull);
       expect(h.chat.qaAgent.index['h-sleeper-stretch'], isNull);
       expect(h.chat.qaAgent.index['not-in-hiplab'], isNull);
       expect(h.chat.bindings.plans, isA<HiplabCoachPlanStore>());

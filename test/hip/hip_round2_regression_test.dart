@@ -20,6 +20,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'checkup_entry.dart';
+import 'home_nav.dart';
 import 'public_media_fixture.dart';
 import 'trainer_test_pump.dart';
 
@@ -95,10 +96,10 @@ Future<void> _expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {
@@ -107,6 +108,7 @@ void main() {
     (tester) async {
       final handle = tester.ensureSemantics();
       await _app(tester);
+      await backHome(tester);
       // Home r1: the tab bar is gone; 更多 is the one page 首页 opens.
       final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
       for (var i = 0; i < 3; i++) {
@@ -124,7 +126,7 @@ void main() {
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('finish')), findsNothing);
       // The shared stage pins the counter and transport in the viewport.
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await _expectPausedClock(tester);
       handle.dispose();
@@ -238,6 +240,7 @@ void main() {
     await _app(tester);
     final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
     for (var i = 0; i < 3; i++) {
+      await backHome(tester);
       await tester.tap(find.byKey(const ValueKey('home-more')));
       await tester.pump(const Duration(milliseconds: 35));
       expect(tester.takeException(), isNull);

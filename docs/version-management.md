@@ -1,5 +1,9 @@
 # 版本管理说明
 
+本分支的共用源码版本见 [pubspec.yaml](../pubspec.yaml)。实际安装、构建和商店身份由[版本台账](version-ledger.md)登记，当前进度见[当前状态](current-state.md)。
+
+## 历史版本记录
+
 ## 2026-11-08：SDK 同步候选 / +62
 
 本轮候选为 `codex/sdk-sync-r1-20261108`，从本地 `main@54471ae` 建立；
@@ -180,7 +184,7 @@ PR #30 的功能集成点是 `2400b344183e1d57636412309899b4a1481966a7`。当前
 
 本分支1.1.0+31/arm64 2031，SDK四包及override固定9dd93163（ugk_trainer-v0.7.1），原hosted锁及Flutter3.44.7不升级。新版QA由SDK开关启用，App只传未审标签；构建源码 `2c13e8a119409c857508c6c3e79dc27241e8e702` 与后续测试/文档HEAD分别登记。main仍+30，release不动，本轮无安装/发布。[完整接入与验证](sdk-qa-v0.7.1-validation-2026-11-04.md)。
 
-## 2026-11-04：当前版本与来源规则
+## 2026-11-04：QA v3 版本与来源快照（历史）
 
 共用版本以pubspec.yaml为准，当前 **1.1.0+34**；arm64 split versionCode为**2034**。四个实际SDK包与coach override均固定`f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`，当前无独立ugk_trainer包。Flutter继续3.44.7/Dart3.12.2。PR26/27/28/30已入main，UI r3的PR29仍为Draft候选。
 
@@ -232,7 +236,7 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 本轮release/1.0来自main e456d2a，基础版1.0.0+20，SDK固定d193a70，编译源4b56b82。该分支只做上架/审核修复并合回main；后续功能在main继续。Mac本轮从release/1.0开iOS分支，不独立升级共用版本、SDK或媒体。上架基础版与原液态玻璃0.3.10+19/AI0.2候选分别保存，不把旧候选内容带进本AAB。AAB无Key，AI入口按用户最新决定保留并本地预设回落。[交付身份](release-1.0/README.md)。
 
-本页说明 HipLab 的版本与台账如何维护。共用版本取自 [`pubspec.yaml`](../pubspec.yaml)，逐次构建、安装和发布事实继续写入[版本交付台账](version-ledger.md)，本页不另建交付流水。本页当前规则核对日期：2026-11-04，北京时间；旧日期流水保留历史。
+本页说明 HipLab 的版本与台账如何维护。共用版本取自 [`pubspec.yaml`](../pubspec.yaml)，逐次构建、安装和发布事实继续写入[版本交付台账](version-ledger.md)，本页不另建交付流水。本页规则核对日期为 2026-11-12（北京时间）；旧日期流水保留历史。
 
 ## 事实来源
 
@@ -250,13 +254,13 @@ codex/sdk-shared-experience基于main0f507a3，pubspec为1.1.0+28，arm64 split�
 
 ## 版本与来源身份
 
-共用版本采用 `版本名+构建号`，当前为 `1.1.0+61`；arm64 split包为versionName `1.1.0`、versionCode `2061`。其他ABI及iOS的构建/安装身份应各按实际回执登记。准备新版时由 Windows 在 `pubspec.yaml` 统一递增；检查新构建号高于此前交付包，保留包名和签名连续。iOS 共用版本的变动不代表已在 Mac 构建、安装或验收。
+共用版本采用 `版本名+构建号`，本轮 `feat/membership` 源码为 `1.1.2+67`，标签为 `v1.1.2+67`。Android 商店 AAB 版本码取共用构建号，自用 arm64 split APK 按 Flutter 的 ABI 拆包规则生成。实际版本码、证书、SHA-256、安装与渠道分别见[版本台账](version-ledger.md)。Windows 负责递增共用版本号，Mac 以同一版本配置构建。
 
 单独的文档整理、合并事实补记不递增 App 版本，也不触发重新构建或安装。审核期曾有多份相同 `0.3.6+11` 的包，不能只凭版本名判断内容；必须结合构建源码、APK SHA256、大小和签名识别。
 
 构建源码 SHA、已验业务来源 SHA、PR 合并提交和后续文档 HEAD 可以不同，分别记录。复用早先测试时先比较到当前树的有限差异；只有业务、资源、原生代码、测试和锁文件未受影响，才能按原来源引用，不能写成新 HEAD 已重新执行。构建证据始终归属于实际构建源码；文档提交不会产生新 APK。
 
-App 版本、SDK包版本和 Pose-Hub 素材版本分别维护。已验收 main/+61 的四实际 SDK 包与 coach override 为 `fa957ff405cc57cd10d53987430313822ff20607` / r2-v1；本轮 +62 候选的 `ugk_coach`、`ugk_coach_ui`、`ugk_trainer_runtime`、`ugk_coach_chat` 与 coach override 固定为 `886ffd50bda196de06674debbf1a8958e3900d2f` / r2-v10，均为公共目录249项、209授权封面及SDK按需视频，AI标签由App传入且标为未审草稿，旧 Pose-Hub `v0.2.0` lock/ZIP 仅保留追溯；App 递增不自动升级依赖或素材，恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
+App 版本、SDK 包版本和 Pose-Hub 素材版本分别维护。本分支四个 SDK 依赖及 coach override 固定为 `7cd1c4392dc4114729f8f4301d3df2848524e6a3`，`purchases_flutter` 为 `10.4.1`。内置目录为 stable r2-v11，SHA-256 为 `6f46c0a3fc0b6546193e2e3d867d90add55ce21bf0b8f3c482edaa507cdcabc0`，249 项中开放 248 项，随包带 248 张封面和 248 张缩略图。视频按需缓存。恢复步骤见[文档入口](README.md#新机器拉素材mac--windows)。
 
 ## 状态分别登记
 

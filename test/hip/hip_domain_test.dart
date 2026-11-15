@@ -280,14 +280,14 @@ void main() {
       expect(ninety.seconds, 70 + 35);
     });
 
-    test('safety block → no plan; T series gated until dancer unlock', () {
+    test('plans always generate; T series gated until dancer unlock', () {
       expect(
         planner.plan(
           minutes: 10,
           scene: HipScene.home,
-          profile: const TrainingProfile(blocked: true),
+          profile: const TrainingProfile(),
         ),
-        isNull,
+        isNotNull,
       );
       final f = content.routine('F');
       final locked = planner.planFor([
@@ -413,7 +413,7 @@ void main() {
       clock: () => clock,
     );
     await store.initialize();
-    expect(store.onboarded, isFalse);
+    expect(store.onboarded, isTrue);
     await store.setSafety({
       'pregnancy': false,
       'surgery': false,
@@ -444,6 +444,8 @@ void main() {
       'surgery': false,
       'acute': false,
     });
-    expect(again.todayPlan, isNull);
+    // Old safety answers are inert: training is never blocked.
+    expect(again.blocked, isFalse);
+    expect(again.todayPlan, isNotNull);
   });
 }

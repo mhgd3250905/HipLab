@@ -202,19 +202,14 @@ void main() {
       },
     );
 
-    testWidgets('English first-launch safety remains usable in ${theme.id}', (
+    testWidgets('English home is usable without first-launch safety', (
       tester,
     ) async {
       await mount(tester, theme: theme, onboarded: false);
-      await capture(tester, '${theme.id}-onboarding');
-      for (var index = 0; index < content.safetyCards.length; index++) {
-        await capture(tester, '${theme.id}-safety-card-${index + 1}');
-        await tester.tap(find.byKey(const ValueKey('safety-no')));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      }
-      expect(find.text('What brings you here?'), findsOneWidget);
-      await capture(tester, '${theme.id}-identity');
+      await capture(tester, '${theme.id}-home');
+      expect(find.byKey(const ValueKey('safety-no')), findsNothing);
+      expect(find.byKey(const ValueKey('home-more')), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   }
 }

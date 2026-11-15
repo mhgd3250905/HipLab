@@ -40,18 +40,20 @@ hipEnglishPublicDisplay(coach.Catalog? catalog) {
   final definitions = {for (final drill in catalog.drills) drill.id: drill};
   return (id) {
     final definition = definitions[id];
+    if (definition == null) return null;
     final copy = hipPublicTextEn[id];
-    if (definition == null || copy == null) return null;
     return trainer.TrainingLibraryActionText(
       name: definition.name.of('en'),
       metadata: HipPublicDisplay.metadata(definition.raw),
       muscles: HipPublicDisplay.muscleText(definition.raw),
-      cues: copy.cues,
-      cautions: [
-        ...copy.cautions,
-        if (copy.contraindications.isNotEmpty)
-          'Caution areas: ${copy.contraindications.join(', ')}.',
-      ],
+      cues: copy?.cues,
+      cautions: copy == null
+          ? null
+          : [
+              ...copy.cautions,
+              if (copy.contraindications.isNotEmpty)
+                'Caution areas: ${copy.contraindications.join(', ')}.',
+            ],
     );
   };
 }
@@ -115,7 +117,7 @@ abstract final class HipSharedLibrary {
   /// SDK single-practice adapter. No local kit or prescription is synthesized.
   static TrainingPlan? planFor(LibraryActions actions, String id) {
     final store = actions.store;
-    if (current?.allowedActionIds.contains(id) != true || store.blocked) {
+    if (current?.allowedActionIds.contains(id) != true) {
       return null;
     }
     if (store.content.publicCatalog case final catalog?) {
@@ -205,7 +207,7 @@ abstract final class HipSharedLibrary {
       context,
       actionId: id,
       config: localized(context),
-      mediaPolicy: policy,
+      mediaPolicy: HipPublicMedia.forLibrary(policy),
       theme: theme(context),
       canStart: (id) => canStart(actions, id),
       onStart: (id) => start(actions, id),

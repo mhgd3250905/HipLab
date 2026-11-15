@@ -369,26 +369,6 @@ void main() {
       await tester.pumpAndSettle();
       await _capture(tester, '$shots/m2/editor-dark.png');
     });
-    testWidgets('m2 安全提示 light', (tester) async {
-      await pump(tester, theme: HipThemeChoice.light, height: 1240);
-      await openSettings(tester);
-      await tester.tap(find.byKey(const ValueKey('safety-review')));
-      await tester.pumpAndSettle();
-      await tester.binding.setSurfaceSize(null);
-      tester.view.physicalSize = const Size(786, 1704);
-      await tester.pumpAndSettle();
-      await _capture(tester, '$shots/m2/safety-review-light.png');
-    });
-    testWidgets('安全提示 from 设置 dark', (tester) async {
-      await pump(tester, height: 1240);
-      await openSettings(tester);
-      await tester.tap(find.byKey(const ValueKey('safety-review')));
-      await tester.pumpAndSettle();
-      await tester.binding.setSurfaceSize(null);
-      tester.view.physicalSize = const Size(786, 1704);
-      await tester.pumpAndSettle();
-      await _capture(tester, '$shots/safety-review-dark.png');
-    });
     // ── M5 final: every changed page, dark + light; 1.5× overflow pass ──
     for (final t in [HipThemeChoice.dark, HipThemeChoice.light]) {
       final n = t == HipThemeChoice.dark ? 'dark' : 'light';

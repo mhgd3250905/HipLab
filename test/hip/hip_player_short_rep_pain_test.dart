@@ -14,8 +14,8 @@ import 'public_media_fixture.dart';
 
 int _secondsLeft(WidgetTester tester) => int.parse(
   tester
-      .widget<trainer.TrainerCountdownDigits>(
-        find.byType(trainer.TrainerCountdownDigits),
+      .widget<trainer.TrainerV1PhaseCountdown>(
+        find.byType(trainer.TrainerV1PhaseCountdown),
       )
       .value,
 );
@@ -85,8 +85,8 @@ void main() {
       expect(work.fold<double>(0, (sum, p) => sum + p.seconds), target.seconds);
       expect(
         tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
+            .widget<trainer.TrainerV1PhaseCountdown>(
+              find.byType(trainer.TrainerV1PhaseCountdown),
             )
             .value,
         '1',
@@ -100,16 +100,16 @@ void main() {
 
       // Halving leaves 4s/side, shorter than one 7s lift-hold-lower cycle.
       // The current action must be skipped, rather than starting a partial rep.
-      expect(find.text(next.drill.name), findsOneWidget);
+      expect(find.text('即将开始 · ${next.drill.name}'), findsOneWidget);
       expect(
-        tester
-            .widget<Semantics>(find.byKey(const ValueKey('index')))
-            .properties
-            .label,
-        '2 / ${plan.steps.length}',
+        find.text('1/${plan.steps.length}', findRichText: true),
+        findsOneWidget,
       );
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-      expect(find.byKey(const ValueKey('feel-ok')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+        findsOneWidget,
+      );
       expect(
         find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
         findsNothing,
@@ -125,7 +125,9 @@ void main() {
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
 
       // Optional feedback still records without skipping the next rest.
-      await tester.tap(find.byKey(const ValueKey('feel-ok')));
+      await tester.tap(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.text('已记录'), findsOneWidget);
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
@@ -133,15 +135,15 @@ void main() {
       await tester.pump(
         trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
-      expect(find.byKey(const ValueKey('feel-ok')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+        findsNothing,
+      );
       expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
       expect(
-        tester
-            .widget<Semantics>(find.byKey(const ValueKey('index')))
-            .properties
-            .label,
-        '2 / ${plan.steps.length}',
+        find.text('2/${plan.steps.length}', findRichText: true),
+        findsOneWidget,
       );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());

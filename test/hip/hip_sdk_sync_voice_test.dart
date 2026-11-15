@@ -32,8 +32,9 @@ class _VoiceHttp implements trainer.PoseHubCatalogHttpClient {
 
 trainer.LayeredVoiceSource _online(
   VoiceLibrary lib,
-  _VoiceHttp http,
-) => trainer.LayeredVoiceSource(
+  _VoiceHttp http, {
+  bool guided = false,
+}) => trainer.LayeredVoiceSource(
   primary: lib,
   catalog: trainer.CatalogVoiceIndex.fromCatalogJson({
     'mediaDistribution': {'baseUrl': 'https://media.example/pack/current/'},
@@ -45,6 +46,15 @@ trainer.LayeredVoiceSource _online(
           'cues': {
             'en': ['Current catalogue key point'],
           },
+          if (guided && id == 'chest-A')
+            'voiceGuide': {
+              'format': coach.PoseHubVoiceGuide.format,
+              'status': 'ready',
+              'mode': 'hold',
+              'set': [
+                {'at': 1, 'clipId': 'primaryCue'},
+              ],
+            },
           'voice': {
             'files': [
               for (final clip in ['name', 'primaryCue'])
@@ -168,6 +178,31 @@ void main() {
       expect(intro.expand((c) => c.clips), containsAll([name, cue]));
     },
   );
+
+  test('SDK work uses the prepared catalogue voice guide', () async {
+    final script = _script(
+      lib,
+      online: _online(lib, _VoiceHttp(), guided: true),
+    );
+    final source = script.source;
+    await (source as trainer.PreparableVoiceSource).prepare([
+      'chest-A',
+    ], lang: 'en');
+    const phase = trainer.SessionPhase(
+      kind: trainer.PhaseKind.work,
+      seconds: 30,
+      exerciseId: 'chest-A',
+    );
+    final cue = script
+        .cues(phase, planSeconds: 60)
+        .singleWhere(
+          (cue) => cue.clips.contains(
+            trainer.LayeredVoiceSource.keyOf('chest-A', 'primaryCue'),
+          ),
+        );
+    expect(cue.at, 1);
+    expect(cue.queueWithoutCutting, isTrue);
+  });
 
   test(
     'expected catalogue intro extends SDK prep before download finishes',

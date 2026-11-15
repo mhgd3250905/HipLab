@@ -1,5 +1,132 @@
 # 版本交付台账
 
+## 2026-11-15 动作库采用共享顶栏渐隐
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建源 c5a7c4bf9e531dff2b014b273986a394c5380fc3，同签覆盖安装到 2602BRT18C，保留原安装时间和数据目录。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc-library-nav/hiplab-1.1.2+69-sdk-main-036b5fc-library-nav-arm64-profile.apk。本机及设备 SHA-256：927278a6821d53d7365669fe5e338f437d1a558cef34646313097824bc2cbd04。
+
+## 2026-11-15 动作库对齐与留白
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建源 26bfbec63d4bf16a1e406070bf1c094d38c140fa，同签覆盖安装到 2602BRT18C，保留原安装时间和数据目录。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc-library-layout/hiplab-1.1.2+69-sdk-main-036b5fc-library-layout-arm64-profile.apk。本机及设备 SHA-256：0db4245e9c2d42e35471b673410456c60686b0c7f9fced9f6453fa4c8e7e6a22。
+
+## 2026-11-15 SDK 主线播放器候选 +69
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建源 ce4d0bc4888883cb3f677b8e9e2d860707c736a4，REDMI 2602BRT18C 同签覆盖安装，原安装时间和数据目录保留。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc/hiplab-1.1.2+69-sdk-main-036b5fc-arm64-profile.apk。本机及设备 SHA-256：d059f952d68bb34ad4516d8a3fddf5c5f5e56942ef75aef4bf08b460c6f451a6。
+
+## 2026-11-14 训练播放器休息反馈卡片
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建提交 f768b2a63c72b4f0f37e324491d4cb7be9a466cf，同签覆盖安装至 2602BRT18C，原安装时间和数据目录保留。APK 路径 E:/AII-3D/hiplab-releases/player-ui-sdk-69-rest-feedback/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk，本机与设备 SHA-256 均为 2d7f70b50492ca95c0445a9aab72c1c18abf044e863ff0f0ba0ef228a552a750。
+
+## 2026-11-14 SDK 训练播放器 V1 动效更新 +69
+
+`1.1.2+69`，Android arm64 版本码 `2069`。Profile APK 构建提交 `40b0e5c47f316881e250f1a13320f628e8a1a23c`，覆盖安装至 2602BRT18C，原安装时间及数据目录保留。APK `E:/AII-3D/hiplab-releases/player-ui-sdk-69-20261114/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk`，本机与设备 APK SHA-256 均为 `a35029ccf97d8a6dcc8a1af00cab1aaea137c0421705a8a9990ffabcc45ea027`。
+
+## 2026-11-14 SDK 训练播放器 V1 安卓候选
+
+`1.1.2+68` arm64 调试 APK，版本码 `2068`。构建源码 `85f555ac6527a15208fdf3d3e42cf169e243d239`，SDK 锁定 `72309f207c0545b9f275a39ccbf87cd559af2fef`。Android 真机 2602BRT18C 覆盖安装后保留原安装时间和数据目录，设备 APK 哈希回读与本机一致。本机 APK `E:/AII-3D/hiplab-releases/player-ui-sdk-20261113/hiplab-1.1.2+68-player-ui-sdk-arm64-debug.apk`，SHA-256 `c7ac2bdfd37532c002a2360152603dcce372996b5ba0e6d0965ea0333768c361`。
+
+## 2026-11-12 Hip 界面 v2 首页两处开合动效
+
+`1.1.2+68` arm64 性能分析包，版本码 `2068`。从 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动构建，运行源码差异 SHA-256 为 `384163c75cc98138b233cffe711478640e833418ed6fca7254164f20bc4da01e`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间与数据目录保留。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-home-motion-app-arm64-profile.apk` 的 SHA-256 均为 `fa4c75476d45385130a5ba8717efc2aa9403cacb965e5d428326a9d51dbebb6b`。
+
+## 2026-11-12 Hip 界面 v2 返回前台亮度闪动修复
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动，运行源码差异 SHA-256 为 `b685d8e4c0e95f49d6d1287735f43155f5d7b85a76b71524135be43c5fc3b081`。Xiaomi 13 Ultra 同签覆盖安装，设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-resume-opacity-app-arm64-debug.apk` 的 SHA-256 均为 `33e3f249ee6294156bebe9a622443366c5bce56f6b05ee8f612acdc4e796430a`。
+
+## 2026-11-12 Hip 界面 v2 首页卡片缩小 10%
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地改动，运行源码差异 SHA-256 为 `d2e557c8c855587d902e2a1632dfd6097a3aa5c5f67f4862fc10d35582151096`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间和数据目录保留。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-deck-90-app-arm64-debug.apk` 的 SHA-256 均为 `5327a71e7ee72be06b407fdf2d0f432e0b66177550b7b5528aa4c2e06be89f23`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡前后台恢复
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地布局及恢复修复，运行源码差异 SHA-256 为 `7077cd72bae24f91b10f7d917b51026c692125a332614a78bd09e3a7d3755d8d`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-resume-app-arm64-debug.apk` 的 SHA-256 均为 `8c19d2b06078eb80bde3b2c5168dad579e20e91537bd87e03ab7cc038b04dab7`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡说明精简
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。运行源码为 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地布局改动，差异 SHA-256 为 `364b91c18803c376d0ab227543c46ce443193eb92bd04198737776651bdc1105`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。设备与本机 APK `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-notes-app-arm64-debug.apk` 的 SHA-256 均为 `49e8d408e3a8322f1b87af2068bcda3a10a8963b0cf8f2edaa458152a0e80c9a`。
+
+## 2026-11-12 Hip 界面 v2 展开动作卡布局
+
+`1.1.2+68` arm64 调试包，版本码 `2068`。从 `8ef0fc2aab4a70b6d43310dfff3085e07c1a3f5a` 加本地展开动作卡布局改动构建，运行源码差异 SHA-256 为 `b4aaaf4fb051285fbcf896b4baff24be63652109d36211c3aee4d84f11d7ee47`。Xiaomi 13 Ultra 同签覆盖安装，原安装时间和数据目录保留。设备 APK 与本机文件 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-action-layout-app-arm64-debug.apk` 的 SHA-256 一致，均为 `e71d3a731dced2c04d0af8100e6e7336443871066b2f024c3cc901e1acab9099`。
+
+## 2026-11-12 Hip 界面 v2 首页训练组开合动画
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `72b403b62219cdbb985466cf9cf560934b46d316`。Xiaomi 13 Ultra 同签覆盖安装并保留原数据目录。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-folder-motion-app-arm64-debug.apk`，SHA-256 为 `8a740c4f12ff81407b41aeef24d209d06d86b695a2586685720e9c745f9a6bf9`。
+
+## 2026-11-12 Hip 界面 v2 卡堆尺寸与连续翻牌
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `554b14f586b576a3c76e7ca82ae51e5ab83768ad`。Xiaomi 13 Ultra 已同签覆盖安装并打开首页。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-deck-sizing-app-arm64-debug.apk`，SHA-256 为 `f65097dec34464e332fc47ac5c4084a2bcef9babcaf6758590e40d35a4fd452e`。
+
+## 2026-11-12 Hip 界面 v2 卡堆阴影修订
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `9a2a833580a121b942bf4f3227986c4e08f7510a`。Xiaomi 13 Ultra 已同签覆盖安装并打开首页。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-deck-app-arm64-debug.apk`，SHA-256 为 `2ca69e43e146d031e3526599cd6dac4111299f7609f1874628321806de89d1a8`。
+
+## 2026-11-12 Hip 界面 v2 真机验收修订
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，运行源码 `5dd34daba150dcf0caf70aecfa37526e9d550a16`。Xiaomi 13 Ultra 已同签覆盖安装并启动。
+
+APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-review-app-arm64-debug.apk`，SHA-256 为 `1260bbd84261daa8e6ac230e0b4a5c44b1f5c0eb8999d5f797ace560c50bd2cc`。
+
+## 2026-11-12 Hip 界面 v2 候选
+
+`1.1.2+68` arm64 调试包，版本码 `2068`，源码 `27d205625b04a8d797558b35e0f1fd912d6e1289`。APK 路径为 `E:/AII-3D/hiplab-releases/ui-v2-20261112/hiplab-1.1.2+68-ui-v2-app-arm64-debug.apk`，SHA-256 为 `b4078288f26eb4c326d342e6968d4a26cd18e625c7d37ff4dbf8451852e6d8c2`。Xiaomi 13 Ultra 已覆盖安装并打开首页。[验收记录](verification.md#2026-11-12-hip-界面-v2-候选)
+
+## 2026-11-12 首页文件夹紧凑布局真机调试包
+
+`com.ugk.hiplab` 的 `1.1.2+68` arm64 调试包，版本码 `2068`。构建自 `be523cb1476b110f145ad4ec947c964918205811` 加首页文件夹布局工作区改动，构建时 Git 差异 SHA-256 为 `60387e6ea1b202ef99a44296c3d644a6fb640673cefc3f60c3592d8d97b2f44e`。同签覆盖安装 Xiaomi 13 Ultra 并启动，原首次安装时间和应用数据目录已核对保留。开哥已确认收起与展开布局真机验收通过。
+
+APK 路径为 `E:/AII-3D/hiplab-releases/pr35-ui-shots-20261112/hiplab-1.1.2+68-folder-compact-arm64-debug.apk`，SHA-256 为 `016e87af7a95a6fbfa1121950909d43a21931c674d3b4678adf70319fbf9a8cc`。
+
+## 2026-11-12 首次 AI 数据共享同意 +68 候选
+
+候选共用版本为 `1.1.2+68`。Android 商店版预期版本码为 `68`。[本轮验证](verification.md#2026-11-12-首次-ai-数据共享同意-68-候选)
+
+`com.ugk.hipinterlude` 的 `1.1.2 (68)` 从 `feat/membership@a21cb400843623f437d78dde176780768222f8a0` 构建，App Store 分发签名验证通过。IPA SHA-256 为 `285e4936f3c9247dce888fc30151c232760ee38777570f1c514860860215d5b6`。Apple 构建状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
+
+## 2026-11-12 会员阶段收束 +67
+
+### iOS TestFlight 内测
+
+`com.ugk.hipinterlude` 的 `1.1.2 (67)` 从 `feat/membership@f397fdec36bb1cb10e36bb6c743c3470280f9753` 构建，App Store 分发签名验证通过。IPA SHA-256 为 `f32b282d31f5f01952351013839ea32fc35b8833b65800e742e6acad0181c53d`。Apple 构建处理状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
+
+### Android 签名商店包
+
+源码 `1.1.2+67`，Git 标签 `v1.1.2+67`，基线 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`。会员卡按购买起止时间显示有效期，并列出续订、取消或试用状态。标签指向 `f42b79b7586cae066b7cd6cbc52c94da77d45781`。该源码已构建 `com.ugk.hiplab` 商店 AAB，版本码 `67`，大小 99,121,068 字节，SHA-256 为 `b635f3668f5855533be26c2adf9591498feb74ea645070de1abc9bf91c35fb46`。`bundletool validate` 通过，上传证书与 +62 一致。产物位于 `E:/AII-3D/hiplab-releases/membership-67/hiplab-1.1.2+67-membership-store-release.aab`。2026-11-12 11:53（北京时间），Play Console 回读已面向内部测试人员发布，名单仅勾选 `wrist-test` 两人。[加入内测](https://play.google.com/apps/internaltest/4701079694408471816)[验证台账](verification.md#2026-11-12-会员阶段收束-67)
+
+## 2026-11-12 会员卡有效期真机包
+
+`1.1.2+66` 自用 arm64 APK 的版本码为 `2066`，源码为 `f3358005468bc6cb3181e2f80f6d3b29c83c2165` 加会员卡有效期改动，运行差异 SHA-256 为 `c72e5525e17174d3f3fe312cefe64de35c8f4234690c2dec9551c3822454e3e6`。11:02（北京时间）同签覆盖手机的 `2065` 并启动，应用 ID、用户数据目录和首次安装时间均已核对保留。用户已确认会员卡有效期真机验收通过。
+
+APK 路径为 `E:/AII-3D/hiplab-releases/membership-66/validity-device/hiplab-1.1.2+66-validity-device-arm64-release.apk`，大小 56,683,056 字节，SHA-256 为 `2d9d1ea40a6dab898c4919c5a2d58de1b99af1bdecdf418da4711366712b8d6f`。
+
+## 2026-11-12 Android 会员页 v2 +66
+
+签名商店 AAB 来自 `f3358005468bc6cb3181e2f80f6d3b29c83c2165`，包名 `com.ugk.hiplab`，版本码 `66`，大小 99,116,740 字节，SHA-256 为 `6f8e0d660411b5593f97eea146512d87bc8e2c81928ac67eff05baf1ae30f00d`。通过 bundletool 校验，与 +62 上传证书一致。Play Console 回读已面向 `wrist-test` 内部测试人员发布。[加入内测](https://play.google.com/apps/internaltest/4701079694408471816)
+
+## 2026-11-12 iOS 会员 +65
+
+- 候选为 `com.ugk.hipinterlude` `1.1.2 (65)`，构建源为 `feat/membership@44da9c22c161ae9755a61daf4b83b0e4f5b096f6`。
+- 已验证 App Store 分发签名。IPA SHA-256 为 `6ff3e9b2926bfcf591961caddcb236e92d69502a455d36df37c2d350b7474aa4`。
+- Apple 构建处理状态为 `VALID`，`Internal Testing` 组状态为 `IN_BETA_TESTING`。
+
+## 2026-11-11 Android 会员 +65
+
+Android `1.1.2+65` 签名商店包已发布 Play 内测。构建源为 `6c739c3`，签名匹配 +62 上传证书。[构建与发布证据](android-membership-2026-11-11.md#2026-11-11-play-内测和网关部署)
+
+## 2026-11-10 动作库 +64 上架前候选
+
+`1.1.1+64` 商店 AAB（64）与自用 arm64 APK（2064）均从 `39d70555baa6c3eb30182eec58a03b56462b2566` 构建，分别匹配 +62 上传证书和自用安装证书。[包路径、大小与 SHA-256](library-248-plus64-2026-11-10.md#验证与构建)
+
+## 2026-11-10 r2-v11 动作库候选 +63
+
+`feat/library-248` 基于 `main@98f891b`（+62）。版本为 `1.1.1+63`，Android arm64
+为 `2063`，SDK 锁定 `536b4c52c0f665203e7feb82dfde4d76f4815ad8`，stable 渠道。
+r2-v11 原目录 249 项，动作库和 AI 定制显式开放 248 项，随包带 248 张封面和
+248 张缩略图。静态分析 0 问题，全量 641 通过，70 项既有跳过，0 失败。
+
+运行源 `c40e50f8c4e0b1ff6481981109ffb78fc4c1b66f` 已构建并验签，安装证书与 +62 一致。
+APK 为 54,596,512 字节，比 +62 增加 5,243,684 字节。断网软件冷启动及
+248 张列表图解码通过，真机播放和覆盖保留用户数据待验收。[交付回执](library-248-r2-v11-2026-11-10.md)
+
 ## 2026-11-08：SDK 同步候选 / +62
 
 本轮候选为 `codex/sdk-sync-r1-20261108`，从本地 `main@54471ae` 建立；

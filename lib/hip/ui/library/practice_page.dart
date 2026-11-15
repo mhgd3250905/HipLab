@@ -4,6 +4,7 @@
 // [PracticePage.library] is the 动作库 entry: the moves view only (the SDK
 // library under the HipLab bar until M3 replaces it).
 import 'package:flutter/material.dart';
+import '../../control/hip_store.dart';
 import '../../data/hip_shared_library.dart';
 
 import '../../domain/hip_library.dart';
@@ -12,6 +13,7 @@ import '../coach/hip_coach_chat_page.dart';
 import '../hip_assessment_page.dart';
 import '../hip_icons.dart';
 import '../hip_content_text.dart';
+import '../hip_membership_scope.dart';
 import '../hip_page_kit.dart';
 import '../hip_routes.dart';
 import '../hip_segmented.dart';
@@ -49,12 +51,17 @@ class PracticePage extends StatefulWidget {
     required this.onStartAssessment,
     this.library = false,
     this.trailing,
+    this.homeScene,
   });
   final LibraryActions actions;
   final PracticeMemory memory;
 
   /// The 动作库 entry instead of 训练组.
   final bool library;
+
+  /// When opened from 首页's 「训练组选择」, show add/remove controls for this
+  /// scene's 首页 folder. Otherwise the page stays a plain library browser.
+  final HipScene? homeScene;
 
   /// One action on the right of the bar (coach: 去排一套).
   final Widget? trailing;
@@ -73,6 +80,8 @@ class _PracticePageState extends State<PracticePage> {
   PracticeMemory get mem => widget.memory;
   LibraryActions get actions => widget.actions;
   HipContent get content => actions.store.content;
+  HipScene? get homeScene => widget.homeScene;
+  HipStore get store => actions.store;
 
   /// 训练组 segment: 2 我的 (default) or 1 推荐套路.
   int get _segment => mem.segment == 1 ? 1 : 2;
@@ -91,6 +100,7 @@ class _PracticePageState extends State<PracticePage> {
       title: widget.library ? t.libraryTitle : t.groupsTitle,
       leadingKey: const ValueKey('practice-back'),
       trailing: widget.trailing,
+      bodyScrollsUnderBar: widget.library,
       body: ListenableBuilder(
         listenable: actions.store,
         builder: (context, _) => _build(context),
@@ -122,6 +132,7 @@ class _PracticePageState extends State<PracticePage> {
           label: (v) => v == 2 ? t.segMine : t.segRecommended,
         ),
         const SizedBox(height: 16),
+        if (homeScene != null) _homeSceneNote(t),
         ...(seg == 1 ? _routines(t) : _mine(t)),
       ],
     );
@@ -140,13 +151,14 @@ class _PracticePageState extends State<PracticePage> {
         all: all,
         filter: f,
         search: _actionSearch,
+        libraryStyle: true,
         onChanged: (v) => setState(() => mem.actions = v),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: 4),
       Text(
         t.lang == 'en' ? '${shown.length} moves' : '${shown.length} 个动作',
         key: const ValueKey('actions-count'),
-        style: TextStyle(fontSize: 13, color: HipColors.muted),
+        style: TextStyle(fontSize: 11.5, color: HipColors.muted),
       ),
       const SizedBox(height: 10),
       if (shown.isEmpty)
@@ -165,12 +177,25 @@ class _PracticePageState extends State<PracticePage> {
           onTap: (from) => _openDrill(a.id, from),
         ),
     ]);
-    return ListView.builder(
-      key: const ValueKey('practice-list'),
-      padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 24),
-      itemCount: header.length + rows.length,
-      itemBuilder: (context, i) =>
-          i < header.length ? header[i] : rows.row(i - header.length),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        // Use the full phone width. Limit card width on wider windows.
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: ListView.builder(
+          key: const ValueKey('practice-list'),
+          // HipNavPage already provides the device's bottom safe area.
+          padding: EdgeInsets.fromLTRB(
+            kHipPageEdge,
+            hipNavInset(context) + 4,
+            kHipPageEdge,
+            36,
+          ),
+          itemCount: header.length + rows.length,
+          itemBuilder: (context, i) =>
+              i < header.length ? header[i] : rows.row(i - header.length),
+        ),
+      ),
     );
   }
 
@@ -219,21 +244,45 @@ class _PracticePageState extends State<PracticePage> {
 
   // ── ③ 套路 ──
 
+  Widget _homeSceneNote(LibText t) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: hipFlatCard(
+      key: const ValueKey('home-scene-note'),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          HipIcon(HipGlyph.grid, size: 16, color: HipColors.jade),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              t.isEn
+                  ? 'Add groups to the ${homeScene == HipScene.chair ? 'office' : 'home'} home folder'
+                  : '把训练组加入首页${homeScene == HipScene.chair ? '办公' : '居家'}文件夹',
+              style: TextStyle(fontSize: 12.5, color: HipColors.muted),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  /// All authored 编排套路. From 首页, each shows whether it is already in
+  /// that scene's 首页 folder and an add/remove button.
   List<Widget> _routines(LibText t) {
-    final rec = actions.store.profile.recommendedRoutine;
-    final list = [...content.routines]
-      ..sort((a, b) => (a.id == rec ? 0 : 1).compareTo(b.id == rec ? 0 : 1));
-    final dancer = actions.store.identity == HipIdentity.dancer;
+    final rec = store.profile.recommendedRoutine;
+    int rank(HipRoutine r) => r.id == rec ? 0 : 1;
+    final list = [...store.libraryRoutines]
+      ..sort((a, b) => rank(a).compareTo(rank(b)));
     return [
-      HipSection(t.routinesCount(content.routines.length), first: true),
+      HipSection(t.routinesCount(list.length), first: true),
       for (final r in list) ...[
-        _routineCard(t, r, r.id == rec, dancer),
+        _routineCard(t, r, r.id == rec),
         const SizedBox(height: 8),
       ],
     ];
   }
 
-  Widget _routineCard(LibText t, HipRoutine r, bool rec, bool dancer) {
+  Widget _routineCard(LibText t, HipRoutine r, bool rec) {
     // Show the same adapted plan as the detail page, including its timing.
     final plan = actions.store.planner.planFor([r], actions.store.profile);
     final nameStyle = TextStyle(
@@ -295,25 +344,69 @@ class _PracticePageState extends State<PracticePage> {
                 color: HipColors.muted,
               ),
             ),
-            if (r.id == 'F' && !dancer) ...[
-              const SizedBox(height: 6),
-              Text(
-                t.dancerNote,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: HipColors.tight,
-                  height: 1.35,
-                ),
-              ),
-            ],
             const SizedBox(height: 12),
             LibThumbStrip(
               size: 32,
               gap: 8,
               drills: [for (final s in plan.steps) s.drill],
             ),
+            if (homeScene != null)
+              _homeMembership(t, id: r.id, keyValue: 'routine-${r.id}'),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 已加入首页 / 加入首页 for one 编排套路 or 我的训练组.
+  Widget _homeMembership(
+    LibText t, {
+    required String id,
+    required String keyValue,
+  }) {
+    final scene = homeScene!;
+    final added = store.homeRoutineIds[scene]!.contains(id);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          if (added)
+            Container(
+              key: ValueKey('home-added-$keyValue'),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: HipColors.jade.withValues(alpha: .14),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HipIcon(HipGlyph.check, size: 11, color: HipColors.jade),
+                  const SizedBox(width: 4),
+                  Text(
+                    t.homeAdded,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: HipColors.jadeDeep,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const Spacer(),
+          LibPill(
+            key: ValueKey('home-toggle-$keyValue'),
+            label: added ? t.homeRemoveFrom(scene) : t.homeAddTo(scene),
+            semanticLabel: added ? t.homeRemoveFrom(scene) : t.homeAddTo(scene),
+            icon: added ? HipGlyph.close : HipGlyph.plus,
+            foreground: added ? HipColors.pain : null,
+            background: added ? tintOf(HipColors.pain) : null,
+            height: 30,
+            radius: 8,
+            onTap: () => store.setHomeRoutine(scene, id, added: !added),
+          ),
+        ],
       ),
     );
   }
@@ -321,7 +414,7 @@ class _PracticePageState extends State<PracticePage> {
   // ── ⑤ 我的 ──
 
   List<Widget> _mine(LibText t) {
-    final groups = actions.store.customRoutines;
+    final groups = store.customRoutines;
     return [
       HipListGroup(
         children: [
@@ -344,45 +437,14 @@ class _PracticePageState extends State<PracticePage> {
       ] else ...[
         HipSection(t.myGroups(groups.length)),
         for (final g in groups) ...[
-          GroupCard(actions: actions, group: g),
+          GroupCard(actions: actions, group: g, homeScene: homeScene),
           const SizedBox(height: 8),
         ],
       ],
     ];
   }
 
-  Future<void> _newGroup() async {
-    final store = actions.store;
-    final draft = CustomRoutine(
-      id: store.newCustomId(),
-      name: store.nextCustomName(language: LibText.of(context).lang),
-      steps: const [],
-    );
-    // 新建 goes straight to picking moves, then the editor.
-    final ids = await Navigator.of(context).push<List<String>>(
-      HipRoute.content(
-        (_) => DrillPickerPage(
-          actions: actions,
-          groupName: draft.name,
-          existing: const [],
-        ),
-      ),
-    );
-    if (ids == null || ids.isEmpty || !mounted) return;
-    await Navigator.of(context).push(
-      HipRoute.content<void>(
-        (_) => GroupEditorPage(
-          actions: actions,
-          initial: draft.copyWith(
-            steps: [
-              for (final id in ids.take(CustomRoutine.maxSteps)) CustomStep(id),
-            ],
-          ),
-          isNew: true,
-        ),
-      ),
-    );
-  }
+  Future<void> _newGroup() => openHipNewGroup(context, actions);
 
   Widget _emptyMine(LibText t) => hipFlatCard(
     key: const ValueKey('mine-empty'),
@@ -412,13 +474,85 @@ class _PracticePageState extends State<PracticePage> {
   );
 }
 
+Future<void> openHipNewGroup(
+  BuildContext context,
+  LibraryActions actions,
+) async {
+  if (!await ensureHipPremium(context) || !context.mounted) return;
+  final store = actions.store;
+  final draft = CustomRoutine(
+    id: store.newCustomId(),
+    name: store.nextCustomName(language: LibText.of(context).lang),
+    steps: const [],
+  );
+  // 新建 goes straight to picking moves, then the editor.
+  final ids = await Navigator.of(context).push<List<String>>(
+    HipRoute.content(
+      (_) => DrillPickerPage(
+        actions: actions,
+        groupName: draft.name,
+        existing: const [],
+      ),
+    ),
+  );
+  if (ids == null || ids.isEmpty || !context.mounted) return;
+  if (!await ensureHipPremium(context) || !context.mounted) return;
+  await Navigator.of(context).push(
+    HipRoute.content<void>(
+      (_) => GroupEditorPage(
+        actions: actions,
+        initial: draft.copyWith(
+          steps: [
+            for (final id in ids.take(CustomRoutine.maxSteps)) CustomStep(id),
+          ],
+        ),
+        isNew: true,
+      ),
+    ),
+  );
+}
+
 /// A custom group: name, moves · time, 「改自套路」, thumbnails; the tinted
-/// 「▶ 开始」 pill plays it, the rest of the card opens the editor.
+/// 「▶ 开始」 pill plays it, the rest opens its details or editor.
 class GroupCard extends StatelessWidget {
-  GroupCard({super.key, required this.actions, required this.group});
+  GroupCard({
+    super.key,
+    required this.actions,
+    required this.group,
+    this.homeScene,
+  });
   final LibraryActions actions;
   final CustomRoutine group;
+
+  /// When set, show the 首页 folder add/remove control on this card too.
+  final HipScene? homeScene;
   final _startKey = GlobalKey();
+
+  Future<void> _open(BuildContext context) async {
+    if (hasHipPremium(context)) {
+      await _edit(context, group);
+      return;
+    }
+    await Navigator.of(context).push(
+      HipRoute.content<void>(
+        (_) => _SavedGroupPage(actions: actions, initial: group, onEdit: _edit),
+      ),
+    );
+  }
+
+  Future<void> _edit(BuildContext context, CustomRoutine group) async {
+    if (!await ensureHipPremium(context) || !context.mounted) return;
+    final current = actions.store.customRoutine(group.id) ?? group;
+    if (current.coachPlan != null && actions.coach != null) {
+      await openHipSavedCoachPlan(context, actions, current);
+      return;
+    }
+    await Navigator.of(context).push(
+      HipRoute.content<void>(
+        (_) => GroupEditorPage(actions: actions, initial: current),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -442,13 +576,7 @@ class GroupCard extends StatelessWidget {
       semanticLabel: g.name,
       preserveChildSemantics: true,
       scale: .98,
-      onTap: () => g.coachPlan != null && actions.coach != null
-          ? openHipSavedCoachPlan(context, actions, g)
-          : Navigator.of(context).push(
-              HipRoute.content<void>(
-                (_) => GroupEditorPage(actions: actions, initial: g),
-              ),
-            ),
+      onTap: () => _open(context),
       child: hipFlatCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,7 +649,7 @@ class GroupCard extends StatelessWidget {
                       icon: HipGlyph.play,
                       height: 32,
                       radius: 8,
-                      onTap: store.blocked || g.steps.isEmpty
+                      onTap: g.steps.isEmpty
                           ? null
                           : () => startGroup(
                               context,
@@ -538,8 +666,199 @@ class GroupCard extends StatelessWidget {
             ExcludeSemantics(
               child: LibThumbStrip(drills: drills, size: 32, gap: 8),
             ),
+            if (homeScene != null)
+              _GroupHomeMembership(store: store, scene: homeScene!, group: g),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SavedGroupPage extends StatelessWidget {
+  const _SavedGroupPage({
+    required this.actions,
+    required this.initial,
+    required this.onEdit,
+  });
+
+  final LibraryActions actions;
+  final CustomRoutine initial;
+  final Future<void> Function(BuildContext, CustomRoutine) onEdit;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: actions.store,
+    builder: (context, _) {
+      final group = actions.store.customRoutine(initial.id);
+      if (group == null) {
+        return HipNavPage(title: initial.name, body: const SizedBox.shrink());
+      }
+      final t = LibText.of(context);
+      final content = actions.store.content;
+      final secs = group.seconds(content);
+      return HipNavPage(
+        key: const ValueKey('saved-group-details'),
+        title: group.name,
+        subtitle: '${t.movesCount(group.steps.length)} · ${t.duration(secs)}',
+        trailing: GroupDeleteButton(
+          key: const ValueKey('saved-group-delete'),
+          actions: actions,
+          group: group,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          children: [
+            if (group.coachPlan == null)
+              Text('${t.restBetween} ${t.restValue(group.restSeconds)}'),
+            if (group.removed > 0) Text(t.delisted(group.removed)),
+            for (final step in group.steps)
+              _move(content, t, step, coachPlan: group.coachPlan != null),
+          ],
+        ),
+        bottomBar: LibFooter(
+          children: [
+            Expanded(
+              child: HipSecondaryButton(
+                key: const ValueKey('saved-group-edit'),
+                label: t.editGroup,
+                onPressed: () async {
+                  await onEdit(context, group);
+                  if (context.mounted &&
+                      actions.store.customRoutine(group.id) == null) {
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Builder(
+                builder: (startContext) => HipPrimaryButton(
+                  key: const ValueKey('saved-group-start'),
+                  label: t.start,
+                  icon: HipGlyph.play,
+                  onPressed: group.steps.isEmpty
+                      ? null
+                      : () => startGroup(
+                          context,
+                          actions,
+                          group,
+                          from: startContext,
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+
+  Widget _move(
+    HipContent content,
+    LibText t,
+    CustomStep step, {
+    required bool coachPlan,
+  }) {
+    final drill = coachPlan || isSdkGroupStep(content, step.kitId)
+        ? hipSdkDrill(content, step.kitId)
+        : content.drills[step.kitId];
+    final kit = content.kit(step.kitId);
+    final dose = coachPlan
+        ? t.savedPlanDose(step)
+        : kit == null
+        ? sdkStepDoseText(content, step, lang: t.lang)
+        : doseText(kit, step.dose(kit), single: false, lang: t.lang);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          if (drill != null) ...[
+            HipThumb(
+              size: 44,
+              radius: 10,
+              child: HipDrillArt(drill: drill, showPendingLabel: false),
+            ),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  drill == null
+                      ? step.kitId
+                      : drillName(content, drill, t.lang),
+                ),
+                if (dose.isNotEmpty)
+                  Text(dose, style: TextStyle(color: HipColors.muted)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 我的训练组 version of the 首页 folder control, outside the page state so
+/// GroupCard stays a plain widget.
+class _GroupHomeMembership extends StatelessWidget {
+  const _GroupHomeMembership({
+    required this.store,
+    required this.scene,
+    required this.group,
+  });
+  final HipStore store;
+  final HipScene scene;
+  final CustomRoutine group;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = LibText.of(context);
+    final added = store.homeRoutineIds[scene]!.contains(group.id);
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          if (added)
+            Container(
+              key: ValueKey('home-added-group-${group.id}'),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: HipColors.jade.withValues(alpha: .14),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HipIcon(HipGlyph.check, size: 11, color: HipColors.jade),
+                  const SizedBox(width: 4),
+                  Text(
+                    t.homeAdded,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: HipColors.jadeDeep,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const Spacer(),
+          LibPill(
+            key: ValueKey('home-toggle-group-${group.id}'),
+            label: added ? t.homeRemoveFrom(scene) : t.homeAddTo(scene),
+            semanticLabel: added ? t.homeRemoveFrom(scene) : t.homeAddTo(scene),
+            icon: added ? HipGlyph.close : HipGlyph.plus,
+            foreground: added ? HipColors.pain : null,
+            background: added ? tintOf(HipColors.pain) : null,
+            height: 30,
+            radius: 8,
+            onTap: () => store.setHomeRoutine(scene, group.id, added: !added),
+          ),
+        ],
       ),
     );
   }

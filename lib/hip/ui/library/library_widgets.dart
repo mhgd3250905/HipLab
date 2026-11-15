@@ -175,6 +175,8 @@ class LibPill extends StatelessWidget {
     this.icon,
     this.height = 28,
     this.radius = 14,
+    this.foreground,
+    this.background,
   });
   final String label;
   final String? semanticLabel;
@@ -184,10 +186,14 @@ class LibPill extends StatelessWidget {
   /// UI r2 compact action pill: 32 high, radius 8.
   final double height;
   final double radius;
+
+  /// Optional enabled-state colours. Defaults keep the jade action tint.
+  final Color? foreground;
+  final Color? background;
   @override
   Widget build(BuildContext context) {
     final on = onTap != null;
-    final fg = on ? HipColors.jadeText : HipColors.faint;
+    final fg = on ? (foreground ?? HipColors.jadeText) : HipColors.faint;
     return HipPressable(
       semanticLabel: semanticLabel ?? label,
       onTap: onTap,
@@ -196,7 +202,9 @@ class LibPill extends StatelessWidget {
         height: height,
         padding: EdgeInsets.symmetric(horizontal: height > 28 ? 12 : 10),
         decoration: BoxDecoration(
-          color: on ? tintOf(HipColors.jade) : HipColors.surfaceHigh,
+          color: on
+              ? (background ?? tintOf(HipColors.jade))
+              : HipColors.surfaceHigh,
           borderRadius: BorderRadius.circular(radius),
         ),
         child: Row(
@@ -228,19 +236,18 @@ class LibSearchField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onChanged,
+    this.libraryStyle = false,
   });
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final bool libraryStyle;
   @override
   Widget build(BuildContext context) {
     final t = LibText.of(context);
-    return Container(
-      constraints: const BoxConstraints(minHeight: 36),
-      padding: const EdgeInsets.fromLTRB(12, 4, 2, 4),
-      decoration: BoxDecoration(
-        color: HipColors.track,
-        borderRadius: BorderRadius.circular(10),
-      ),
+    final content = Padding(
+      padding: libraryStyle
+          ? const EdgeInsets.only(left: 12, right: 2)
+          : const EdgeInsets.fromLTRB(12, 4, 2, 4),
       child: Row(
         children: [
           HipIcon(HipGlyph.search, size: 16, color: HipColors.muted),
@@ -251,14 +258,22 @@ class LibSearchField extends StatelessWidget {
               controller: controller,
               onChanged: onChanged,
               textInputAction: TextInputAction.search,
-              style: TextStyle(fontSize: 14, color: HipColors.text),
+              textAlignVertical: libraryStyle ? TextAlignVertical.center : null,
+              style: TextStyle(
+                fontSize: libraryStyle ? 13 : 14,
+                color: HipColors.text,
+              ),
               decoration: InputDecoration(
                 isCollapsed: true,
+                contentPadding: libraryStyle ? EdgeInsets.zero : null,
                 border: InputBorder.none,
                 hintText: libLargeText(context)
                     ? t.searchHintShort
                     : t.searchHint,
-                hintStyle: TextStyle(fontSize: 14, color: HipColors.faint),
+                hintStyle: TextStyle(
+                  fontSize: libraryStyle ? 13 : 14,
+                  color: HipColors.faint,
+                ),
               ),
             ),
           ),
@@ -281,6 +296,16 @@ class LibSearchField extends StatelessWidget {
         ],
       ),
     );
+    return libraryStyle
+        ? HipCard(radius: 14, child: Center(child: content))
+        : Container(
+            constraints: const BoxConstraints(minHeight: 36),
+            decoration: BoxDecoration(
+              color: HipColors.track,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: content,
+          );
   }
 }
 

@@ -512,6 +512,18 @@ class _HipSource extends trainer.VoiceSource {
     required String lang,
   }) => _clips.drillText(exerciseId, line, lang: lang);
   @override
+  coach.PoseHubVoiceGuide? voiceGuide(String exerciseId) =>
+      _clips.voiceGuide(exerciseId);
+  @override
+  String? voiceGuideClipKey(
+    String exerciseId,
+    String clipId, {
+    required String lang,
+  }) => _clips.voiceGuideClipKey(exerciseId, clipId, lang: lang);
+  @override
+  List<String> voiceGuideCommonKeys(String key, {required String lang}) =>
+      _clips.voiceGuideCommonKeys(key, lang: lang);
+  @override
   String? call(trainer.VoiceCall c) => lib.call(c);
   @override
   String? drill(String id, trainer.DrillLine line) {
@@ -723,6 +735,13 @@ trainer.SessionPhase _toTrainer(
   Map<String, ActionKit> kits = const {},
 }) {
   final s = p.step < steps.length ? steps[p.step] : null;
+  final exerciseId = s?.drill.id;
+  // Safety substitutions update the execution steps. Keep the phase's item
+  // in sync so the player header and demonstration show the same exercise.
+  final phaseItem =
+      exerciseId != null && item != null && exerciseId != item.exerciseId
+      ? item.copyWith(exerciseId: exerciseId)
+      : item;
   final kit = s == null ? null : kits[s.drill.id];
   final rhythm = kit == null ? null : trainer.Rhythm.fromActionKitJson(kit.raw);
   final repPlan = p.isWork && rhythm != null && rhythm.counted
@@ -739,8 +758,8 @@ trainer.SessionPhase _toTrainer(
     holdSeconds: s?.kitDose.holdSeconds ?? kit?.defaultHold,
     kind: trainer.PhaseKind.values.byName(p.kind.name),
     seconds: p.seconds,
-    exerciseId: s?.drill.id,
-    item: item,
+    exerciseId: exerciseId,
+    item: phaseItem,
     itemIndex: p.step,
     set: p.set > 0 ? p.set : 1,
     sets: p.totalSets > 0 ? p.totalSets : s?.sets ?? 0,

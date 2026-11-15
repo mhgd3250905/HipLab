@@ -59,14 +59,15 @@ void main() {
       expect(source['source']['commit'], hipCoachAiTagsSourceCommit);
       expect(source['reviewed'], isFalse);
       expect(source['status'], 'ai-draft');
-      expect(tags, hasLength(209));
-      expect(tags.keys.every(hiplabCoachAuthorizedActionIds.contains), isTrue);
+      expect(tags, hasLength(248));
+      expect(tags.keys.toSet(), hiplabCoachAuthorizedActionIds);
+      expect(originals.keys.toSet(), hiplabCoachAuthorizedActionIds);
+      expect(tags.containsKey('n-thomas-test'), isFalse);
       expect(tags.containsKey('h-sleeper-stretch'), isFalse);
       expect(tags.containsKey('scapular-C'), isFalse);
-      expect(source['missingAuthorizedIds'], [
-        'h-sleeper-stretch',
-        'scapular-C',
-      ]);
+      expect(source['authorizedActionCount'], 248);
+      expect(source['includedActionCount'], 248);
+      expect(source['missingAuthorizedIds'], isEmpty);
       for (final entry in tags.entries) {
         expect(entry.value, originals[entry.key], reason: entry.key);
         expect(entry.value['status'], 'ai-draft', reason: entry.key);

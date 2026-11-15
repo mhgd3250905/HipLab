@@ -10,12 +10,9 @@
   },
   "status": "ai-draft",
   "reviewed": false,
-  "authorizedActionCount": 211,
-  "includedActionCount": 209,
-  "missingAuthorizedIds": [
-    "h-sleeper-stretch",
-    "scapular-C"
-  ],
+  "authorizedActionCount": 248,
+  "includedActionCount": 248,
+  "missingAuthorizedIds": [],
   "actions": {
     "abs-A": {
       "format": "pose-hub-ai-tags@1",
@@ -3809,6 +3806,125 @@
       ],
       "reviewNotes": []
     },
+    "h-band-biceps-curl": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-band-biceps-curl",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-band-biceps-curl.json",
+        "textSha256Lf": "2b018f7deddc7f40b057ec123538ae93a5f4b86da0f72411d47bd0bd5444e4ab",
+        "spec": "drill-anim/specs/h-band-biceps-curl-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "band"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "stabilizers": [],
+      "joints": [
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "hypertrophy"
+      ],
+      "alternatives": [
+        "h-db-curl",
+        "h-db-hammer-curl"
+      ],
+      "regressions": [
+        "h-biceps-self"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "只带一根弹力带就能练二头肌，适合居家、酒店和工间。",
+        "en": "Biceps curl with just a band; works at home, in hotels and on desk breaks."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "requiredEquipment/optionalEquipment",
+          "existing": [
+            "resistance-band"
+          ],
+          "chosen": {
+            "requiredEquipment": [
+              "band"
+            ],
+            "optionalEquipment": []
+          },
+          "reason": "resistance-band 归一为 band。"
+        }
+      ],
+      "reviewNotes": [
+        "弹力带便携、踩住即可，无需固定点，所以场景放宽到办公室/户外/酒店。"
+      ]
+    },
     "h-band-chest-fly": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-band-chest-fly",
@@ -5832,6 +5948,177 @@
       ],
       "reviewNotes": []
     },
+    "h-bear-plank": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-bear-plank",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-bear-plank.json",
+        "textSha256Lf": "910cd2f5f300b4aef9f838ec59a036b9ad913aa5692fc151640d9a1c9468f6af",
+        "spec": "drill-anim/specs/h-bear-plank-r4.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "mat",
+          "use": [
+            "towel"
+          ],
+          "loadNote": "similar"
+        }
+      ],
+      "trainingType": [
+        "stability-control"
+      ],
+      "movementPattern": [
+        "anti-extension"
+      ],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core"
+      ],
+      "primaryMuscles": [
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "deltoids"
+      ],
+      "stabilizers": [
+        "serratus",
+        "obliques",
+        "hip-flexors"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "hip",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "low",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main",
+        "warmup"
+      ],
+      "goals": [
+        "strength",
+        "performance"
+      ],
+      "alternatives": [
+        "h-forearm-plank"
+      ],
+      "regressions": [
+        "w-bird-dog"
+      ],
+      "progressions": [
+        "obliques-A",
+        "h-mountain-climber"
+      ],
+      "aiSummary": {
+        "zh": "四足位膝盖离地的核心稳定保持，比平板支撑对腰更友好。",
+        "en": "Quadruped knee-hover core hold; gentler on the low back than a full plank."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "core"
+            ],
+            "synergistMuscles": [
+              "deltoids",
+              "quadriceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "deltoids"
+            ],
+            "stabilizers": [
+              "serratus",
+              "obliques",
+              "hip-flexors"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core）按动作实际做法拆到细分 id。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 1,
+          "chosen": 2,
+          "reason": "膝离地全身支撑需持续核心和肩稳定，定基础 2。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-bent-knee-calf-raise": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-bent-knee-calf-raise",
@@ -5943,6 +6230,258 @@
       },
       "confidence": "high",
       "notes": [],
+      "reviewNotes": []
+    },
+    "h-biceps-self": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-biceps-self",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-biceps-self.json",
+        "textSha256Lf": "b209ddae676add093dfbecca2d5a270e2e7072d497a8d24902e6e02180fa9016",
+        "spec": "drill-anim/specs/h-biceps-self-r8.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "triceps",
+        "chest"
+      ],
+      "stabilizers": [],
+      "joints": [
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main",
+        "warmup"
+      ],
+      "goals": [
+        "strength",
+        "desk-relief"
+      ],
+      "alternatives": [
+        "h-towel-isometric-curl"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-band-biceps-curl"
+      ],
+      "aiSummary": {
+        "zh": "没有任何器械时练二头肌，工位、酒店都能做。",
+        "en": "Equipment-free biceps work using the other hand as resistance."
+      },
+      "confidence": "medium",
+      "notes": [],
+      "reviewNotes": [
+        "secondaryMuscles 的 triceps/chest 是给阻力那只手的发力肌，不是练习侧。"
+      ]
+    },
+    "h-bilateral-farmer-hold-native": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-bilateral-farmer-hold-native",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-bilateral-farmer-hold-native.json",
+        "textSha256Lf": "932b685a45fbffe45b0c3694ca25e0507cd7b054139837d4ab4dbe0c7abdb86d",
+        "spec": "drill-anim/specs/h-bilateral-farmer-hold-native-r2.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "dumbbell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "dumbbell",
+          "use": [
+            "backpack",
+            "water-bottle"
+          ],
+          "loadNote": "lighter"
+        }
+      ],
+      "trainingType": [
+        "stability-control",
+        "strength"
+      ],
+      "movementPattern": [
+        "carry"
+      ],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "full"
+      ],
+      "primaryMuscles": [
+        "forearms"
+      ],
+      "secondaryMuscles": [
+        "upper-traps",
+        "scapular"
+      ],
+      "stabilizers": [
+        "abs",
+        "obliques",
+        "erectors"
+      ],
+      "joints": [
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "posture",
+        "performance"
+      ],
+      "alternatives": [],
+      "regressions": [],
+      "progressions": [
+        "h-suitcase-hold",
+        "forearms-C"
+      ],
+      "aiSummary": {
+        "zh": "双手持重站立练握力和站姿稳定，入门负重保持。",
+        "en": "Double dumbbell farmer hold for grip and upright posture; entry-level loaded hold."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "forearms",
+              "core"
+            ],
+            "synergistMuscles": [
+              "upper-back",
+              "deltoids"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "forearms"
+            ],
+            "secondaryMuscles": [
+              "upper-traps",
+              "scapular"
+            ],
+            "stabilizers": [
+              "abs",
+              "obliques",
+              "erectors"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core）按动作实际做法拆到细分 id。握力为主动，核心在保持中起稳定作用，改为 stabilizers。"
+        }
+      ],
       "reviewNotes": []
     },
     "h-bilateral-upper-back-hug": {
@@ -6233,6 +6772,183 @@
           },
           "chosen": "alternating",
           "reason": "v3 unilateral=true 包含交替；本动作每次换一侧，标 alternating。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-bridge-overhead": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-bridge-overhead",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-bridge-overhead.json",
+        "textSha256Lf": "6307d6871aa32bf2aa2af7d85bee6dcf2dac661271bac3d44c18b3c58bcdf386",
+        "spec": "drill-anim/specs/h-bridge-overhead-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "mat",
+          "use": [
+            "towel"
+          ],
+          "loadNote": "similar"
+        }
+      ],
+      "trainingType": [
+        "strength",
+        "mobility"
+      ],
+      "movementPattern": [
+        "hinge"
+      ],
+      "contraction": [
+        "dynamic",
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower",
+        "upper"
+      ],
+      "primaryMuscles": [
+        "glute-max"
+      ],
+      "secondaryMuscles": [
+        "hamstrings"
+      ],
+      "stabilizers": [
+        "abs",
+        "erectors"
+      ],
+      "stretchedMuscles": [
+        "lats"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "thoracic-spine",
+          "actions": [
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer"
+          ]
+        },
+        {
+          "population": "pregnancy",
+          "flag": "modify",
+          "reasons": [
+            "supine-position"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "mobility"
+      ],
+      "alternatives": [
+        "w-feet-on-chair-bridge"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-bridge-march"
+      ],
+      "aiSummary": {
+        "zh": "臀桥加手臂过头，同时练臀和打开肩，为后桥做准备。",
+        "en": "Glute bridge with overhead reach to train glutes and open the shoulders before full bridges."
+      },
+      "confidence": "medium",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers/stretchedMuscles",
+          "existing": {
+            "activeMuscles": [
+              "glutes",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "hamstrings",
+              "lats",
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "glute-max"
+            ],
+            "secondaryMuscles": [
+              "hamstrings"
+            ],
+            "stabilizers": [
+              "abs",
+              "erectors"
+            ],
+            "stretchedMuscles": [
+              "lats"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（glutes）按动作实际做法拆到细分 id。手臂贴地过头是被动肩屈，非三角肌主动发力；改为 stretchedMuscles 的 lats。"
         }
       ],
       "reviewNotes": []
@@ -6972,6 +7688,141 @@
       "reviewNotes": [
         "办公室不标：办公椅多带轮。"
       ]
+    },
+    "h-chair-elbow-triceps-stretch": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-chair-elbow-triceps-stretch",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-chair-elbow-triceps-stretch.json",
+        "textSha256Lf": "711e654f62affe0ea65bfcd9613d29cbb4105df2f39e153753d0c445914d232a",
+        "spec": "drill-anim/specs/h-chair-elbow-triceps-stretch-r4.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "chair"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "static-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "triceps",
+        "lats"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "thoracic-spine",
+          "actions": [
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "cooldown"
+      ],
+      "goals": [
+        "mobility",
+        "desk-relief",
+        "recovery"
+      ],
+      "alternatives": [
+        "h-overhead-triceps-stretch",
+        "h-chair-lat"
+      ],
+      "regressions": [],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "扶椅背拉伸三头肌和腋下，工位旁做的上肢放松。",
+        "en": "Chair-supported triceps and lat stretch for desk-side upper-body relief."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers/stretchedMuscles",
+          "existing": {
+            "activeMuscles": [
+              "triceps",
+              "lats"
+            ],
+            "synergistMuscles": [
+              "upper-back"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "triceps",
+              "lats"
+            ]
+          },
+          "reason": "拉伸/活动类：v3 把被拉肌写在 activeMuscles，这里移到 stretchedMuscles，无主动发力肌。"
+        }
+      ],
+      "reviewNotes": []
     },
     "h-chair-kickback": {
       "format": "pose-hub-ai-tags@1",
@@ -8485,6 +9336,126 @@
       ],
       "reviewNotes": []
     },
+    "h-crossbody": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-crossbody",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-crossbody.json",
+        "textSha256Lf": "c46956652d11eb5a80e56dc7ff75d1bcca0783707ff667b68f6e755722a7c5ce",
+        "spec": "drill-anim/specs/h-crossbody-r9.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "static-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "transverse"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "deltoids",
+        "rotator-cuff"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "horizontal-adduction"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "cooldown",
+        "warmup"
+      ],
+      "goals": [
+        "desk-relief",
+        "mobility",
+        "recovery"
+      ],
+      "alternatives": [
+        "h-bilateral-upper-back-hug"
+      ],
+      "regressions": [],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "随时随地能做的肩后侧拉伸，工间放松常用。",
+        "en": "Anywhere cross-body stretch for the back of the shoulder."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers/stretchedMuscles",
+          "existing": {
+            "activeMuscles": [
+              "deltoids",
+              "rotator-cuff"
+            ],
+            "synergistMuscles": [
+              "upper-back"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "deltoids",
+              "rotator-cuff"
+            ]
+          },
+          "reason": "拉伸/活动类：v3 把被拉肌写在 activeMuscles，这里移到 stretchedMuscles，无主动发力肌。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-crunch": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-crunch",
@@ -9579,6 +10550,148 @@
       "notes": [],
       "reviewNotes": []
     },
+    "h-db-overhead-shrug": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-db-overhead-shrug",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-db-overhead-shrug.json",
+        "textSha256Lf": "bba0a5a149ec2abbb909fc3cc359a99c6e19a2ceca59db02bb7ed9949a49dad7",
+        "spec": "drill-anim/specs/h-db-overhead-shrug-r4.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "dumbbell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "dumbbell",
+          "use": [
+            "water-bottle"
+          ],
+          "loadNote": "lighter"
+        }
+      ],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "upper-traps"
+      ],
+      "secondaryMuscles": [
+        "scapular",
+        "serratus"
+      ],
+      "stabilizers": [
+        "deltoids",
+        "triceps",
+        "abs"
+      ],
+      "joints": [
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "elevation",
+            "upward-rotation"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "moderate",
+      "prerequisites": [
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [],
+      "sessionRole": [
+        "main",
+        "warmup"
+      ],
+      "goals": [
+        "strength",
+        "performance",
+        "posture"
+      ],
+      "alternatives": [
+        "h-pike-scapular-elevation"
+      ],
+      "regressions": [
+        "h-db-shrug"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "手臂过头耸肩，练过头位肩胛上回旋，为倒立类做准备。",
+        "en": "Overhead shrug training upward rotation for overhead and handstand prep."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "upper-back",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "upper-traps"
+            ],
+            "secondaryMuscles": [
+              "scapular",
+              "serratus"
+            ],
+            "stabilizers": [
+              "deltoids",
+              "triceps",
+              "abs"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（upper-back）按动作实际做法拆到细分 id。过头位耸肩的主动肌是斜方肌上部（新 id upper-traps），三角肌只稳定手臂。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-db-overhead-triceps-extension": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-db-overhead-triceps-extension",
@@ -9950,6 +11063,119 @@
         "progressions 给 hamstrings-A（徒手单腿 RDL）：单腿平衡要求更高。"
       ]
     },
+    "h-db-reverse-curl": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-db-reverse-curl",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-db-reverse-curl.json",
+        "textSha256Lf": "969193c6f57116efb0bdece39271f161b6e68c59e6ec3f6c439af8c2a2572872",
+        "spec": "drill-anim/specs/h-db-reverse-curl-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "dumbbell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "dumbbell",
+          "use": [
+            "water-bottle"
+          ],
+          "loadNote": "lighter"
+        }
+      ],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "forearms",
+        "biceps"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "joints": [
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "performance"
+      ],
+      "alternatives": [
+        "h-db-hammer-curl"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-db-zottman-curl"
+      ],
+      "aiSummary": {
+        "zh": "反握弯举练前臂伸肌和握力，平衡前臂。",
+        "en": "Reverse curl for forearm extensors and grip balance."
+      },
+      "confidence": "high",
+      "notes": [],
+      "reviewNotes": []
+    },
     "h-db-reverse-fly": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-db-reverse-fly",
@@ -10250,6 +11476,136 @@
       ],
       "reviewNotes": []
     },
+    "h-db-shrug": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-db-shrug",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-db-shrug.json",
+        "textSha256Lf": "19f64dbdd0e6b30c29b6ce0837472a7769340bdead42e9a4b59198fed11022d9",
+        "spec": "drill-anim/specs/h-db-shrug.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "dumbbell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "dumbbell",
+          "use": [
+            "backpack",
+            "water-bottle"
+          ],
+          "loadNote": "lighter"
+        }
+      ],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "upper-traps"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "elevation",
+            "depression"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "hypertrophy",
+        "strength"
+      ],
+      "alternatives": [],
+      "regressions": [],
+      "progressions": [
+        "h-db-overhead-shrug"
+      ],
+      "aiSummary": {
+        "zh": "双哑铃耸肩练斜方肌上部，用轻重量、脖子不动。",
+        "en": "Dumbbell shrug for the upper traps; light weight, neck still."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "upper-back",
+              "neck"
+            ],
+            "synergistMuscles": [
+              "forearms"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "upper-traps"
+            ],
+            "secondaryMuscles": [],
+            "stabilizers": [
+              "forearms"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（upper-back）按动作实际做法拆到细分 id。v3 的 upper-back+neck 实为耸肩的斜方肌上部/肩胛提肌，归入新 id upper-traps。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-db-split-squat": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-db-split-squat",
@@ -10536,6 +11892,112 @@
           "reason": "墙只用来扶稳，改为可选（椅子也行）。"
         }
       ],
+      "reviewNotes": []
+    },
+    "h-db-zottman-curl": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-db-zottman-curl",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-db-zottman-curl.json",
+        "textSha256Lf": "efb35208023bc18d77ce3d0a8fcf89ef3387bfcc90d303d6a1cab48c5ea29511",
+        "spec": "drill-anim/specs/h-db-zottman-curl-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "dumbbell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "dumbbell",
+          "use": [
+            "water-bottle"
+          ],
+          "loadNote": "lighter"
+        }
+      ],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "biceps",
+        "forearms"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "joints": [
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "forearm",
+          "actions": [
+            "supination",
+            "pronation"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "hypertrophy"
+      ],
+      "alternatives": [
+        "h-db-reverse-curl"
+      ],
+      "regressions": [
+        "h-db-curl"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "上举正握、下放反握，一个动作练二头和前臂。",
+        "en": "Zottman curl training biceps up and forearms down."
+      },
+      "confidence": "high",
+      "notes": [],
       "reviewNotes": []
     },
     "h-dd-shoulder": {
@@ -11171,6 +12633,162 @@
       "reviewNotes": [
         "半程引体按词表定为 3 级（完整引体才是 4 级）。",
         "outdoor 指公园单杠；家里有门框单杠也可做，但词表 pullup-bar 默认只在 gym，会出非健身房器械警告。"
+      ]
+    },
+    "h-floor-nordic-hand-reset": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-floor-nordic-hand-reset",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-floor-nordic-hand-reset.json",
+        "textSha256Lf": "f46054e06c6ed23cd0a3207e84d20375b792ac58873fa21237d511042ab2ed7d",
+        "spec": "drill-anim/specs/h-floor-nordic-hand-reset-rr3.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "mat",
+        "chair"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "glute-max",
+        "calves"
+      ],
+      "stabilizers": [
+        "abs",
+        "erectors"
+      ],
+      "joints": [
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "hip",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "kneeling-tolerance",
+        "neutral-spine"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "moderate",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "heavy-load"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "caution",
+          "reasons": [
+            "floor-transfer"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "performance"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "hamstrings-B"
+      ],
+      "progressions": [
+        "hamstrings-C"
+      ],
+      "aiSummary": {
+        "zh": "居家用椅子或沙发压脚做的北欧挺，给已有基础的人练大腿后侧离心力量、防拉伤。",
+        "en": "Home Nordic curl with feet anchored, for experienced trainees building eccentric hamstring strength."
+      },
+      "confidence": "medium",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "hamstrings"
+            ],
+            "synergistMuscles": [
+              "glutes",
+              "calves"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hamstrings"
+            ],
+            "secondaryMuscles": [
+              "glute-max",
+              "calves"
+            ],
+            "stabilizers": [
+              "abs",
+              "erectors"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "离心北欧挺需要很高的腘绳肌相对力量，按词表定 4 级。"
+        }
+      ],
+      "reviewNotes": [
+        "requiredEquipment 保留 chair：脚跟必须有东西固定（椅子/沙发/同伴），文案未写清用什么固定，medium。",
+        "v3 flag：回位时屁股后坐约 84° 再起身，是否为想要的手撑复位待确认。"
       ]
     },
     "h-forearm-plank": {
@@ -11814,6 +13432,165 @@
       ],
       "reviewNotes": []
     },
+    "h-half-kneeling-quad-stretch": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-half-kneeling-quad-stretch",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-half-kneeling-quad-stretch.json",
+        "textSha256Lf": "93adfed5f9e312ed917a9c15acadd730e58b4ce88e640a586e792f734c06778c",
+        "spec": "drill-anim/specs/h-half-kneeling-quad-stretch-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "chair",
+        "towel"
+      ],
+      "substitutes": [
+        {
+          "for": "mat",
+          "use": [
+            "towel"
+          ],
+          "loadNote": "similar"
+        }
+      ],
+      "trainingType": [
+        "static-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [],
+      "stabilizers": [
+        "glute-max",
+        "abs",
+        "hip-abductors"
+      ],
+      "stretchedMuscles": [
+        "quadriceps",
+        "hip-flexors"
+      ],
+      "joints": [
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "hip",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "lumbar-spine",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "low",
+      "prerequisites": [
+        "kneeling-tolerance",
+        "split-stance"
+      ],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "moderate",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "low",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "modify",
+          "reasons": [
+            "balance-demand"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer",
+            "balance-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "cooldown"
+      ],
+      "goals": [
+        "mobility",
+        "desk-relief",
+        "posture",
+        "recovery"
+      ],
+      "alternatives": [
+        "o-stand-quad"
+      ],
+      "regressions": [
+        "s-kneel-hipflex"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "久坐后大腿前侧和髋前侧都紧时的训练后放松拉伸，需要能跪在垫子上。",
+        "en": "Post-workout stretch for tight front thighs and hip flexors after sitting; requires kneeling on a mat."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/stretchedMuscles",
+          "existing": {
+            "activeMuscles": [
+              "quadriceps",
+              "hip-flexors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "stretchedMuscles": [
+              "quadriceps",
+              "hip-flexors"
+            ]
+          },
+          "reason": "v3 拉伸类把被拉的肌群写在 activeMuscles；本 schema 把被拉肌放 stretchedMuscles，静态拉伸无主动发力肌。"
+        }
+      ],
+      "reviewNotes": [
+        "新增动作（gap 组），v1 旧目录没有，只能依据 v3 文案和 r6 spec。",
+        "半跪 + 手拉后脚需要平衡，难度保持 v3 的 2；optionalEquipment 的 chair 用于扶稳，towel 用于够不到脚时绕脚背。",
+        "膝 jointStress=moderate：跪地膝 + 后腿屈膝最大，cautions 也提示跪的膝。"
+      ]
+    },
     "h-hip-gate": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-hip-gate",
@@ -12127,6 +13904,315 @@
       ],
       "reviewNotes": [
         "办公室可用桌沿代替椅子；椅子必须稳固不滑。"
+      ]
+    },
+    "h-inner-thigh": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-inner-thigh",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-inner-thigh.json",
+        "textSha256Lf": "27afd1a2daca9998e8891e6dcf0d071256698db4680fbd880ede578a5c5b1108",
+        "spec": "drill-anim/specs/h-inner-thigh-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "adductors"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [
+        "obliques",
+        "abs"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "adduction"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main",
+        "warmup"
+      ],
+      "goals": [
+        "strength",
+        "posture"
+      ],
+      "alternatives": [
+        "h-band-standing-adduction"
+      ],
+      "regressions": [
+        "n-seated-squeeze"
+      ],
+      "progressions": [
+        "adductors-B"
+      ],
+      "aiSummary": {
+        "zh": "侧躺在垫子上练大腿内侧的入门孤立动作。",
+        "en": "Side-lying inner-thigh isolation on a mat for beginners."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "adductors"
+            ],
+            "synergistMuscles": [
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "adductors"
+            ],
+            "secondaryMuscles": [],
+            "stabilizers": [
+              "obliques",
+              "abs"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-kb-swing": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-kb-swing",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-kb-swing.json",
+        "textSha256Lf": "bc54aec6228981d54a7a2ed0258221f1bc022d3b7d10da4f82bd26a4854f15c6",
+        "spec": "drill-anim/specs/h-kb-swing-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "gym",
+        "home"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "moderate",
+      "requiredEquipment": [
+        "kettlebell"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [
+        {
+          "for": "kettlebell",
+          "use": [
+            "dumbbell"
+          ],
+          "loadNote": "similar"
+        }
+      ],
+      "trainingType": [
+        "strength",
+        "cardio"
+      ],
+      "movementPattern": [
+        "hinge",
+        "anti-rotation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "glute-max",
+        "hamstrings"
+      ],
+      "secondaryMuscles": [
+        "erectors",
+        "forearms"
+      ],
+      "stabilizers": [
+        "abs",
+        "obliques",
+        "lats"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "lumbar-spine",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 3,
+      "intensity": "high",
+      "prerequisites": [
+        "hip-hinge",
+        "neutral-spine"
+      ],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "low",
+        "lumbar": "moderate",
+        "shoulder": "low",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "heavy-load"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "fat-loss",
+        "strength",
+        "performance"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "h-db-rdl",
+        "h-good-morning"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "有壶铃且空间够时的单臂爆发髋铰链，提心率练臀和大腿后侧，需先会髋铰链。",
+        "en": "One-arm ballistic hinge for glutes and conditioning; learn the hip hinge first."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "glutes",
+              "hamstrings"
+            ],
+            "synergistMuscles": [
+              "core",
+              "lower-back",
+              "forearms"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "glute-max",
+              "hamstrings"
+            ],
+            "secondaryMuscles": [
+              "erectors",
+              "forearms"
+            ],
+            "stabilizers": [
+              "abs",
+              "obliques",
+              "lats"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 2,
+          "chosen": 3,
+          "reason": "单臂摆荡是爆发性髋铰链技术动作，还要抗旋转，按词表 3 级。"
+        }
+      ],
+      "reviewNotes": [
+        "周围需留出空间，不进酒店/办公室。"
       ]
     },
     "h-knee-hug": {
@@ -12675,6 +14761,143 @@
       ],
       "reviewNotes": []
     },
+    "h-kneeling-thread-needle": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-kneeling-thread-needle",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-kneeling-thread-needle.json",
+        "textSha256Lf": "34fbc5397b0b215188d5627f5cc5d527777a6a6ee921cba5b66a4e2e5614216d",
+        "spec": "drill-anim/specs/h-kneeling-thread-needle-r2.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "mobility"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "transverse"
+      ],
+      "bodyRegion": [
+        "upper",
+        "core"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "obliques"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "scapular",
+        "deltoids"
+      ],
+      "joints": [
+        {
+          "joint": "thoracic-spine",
+          "actions": [
+            "rotation"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "horizontal-adduction"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [
+        "wrist-loading",
+        "kneeling-tolerance"
+      ],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "low",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "low",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "cooldown"
+      ],
+      "goals": [
+        "mobility",
+        "desk-relief",
+        "posture"
+      ],
+      "alternatives": [
+        "h-quadruped-open",
+        "h-open-book"
+      ],
+      "regressions": [
+        "o-seated-twist"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "跪撑转上背、放松肩胛，适合久坐驼背后在垫子上活动胸椎。",
+        "en": "Kneeling thoracic rotation to loosen the upper back and shoulder blades."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "upper-back"
+            ],
+            "synergistMuscles": [
+              "deltoids",
+              "obliques"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "obliques"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "scapular",
+              "deltoids"
+            ]
+          },
+          "reason": "v3 upper-back 主练：穿针主要是胸椎旋转并拉开肩胛周围和三角肌后束，放 stretchedMuscles；无明确主动肌。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-lateral-step-lunge": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-lateral-step-lunge",
@@ -12820,6 +15043,309 @@
       ],
       "reviewNotes": []
     },
+    "h-mountain-climber": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-mountain-climber",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-mountain-climber.json",
+        "textSha256Lf": "c55442281029cfd1e3ec67015187635a33db90090ec7bb636fab07527a8f3b64",
+        "spec": "drill-anim/specs/h-mountain-climber-r8.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "stability-control"
+      ],
+      "movementPattern": [
+        "anti-extension",
+        "gait"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core"
+      ],
+      "primaryMuscles": [
+        "abs",
+        "hip-flexors"
+      ],
+      "secondaryMuscles": [
+        "obliques"
+      ],
+      "stabilizers": [
+        "deltoids",
+        "serratus",
+        "chest"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "moderate",
+      "prerequisites": [
+        "wrist-loading",
+        "plank-30s"
+      ],
+      "laterality": "alternating",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "pregnancy",
+          "flag": "modify",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "fat-loss"
+      ],
+      "alternatives": [
+        "h-plank-side-step"
+      ],
+      "regressions": [
+        "h-bear-plank",
+        "h-forearm-plank"
+      ],
+      "progressions": [
+        "h-slider-body-saw"
+      ],
+      "aiSummary": {
+        "zh": "慢速登山跑，直臂俯撑练核心稳定，比平板多一点心率。",
+        "en": "Slow mountain climber for plank stability with a bit more heart rate than a plank."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "core",
+              "hip-flexors"
+            ],
+            "synergistMuscles": [
+              "deltoids",
+              "chest",
+              "quadriceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "abs",
+              "hip-flexors"
+            ],
+            "secondaryMuscles": [
+              "obliques"
+            ],
+            "stabilizers": [
+              "deltoids",
+              "serratus",
+              "chest"
+            ]
+          },
+          "reason": "v3 core 拆为 abs（抗伸展）+ obliques；quadriceps 只是屈膝收腿时跟着动，不列入；deltoids/chest 是支撑稳定，归 stabilizers。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 1,
+          "chosen": 2,
+          "reason": "直臂全身支撑下交替收腿，需要先能平板 30 秒，按 2 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-open-book": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-open-book",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-open-book.json",
+        "textSha256Lf": "96e10d304399032d20d21ccb66c4f05b2f02e5e75c69dd3d081840d66bffd0ae",
+        "spec": "drill-anim/specs/h-open-book-r8.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "mobility"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "transverse"
+      ],
+      "bodyRegion": [
+        "upper",
+        "core"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "obliques",
+        "scapular"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest"
+      ],
+      "joints": [
+        {
+          "joint": "thoracic-spine",
+          "actions": [
+            "rotation"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "horizontal-abduction"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "low",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "cooldown"
+      ],
+      "goals": [
+        "mobility",
+        "posture",
+        "desk-relief"
+      ],
+      "alternatives": [
+        "h-quadruped-open",
+        "h-kneeling-thread-needle"
+      ],
+      "regressions": [
+        "o-seated-twist"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "侧躺开书活动胸椎、打开胸口，适合久坐后热身或放松，膝不承重。",
+        "en": "Side-lying open book for thoracic rotation and chest opening; no kneeling."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "upper-back",
+              "chest"
+            ],
+            "synergistMuscles": [
+              "obliques",
+              "deltoids"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "obliques",
+              "scapular"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest"
+            ]
+          },
+          "reason": "v3 upper-back/chest 主练：开书式是胸椎旋转（obliques、肩胛肌协同），胸大肌被拉开放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-overhead-triceps-stretch": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-overhead-triceps-stretch",
@@ -12946,6 +15472,319 @@
         }
       ],
       "reviewNotes": []
+    },
+    "h-pike-pushup": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-pike-pushup",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-pike-pushup.json",
+        "textSha256Lf": "0100d4b6c12e0ae2534ea0333763eff1b43362d7edf4e2e7e328e7a37f592b2d",
+        "spec": "drill-anim/specs/h-pike-pushup-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "push-vertical"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "deltoids",
+        "triceps"
+      ],
+      "secondaryMuscles": [
+        "chest"
+      ],
+      "stabilizers": [
+        "serratus",
+        "abs"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "upward-rotation"
+          ]
+        }
+      ],
+      "difficulty": 3,
+      "intensity": "moderate",
+      "prerequisites": [
+        "pushup-10",
+        "wrist-loading",
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "moderate",
+        "wrist": "moderate",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "hypertension",
+          "flag": "caution",
+          "reasons": [
+            "head-below-heart"
+          ]
+        },
+        {
+          "population": "pregnancy",
+          "flag": "caution",
+          "reasons": [
+            "head-below-heart"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "hypertrophy",
+        "performance"
+      ],
+      "alternatives": [
+        "h-db-press"
+      ],
+      "regressions": [
+        "h-pike-scapular-elevation"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "零器械练肩推的倒 V 俯卧撑，为倒立做准备，需已能做标准俯卧撑。",
+        "en": "Bodyweight vertical press in a pike, building toward handstands; needs solid push-ups."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "deltoids",
+              "triceps"
+            ],
+            "synergistMuscles": [
+              "chest",
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "deltoids",
+              "triceps"
+            ],
+            "secondaryMuscles": [
+              "chest"
+            ],
+            "stabilizers": [
+              "serratus",
+              "abs"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 2,
+          "chosen": 3,
+          "reason": "头低位垂直推、需先有俯卧撑基础，按 3 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-pike-scapular-elevation": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-pike-scapular-elevation",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-pike-scapular-elevation.json",
+        "textSha256Lf": "9a14cac4505e029e1c1568dd9b0e4e283605eb0c0dadf2fd074992bf8847740e",
+        "spec": "drill-anim/specs/h-pike-scapular-elevation.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "serratus",
+        "upper-traps"
+      ],
+      "secondaryMuscles": [
+        "deltoids"
+      ],
+      "stabilizers": [
+        "triceps",
+        "abs"
+      ],
+      "joints": [
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "elevation",
+            "upward-rotation"
+          ]
+        },
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "low",
+      "prerequisites": [
+        "wrist-loading",
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "low",
+        "neck": "low",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "hypertension",
+          "flag": "caution",
+          "reasons": [
+            "head-below-heart"
+          ]
+        },
+        {
+          "population": "pregnancy",
+          "flag": "caution",
+          "reasons": [
+            "head-below-heart"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "h-db-overhead-shrug"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-pike-pushup"
+      ],
+      "aiSummary": {
+        "zh": "倒 V 支撑下直臂耸肩，练倒立所需的肩胛上推控制，派克俯卧撑的前置。",
+        "en": "Straight-arm shrug in a pike to build overhead scapular control before pike push-ups."
+      },
+      "confidence": "medium",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "upper-back",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "serratus",
+              "upper-traps"
+            ],
+            "secondaryMuscles": [
+              "deltoids"
+            ],
+            "stabilizers": [
+              "triceps",
+              "abs"
+            ]
+          },
+          "reason": "v3 upper-back/deltoids：倒 V 直臂耸肩是肩胛上提+上回旋，主要由前锯肌和斜方肌上部完成，三角肌只是举臂位维持。"
+        }
+      ],
+      "reviewNotes": [
+        "primaryMuscles 用 serratus+upper-traps 是按解剖推断（v3 写 upper-back），medium。"
+      ]
     },
     "h-plank-side-step": {
       "format": "pose-hub-ai-tags@1",
@@ -13787,6 +16626,178 @@
         }
       ],
       "reviewNotes": []
+    },
+    "h-reverse-lunge": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-reverse-lunge",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-reverse-lunge.json",
+        "textSha256Lf": "507ae8172cc2d3dceca3b770f7235d9f790215996933b122b7fc95a754d2d2cd",
+        "spec": "drill-anim/specs/h-reverse-lunge-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "light",
+      "requiredEquipment": [],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "lunge"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "quadriceps",
+        "glute-max"
+      ],
+      "secondaryMuscles": [
+        "adductors",
+        "hamstrings"
+      ],
+      "stabilizers": [
+        "abs",
+        "hip-abductors",
+        "calves"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "ankle",
+          "actions": [
+            "dorsiflexion"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "moderate",
+      "prerequisites": [
+        "split-stance"
+      ],
+      "laterality": "alternating",
+      "jointStress": {
+        "knee": "low",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "modify",
+          "reasons": [
+            "balance-demand"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "balance-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength",
+        "hypertrophy",
+        "fat-loss"
+      ],
+      "alternatives": [
+        "h-lateral-step-lunge"
+      ],
+      "regressions": [
+        "h-squat"
+      ],
+      "progressions": [
+        "h-forward-lunge",
+        "h-db-split-squat",
+        "h-bulgarian"
+      ],
+      "aiSummary": {
+        "zh": "零器械后撤步弓步，对膝更友好，练腿臀和单腿稳定，任何场地都可做。",
+        "en": "Bodyweight reverse lunge, knee-friendlier than forward lunges, doable anywhere."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "quadriceps",
+              "glutes"
+            ],
+            "synergistMuscles": [
+              "hamstrings",
+              "adductors",
+              "core"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "quadriceps",
+              "glute-max"
+            ],
+            "secondaryMuscles": [
+              "adductors",
+              "hamstrings"
+            ],
+            "stabilizers": [
+              "abs",
+              "hip-abductors",
+              "calves"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 1,
+          "chosen": 2,
+          "reason": "不扶的交替分腿全幅度自重，按词表 2 级（v3 为 1）。"
+        }
+      ],
+      "reviewNotes": [
+        "后撤步轻放后脚，按 impact=none 处理，保留办公室。"
+      ]
     },
     "h-russian-twist": {
       "format": "pose-hub-ai-tags@1",
@@ -14808,6 +17819,139 @@
         "sweat 按 3×12 估为 light；做多组时 AI 不应在办公室安排太多。",
         "optionalEquipment 的 chair 用作下蹲深度参照或扶手，非必需。"
       ]
+    },
+    "h-standing-arm-extension-stretch": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-standing-arm-extension-stretch",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-standing-arm-extension-stretch.json",
+        "textSha256Lf": "642f02dc19276ee7465bb08bb7f315f0e7e2f7150066e47cf1dfd86ad67f01da",
+        "spec": "drill-anim/specs/h-standing-arm-extension-stretch-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "dynamic-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "scapular"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest",
+        "deltoids",
+        "biceps"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "retraction",
+            "depression"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "cooldown"
+      ],
+      "goals": [
+        "posture",
+        "desk-relief",
+        "mobility"
+      ],
+      "alternatives": [
+        "h-towel-behind"
+      ],
+      "regressions": [],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "站着双臂后抬开肩，零器械，适合工间缓解圆肩。",
+        "en": "Standing arms-back shoulder opener, equipment-free, for desk-break posture relief."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "chest",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "biceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "scapular"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest",
+              "deltoids",
+              "biceps"
+            ]
+          },
+          "reason": "拉伸类：v3 activeMuscles 是被拉肌，改放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
     },
     "h-standing-forearm-rotation": {
       "format": "pose-hub-ai-tags@1",
@@ -16177,6 +19321,146 @@
       ],
       "reviewNotes": []
     },
+    "h-supine-cactus-chest": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-supine-cactus-chest",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-supine-cactus-chest.json",
+        "textSha256Lf": "ee054687646190ab595322bf28dcdd231f2d8bdf729dd21dd84d956e48f6d82e",
+        "spec": "drill-anim/specs/h-supine-cactus-chest-r4.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "dynamic-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "rotator-cuff",
+        "scapular"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "abduction",
+            "external-rotation"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "upward-rotation"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        },
+        {
+          "population": "pregnancy",
+          "flag": "modify",
+          "reasons": [
+            "supine-position"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "cooldown",
+        "warmup"
+      ],
+      "goals": [
+        "posture",
+        "desk-relief",
+        "mobility"
+      ],
+      "alternatives": [
+        "h-doorframe-forearms-pec-native-r3"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-wall-angel"
+      ],
+      "aiSummary": {
+        "zh": "仰躺手臂沿地面上滑，温和打开胸口和肩前侧，适合肩紧的新手。",
+        "en": "Gentle lying cactus-arm slide to open chest and front shoulders."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "chest",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "rotator-cuff"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "rotator-cuff",
+              "scapular"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest"
+            ]
+          },
+          "reason": "拉伸类：v3 activeMuscles 是被拉肌，改放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-supine-heel-slide": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-supine-heel-slide",
@@ -16833,6 +20117,528 @@
       "notes": [],
       "reviewNotes": []
     },
+    "h-towel-behind": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-towel-behind",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-towel-behind.json",
+        "textSha256Lf": "255b06997cd73122241052434808531ceeabc402a9bb9eaed4287fa294e52a49",
+        "spec": "drill-anim/specs/h-towel-behind-r7.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel",
+        "outdoor"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "towel"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "dynamic-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "scapular"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest",
+        "deltoids",
+        "biceps"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "retraction"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "cooldown"
+      ],
+      "goals": [
+        "posture",
+        "mobility",
+        "desk-relief"
+      ],
+      "alternatives": [
+        "h-standing-arm-extension-stretch"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-seated-reachback"
+      ],
+      "aiSummary": {
+        "zh": "背后握毛巾抬臂拉伸肩前侧和胸口，适合圆肩的人。",
+        "en": "Behind-back towel arm lift to stretch front shoulders and chest."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "chest",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "biceps",
+              "upper-back"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "scapular"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest",
+              "deltoids",
+              "biceps"
+            ]
+          },
+          "reason": "拉伸类：v3 activeMuscles 是被拉肌，改放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-towel-isometric-curl": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-towel-isometric-curl",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-towel-isometric-curl.json",
+        "textSha256Lf": "eaf8fd84e689e40874c2f7ec895282845074fddd4b094c21367d9aae90392477",
+        "spec": "drill-anim/specs/h-towel-isometric-curl-rr1.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel",
+        "outdoor"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "towel"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "biceps"
+      ],
+      "secondaryMuscles": [
+        "forearms"
+      ],
+      "stabilizers": [
+        "abs",
+        "erectors"
+      ],
+      "joints": [
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "hypertension",
+          "flag": "caution",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "strength"
+      ],
+      "alternatives": [
+        "h-biceps-self"
+      ],
+      "regressions": [],
+      "progressions": [
+        "h-band-biceps-curl",
+        "h-db-curl"
+      ],
+      "aiSummary": {
+        "zh": "脚踩毛巾静力弯举，没有器械时练手臂前侧，酒店也能做。",
+        "en": "Towel isometric curl to train biceps with no weights, e.g. in a hotel."
+      },
+      "confidence": "high",
+      "notes": [],
+      "reviewNotes": []
+    },
+    "h-towel-pass": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-towel-pass",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-towel-pass.json",
+        "textSha256Lf": "86e2f2e47723094a49a9184c75ae440f44d3a60891687e0978366138c8fbbf51",
+        "spec": "drill-anim/specs/h-towel-pass-r11.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel",
+        "outdoor"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "towel"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "mobility"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [
+        "rotator-cuff",
+        "scapular"
+      ],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest",
+        "deltoids"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "flexion",
+            "extension",
+            "circumduction"
+          ]
+        }
+      ],
+      "difficulty": 2,
+      "intensity": "low",
+      "prerequisites": [
+        "overhead-range"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "moderate",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "modify"
+        }
+      ],
+      "sessionRole": [
+        "warmup"
+      ],
+      "goals": [
+        "mobility",
+        "posture",
+        "performance"
+      ],
+      "alternatives": [
+        "h-wall-angel"
+      ],
+      "regressions": [
+        "h-towel-behind"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "毛巾宽握直臂过头转肩，热身打开肩前侧，需手臂能无痛举过头。",
+        "en": "Towel pass-through to open the front shoulders; needs pain-free overhead range."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "deltoids",
+              "chest"
+            ],
+            "synergistMuscles": [
+              "rotator-cuff",
+              "upper-back"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [
+              "rotator-cuff",
+              "scapular"
+            ],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest",
+              "deltoids"
+            ]
+          },
+          "reason": "v3 deltoids/chest 主练：直臂过头转肩是活动度练习，胸大肌和三角肌前束被拉开，放 stretchedMuscles。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 1,
+          "chosen": 2,
+          "reason": "直臂过头绕到背后需要较好肩活动度，按 2 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-towel-pulldown": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-towel-pulldown",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-towel-pulldown.json",
+        "textSha256Lf": "a0079c749160f70e2a95c2d01f07d834c029f91f88b68c2b5b0d57ebba29546d",
+        "spec": "drill-anim/specs/h-towel-pulldown-r7.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel",
+        "outdoor"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "towel"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [
+        "pull-vertical"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "lats",
+        "scapular"
+      ],
+      "secondaryMuscles": [
+        "biceps",
+        "deltoids"
+      ],
+      "stabilizers": [
+        "abs"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "adduction"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression",
+            "retraction"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "flexion"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup",
+        "main"
+      ],
+      "goals": [
+        "posture",
+        "desk-relief",
+        "strength"
+      ],
+      "alternatives": [
+        "lats-B"
+      ],
+      "regressions": [],
+      "progressions": [
+        "scapular-B"
+      ],
+      "aiSummary": {
+        "zh": "站姿拉紧毛巾下拉，没有器械时练背和肩胛下沉，适合久坐圆肩。",
+        "en": "Standing towel pulldown for lats and scapular depression with no equipment."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "lats",
+              "upper-back"
+            ],
+            "synergistMuscles": [
+              "biceps",
+              "rotator-cuff"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "lats",
+              "scapular"
+            ],
+            "secondaryMuscles": [
+              "biceps",
+              "deltoids"
+            ],
+            "stabilizers": [
+              "abs"
+            ]
+          },
+          "reason": "v3 粗粒度肌群（core/glutes/upper-back/lower-back/abductors）按本动作实际做法拆到细分 id。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "h-unsupported-star-reach-native": {
       "format": "pose-hub-ai-tags@1",
       "id": "h-unsupported-star-reach-native",
@@ -17384,6 +21190,250 @@
             "stabilizers": [],
             "stretchedMuscles": [
               "calves"
+            ]
+          },
+          "reason": "拉伸类：v3 activeMuscles 是被拉肌，改放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "h-wall-palm-lift": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-wall-palm-lift",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-wall-palm-lift.json",
+        "textSha256Lf": "328d593451e7ff45a9f8482adabfb1e30aefd4b4090fb57aec9af8f620a11906",
+        "spec": "drill-anim/specs/h-wall-palm-lift-rr5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "wall"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "assessment",
+        "mobility"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic",
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [
+        "forearms"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "joints": [
+        {
+          "joint": "wrist",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "low",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup"
+      ],
+      "goals": [
+        "performance",
+        "mobility"
+      ],
+      "alternatives": [],
+      "regressions": [],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "指尖贴墙抬掌根，检查并练手指手腕控制，适合准备做指尖撑地类动作前。",
+        "en": "Wall fingertip palm lift to check and train finger/wrist control before fingertip loading."
+      },
+      "confidence": "low",
+      "notes": [
+        {
+          "field": "trainingType",
+          "existing": "assessment",
+          "chosen": [
+            "mobility"
+          ],
+          "reason": "词表无 assessment；按实际做法是手腕/手指低负荷控制练习，记为 mobility。"
+        }
+      ],
+      "reviewNotes": [
+        "手腕动作方向（掌根离墙=屈腕+指伸）与主动肌只能从文案推断，未看动画，low。"
+      ]
+    },
+    "h-wall-pec": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "h-wall-pec",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/h-wall-pec.json",
+        "textSha256Lf": "12004cd0a6936c221028ec07800ec4c014ae9d604d9ed6b1af70d7c52e1a2cd3",
+        "spec": "drill-anim/specs/h-wall-pec-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "outdoor",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "wall"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "static-stretch"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "transverse"
+      ],
+      "bodyRegion": [
+        "upper"
+      ],
+      "primaryMuscles": [],
+      "secondaryMuscles": [],
+      "stabilizers": [],
+      "stretchedMuscles": [
+        "chest",
+        "deltoids",
+        "biceps"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "horizontal-abduction",
+            "external-rotation"
+          ]
+        },
+        {
+          "joint": "thoracic-spine",
+          "actions": [
+            "rotation"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "cooldown"
+      ],
+      "goals": [
+        "posture",
+        "desk-relief",
+        "mobility"
+      ],
+      "alternatives": [
+        "h-doorframe-forearms-pec-native-r3"
+      ],
+      "regressions": [
+        "h-supine-cactus-chest"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "单臂贴墙转身拉胸，有墙就能做，适合工间缓解圆肩。",
+        "en": "Single-arm wall pec stretch, doable anywhere with a wall, for desk posture."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "muscles",
+          "existing": {
+            "activeMuscles": [
+              "chest",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "biceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [],
+            "secondaryMuscles": [],
+            "stabilizers": [],
+            "stretchedMuscles": [
+              "chest",
+              "deltoids",
+              "biceps"
             ]
           },
           "reason": "拉伸类：v3 activeMuscles 是被拉肌，改放 stretchedMuscles。"
@@ -21332,148 +25382,6 @@
       ],
       "reviewNotes": []
     },
-    "n-thomas-test": {
-      "format": "pose-hub-ai-tags@1",
-      "id": "n-thomas-test",
-      "vocabularyVersion": "0.1.0",
-      "status": "ai-draft",
-      "source": {
-        "text": "catalog/production/v3-text/n-thomas-test.json",
-        "textSha256Lf": "fab1c86cb512db154a2ae9f38ee2a1f9e9a95ab2c94e0874d305af660b5a3a2c",
-        "spec": "drill-anim/specs/n-thomas-test-r3.js",
-        "catalogV1": "catalog/catalog.json"
-      },
-      "scenes": [
-        "home",
-        "gym",
-        "hotel"
-      ],
-      "space": "mat",
-      "floorRequired": true,
-      "impact": "none",
-      "sweat": "none",
-      "requiredEquipment": [
-        "mat"
-      ],
-      "optionalEquipment": [],
-      "substitutes": [],
-      "trainingType": [
-        "assessment",
-        "static-stretch",
-        "mobility"
-      ],
-      "movementPattern": [],
-      "contraction": [
-        "isometric"
-      ],
-      "plane": [
-        "sagittal"
-      ],
-      "bodyRegion": [
-        "lower"
-      ],
-      "primaryMuscles": [],
-      "secondaryMuscles": [],
-      "stabilizers": [
-        "abs"
-      ],
-      "stretchedMuscles": [
-        "hip-flexors",
-        "glute-max"
-      ],
-      "joints": [
-        {
-          "joint": "hip",
-          "actions": [
-            "flexion",
-            "extension"
-          ]
-        }
-      ],
-      "difficulty": 1,
-      "intensity": "low",
-      "prerequisites": [
-        "floor-transfer"
-      ],
-      "laterality": "unilateral",
-      "jointStress": {
-        "knee": "low",
-        "lumbar": "low",
-        "shoulder": "none",
-        "wrist": "none",
-        "neck": "none",
-        "ankle": "none",
-        "hip": "low"
-      },
-      "populationNotes": [
-        {
-          "population": "older-adult",
-          "flag": "modify",
-          "reasons": [
-            "floor-transfer"
-          ]
-        },
-        {
-          "population": "pregnancy",
-          "flag": "modify",
-          "reasons": [
-            "supine-position"
-          ]
-        }
-      ],
-      "sessionRole": [
-        "warmup",
-        "cooldown"
-      ],
-      "goals": [
-        "mobility",
-        "recovery"
-      ],
-      "alternatives": [
-        "h-knee-hug"
-      ],
-      "regressions": [],
-      "progressions": [
-        "s-kneel-hipflex"
-      ],
-      "aiSummary": {
-        "zh": "躺着自测髋前侧紧不紧，同时轻拉髋前侧，适合训练前评估。",
-        "en": "Supine Thomas test to check and gently stretch tight hip flexors."
-      },
-      "confidence": "high",
-      "notes": [
-        {
-          "field": "primaryMuscles/stretchedMuscles",
-          "existing": {
-            "activeMuscles": [
-              "hip-flexors"
-            ]
-          },
-          "chosen": {
-            "primaryMuscles": [],
-            "stretchedMuscles": [
-              "hip-flexors",
-              "glute-max"
-            ]
-          },
-          "reason": "拉伸类：v3 把被拉肌写在 activeMuscles，本 schema 放 stretchedMuscles。"
-        },
-        {
-          "field": "trainingType",
-          "existing": {
-            "category": "assessment"
-          },
-          "chosen": [
-            "static-stretch",
-            "mobility"
-          ],
-          "reason": "评估动作按实际做法：抱膝保持 30 秒，伸直腿的髋屈肌被拉。"
-        }
-      ],
-      "reviewNotes": [
-        "stretchedMuscles 的 glute-max 是抱膝那侧被拉，主目标仍是伸直腿的髋屈肌。"
-      ]
-    },
     "n-wide-fold": {
       "format": "pose-hub-ai-tags@1",
       "id": "n-wide-fold",
@@ -23466,6 +27374,136 @@
             ]
           },
           "reason": "拉伸类：v3 把被拉肌写在 activeMuscles，本 schema 放 stretchedMuscles。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "o-supported-ankle-eversion": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "o-supported-ankle-eversion",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/o-supported-ankle-eversion.json",
+        "textSha256Lf": "9ae4afe7b04a8ac1da7ac429638e007c434257d1b32415d26c13c1cc57357cf0",
+        "spec": "drill-anim/specs/o-supported-ankle-eversion-r2.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "office",
+        "gym",
+        "hotel"
+      ],
+      "space": "in-place",
+      "floorRequired": false,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "chair"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "mobility"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic",
+        "isometric"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "peroneals"
+      ],
+      "secondaryMuscles": [],
+      "stabilizers": [
+        "hip-abductors"
+      ],
+      "joints": [
+        {
+          "joint": "ankle",
+          "actions": [
+            "eversion",
+            "inversion"
+          ]
+        }
+      ],
+      "difficulty": 1,
+      "intensity": "low",
+      "prerequisites": [
+        "single-leg-supported"
+      ],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "low",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "suitable",
+          "reasons": [
+            "low-demand"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "balance-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "warmup"
+      ],
+      "goals": [
+        "mobility",
+        "recovery",
+        "performance"
+      ],
+      "alternatives": [],
+      "regressions": [],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "扶椅练脚踝外翻控制，崴脚后恢复或跑跳前热身。",
+        "en": "Chair-supported ankle eversion control for ankle stability or rehab."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "calves"
+            ],
+            "synergistMuscles": [
+              "tibialis"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "peroneals"
+            ],
+            "secondaryMuscles": [],
+            "stabilizers": [
+              "hip-abductors"
+            ]
+          },
+          "reason": "脚底外翻的主动肌是腓骨长短肌（新 id peroneals），v3 写成 calves 有误。"
         }
       ],
       "reviewNotes": []
@@ -28325,6 +32363,1104 @@
       ],
       "reviewNotes": []
     },
+    "t-flare-side-hold": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-flare-side-hold",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-flare-side-hold.json",
+        "textSha256Lf": "b4285fc65dcbb642302d94c4326343d659896265696b221fd904da676073552b",
+        "spec": "drill-anim/specs/t-flare-side-hold-r4.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength",
+        "stability-control"
+      ],
+      "movementPattern": [
+        "anti-lateral-flexion"
+      ],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "frontal"
+      ],
+      "bodyRegion": [
+        "full"
+      ],
+      "primaryMuscles": [
+        "obliques",
+        "deltoids"
+      ],
+      "secondaryMuscles": [
+        "hip-abductors",
+        "triceps"
+      ],
+      "stabilizers": [
+        "abs",
+        "serratus",
+        "adductors"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "extension"
+          ]
+        },
+        {
+          "joint": "hip",
+          "actions": [
+            "abduction"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "wrist-loading",
+        "plank-30s"
+      ],
+      "laterality": "unilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "moderate",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "balance-demand"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "h-short-side-plank",
+        "deltoids-A"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "托马斯全旋专项：单手单脚侧撑定格，侧平板稳定后再选。",
+        "en": "Flare side hold on one hand and foot; after solid side planks."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "obliques",
+              "deltoids"
+            ],
+            "synergistMuscles": [
+              "core",
+              "abductors",
+              "triceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "obliques",
+              "deltoids"
+            ],
+            "secondaryMuscles": [
+              "hip-abductors",
+              "triceps"
+            ],
+            "stabilizers": [
+              "abs",
+              "serratus",
+              "adductors"
+            ]
+          },
+          "reason": "v3 粗粒度 id 按实际做法拆到 taxonomy id（core→abs/obliques，glutes→glute-max 或 hip-abductors，upper-back→scapular，lower-back→erectors），只稳定不推动的归稳定肌。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "单手单脚接近水平侧撑并抬上腿，属托马斯要素，定 4 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-lsit-open-close": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-lsit-open-close",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-lsit-open-close.json",
+        "textSha256Lf": "2f5a795a728533e3b154e1756fcf91d37e26479439a1ef0ec7e14c2a161a9dde",
+        "spec": "drill-anim/specs/t-lsit-open-close-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "frontal",
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "lats",
+        "adductors",
+        "hip-abductors"
+      ],
+      "stabilizers": [
+        "triceps",
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "abduction",
+            "adduction"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-lsit-tuck"
+      ],
+      "regressions": [
+        "t-lsit-wide"
+      ],
+      "progressions": [
+        "t-lsit-vsit-circles"
+      ],
+      "aiSummary": {
+        "zh": "L 撑中双腿开合，练撑住时腿的控制，为托马斯全旋做准备。",
+        "en": "L-sit open-close for leg control while supporting; flare prep."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "abductors",
+              "adductors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "lats",
+              "adductors",
+              "hip-abductors"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "L 撑类：髋屈肌和腹直肌主动发力把腿抬住；手臂伸直、肩下压只是撑住，三头肌/斜方肌下部归稳定，背阔肌下压归协同；v3 core→abs。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "词表把 L 坐保持列为 4 级（较高相对力量/技巧），v3 只到 3 级，上调。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-lsit-tuck": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-lsit-tuck",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-lsit-tuck.json",
+        "textSha256Lf": "892df51555c157d7fc260bfd76cdbfbaa82a3f5fed1746ac92cbca0f66c13232",
+        "spec": "drill-anim/specs/t-lsit-tuck-r5.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "lats"
+      ],
+      "stabilizers": [
+        "triceps",
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-lsit-open-close"
+      ],
+      "regressions": [
+        "abs-B",
+        "t-lsit-wide"
+      ],
+      "progressions": [
+        "t-vsit"
+      ],
+      "aiSummary": {
+        "zh": "L 撑中收腿伸腿，练撑地压缩力量，能做团身撑后的进阶。",
+        "en": "L-sit to tuck for compression strength while supported."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "quadriceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "lats"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "L 撑类：髋屈肌和腹直肌主动发力把腿抬住；手臂伸直、肩下压只是撑住，三头肌/斜方肌下部归稳定，背阔肌下压归协同；v3 core→abs。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "词表把 L 坐保持列为 4 级（较高相对力量/技巧），v3 只到 3 级，上调。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-lsit-vsit-circles": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-lsit-vsit-circles",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-lsit-vsit-circles.json",
+        "textSha256Lf": "2782658085a386a19952e1ddcb5e30daff86da37ad90c7af2def309fef94f52e",
+        "spec": "drill-anim/specs/t-lsit-vsit-circles-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal",
+        "frontal",
+        "transverse"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "lats",
+        "adductors",
+        "hip-abductors"
+      ],
+      "stabilizers": [
+        "triceps",
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "circumduction",
+            "flexion"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 5,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-vsit"
+      ],
+      "regressions": [
+        "t-lsit-open-close"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "霹雳舞技巧级：L 撑到 V 撑画圈，只给已稳定 L 撑的人。",
+        "en": "L-sit to V-sit circles; skill level, only for solid L-sit holders."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "abductors",
+              "adductors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "lats",
+              "adductors",
+              "hip-abductors"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "L 撑类：髋屈肌和腹直肌主动发力把腿抬住；手臂伸直、肩下压只是撑住，三头肌/斜方肌下部归稳定，背阔肌下压归协同；v3 core→abs。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 5,
+          "reason": "L 撑基础上抬到 V 撑并画圈，属技巧级 5 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-lsit-wide": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-lsit-wide",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-lsit-wide.json",
+        "textSha256Lf": "9b3cace3a442936ca06722ee86ca1265661af9aea91507d36dbc78ac3c768f85",
+        "spec": "drill-anim/specs/t-lsit-wide-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "lats",
+        "adductors"
+      ],
+      "stabilizers": [
+        "triceps",
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "abduction"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-straddle-hold"
+      ],
+      "regressions": [
+        "t-seated-straddle-ext",
+        "abs-B"
+      ],
+      "progressions": [
+        "t-lsit-open-close",
+        "t-lsit-tuck"
+      ],
+      "aiSummary": {
+        "zh": "霹雳舞/托马斯准备：宽腿 L 撑保持，练撑起和抬腿的压缩力量。",
+        "en": "Wide-leg L-sit hold for compression and support strength (breaking prep)."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "adductors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "lats",
+              "adductors"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "L 撑类：髋屈肌和腹直肌主动发力把腿抬住；手臂伸直、肩下压只是撑住，三头肌/斜方肌下部归稳定，背阔肌下压归协同；v3 core→abs。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "词表把 L 坐保持列为 4 级（较高相对力量/技巧），v3 只到 3 级，上调。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-seated-straddle-ext": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-seated-straddle-ext",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-seated-straddle-ext.json",
+        "textSha256Lf": "a635c101e841630fd179ba758f68fd898e4f3aabce121bd7abbbe3f48a48403e",
+        "spec": "drill-anim/specs/t-seated-straddle-ext-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength",
+        "mobility"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal",
+        "frontal"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "adductors"
+      ],
+      "stabilizers": [
+        "triceps"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "abduction",
+            "adduction"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 3,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "low",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "modify",
+          "reasons": [
+            "end-range-stretch"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength",
+        "mobility"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "t-seated-straddle-lifts"
+      ],
+      "progressions": [
+        "t-lsit-wide",
+        "t-straddle-hold"
+      ],
+      "aiSummary": {
+        "zh": "分腿坐双脚离地收腿伸腿，练核心压缩控制，L 撑前的过渡。",
+        "en": "Seated straddle tuck-and-extend with feet up; bridge to L-sits."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "quadriceps",
+              "adductors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "adductors"
+            ],
+            "stabilizers": [
+              "triceps"
+            ]
+          },
+          "reason": "分腿坐抬腿靠髋屈肌（含股直肌）发力，腹部协同；手指点地只是稳定。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 2,
+          "chosen": 3,
+          "reason": "整组双脚离地并反复收伸，需要较强压缩力量，调到 3 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
     "t-seated-straddle-lift-1leg": {
       "format": "pose-hub-ai-tags@1",
       "id": "t-seated-straddle-lift-1leg",
@@ -28488,6 +33624,717 @@
           },
           "chosen": "alternating",
           "reason": "v3 unilateral=true 实为左右交替（rep_alternate），与单侧分开。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-seated-straddle-lifts": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-seated-straddle-lifts",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-seated-straddle-lifts.json",
+        "textSha256Lf": "99ed006ac82b2c494a688618c4ca23cfa23db9d049824a4878b4a0717ab039a6",
+        "spec": "drill-anim/specs/t-seated-straddle-lifts-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [],
+      "substitutes": [],
+      "trainingType": [
+        "strength",
+        "mobility"
+      ],
+      "movementPattern": [
+        "isolation"
+      ],
+      "contraction": [
+        "dynamic"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "quadriceps"
+      ],
+      "secondaryMuscles": [
+        "abs",
+        "adductors"
+      ],
+      "stabilizers": [
+        "triceps"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "extension"
+          ]
+        },
+        {
+          "joint": "knee",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 3,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "none",
+        "wrist": "none",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "modify",
+          "reasons": [
+            "end-range-stretch"
+          ]
+        },
+        {
+          "population": "older-adult",
+          "flag": "modify",
+          "reasons": [
+            "floor-transfer"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "mobility",
+        "strength"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "t-seated-straddle-lift-1leg"
+      ],
+      "progressions": [
+        "t-seated-straddle-ext"
+      ],
+      "aiSummary": {
+        "zh": "分腿坐双腿同时抬起，练压缩力量和主动柔韧，为分腿撑做准备。",
+        "en": "Seated straddle double-leg lifts for compression and active flexibility."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "quadriceps"
+            ],
+            "synergistMuscles": [
+              "core",
+              "adductors"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "quadriceps"
+            ],
+            "secondaryMuscles": [
+              "abs",
+              "adductors"
+            ],
+            "stabilizers": [
+              "triceps"
+            ]
+          },
+          "reason": "分腿坐抬腿靠髋屈肌（含股直肌）发力，腹部协同；手指点地只是稳定。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 2,
+          "chosen": 3,
+          "reason": "双腿同时离地需要末端主动柔韧，属 3 级\"末端活动度\"。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-straddle-hold": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-straddle-hold",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-straddle-hold.json",
+        "textSha256Lf": "8abccc28dac7959665ade65105e8a59c2d284f23505cb488cbc9ba9c52581dc9",
+        "spec": "drill-anim/specs/t-straddle-hold-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "full"
+      ],
+      "primaryMuscles": [
+        "triceps",
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "lats",
+        "adductors"
+      ],
+      "stabilizers": [
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion",
+            "abduction"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "moderate",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-lsit-wide"
+      ],
+      "regressions": [
+        "t-seated-straddle-lifts",
+        "triceps-B"
+      ],
+      "progressions": [
+        "t-lsit-open-close"
+      ],
+      "aiSummary": {
+        "zh": "托马斯全旋前置：分腿支撑把臀和腿撑离地，需要手腕和肩能承重。",
+        "en": "Straddle support hold for flare prep; heavy wrist and shoulder load."
+      },
+      "confidence": "medium",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core",
+              "triceps"
+            ],
+            "synergistMuscles": [
+              "adductors",
+              "deltoids"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "triceps",
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "lats",
+              "adductors"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "分腿撑由三头肌伸肘撑起（v3 列主动肌，保留）+ 髋屈肌/腹直肌压缩抬腿；背阔肌下压协同。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "词表把 L 坐保持列为 4 级（较高相对力量/技巧），v3 只到 3 级，上调。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-tuck-planche": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-tuck-planche",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-tuck-planche.json",
+        "textSha256Lf": "9295c637b80f83ff8f5f10339c8dc4673e55243b19164b67d55b376f9508dd7a",
+        "spec": "drill-anim/specs/t-tuck-planche-r6.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength",
+        "balance"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "upper",
+        "core"
+      ],
+      "primaryMuscles": [
+        "deltoids",
+        "serratus",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "chest",
+        "triceps"
+      ],
+      "stabilizers": [
+        "forearms",
+        "scapular",
+        "biceps"
+      ],
+      "joints": [
+        {
+          "joint": "shoulder",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "protraction"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "extension"
+          ]
+        }
+      ],
+      "difficulty": 4,
+      "intensity": "moderate",
+      "prerequisites": [
+        "wrist-loading",
+        "plank-30s",
+        "pushup-10"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "moderate",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "none"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "balance-demand"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [],
+      "regressions": [
+        "triceps-B"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "霹雳舞/体操技巧：团身俄挺，练肩前顶和手撑平衡，需要腕肩基础。",
+        "en": "Tuck planche for straight-arm pushing and hand balance; skill level."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "deltoids",
+              "core"
+            ],
+            "synergistMuscles": [
+              "chest",
+              "triceps",
+              "forearms"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "deltoids",
+              "serratus",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "chest",
+              "triceps"
+            ],
+            "stabilizers": [
+              "forearms",
+              "scapular",
+              "biceps"
+            ]
+          },
+          "reason": "团身俄挺靠三角肌前束顶肩、前锯肌前伸肩胛，v3 漏了 serratus；core→abs。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 4,
+          "reason": "俯撑平衡（俄挺）团身版，词表 5 级是完整俯撑平衡，团身版定 4 级。"
+        }
+      ],
+      "reviewNotes": []
+    },
+    "t-vsit": {
+      "format": "pose-hub-ai-tags@1",
+      "id": "t-vsit",
+      "vocabularyVersion": "0.1.0",
+      "status": "ai-draft",
+      "source": {
+        "text": "catalog/production/v3-text/t-vsit.json",
+        "textSha256Lf": "be7e215051d145dfee43f3ff6c6fc7ffd5b07e68ed807edfce1cfc2851873fbb",
+        "spec": "drill-anim/specs/t-vsit-r7.js",
+        "catalogV1": null
+      },
+      "scenes": [
+        "home",
+        "gym",
+        "hotel"
+      ],
+      "space": "mat",
+      "floorRequired": true,
+      "impact": "none",
+      "sweat": "none",
+      "requiredEquipment": [
+        "mat"
+      ],
+      "optionalEquipment": [
+        "parallettes"
+      ],
+      "substitutes": [],
+      "trainingType": [
+        "strength"
+      ],
+      "movementPattern": [],
+      "contraction": [
+        "isometric"
+      ],
+      "plane": [
+        "sagittal"
+      ],
+      "bodyRegion": [
+        "core",
+        "lower"
+      ],
+      "primaryMuscles": [
+        "hip-flexors",
+        "abs"
+      ],
+      "secondaryMuscles": [
+        "quadriceps",
+        "lats"
+      ],
+      "stabilizers": [
+        "triceps",
+        "scapular",
+        "forearms"
+      ],
+      "joints": [
+        {
+          "joint": "hip",
+          "actions": [
+            "flexion"
+          ]
+        },
+        {
+          "joint": "scapulothoracic",
+          "actions": [
+            "depression"
+          ]
+        },
+        {
+          "joint": "elbow",
+          "actions": [
+            "isometric-hold"
+          ]
+        },
+        {
+          "joint": "wrist",
+          "actions": [
+            "isometric-hold"
+          ]
+        }
+      ],
+      "difficulty": 5,
+      "intensity": "moderate",
+      "prerequisites": [
+        "floor-transfer",
+        "wrist-loading"
+      ],
+      "laterality": "bilateral",
+      "jointStress": {
+        "knee": "none",
+        "lumbar": "none",
+        "shoulder": "low",
+        "wrist": "moderate",
+        "neck": "none",
+        "ankle": "none",
+        "hip": "low"
+      },
+      "populationNotes": [
+        {
+          "population": "beginner",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "postpartum",
+          "flag": "caution",
+          "reasons": [
+            "abdominal-pressure"
+          ]
+        },
+        {
+          "population": "hypertension",
+          "flag": "modify",
+          "reasons": [
+            "breath-holding-risk"
+          ]
+        }
+      ],
+      "sessionRole": [
+        "main"
+      ],
+      "goals": [
+        "performance",
+        "strength"
+      ],
+      "alternatives": [
+        "t-lsit-vsit-circles"
+      ],
+      "regressions": [
+        "t-lsit-tuck"
+      ],
+      "progressions": [],
+      "aiSummary": {
+        "zh": "霹雳舞技巧级：V 撑保持，需要很强的压缩力量和腘绳肌柔韧。",
+        "en": "V-sit hold; expert compression strength and hamstring flexibility."
+      },
+      "confidence": "high",
+      "notes": [
+        {
+          "field": "primaryMuscles/secondaryMuscles/stabilizers",
+          "existing": {
+            "activeMuscles": [
+              "hip-flexors",
+              "core"
+            ],
+            "synergistMuscles": [
+              "triceps",
+              "quadriceps"
+            ]
+          },
+          "chosen": {
+            "primaryMuscles": [
+              "hip-flexors",
+              "abs"
+            ],
+            "secondaryMuscles": [
+              "quadriceps",
+              "lats"
+            ],
+            "stabilizers": [
+              "triceps",
+              "scapular",
+              "forearms"
+            ]
+          },
+          "reason": "L 撑类：髋屈肌和腹直肌主动发力把腿抬住；手臂伸直、肩下压只是撑住，三头肌/斜方肌下部归稳定，背阔肌下压归协同；v3 core→abs。"
+        },
+        {
+          "field": "floorRequired",
+          "existing": {
+            "position": "seated"
+          },
+          "chosen": true,
+          "reason": "坐在地上做（不是坐椅子），需要着地，不进办公室。"
+        },
+        {
+          "field": "difficulty",
+          "existing": 3,
+          "chosen": 5,
+          "reason": "V 撑高于 L 撑（4 级），属技巧级 5 级。"
         }
       ],
       "reviewNotes": []

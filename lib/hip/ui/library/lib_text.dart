@@ -3,6 +3,7 @@
 // names and key points come from the action kits' display.{zh,en}.
 import 'package:flutter/widgets.dart';
 
+import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 
 class LibText {
@@ -152,6 +153,19 @@ class LibText {
   String get groupFull => _('已满 20 个', 'Full (20)');
 
   // ── routines ──
+  String get homeAdded => _('已加入首页', 'On home');
+  String homeAddTo(HipScene scene) => _(
+    '加入首页${scene == HipScene.chair ? '办公' : '居家'}',
+    'Add to ${scene == HipScene.chair ? 'office' : 'home'}',
+  );
+  String homeRemoveFrom(HipScene scene) => _(
+    '从首页${scene == HipScene.chair ? '办公' : '居家'}移除',
+    'Remove from ${scene == HipScene.chair ? 'office' : 'home'}',
+  );
+  String get homeFolderEntry => _('训练组选择', 'Choose groups');
+  String get homeFolderScene => _('首页文件夹', 'Home folder');
+  String get homeFolderEmpty => _('还没有加入首页的训练组', 'No groups on home yet');
+
   String routinesCount(int n) => _(
     '$n 套编排好的套路，不受首页推荐限制，随便挑',
     '$n ready-made routines – pick any, not just the recommended one',
@@ -215,6 +229,18 @@ class LibText {
   String get total => _('总时长', 'Total');
   String summary(int n, int rest) =>
       _('$n 个动作 · 休息 $rest 秒', '$n moves · ${rest}s rest');
+  String savedPlanDose(CustomStep step) {
+    final dose = switch ((step.reps, step.seconds)) {
+      (final reps?, _) => _('$reps 次', '$reps reps'),
+      (_, final seconds?) => restValue(seconds),
+      _ => '',
+    };
+    final sets = step.sets ?? 1;
+    return sets > 1 && dose.isNotEmpty
+        ? _('$sets 组 × $dose', '$sets × $dose')
+        : dose;
+  }
+
   String get addMoves => _('＋ 添加动作', '+ Add moves');
   String get save => _('保存', 'Save');
   String get discardTitle => _('放弃修改？', 'Discard changes?');

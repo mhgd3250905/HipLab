@@ -1,5 +1,13 @@
 # HipLab 协作约定
 
+## 当前入口
+
+先核对实际工作树、分支和 HEAD，再从 [文档入口](docs/README.md)、[当前状态](docs/current-state.md) 和 [开发事项](docs/development-roadmap.md) 确认任务范围。会员阶段使用 `feat/membership`，`main` 仍为开发基线。Git 版本、安装和发布分别登记在 [版本台账](docs/version-ledger.md)。当前界面以 [UI 设计规范](docs/ui-design-standard.md) 为准，通用实现配方见 [UI 复用手册](docs/ui-kit/README.md)。
+
+## 历史阶段与当时授权
+
+下列带日期的记录用于追溯各阶段，实际状态与本轮范围按当前入口和用户指令核对。
+
 ## 2026-11-08 SDK 同步候选（不合 main）
 
 本轮用户明确要求从 `main@54471ae` 建 `codex/sdk-sync-r1-20261108`，
@@ -14,13 +22,13 @@ APK并推候选分支；不合 main、不打 tag、不操作手机或商店。�
 
 本项目设计数值以`docs/ui-design-standard.md`为准；跨App实现学习从`docs/ui-kit/README.md`进入，含实际组件合同、完整Flutter画廊与样例验证。样例属于docs内的学习入口，不替换App运行入口，也未发布为独立Pub包。变更设计时同步规范与配方；不要照搬旧交付报告或源码文件头中的历史参数。阶段事实与证据绑定见`docs/ui-documentation-closeout-2026-11-07.md`，版本/锁文件/运行内容保持+61。
 
-## 2026-11-07 当前口径：已验收UI / +61接收main
+## 2026-11-07 历史口径：已验收UI / +61接收main
 
 用户已确认截至+61的本轮UI全部验证通过，明确授权合入并推送main作为后续开发主线。日常目录`E:/AII-3D/3D-Hip`切回main；已验收候选`6e49ac7f7c22370c54f4d1c5068166c7f200c0bb`完整快进接收，包含r2-v1接入、UI r4补全、首页卡片/持久视频/任意方向拖动/杂志展开、推荐文件夹、导航性能/固定按钮锚点、条目图标、全App英文及友善安全插画。版本保持`1.1.0+61`/2061，四实际SDK包及coach override固定`fa957ff405cc57cd10d53987430313822ff20607`；后续以main为准，旧候选分支和产物保留。
 
 本次用户验收与本轮完整软件检查见[主线回执](docs/ui-main-integration-2026-11-07.md)。不把历史iOS/锁屏/语音/通知/实模等独立未验项改写成Agent实测通过。另一SDK升级App分支的新增语音/计数提交未在+61内，不自动混入；SDK仓库main、release/1.0、tag和商店不属于本次集成。以下日期段落保留历史口径，不代表当前main版本或等待UI批准。
 
-## 2026-11-04 当前口径：QA v3 / +34 已入 main
+## 2026-11-04 历史口径：QA v3 / +34 已入 main
 
 PR #30 已合入，功能集成点为 `2400b344183e1d57636412309899b4a1481966a7`；版本 `1.1.0+34`，arm64 split `2034`，四个实际 SDK 依赖及 coach override 固定 `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`（用户对齐口径为 v0.7.2 内容）。App 继续使用 SDK 聊天页，开启 qaV2 入口、由固定 SDK 承载问答 v3，传入 209 条未审 AI 标签，不增加 App 问答适配层。版本、依赖源及交付身份见 [版本管理](docs/version-management.md)、[版本台账](docs/version-ledger.md)。
 
@@ -83,12 +91,12 @@ main 已含 PR #26 首页主题、PR #27 UI r2/混合组、PR #28 SDK v0.6.0；�
 - 当前阶段按用户2026-10-19最新要求，以正常字号和日常设备使用为兼容性验收范围；极大系统字号等极端显示环境不列为当前合并门槛，不为其继续扩展实现或验收。已有记录保留历史，常规数据正确性继续验证。按用户同日最新要求，本轮原生验收以正常播放无误为门槛，不再扩展耳机/蓝牙、外部音乐ducking及锁屏/系统中断矩阵；未验项目与历史失败如实保留，不改记为通过。
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。
-- 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望），不在 HipLab 重渲。Pose-Hub v0.2.0 为当前冻结版本（视频1080、封面540）；使用仓库冻结的 pose-hub.lock.json / tools/pose-hub-manifest.json，按 docs/README.md 下载校验 ZIP 后用 --from-dir 恢复并 --check。后续升级由 Windows 更新冻结版本，保留旧母版、规格和 QA；旧 tools/sync_drill_media.py 仅保留历史兼容。
+- 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望）。当前素材按 [文档入口](docs/README.md#新机器拉素材mac--windows) 准备。v0.2.0 ZIP 与旧同步工具用于历史分支追溯。
 - 高清同步使用已通过 QA 的批次和显式参数，当前流程见 `docs/development-workflow.md`。逐项来源以 `tools/hip_content/source/hip-media.json` 为准；保留绿幕/透明母帧、旧批次与修订来源，不覆盖冻结动作、模型或 QA。
 - `lib/core/` 是从 3D-Body 复制的公共代码，文件头注明来源；修改时保留来源注释并说明改了什么。
 - 包里只放 HipLab 自己用到的资源（`test/hip/hip_assets_test.dart` 会检查）。
 - Android 更新保持包名和签名连续，覆盖安装保留用户数据；不要清数据。用户数据备份、密钥、APK 和运行截图日志留 Git 忽略目录，文档路径不代表已备份到远端。
 
-- Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、媒体 lock、依赖和版本号；Mac 只改 `ios/` 及少量 iOS 专属平台代码，不升级依赖或素材版本。Mac 新机器可按 `docs/README.md` 用冻结 lock 执行 `sync --from-dir` / `--check` 恢复素材。两端 Flutter 统一 **3.44.7 stable**；版本由 Windows 统一递增。
+- Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、媒体 lock、依赖和版本号；Mac 只改 `ios/` 及少量 iOS 专属平台代码，不升级依赖或素材版本。新环境按 [文档入口](docs/README.md#新机器拉素材mac--windows) 恢复锁定依赖和随 Git 提供的公共媒体。两端 Flutter 统一 **3.44.7 stable**；版本由 Windows 统一递增。
 - Mac 从最新 main 开 `ios/…` 分支并提 PR，本机主干线负责审核集成；Windows 可直接在 main 推进已授权工作。跨端共享音视频改动必须补 Android 复查。
 - 本轮及后续未另获授权前，不上传 Play / App Store / TestFlight，不调整商店或发布配置；发布配置变更当前只允许 pubspec.yaml 共用版本号递增；本机完成本轮开发与验证后推送 main 已授权。手机拔线时不执行 ADB，网页结果不代替 native/iOS 验收。

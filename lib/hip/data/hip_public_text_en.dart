@@ -1,5 +1,5 @@
-// Display-only English translations of the 209 HipLab-authorized public
-// action definitions in the frozen r2-v1 canonical catalogue. Each cue and
+// Display-only English translations of the 248 HipLab-authorized public
+// actions and the self-test demo in the r2-v11 catalogue. Each cue and
 // caution preserves the source order; training, safety decisions, IDs and
 // stored user text remain in the authoritative source models.
 
@@ -15,7 +15,7 @@ class HipPublicEnglishText {
 }
 
 const hipPublicTextSourceSha256 =
-    'ff9eb70740887752ba81bba0742fccb43d0522c2d810141a5d496228f1fb82c2';
+    '4958eb7d3679365739747947df1d3a2eea02165db7704451fa6f2dc2c5fdee81';
 
 const hipPublicTextEn = <String, HipPublicEnglishText>{
   "abs-A": HipPublicEnglishText(
@@ -2678,5 +2678,524 @@ const hipPublicTextEn = <String, HipPublicEnglishText>{
       "If your knees hurt, hold a higher squat; stop if pain persists.",
     ],
     contraindications: ["Knee"],
+  ),
+  "h-band-biceps-curl": HipPublicEnglishText(
+    purpose: "Train your biceps with a resistance band.",
+    cues: [
+      "Keep your elbows close to your sides and curl both hands towards your shoulders.",
+      "Stand on the middle of the band with both feet, with your palms facing forwards.",
+      "Lower slowly until your arms are straight.",
+    ],
+    cautions: ["Use a lighter band if your elbows hurt."],
+    contraindications: [],
+  ),
+  "h-bear-plank": HipPublicEnglishText(
+    purpose: "Build core stability and shoulder strength for support.",
+    cues: [
+      "Tighten your abs and lift your knees just off the floor.",
+      "Place your hands under your shoulders and your knees under your hips, with your toes on the floor.",
+      "Keep your back flat and your hips low. Hold and breathe evenly.",
+    ],
+    cautions: [
+      "Warm up your wrists first.",
+      "Stop if you feel sharp pain or numbness in your wrists.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-biceps-self": HipPublicEnglishText(
+    purpose:
+        "Train the front of your upper arm using your other hand for resistance, without equipment.",
+    cues: [
+      "Press down on your forearm with your other hand as you slowly curl against it.",
+      "Keep your elbow close to your side and your palm facing up.",
+      "Keep resisting with your other hand as you lower.",
+    ],
+    cautions: ["Use less resistance if your elbow hurts."],
+    contraindications: [],
+  ),
+  "h-bilateral-farmer-hold-native": HipPublicEnglishText(
+    purpose: "Build grip strength and keep your body steady.",
+    cues: [
+      "Stand tall and hold a dumbbell firmly in each hand at your sides.",
+      "Lower your shoulders and open your chest.",
+      "Breathe evenly and keep your knees soft.",
+    ],
+    cautions: [
+      "Put the dumbbells down if your hands or lower back feel uncomfortable.",
+    ],
+    contraindications: ["Lower back"],
+  ),
+  "h-bridge-overhead": HipPublicEnglishText(
+    purpose:
+        "Train your glutes and overhead reach in preparation for a full bridge.",
+    cues: [
+      "Reach your arms overhead along the floor and squeeze your glutes to lift your hips.",
+      "Lie on your back with your knees bent and feet hip-width apart.",
+      "Keep your ribs down. Hold briefly, then lower slowly.",
+    ],
+    cautions: [
+      "Lift your hips less high if your shoulders or lower back hurt.",
+    ],
+    contraindications: ["Lower back", "Shoulder", "Hip"],
+  ),
+  "h-chair-elbow-triceps-stretch": HipPublicEnglishText(
+    purpose:
+        "Stretch the backs of your upper arms and the area under your arms.",
+    cues: [
+      "Rest your elbows securely on the chair back and move your hips back to let your chest sink.",
+      "Keep both elbows bent and your hands near the back of your neck without touching your head.",
+      "Hold still and breathe slowly.",
+      "Relax a little more with each exhale, without bouncing.",
+    ],
+    cautions: [
+      "Lower your chest less if your shoulders hurt.",
+      "Use a sturdy chair without wheels.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-crossbody": HipPublicEnglishText(
+    purpose: "Stretch the back of your shoulder.",
+    cues: [
+      "Bring one arm across your chest and use your other hand to pull it closer.",
+      "Place your other hand just above the elbow and keep your shoulder down without shrugging.",
+      "Hold still and breathe slowly.",
+      "Relax a little more with each exhale, without bouncing.",
+    ],
+    cautions: [
+      "Pull more gently if your shoulder hurts. Stop if the pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-db-overhead-shrug": HipPublicEnglishText(
+    purpose: "Train the muscles above your shoulders with your arms overhead.",
+    cues: [
+      "Hold your arms straight overhead and shrug your shoulders towards your ears.",
+      "Stand tall, keep your ribs down and hold your head still.",
+      "Pause at the top, then slowly lower your shoulders.",
+    ],
+    cautions: ["Use light dumbbells. Stop if your shoulders or neck hurt."],
+    contraindications: ["Shoulder", "Neck"],
+  ),
+  "h-db-reverse-curl": HipPublicEnglishText(
+    purpose:
+        "Train your forearms and biceps for a stronger grip and steadier wrists.",
+    cues: [
+      "Hold the dumbbells with the backs of your hands facing forwards and curl with your elbows close to your sides.",
+      "Keep your wrists straight without letting them bend down.",
+      "Pause at chest height.",
+    ],
+    cautions: [
+      "Start with light dumbbells. Stop if your wrists or elbows hurt.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-db-shrug": HipPublicEnglishText(
+    purpose:
+        "Train the muscles above your shoulders and along the sides of your neck.",
+    cues: [
+      "Keep your arms straight and shrug your shoulders directly towards your ears.",
+      "Keep your elbows straight and your neck still. Do not roll your shoulders.",
+      "Pause briefly at the top.",
+    ],
+    cautions: [
+      "Start with light weights. Stop if your neck or shoulders feel uncomfortable.",
+    ],
+    contraindications: ["Shoulder", "Neck"],
+  ),
+  "h-db-zottman-curl": HipPublicEnglishText(
+    purpose: "Train the fronts of your upper arms and your forearms together.",
+    cues: [
+      "Curl with your palms up, then turn your palms down at the top before lowering.",
+      "Keep your elbows close to your sides and your wrists straight.",
+      "Turn your palms back up at the bottom.",
+    ],
+    cautions: [
+      "Start with light dumbbells. Stop if your wrists or elbows hurt.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-floor-nordic-hand-reset": HipPublicEnglishText(
+    purpose: "Train your hamstrings to control a slow forward lowering motion.",
+    cues: [
+      "Kneel with your heels secured and slowly lean forwards, keeping your body in a straight line.",
+      "Use your hamstrings to control how quickly you lower.",
+      "At the bottom, brace both hands on the floor, sit your hips back and push yourself upright onto your knees.",
+    ],
+    cautions: [
+      "Start with a small range. Stop if you feel pulling or pain in your hamstrings.",
+      "Keep a soft pad under your knees. Do not do this move if your heels are not securely anchored.",
+    ],
+    contraindications: ["Knee"],
+  ),
+  "h-half-kneeling-quad-stretch": HipPublicEnglishText(
+    purpose: "Stretch the front of your thigh and hip.",
+    cues: [
+      "Pull your back foot towards your glutes and gently shift your hips forwards.",
+      "Place your back knee on a mat and your front foot on the floor. Rest your free hand on your hip.",
+      "Hold still and breathe slowly.",
+      "Relax a little more with each exhale, without bouncing.",
+    ],
+    cautions: [
+      "If the knee you are kneeling on hurts, add more padding and bend it less.",
+    ],
+    contraindications: ["Knee"],
+  ),
+  "h-inner-thigh": HipPublicEnglishText(
+    purpose: "Train your inner thigh.",
+    cues: [
+      "Straighten your bottom leg and squeeze your inner thigh to lift it.",
+      "Lie on your side, propped on your forearm, and plant your top foot in front of your bottom knee.",
+      "Pause at the top and lower without letting your leg drop to the floor.",
+    ],
+    cautions: [
+      "Lift less high if your inner thigh or hip hurts. Stop if the pain continues.",
+    ],
+    contraindications: ["Hip", "Inner thigh"],
+  ),
+  "h-kb-swing": HipPublicEnglishText(
+    purpose:
+        "Build explosive power in your glutes and hamstrings by driving through your hips.",
+    cues: [
+      "Drive your hips forwards sharply and let your arm guide the kettlebell up.",
+      "Keep your back flat and push your hips back as the kettlebell swings between your legs.",
+      "Stand tall and squeeze your glutes at the top without leaning back.",
+    ],
+    cautions: [
+      "Stop if your lower back hurts. Start with a light kettlebell.",
+      "Only swing when the area around you is clear of people and objects.",
+    ],
+    contraindications: ["Lower back"],
+  ),
+  "h-kneeling-thread-needle": HipPublicEnglishText(
+    purpose: "Improve upper-back rotation and loosen your shoulders.",
+    cues: [
+      "Slide one hand palm up beneath your other arm.",
+      "Let the reaching shoulder sink as your upper back rotates.",
+      "Keep your hips still, directly over your knees.",
+    ],
+    cautions: [
+      "Ease off if you feel pain. Stretch only as far as feels comfortable.",
+      "Stop if you feel sharp pain or numbness in your wrist. Warm up your wrists first.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-mountain-climber": HipPublicEnglishText(
+    purpose:
+        "Train core and shoulder stability with slow, controlled movement.",
+    cues: [
+      "Slowly draw one knee towards your chest without letting your hips rise.",
+      "Keep your hands directly below your shoulders and your body in a straight line.",
+      "Alternate legs, pausing briefly before stepping each foot back.",
+      "One repetition includes both sides.",
+    ],
+    cautions: [
+      "Stop if you feel sharp pain or numbness in your wrist. Warm up your wrists first.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-open-book": HipPublicEnglishText(
+    purpose:
+        "Improve upper-back rotation and stretch your chest and the front of your shoulders.",
+    cues: [
+      "Keep your knees together and sweep your top arm back in a wide arc.",
+      "Lie on your side with your head on a cushion and your hips and knees bent at right angles.",
+      "Follow your hand with your eyes.",
+    ],
+    cautions: [
+      "If the front of your shoulder pinches, reduce the range or choose an easier version.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-pike-pushup": HipPublicEnglishText(
+    purpose:
+        "Build overhead pressing strength in your shoulders to prepare for handstands.",
+    cues: [
+      "Keep your hips high and bend your elbows to lower your head in front of your hands.",
+      "Form an inverted V with your hands shoulder-width apart and your legs straight.",
+      "Bend your elbows diagonally back, then press up until your arms are straight.",
+    ],
+    cautions: [
+      "Stop if you feel sharp pain or numbness in your wrist. Warm up your wrists first.",
+      "Lower less deeply if your shoulder hurts.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "h-pike-scapular-elevation": HipPublicEnglishText(
+    purpose:
+        "Build overhead shoulder control to prepare for handstand exercises.",
+    cues: [
+      "Keep your arms straight as you shrug your shoulders towards your ears, then lower them.",
+      "Hold an inverted V and keep your elbows straight throughout.",
+      "Move slowly through a small range.",
+    ],
+    cautions: [
+      "Check that holding the inverted V feels pain-free. Stop if your wrists or shoulders feel uncomfortable.",
+      "Start with one easy set of 4–6 repetitions.",
+    ],
+    contraindications: ["Shoulder", "Wrist"],
+  ),
+  "h-reverse-lunge": HipPublicEnglishText(
+    purpose: "Train your thighs and glutes for better single-leg stability.",
+    cues: [
+      "Step back and bend both knees until your back knee nearly touches the floor.",
+      "Keep your front knee directly over your ankle and your torso tall with a slight forward lean.",
+      "Push through your front heel to stand, bring your back foot in, then switch legs.",
+      "One repetition includes both sides.",
+    ],
+    cautions: [
+      "Lower less deeply if your knee feels uncomfortable. Stop if pain continues.",
+    ],
+    contraindications: ["Knee"],
+  ),
+  "h-standing-arm-extension-stretch": HipPublicEnglishText(
+    purpose: "Stretch your chest and the front of your shoulders.",
+    cues: [
+      "Keep your arms straight and slowly lift them behind you.",
+      "Stand tall with your knees slightly bent and gently draw your shoulder blades back and down.",
+      "Stay upright. Pause, then lower slowly.",
+    ],
+    cautions: [
+      "If the front of your shoulder pinches, reduce the range or choose an easier version.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-supine-cactus-chest": HipPublicEnglishText(
+    purpose: "Gently stretch your chest and the front of your shoulders.",
+    cues: [
+      "Keep your elbows and the backs of your hands on the floor as you slide your arms towards your head.",
+      "Lie on your back with your knees bent, feet flat and lower back relaxed.",
+      "Pause when you feel a gentle stretch, then slide your arms back slowly.",
+    ],
+    cautions: [
+      "Reduce the range if your shoulder hurts. Stop if pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-towel-behind": HipPublicEnglishText(
+    purpose: "Stretch the front of your shoulders and your chest.",
+    cues: [
+      "Keep your arms straight and lift the towel up and back, away from your body.",
+      "Hold the towel taut behind you with your hands slightly wider than your hips.",
+      "Lift your chest without leaning forwards. Pause at the top, then lower.",
+    ],
+    cautions: [
+      "Reduce the range if your shoulder hurts. Stop if pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-towel-isometric-curl": HipPublicEnglishText(
+    purpose: "Train the front of your upper arms without gym equipment.",
+    cues: [
+      "Anchor the towel under your foot, pull up with both hands and hold.",
+      "Keep your upper arms against your sides and your elbows bent at right angles.",
+      "Keep breathing. Do not hold your breath.",
+    ],
+    cautions: [
+      "Stop if your elbow or wrist hurts. Increase the effort gradually.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-towel-pass": HipPublicEnglishText(
+    purpose:
+        "Stretch the front of your shoulders and your chest so you can reach overhead more easily.",
+    cues: [
+      "Keep your arms straight and sweep the towel overhead and back in a wide arc.",
+      "Hold the towel taut with a wide grip and keep your ribs down.",
+      "Move your hands farther apart if your elbows bend.",
+    ],
+    cautions: [
+      "Reduce the range if your shoulder hurts. Stop if pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-towel-pulldown": HipPublicEnglishText(
+    purpose:
+        "Use a towel to train your back and practise drawing your shoulder blades down.",
+    cues: [
+      "Pull the towel taut and draw your elbows down and back.",
+      "Start with a wide grip and your arms in a V overhead.",
+      "Keep the towel taut as you press back overhead.",
+    ],
+    cautions: [
+      "Reduce the range if your shoulder hurts. Stop if pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "h-wall-palm-lift": HipPublicEnglishText(
+    purpose:
+        "Check how steadily you can lift the heel of your palm with your fingertips against a wall.",
+    cues: [
+      "Keep your fingertips on the wall and slowly lift the heel of your palm.",
+      "Stand steadily facing the wall. Relax your arms without shrugging.",
+      "Lift only as far as you can control, hold for about 3 seconds, then lower.",
+    ],
+    cautions: [
+      "Use a smaller range if your wrist or fingers hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist"],
+  ),
+  "h-wall-pec": HipPublicEnglishText(
+    purpose: "Stretch your chest and the front of your shoulder and upper arm.",
+    cues: [
+      "Keep your palm still on the wall and slowly turn your body away from it.",
+      "Extend your arm behind you against the wall at shoulder height and keep your shoulder down.",
+      "Hold still and breathe slowly.",
+      "Relax a little more with each exhale. Do not bounce.",
+    ],
+    cautions: [
+      "Use a smaller range if your shoulder hurts. Stop if pain continues.",
+    ],
+    contraindications: ["Shoulder"],
+  ),
+  "o-supported-ankle-eversion": HipPublicEnglishText(
+    purpose:
+        "Practise turning the sole of your foot outwards with ankle control, without added weight.",
+    cues: [
+      "Keep your lower leg still and slowly turn the sole of your foot outwards.",
+      "Lightly hold a chair with one hand and lift the working foot off the floor.",
+      "Turn as far as feels comfortable, then slowly return to neutral.",
+    ],
+    cautions: [
+      "Use a stable chair without wheels. Stop if it hurts or you feel unsteady.",
+    ],
+    contraindications: [],
+  ),
+  "t-flare-side-hold": HipPublicEnglishText(
+    purpose:
+        "Build the strength to support yourself sideways on one hand and one foot during a flare.",
+    cues: [
+      "Support yourself on your lower hand and foot, keeping your body nearly horizontal.",
+      "Lift your upper leg and reach your free arm straight up.",
+      "Push the floor away with your supporting hand and keep your shoulder away from your ear.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Shorten the hold if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-lsit-open-close": HipPublicEnglishText(
+    purpose:
+        "Practise spreading your legs apart and bringing them together while holding an L-sit.",
+    cues: [
+      "Stay lifted as you slowly spread your straight legs apart and bring them back together.",
+      "Keep your shoulders down and your arms straight.",
+      "Keep your legs off the floor and your knees straight throughout the set.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Do fewer repetitions if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-lsit-tuck": HipPublicEnglishText(
+    purpose:
+        "Practise tucking and straightening your legs while supporting your body on your hands.",
+    cues: [
+      "Stay lifted. Straighten your legs into an L-sit, then tuck your knees back in.",
+      "Keep your shoulders down and your arms straight.",
+      "Bring your heels underneath you as you tuck.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Do fewer repetitions if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-lsit-vsit-circles": HipPublicEnglishText(
+    purpose:
+        "Practise lifting your legs in a controlled circle while supporting your body on your hands.",
+    cues: [
+      "Stay lifted as you open your legs outwards, then circle them up.",
+      "Keep your shoulders down and your arms straight.",
+      "One full circle is one repetition. Alternate directions each time and move slowly and steadily.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Do fewer repetitions if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-lsit-wide": HipPublicEnglishText(
+    purpose:
+        "Build the strength to support your body and lift your legs off the floor in a straddle.",
+    cues: [
+      "Press through both hands to lift up, keeping your legs straight, apart and off the floor.",
+      "Keep your shoulders down and your arms straight.",
+      "Breathe evenly. Do not hold your breath.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Shorten the hold if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-seated-straddle-ext": HipPublicEnglishText(
+    purpose:
+        "Practise tucking and straightening your legs in a seated straddle with both feet off the floor.",
+    cues: [
+      "Keep both feet off the floor as you straighten your legs, then tuck your knees back out to the sides.",
+      "Plant both hands in front of you and keep your chest facing forwards.",
+      "Move slowly without leaning back.",
+    ],
+    cautions: [
+      "Use a smaller range if your hips or lower back hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Lower back", "Hip"],
+  ),
+  "t-seated-straddle-lifts": HipPublicEnglishText(
+    purpose:
+        "Train the front of your thighs to lift both legs in a seated straddle.",
+    cues: [
+      "Keep your legs straight and lift them together a few centimetres off the floor.",
+      "Sit in a wide straddle, plant your hands between your legs and lean your upper body forwards.",
+      "Keep your hips on the floor, pause, then lower your legs.",
+    ],
+    cautions: [
+      "Stop and rest if you feel a cramp in the front of your thigh or pain in your hip.",
+    ],
+    contraindications: ["Hip"],
+  ),
+  "t-straddle-hold": HipPublicEnglishText(
+    purpose:
+        "Build the strength to support yourself in a straddle for a flare.",
+    cues: [
+      "Push through straight arms to lift your hips and both legs off the floor.",
+      "Sit in a wide straddle with both hands on the floor between your legs.",
+      "Keep your shoulders down, lean forwards and hold yourself off the floor.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Ease off if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-tuck-planche": HipPublicEnglishText(
+    purpose:
+        "Practise balancing on your hands and build the shoulder strength to lean forwards.",
+    cues: [
+      "Shift your shoulders forwards past your hands and lift both feet off the floor.",
+      "Start in a squat with your hands on the floor, fingers angled slightly outwards and arms straight.",
+      "Tuck your knees under your chest, round your back slightly and hold your balance.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Shorten the hold if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
+  ),
+  "t-vsit": HipPublicEnglishText(
+    purpose:
+        "Build the strength to lift both legs high and close to your body.",
+    cues: [
+      "Fold your thighs towards your chest and lift both legs into a V.",
+      "Press both hands into the floor and keep your shoulders down.",
+      "Lift by drawing your thighs towards your chest. Do not tip your whole body back.",
+    ],
+    cautions: [
+      "If your wrists feel uncomfortable, warm them up first.",
+      "Shorten the hold if your wrists or shoulders hurt. Stop if pain continues.",
+    ],
+    contraindications: ["Wrist", "Shoulder"],
   ),
 };

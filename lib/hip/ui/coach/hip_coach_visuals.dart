@@ -117,7 +117,10 @@ CoachChatVisuals hipCoachChatVisuals(
   );
 }
 
-String hipCoachStandingAsset(String id) => 'assets/public_posters/$id.webp';
+String hipCoachStandingAsset(String id) =>
+    HipPublicMedia.current?.posterAssetFor(id) ??
+    HipPublicMedia.coverAssetFor(id) ??
+    '${HipPublicMedia.posterRoot}$id.webp';
 
 CoachChatPalette hipCoachChatPalette(HipPalette p) => CoachChatPalette(
   brightness: p.brightness,

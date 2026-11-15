@@ -3,16 +3,20 @@
 // listed: content.publicCatalog ∩ the HipLab scope), plus any HipLab drill
 // outside it, deduped by id. Facets come from the public definition; nothing
 // unreleased is added.
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../data/hip_action_scope.dart';
+import '../../data/hip_library_poster_bounds.dart';
 import '../../data/hip_public_media.dart';
 import '../../data/hip_shared_library.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../hip_icons.dart';
+import '../hip_poster_bounds_fit.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import 'lib_text.dart';
@@ -195,7 +199,6 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
       hiplabCoachAuthorizedActionIds;
   final out = <HipActionItem>[];
   final seen = <String>{};
-  final posterRoot = HipPublicMedia.posterRoot;
   // The SDK library's own browse list when it is installed (what the SDK
   // view listed), else the public definitions on the content.
   final List<Map<String, dynamic>> rows;
@@ -297,7 +300,7 @@ List<HipActionItem> hipActionItems(HipContent c, LibText t) {
           raw['unilateral'] == true,
         ),
         drill: inLibrary(c, id) ? local : null,
-        poster: '$posterRoot$id.webp',
+        poster: HipPublicMedia.thumbnailAssetFor(id),
         groupable: canJoinGroup(c, id),
       ),
     );
@@ -477,11 +480,13 @@ class ActionFilterBar extends StatelessWidget {
     required this.filter,
     required this.search,
     required this.onChanged,
+    this.libraryStyle = false,
   });
   final List<HipActionItem> all;
   final ActionFilter filter;
   final TextEditingController search;
   final ValueChanged<ActionFilter> onChanged;
+  final bool libraryStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -489,6 +494,9 @@ class ActionFilterBar extends StatelessWidget {
     final facets = ActionFacets(all);
     final quick = facets.quick;
     final n = filter.sheetCount;
+    const chipHeight = 32.0;
+    const shadowPadding = 10.0;
+    const fadeWidth = 30.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -496,28 +504,48 @@ class ActionFilterBar extends StatelessWidget {
           height: 36,
           child: LibSearchField(
             controller: search,
+            libraryStyle: libraryStyle,
             onChanged: (q) => onChanged(filter.copyWith(query: q)),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: libraryStyle ? 2 : 12),
         SizedBox(
-          height: 30,
+          height: libraryStyle ? chipHeight + 2 * shadowPadding : 30,
           child: Row(
             children: [
               Expanded(
                 child: ShaderMask(
-                  shaderCallback: (r) => const LinearGradient(
-                    colors: [Colors.white, Colors.white, Colors.transparent],
-                    stops: [0, .9, 1],
+                  shaderCallback: (r) => LinearGradient(
+                    colors: const [
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [
+                      0,
+                      libraryStyle && r.width > 0
+                          ? math.max(0, 1 - fadeWidth / r.width)
+                          : .9,
+                      1,
+                    ],
                   ).createShader(r),
                   blendMode: BlendMode.dstIn,
                   child: ListView(
                     key: const ValueKey('action-quick-row'),
                     scrollDirection: Axis.horizontal,
+                    padding: libraryStyle
+                        ? const EdgeInsets.fromLTRB(
+                            0,
+                            shadowPadding,
+                            fadeWidth,
+                            shadowPadding,
+                          )
+                        : null,
                     children: [
                       HipFilterChip(
                         t.all,
                         key: const ValueKey('action-part-all'),
+                        libraryStyle: libraryStyle,
                         on: filter.parts.isEmpty,
                         onTap: () =>
                             onChanged(filter.copyWith(parts: const {})),
@@ -527,22 +555,24 @@ class ActionFilterBar extends StatelessWidget {
                         HipFilterChip(
                           hipFacetLabel(t, p),
                           key: ValueKey('action-part-$p'),
+                          libraryStyle: libraryStyle,
                           on: filter.parts.contains(p),
                           onTap: () => onChanged(
                             filter.copyWith(parts: _toggle(filter.parts, p)),
                           ),
                         ),
                       ],
-                      const SizedBox(width: 16),
+                      if (!libraryStyle) const SizedBox(width: 16),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: libraryStyle ? 12 : 6),
               // Pinned at the end of the row so it is always reachable.
               HipFilterChip(
                 t.filter,
                 key: const ValueKey('action-filter'),
+                libraryStyle: libraryStyle,
                 icon: HipGlyph.filter,
                 badge: n,
                 on: n > 0,
@@ -572,69 +602,93 @@ class HipFilterChip extends StatelessWidget {
     this.on = false,
     this.icon,
     this.badge = 0,
+    this.libraryStyle = false,
     required this.onTap,
   });
   final String label;
   final bool on;
   final HipGlyph? icon;
   final int badge;
+  final bool libraryStyle;
   final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) {
     final fg = on ? HipColors.jadeText : HipColors.text;
+    final content = Padding(
+      padding: EdgeInsets.symmetric(horizontal: libraryStyle ? 14 : 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            HipIcon(icon!, size: 14, color: fg),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.2,
+              leadingDistribution: libraryStyle
+                  ? TextLeadingDistribution.even
+                  : null,
+              fontWeight: on
+                  ? (libraryStyle ? FontWeight.w700 : FontWeight.w600)
+                  : FontWeight.w400,
+              color: fg,
+            ),
+          ),
+          if (badge > 0) ...[
+            const SizedBox(width: 5),
+            Container(
+              key: const ValueKey('action-filter-badge'),
+              constraints: const BoxConstraints(minWidth: 16),
+              height: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: HipColors.jade,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$badge',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  height: 1,
+                  fontWeight: FontWeight.w700,
+                  color: HipColors.onJade,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+    final radius = libraryStyle ? 16.0 : 8.0;
     return HipPressable(
       semanticLabel: badge > 0 ? '$label $badge' : label,
       selected: on,
       onTap: onTap,
       scale: .96,
-      child: Container(
-        height: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: on ? tintOf(HipColors.jade) : HipColors.track,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              HipIcon(icon!, size: 14, color: fg),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.2,
-                fontWeight: on ? FontWeight.w600 : FontWeight.w400,
-                color: fg,
-              ),
-            ),
-            if (badge > 0) ...[
-              const SizedBox(width: 5),
-              Container(
-                key: const ValueKey('action-filter-badge'),
-                constraints: const BoxConstraints(minWidth: 16),
-                height: 16,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                alignment: Alignment.center,
+      child: SizedBox(
+        height: libraryStyle ? 32 : 30,
+        child: libraryStyle && (!on || icon != null)
+            ? HipCard(
+                radius: radius,
+                innerHighlight: false,
+                shadows: [?HipColors.cardShadow?.last],
+                child: Center(widthFactor: 1, child: content),
+              )
+            : DecoratedBox(
                 decoration: BoxDecoration(
-                  color: HipColors.jade,
-                  borderRadius: BorderRadius.circular(8),
+                  color: on
+                      ? libraryStyle
+                            ? HipColors.jade.withValues(alpha: .1)
+                            : tintOf(HipColors.jade)
+                      : HipColors.track,
+                  borderRadius: BorderRadius.circular(radius),
                 ),
-                child: Text(
-                  '$badge',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
-                    color: HipColors.onJade,
-                  ),
-                ),
+                child: content,
               ),
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -802,8 +856,8 @@ Future<ActionFilter?> showActionFilterSheet(
 
 // ───────────────────────── card ─────────────────────────
 
-/// Picker / library card in the LibDrillCard style: poster, part tag, name,
-/// dose. [check] null = browse; true/false = pick; [disabled] dims it.
+/// Browse and picker cards share action data. A non-null [check] selects
+/// the picker layout, where [disabled] dims the action.
 class ActionCard extends StatelessWidget {
   const ActionCard({
     super.key,
@@ -827,6 +881,7 @@ class ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (check == null) return _LibraryCard(item: item, onTap: onTap);
     final t = LibText.of(context);
     final on = check == true;
     final large = libLargeText(context);
@@ -990,6 +1045,171 @@ class ActionCard extends StatelessWidget {
           )
         : null,
   );
+}
+
+class _LibraryCard extends StatelessWidget {
+  const _LibraryCard({required this.item, required this.onTap});
+
+  final HipActionItem item;
+  final ValueChanged<BuildContext> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = LibText.of(context);
+    final large = libLargeText(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final descriptionHeight = math.max(
+      64.0,
+      2 * 1.15 * scaler.scale(14.5) + 1.25 * scaler.scale(11.5) + 15,
+    );
+    final description = Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+      child: Column(
+        mainAxisSize: large ? MainAxisSize.min : MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.name,
+            maxLines: large ? null : 2,
+            overflow: large ? null : TextOverflow.ellipsis,
+            style: TextStyle(
+              color: HipColors.text,
+              fontSize: 14.5,
+              height: 1.15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            item.dose,
+            maxLines: large ? null : 1,
+            overflow: large ? null : TextOverflow.ellipsis,
+            style: TextStyle(
+              color: HipColors.muted,
+              fontSize: 11.5,
+              height: 1.25,
+            ),
+          ),
+        ],
+      ),
+    );
+    return HipPressable(
+      semanticLabel: item.name,
+      onTap: () => onTap(context),
+      child: RepaintBoundary(
+        child: HipCard(
+          child: SizedBox(
+            height: large ? null : 132 + descriptionHeight,
+            child: Column(
+              mainAxisSize: large ? MainAxisSize.min : MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: 132,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        left: 14,
+                        top: 44,
+                        right: 14,
+                        child: _LibraryPoster(item: item),
+                      ),
+                      Positioned(
+                        left: 12,
+                        top: 12,
+                        right: 12,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: _LibraryPart(hipFacetLabel(t, item.tag)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (large) description else Expanded(child: description),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LibraryPart extends StatelessWidget {
+  const _LibraryPart(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 20,
+    padding: const EdgeInsets.symmetric(horizontal: 7),
+    decoration: BoxDecoration(
+      color: HipColors.isDark
+          ? Colors.white.withValues(alpha: .08)
+          : const Color(0xff14281f).withValues(alpha: .05),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox.square(
+          dimension: 5,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: HipColors.jade,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: HipColors.text,
+                fontSize: 10.5,
+                height: 1,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _LibraryPoster extends StatelessWidget {
+  const _LibraryPoster({required this.item});
+  final HipActionItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final poster = item.poster;
+    if (poster == null) return const SizedBox.shrink();
+    final bounds = libraryPosterBounds[item.id];
+    final image = Image.asset(
+      poster,
+      fit: BoxFit.contain,
+      excludeFromSemantics: true,
+      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    );
+    if (bounds == null) return image;
+
+    // Keep the existing decoded thumbnail, but lay out its visible alpha
+    // rectangle instead of the surrounding transparent square.
+    return HipPosterBoundsFit(
+      sourceSize: const Size.square(libraryPosterPixels),
+      bounds: bounds,
+      child: image,
+    );
+  }
 }
 
 /// No results: one line and 重置筛选.

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
+import 'package:hiplab/hip/data/hip_library_poster_bounds.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
@@ -14,13 +15,17 @@ import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
+import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
+import 'package:hiplab/hip/ui/library/library_widgets.dart';
+import 'package:hiplab/hip/ui/library/practice_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart' show pumpTrainerControl;
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -135,22 +140,151 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
-    testWidgets('208 scoped actions (测试演示 excluded); search and 怎么练 filter', (
+    testWidgets('library aligns search, filters, and cards to page edges', (
+      tester,
+    ) async {
+      const screen = Size(390, 844);
+      const systemBottom = 24.0;
+      tester.view.padding = const FakeViewPadding(
+        top: 26,
+        bottom: systemBottom,
+      );
+      await pumpApp(tester, size: screen);
+      await toPractice(tester);
+
+      final search = find.byType(LibSearchField);
+      final searchField = find.byKey(const ValueKey('lib-search'));
+      final quick = find.byKey(const ValueKey('action-quick-row'));
+      final allChip = find.byKey(const ValueKey('action-part-all'));
+      final hipChip = find.byKey(const ValueKey('action-part-臀部'));
+      final filter = find.byKey(const ValueKey('action-filter'));
+      final cards = find.byType(ActionCard);
+      final searchRect = tester.getRect(search);
+      final quickRect = tester.getRect(quick);
+      final filterRect = tester.getRect(filter);
+      final allRect = tester.getRect(allChip);
+
+      final bar = find.descendant(
+        of: find.byType(PracticePage),
+        matching: find.byType(HipNavBar),
+      );
+      final navInset = hipNavInset(tester.element(search));
+      expect(tester.widget<HipNavBar>(bar).fade, kHipNavFade);
+      expect(searchRect.top, navInset + 4);
+      expect(searchRect.height, 36);
+      expect(searchRect.left, kHipPageEdge);
+      expect(searchRect.right, screen.width - kHipPageEdge);
+      expect(tester.getRect(searchField).center.dy, searchRect.center.dy);
+      expect(quickRect.left, searchRect.left);
+      expect(allRect.left, searchRect.left);
+      expect(filterRect.right, searchRect.right);
+      expect(filterRect.left - quickRect.right, greaterThanOrEqualTo(12));
+      expect(tester.getRect(cards.first).left, searchRect.left);
+      expect(tester.getRect(cards.at(1)).right, searchRect.right);
+
+      for (final (chip, label) in [
+        (allChip, '全部'),
+        (hipChip, '臀部'),
+        (filter, '筛选'),
+      ]) {
+        final rect = tester.getRect(chip);
+        final text = find.descendant(of: chip, matching: find.text(label));
+        expect(rect.height, 32);
+        expect(rect.center.dy, filterRect.center.dy);
+        expect(tester.getRect(text).center.dy, rect.center.dy);
+        expect(rect.top - quickRect.top, greaterThanOrEqualTo(8));
+        expect(quickRect.bottom - rect.bottom, greaterThanOrEqualTo(8));
+      }
+
+      final quickScroll = find.descendant(
+        of: quick,
+        matching: find.byType(Scrollable),
+      );
+      await tester.drag(quick, const Offset(-220, 0));
+      await tester.pumpAndSettle();
+      expect(
+        tester.state<ScrollableState>(quickScroll).position.pixels,
+        greaterThan(0),
+      );
+      expect(tester.getRect(filter), filterRect);
+      expect(filter.hitTestable(), findsOneWidget);
+
+      final list = find.byKey(const ValueKey('practice-list'));
+      final verticalScroll = find.descendant(
+        of: list,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is Scrollable &&
+              widget.axisDirection == AxisDirection.down,
+        ),
+      );
+      final position = tester.state<ScrollableState>(verticalScroll).position;
+      expect(tester.getRect(list).top, 0);
+      final fadeMiddle = navInset - kHipNavFade / 2;
+      final firstCard = cards.first;
+      position.jumpTo(tester.getRect(firstCard).top - fadeMiddle);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(firstCard).top, closeTo(fadeMiddle, .001));
+
+      // Scroll to the true end after the lazy list settles its estimated extent.
+      for (var jump = 0; jump < 6 && position.extentAfter > .001; jump++) {
+        position.jumpTo(position.maxScrollExtent);
+        await tester.pumpAndSettle();
+      }
+      expect(position.extentAfter, closeTo(0, .001));
+      final listBottom = tester.getRect(list).bottom;
+      expect(listBottom, screen.height - systemBottom);
+      expect(listBottom - tester.getRect(cards.last).bottom, closeTo(36, .001));
+      expect(cards.last.hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('248 scoped actions (测试演示 excluded); search and 怎么练 filter', (
       tester,
     ) async {
       await pumpApp(tester);
       await toPractice(tester);
       expect(find.byType(trainer.TrainingLibraryPage), findsNothing);
+
+      final cards = find.byType(ActionCard);
+      final first = tester.getRect(cards.at(0));
+      final second = tester.getRect(cards.at(1));
+      final contentWidth = tester.view.physicalSize.width - 2 * kHipPageEdge;
+      expect(first.size, Size((contentWidth - 12) / 2, 196));
+      expect(second.size, first.size);
+      expect(second.top, first.top);
+      expect(second.left - first.right, 12);
+      final artwork = find.descendant(
+        of: cards.first,
+        matching: find.byType(ClipRect),
+      );
+      final id = tester.widget<ActionCard>(cards.first).item.id;
+      final fitted = applyBoxFit(
+        BoxFit.contain,
+        libraryPosterBounds[id]!.size,
+        Size(first.width - 28, 88),
+      ).destination;
+      final artworkRect = tester.getRect(artwork);
+      expect(artworkRect.width, closeTo(fitted.width, .001));
+      expect(artworkRect.height, closeTo(fitted.height, .001));
+      expect(artworkRect.center.dx, closeTo(first.center.dx, .001));
+      expect(artworkRect.center.dy, closeTo(first.top + 88, .001));
+      final image = tester.widget<Image>(
+        find.descendant(of: artwork, matching: find.byType(Image)),
+      );
+      expect(
+        (image.image as AssetImage).assetName,
+        HipPublicMedia.thumbnailAssetFor(id),
+      );
+
       String count() => tester
           .widget<Text>(find.byKey(const ValueKey('actions-count')))
           .data!;
       final config = HipSharedLibrary.current!;
       expect(config.allowedActionIds, hiplabCoachAuthorizedActionIds);
-      expect(count(), '208 个动作');
-      expect(
-        find.byKey(const ValueKey('drill-card-n-thomas-test')),
-        findsNothing,
-      );
+      expect(count(), '248 个动作');
+      for (final id in assessmentOnlyDrills) {
+        expect(find.byKey(ValueKey('drill-card-$id')), findsNothing);
+      }
       await tester.enterText(
         find.byKey(const ValueKey('lib-search')),
         HipPublicMedia.current!.actionFor('s-pigeon')!.nameZh,
@@ -174,7 +308,7 @@ void main() {
           .actions(HipPublicMedia.current!.catalog)
           .where(
             (action) =>
-                action.id != 'n-thomas-test' &&
+                !assessmentOnlyDrills.contains(action.id) &&
                 trainer.PoseHubActionFacets.type(action) == '拉伸放松',
           )
           .length;
@@ -203,8 +337,9 @@ void main() {
         expect(player.plan.steps.single.sets, 1);
         expect(player.plan.steps.single.kitDose.seconds, 60);
         await tester.tap(find.byKey(const ValueKey('close')));
-        await tester.pump(const Duration(milliseconds: 400));
-        await tester.tap(find.byKey(const ValueKey('close-confirm')));
+        final confirmClose = find.byKey(const ValueKey('close-confirm'));
+        await pumpTrainerControl(tester, confirmClose);
+        await tester.tap(confirmClose);
         await tester.pumpAndSettle();
         expect(find.byType(HipPlayerPage), findsNothing);
         expect(store.sessions.single.source, PlanSource.single);
@@ -213,7 +348,7 @@ void main() {
     );
 
     testWidgets(
-      'host safety disables SDK start while details remain browsable',
+      'legacy safety answers leave SDK start enabled and details browsable',
       (tester) async {
         await pumpApp(
           tester,
@@ -225,7 +360,7 @@ void main() {
         );
         await toPractice(tester);
         await openDrill(tester, 's-figure4');
-        expect(startButton(tester).onPressed, isNull);
+        expect(startButton(tester).onPressed, isNotNull);
       },
     );
 
@@ -366,7 +501,7 @@ void main() {
       expect(g.steps.length, content.routine('A').steps.length);
     });
 
-    testWidgets('blocked: group ▶ 开始 disabled, routine 开始 disabled', (
+    testWidgets('legacy safety answers do not disable group or routine start', (
       tester,
     ) async {
       await pumpApp(
@@ -394,7 +529,7 @@ void main() {
                   .first,
             )
             .onTap,
-        isNull,
+        isNotNull,
       );
       await tester.tap(find.byKey(const ValueKey('practice-1')));
       await tester.pumpAndSettle();
@@ -406,7 +541,7 @@ void main() {
               find.byKey(const ValueKey('routine-start')),
             )
             .onPressed,
-        isNull,
+        isNotNull,
       );
     });
   });

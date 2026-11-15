@@ -404,17 +404,17 @@ void main() {
   group('安全规则', () {
     const base = TrainingProfile();
 
-    test('blocked: no single, routine or custom plan', () {
-      const blocked = TrainingProfile(blocked: true);
+    test('single, routine and custom plans are never safety-blocked', () {
+      const profile = TrainingProfile();
       expect(
         planner.singlePlan(
           content.drill('s-figure4'),
           const LibraryDose(seconds: 60),
-          blocked,
+          profile,
         ),
-        isNull,
+        isNotNull,
       );
-      expect(planner.routinePlan(content.routine('A'), blocked), isNull);
+      expect(planner.routinePlan(content.routine('A'), profile), isNotNull);
       expect(
         planner.customPlan(
           const CustomRoutine(
@@ -422,9 +422,9 @@ void main() {
             name: 'x',
             steps: [CustomStep('h-squat')],
           ),
-          blocked,
+          profile,
         ),
-        isNull,
+        isNotNull,
       );
     });
 

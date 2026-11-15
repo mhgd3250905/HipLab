@@ -1,21 +1,20 @@
-// 训练记录 as an achievement page (UI r2 M4, feedback #12): a big streak
-// number with the running totals, this week's dots, a 16-week check-in
-// heatmap, streak milestones and the latest sessions. Only data the store
-// keeps: doneDays (streak days) and the session history (title, time,
-// seconds). The 髋部自测 radar lives on the 自测 page now (PLAN §1).
+// The Hip v2 training history shows actual streaks and saved sessions.
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../control/hip_store.dart';
+import '../data/hip_public_media.dart';
 import '../domain/hip_library.dart';
 import '../domain/hip_progress.dart';
+import 'hip_content_text.dart';
 import 'hip_icons.dart';
 import 'hip_page_kit.dart';
+import 'hip_routes.dart';
+import 'hip_text.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
-import 'hip_text.dart';
-import 'hip_content_text.dart';
 
 const _weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 const _englishWeekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -96,6 +95,7 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     final history = streakHistory(done);
     final streak = store.streak;
     final empty = done.isEmpty && store.sessions.isEmpty;
+    final t = HipText.of(context);
     final children = <Widget>[
       _Hero(
         streak: streak,
@@ -105,48 +105,111 @@ class _HipRecordsViewState extends State<HipRecordsView> {
         minutes: (seconds / 60).round(),
         hasHistory: done.isNotEmpty,
       ),
-      if (empty) ...[
-        const SizedBox(height: 20),
-        _Empty(onStart: widget.onStartPractice),
-      ] else ...[
-        HipSection(
-          HipText.of(context).pick('本周', 'This week'),
-          trailing: Text(
-            '${_weekDone(done, today)}/7',
-            key: const ValueKey('records-week-count'),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: HipColors.jadeText,
-              fontFeatures: const [FontFeature.tabularFigures()],
+      const SizedBox(height: 20),
+      if (empty)
+        _Empty(onStart: widget.onStartPractice)
+      else
+        HipCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              HipCardHeading(
+                t.pick('本周', 'This week'),
+                key: const ValueKey('records-week-count'),
+                trailing: '${_weekDone(done, today)} / 7',
+              ),
+              const SizedBox(height: 10),
+              _Week(done: done, today: today),
+              const SizedBox(height: 12),
+              Divider(height: .5, thickness: .5, color: HipColors.cardDivider),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: HipCardHeading(t.pick('近 16 周', 'Last 16 weeks')),
+                  ),
+                  const SizedBox(width: 8),
+                  const _HeatLegend(),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _Heatmap(done: done, minutes: minutesByDay, today: today),
+            ],
+          ),
+        ),
+      const SizedBox(height: 16),
+      HipCard(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: HipCardHeading(
+                t.pick('里程碑', 'Milestones'),
+                trailing:
+                    '${history.earned.length} / ${streakMilestones.length}',
+              ),
             ),
-          ),
+            const SizedBox(height: 18),
+            _Milestones(
+              streak: streak,
+              earned: history.earned,
+              celebrate: _celebrate,
+            ),
+          ],
         ),
-        HipListGroup(
-          children: [_Week(done: done, today: today)],
-        ),
-        HipSection(HipText.of(context).pick('近 16 周', 'Last 16 weeks')),
-        HipListGroup(
-          children: [_Heatmap(done: done, minutes: minutesByDay, today: today)],
-        ),
-      ],
-      HipSection(HipText.of(context).pick('里程碑', 'Milestones')),
-      HipListGroup(
-        children: [
-          _Milestones(
-            streak: streak,
-            earned: history.earned,
-            celebrate: _celebrate,
-          ),
-        ],
       ),
       if (store.sessions.isNotEmpty) ...[
-        HipSection(HipText.of(context).pick('最近训练', 'Recent training')),
-        HipListGroup(
+        const SizedBox(height: 16),
+        HipCard(
           key: const ValueKey('records-recent'),
-          children: [
-            for (final s in store.sessions.reversed.take(5)) _recent(s, today),
-          ],
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: HipCardHeading(t.pick('最近训练', 'Recent training')),
+                  ),
+                  HipPressable(
+                    key: const ValueKey('records-all'),
+                    semanticLabel: t.pick('全部训练', 'All training'),
+                    onTap: _openHistory,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 36),
+                      child: Row(
+                        children: [
+                          Text(
+                            t.pick('全部', 'All'),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: HipColors.jadeText,
+                            ),
+                          ),
+                          HipIcon(
+                            HipGlyph.chevronRight,
+                            size: 13,
+                            color: HipColors.jadeText,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              for (final (i, s) in store.sessions.reversed.take(3).indexed) ...[
+                if (i > 0)
+                  Divider(
+                    height: .5,
+                    thickness: .5,
+                    indent: 50,
+                    color: HipColors.cardDivider,
+                  ),
+                _recent(context, s, today),
+              ],
+            ],
+          ),
         ),
       ],
     ];
@@ -179,10 +242,51 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     return n;
   }
 
-  Widget _recent(SessionRecord s, DateTime today) {
+  void _openHistory() {
+    Navigator.of(context).push<void>(
+      HipRoute.content<void>(
+        (context) => HipNavPage(
+          title: HipText.of(context).pick('全部训练', 'All training'),
+          bodyScrollsUnderBar: true,
+          body: ListenableBuilder(
+            listenable: store,
+            builder: (context, _) {
+              final now = store.now();
+              final today = DateTime(now.year, now.month, now.day);
+              return ListView.separated(
+                key: const ValueKey('records-all-list'),
+                padding: EdgeInsets.fromLTRB(
+                  kHipPageEdge,
+                  hipNavInset(context) + 4,
+                  kHipPageEdge,
+                  24,
+                ),
+                itemCount: store.sessions.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
+                itemBuilder: (context, index) => HipCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _recent(
+                    context,
+                    store.sessions[store.sessions.length - 1 - index],
+                    today,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _recent(BuildContext context, SessionRecord s, DateTime today) {
     final t = HipText.of(context);
     final d = DateTime(s.at.year, s.at.month, s.at.day);
-    final ago = today.difference(d).inDays;
+    final ago = DateTime.utc(
+      today.year,
+      today.month,
+      today.day,
+    ).difference(DateTime.utc(d.year, d.month, d.day)).inDays;
     final day = ago == 0
         ? t.pick('今天', 'Today')
         : ago == 1
@@ -194,22 +298,145 @@ class _HipRecordsViewState extends State<HipRecordsView> {
     final time =
         '${s.at.hour.toString().padLeft(2, '0')}:${s.at.minute.toString().padLeft(2, '0')}';
     final mins = math.max(1, (s.seconds / 60).round());
-    final builtIn = s.source == PlanSource.routine
+    final builtIn =
+        s.source == PlanSource.routine || s.source == PlanSource.recommended
         ? store.content.routines.where((r) => r.id == s.refId).firstOrNull
         : null;
-    return HipListRow(
-      glyph: s.completed ? HipGlyph.checkCircle : HipGlyph.pause,
-      // Only a known built-in ID may supply a translated display name.
-      // Custom/AI names and ambiguous historical text are never rewritten.
-      title: t.isEn && builtIn != null
-          ? HipContentText.of(context).routineName(builtIn)
-          : s.title.isEmpty
-          ? t.pick('训练', 'Training')
-          : s.title,
-      subtitle: s.completed
-          ? '$day $time'
-          : t.pick('$day $time · 未完成', '$day $time · Unfinished'),
-      meta: t.pick('$mins 分钟', '$mins min'),
+    final items = s.trainerResult?['items'];
+    final leadingItem = items is List ? items.firstOrNull : null;
+    final savedId = leadingItem is Map ? leadingItem['exerciseId'] : null;
+    final ref = s.refId;
+    final actionId = savedId is String && savedId.isNotEmpty
+        ? savedId
+        : switch (s.source) {
+            PlanSource.single => ref,
+            PlanSource.custom =>
+              ref == null
+                  ? null
+                  : store.customRoutine(ref)?.steps.firstOrNull?.kitId,
+            _ => builtIn?.steps.firstOrNull?.drillId,
+          };
+    final asset = actionId == null
+        ? null
+        : HipPublicMedia.current?.posterAssetFor(actionId) ??
+              HipPublicMedia.coverAssetFor(actionId);
+    // Only known authored routine IDs can supply translated titles. Keep
+    // custom/AI titles and ambiguous historical text exactly as stored.
+    final title = t.isEn && s.source == PlanSource.routine && builtIn != null
+        ? HipContentText.of(context).routineName(builtIn)
+        : s.title.isEmpty
+        ? t.pick('训练', 'Training')
+        : s.title;
+    return _RecordRow(
+      title: title,
+      timestamp: '$day $time',
+      unfinished: !s.completed,
+      duration: t.pick('$mins 分钟', '$mins min'),
+      asset: asset,
+    );
+  }
+}
+
+class _RecordRow extends StatelessWidget {
+  const _RecordRow({
+    required this.title,
+    required this.timestamp,
+    required this.unfinished,
+    required this.duration,
+    required this.asset,
+  });
+
+  final String title;
+  final String timestamp;
+  final bool unfinished;
+  final String duration;
+  final String? asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Center(
+      child: HipIcon(
+        unfinished ? HipGlyph.pause : HipGlyph.checkCircle,
+        size: 18,
+        color: HipColors.muted,
+      ),
+    );
+    return SizedBox(
+      height: 60,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 38,
+            height: 40,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: HipColors.isDark
+                      ? [HipColors.surfaceHigh, HipColors.surface]
+                      : const [Color(0xfff1f3f2), Color(0xffeaedeb)],
+                ),
+              ),
+              child: ExcludeSemantics(
+                child: asset == null
+                    ? fallback
+                    : trainer.TrainerPoster(
+                        asset: asset!,
+                        radius: 10,
+                        decodeWidth:
+                            (38 * MediaQuery.devicePixelRatioOf(context))
+                                .ceil(),
+                        fallback: fallback,
+                      ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                    color: HipColors.text,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text.rich(
+                  TextSpan(
+                    text: timestamp,
+                    children: [
+                      if (unfinished)
+                        TextSpan(
+                          text: HipText.of(
+                            context,
+                          ).pick(' · 未完成', ' · Unfinished'),
+                          style: TextStyle(color: HipColors.tight),
+                        ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: HipColors.muted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            duration,
+            style: TextStyle(fontSize: 12, color: HipColors.muted),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -266,95 +493,134 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const tab = [FontFeature.tabularFigures()];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '$streak',
-                key: const ValueKey('records-streak'),
-                style: TextStyle(
-                  fontSize: 56,
-                  height: 1.05,
-                  fontWeight: FontWeight.w700,
-                  color: streak > 0 ? HipColors.jadeText : HipColors.faint,
-                  fontFeatures: tab,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                HipText.of(context).pick('天连续', 'day streak'),
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: HipColors.text,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _line(context),
-            key: const ValueKey('records-cheer'),
-            style: TextStyle(fontSize: 13, color: HipColors.muted, height: 1.4),
-          ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              _stat(
-                HipText.of(context).pick('累计天数', 'Total days'),
-                '$totalDays',
-                HipText.of(context).pick('天', totalDays == 1 ? 'day' : 'days'),
-              ),
-              _stat(
-                HipText.of(context).pick('累计次数', 'Sessions'),
-                '$sessions',
-                HipText.of(context).pick('次', ''),
-              ),
-              _stat(
-                HipText.of(context).pick('累计时长', 'Total time'),
-                '$minutes',
-                HipText.of(context).pick('分钟', 'min'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _stat(String label, String value, String unit) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final t = HipText.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text.rich(
-          TextSpan(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(2, 4, 2, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextSpan(
-                text: value,
+              Text(
+                t.pick('连续天数', 'STREAK'),
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 10,
+                  letterSpacing: 2,
                   fontWeight: FontWeight.w700,
-                  color: HipColors.text,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: HipColors.jade,
                 ),
               ),
-              TextSpan(
-                text: ' $unit',
-                style: TextStyle(fontSize: 12, color: HipColors.muted),
+              const SizedBox(height: 10),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    '$streak',
+                    key: const ValueKey('records-streak'),
+                    style: TextStyle(
+                      fontSize: 72,
+                      height: 1.05,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    t.pick('天', streak == 1 ? 'day' : 'days'),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _line(context),
+                key: const ValueKey('records-cheer'),
+                style: TextStyle(fontSize: 12.5, color: HipColors.muted),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 2),
-        Text(label, style: TextStyle(fontSize: 12, color: HipColors.faint)),
+        const SizedBox(height: 14),
+        HipCard(
+          key: const ValueKey('records-totals'),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 74),
+            child: Row(
+              children: [
+                _stat(
+                  t.pick('累计天数', 'Total days'),
+                  totalDays,
+                  t.pick('天', totalDays == 1 ? 'day' : 'days'),
+                ),
+                _statDivider(),
+                _stat(t.pick('累计次数', 'Sessions'), sessions, t.pick('次', '')),
+                _statDivider(),
+                _stat(
+                  t.pick('累计时长', 'Total time'),
+                  minutes,
+                  t.pick('分钟', 'min'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _statDivider() => SizedBox(
+    width: .5,
+    height: 36,
+    child: ColoredBox(color: HipColors.cardDivider),
+  );
+
+  Widget _stat(String label, int value, String unit) => Expanded(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$value',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: HipColors.text,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                  if (unit.isNotEmpty)
+                    TextSpan(
+                      text: ' $unit',
+                      style: TextStyle(fontSize: 11, color: HipColors.muted),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: HipColors.faint),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -417,72 +683,117 @@ class _Week extends StatelessWidget {
   const _Week({required this.done, required this.today});
   final Set<String> done;
   final DateTime today;
+
   @override
   Widget build(BuildContext context) {
     final mon = weekStart(today);
-    return Padding(
+    final t = HipText.of(context);
+    return Row(
       key: const ValueKey('records-week'),
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
-      child: Row(
-        children: [
-          for (var i = 0; i < 7; i++)
-            Expanded(
-              child: Builder(
-                builder: (_) {
-                  final d = DateTime(mon.year, mon.month, mon.day + i);
-                  final isToday = d == today;
-                  final future = d.isAfter(today);
-                  final on = done.contains(dayKey(d));
-                  return Column(
-                    children: [
-                      Container(
-                        key: ValueKey('week-dot-$i'),
-                        width: 30,
-                        height: 30,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: on
-                              ? HipColors.jade
-                              : HipColors.text.withValues(
-                                  alpha: future ? .04 : .08,
-                                ),
-                        ),
-                        child: on
-                            ? HipIcon(
-                                HipGlyph.check,
-                                size: 16,
-                                strokeWidth: 2.4,
-                                color: HipColors.onJade,
-                              )
-                            : null,
+      children: [
+        for (var i = 0; i < 7; i++)
+          Expanded(
+            child: _day(i, DateTime(mon.year, mon.month, mon.day + i), t),
+          ),
+      ],
+    );
+  }
+
+  Widget _day(int index, DateTime date, HipText t) {
+    final isToday = date == today;
+    final future = date.isAfter(today);
+    final on = done.contains(dayKey(date));
+    final weekday = t.pick(
+      isToday ? '今天' : _weekdays[index],
+      isToday ? 'Today' : _englishWeekdays[index],
+    );
+    return MergeSemantics(
+      child: Semantics(
+        label: on ? t.pick('已训练', 'Trained') : null,
+        child: Column(
+          children: [
+            Container(
+              key: ValueKey('week-dot-$index'),
+              width: 28,
+              height: 28,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: !isToday && !future
+                    ? _heatColor(0, HipColors.palette)
+                    : null,
+                border: isToday
+                    ? Border.all(color: HipColors.jade, width: 1.5)
+                    : future
+                    ? Border.all(
+                        color: (HipColors.isDark ? Colors.white : Colors.black)
+                            .withValues(alpha: .09),
+                        width: .8,
+                      )
+                    : null,
+              ),
+              child: isToday
+                  ? Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: HipColors.jade,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        HipText.of(context).pick(
-                          isToday ? '今天' : _weekdays[i],
-                          isToday ? 'Today' : _englishWeekdays[i],
-                        ),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isToday
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isToday ? HipColors.jadeText : HipColors.faint,
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                    )
+                  : on
+                  ? HipIcon(HipGlyph.check, size: 14, color: HipColors.jadeText)
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              weekday,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                color: isToday
+                    ? HipColors.jade
+                    : future
+                    ? HipColors.faint
+                    : HipColors.muted,
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// ───────────────────────── heatmap ─────────────────────────
+class _HeatLegend extends StatelessWidget {
+  const _HeatLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = HipText.of(context);
+    final label = TextStyle(fontSize: 10, color: HipColors.faint);
+    return Row(
+      children: [
+        Text(t.pick('少', 'Less'), style: label),
+        const SizedBox(width: 6),
+        for (var level = 0; level < 5; level++) ...[
+          Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: _heatColor(level, HipColors.palette),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+        Text(t.pick('多', 'More'), style: label),
+      ],
+    );
+  }
+}
 
 class _Heatmap extends StatelessWidget {
   const _Heatmap({
@@ -495,13 +806,16 @@ class _Heatmap extends StatelessWidget {
   final DateTime today;
 
   static const weeks = 16;
-  static const gap = 3.0;
+  static const gap = 2.3;
 
   @override
   Widget build(BuildContext context) {
-    final first = weekStart(
-      today,
-    ).subtract(const Duration(days: 7 * (weeks - 1)));
+    final monday = weekStart(today);
+    final first = DateTime(
+      monday.year,
+      monday.month,
+      monday.day - 7 * (weeks - 1),
+    );
     DateTime at(int w, int d) =>
         DateTime(first.year, first.month, first.day + w * 7 + d);
     final levels = [
@@ -516,154 +830,133 @@ class _Heatmap extends StatelessWidget {
                   ),
         ],
     ];
-    final labelStyle = TextStyle(fontSize: 11, color: HipColors.faint);
-    return Padding(
+    final t = HipText.of(context);
+    String monthLabel(DateTime date) =>
+        t.pick('${date.month}月', _englishMonths[date.month - 1]);
+    final months = <(int, String)>[(0, monthLabel(first))];
+    for (var w = 1; w < weeks; w++) {
+      for (var d = 0; d < 7; d++) {
+        final day = at(w, d);
+        if (day.day == 1 && !day.isAfter(today)) {
+          months.add((w, monthLabel(day)));
+        }
+      }
+    }
+    final label = TextStyle(fontSize: 10, color: HipColors.faint);
+    return LayoutBuilder(
       key: const ValueKey('records-heatmap'),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      child: LayoutBuilder(
-        builder: (context, c) {
-          const dayCol = 18.0;
-          final cell = (c.maxWidth - dayCol - gap * (weeks - 1)) / weeks;
-          // A month label over the column holding its 1st day.
-          final months = <(int, String)>[];
-          for (var w = 0; w < weeks; w++) {
-            for (var d = 0; d < 7; d++) {
-              final day = at(w, d);
-              if (day.day == 1 && !day.isAfter(today)) {
-                months.add((
-                  w,
-                  HipText.of(
-                    context,
-                  ).pick('${day.month}月', _englishMonths[day.month - 1]),
-                ));
-              }
-            }
-          }
-          final gridW = c.maxWidth - dayCol;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 16,
-                child: Stack(
-                  children: [
-                    for (final (w, t) in months)
-                      Positioned(
-                        left: dayCol + math.min(w * (cell + gap), gridW - 30),
-                        child: Text(t, style: labelStyle),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: dayCol,
-                    height: cell * 7 + gap * 6,
-                    child: Stack(
-                      children: [
-                        for (final d in [0, 2, 4, 6])
-                          Positioned(
-                            top: d * (cell + gap) + (cell - 13) / 2,
-                            child: Text(
-                              HipText.of(context).pick(
-                                _weekdays[d],
-                                ['M', 'T', 'W', 'T', 'F', 'S', 'S'][d],
-                              ),
-                              style: labelStyle.copyWith(height: 1.2),
-                            ),
-                          ),
-                      ],
-                    ),
+      builder: (context, c) {
+        const dayCol = 13.0;
+        final cell = math.min(
+          15.0,
+          math.max(0.0, (c.maxWidth - dayCol - gap * (weeks - 1)) / weeks),
+        );
+        final gridWidth = weeks * cell + gap * (weeks - 1);
+        final gridHeight = 7 * cell + gap * 6;
+        return Center(
+          child: SizedBox(
+            width: dayCol + gridWidth,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 16,
+                  child: Stack(
+                    children: [
+                      for (final (w, month) in months)
+                        Positioned(
+                          left:
+                              dayCol +
+                              math.min(w * (cell + gap), gridWidth - 26),
+                          child: Text(month, style: label),
+                        ),
+                    ],
                   ),
-                  Expanded(
-                    child: CustomPaint(
-                      size: Size(double.infinity, cell * 7 + gap * 6),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: dayCol,
+                      height: gridHeight,
+                      child: Stack(
+                        children: [
+                          for (final d in [0, 2, 4, 6])
+                            Positioned(
+                              top: d * (cell + gap) + (cell - 12) / 2,
+                              child: Text(
+                                t.pick(
+                                  _weekdays[d],
+                                  ['M', 'T', 'W', 'T', 'F', 'S', 'S'][d],
+                                ),
+                                style: label,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    CustomPaint(
+                      size: Size(gridWidth, gridHeight),
                       painter: _HeatPainter(
                         levels,
                         cell,
                         HipColors.palette,
-                        today: (
-                          today.difference(first).inDays ~/ 7,
-                          today.weekday - 1,
-                        ),
+                        today: (weeks - 1, today.weekday - 1),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    HipText.of(context).pick('少', 'Less'),
-                    style: labelStyle,
-                  ),
-                  const SizedBox(width: 6),
-                  for (var l = 0; l <= 4; l++) ...[
-                    Container(
-                      width: 11,
-                      height: 11,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(3),
-                        color: _heatColor(l, HipColors.palette),
-                      ),
-                    ),
-                    const SizedBox(width: 3),
                   ],
-                  const SizedBox(width: 3),
-                  Text(
-                    HipText.of(context).pick('多', 'More'),
-                    style: labelStyle,
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-Color _heatColor(int level, HipPalette p) => switch (level) {
-  0 => p.text.withValues(alpha: p.isDark ? .07 : .07),
-  1 => p.jade.withValues(alpha: .3),
-  2 => p.jade.withValues(alpha: .52),
-  3 => p.jade.withValues(alpha: .76),
-  _ => p.jade,
-};
+const _lightHeatColors = [
+  Color(0xffecefed),
+  Color(0xffc8e9dc),
+  Color(0xff82cdaf),
+  Color(0xff3caa82),
+  Color(0xff148c68),
+];
+
+Color _heatColor(int level, HipPalette palette) {
+  if (!palette.isDark) return _lightHeatColors[level];
+  if (level == 0) return palette.text.withValues(alpha: .07);
+  return palette.jade.withValues(alpha: const [.0, .3, .52, .76, 1.0][level]);
+}
 
 class _HeatPainter extends CustomPainter {
-  _HeatPainter(this.levels, this.cell, this.p, {required this.today});
+  _HeatPainter(this.levels, this.cell, this.palette, {required this.today});
   final List<List<int>> levels;
   final double cell;
-  final HipPalette p;
+  final HipPalette palette;
   final (int, int) today;
 
   @override
   void paint(Canvas canvas, Size size) {
     for (var w = 0; w < levels.length; w++) {
       for (var d = 0; d < 7; d++) {
-        final l = levels[w][d];
-        if (l < 0) continue;
-        final r = Rect.fromLTWH(
+        final level = levels[w][d];
+        if (level < 0) continue;
+        final rect = Rect.fromLTWH(
           w * (cell + _Heatmap.gap),
           d * (cell + _Heatmap.gap),
           cell,
           cell,
         );
-        final rr = RRect.fromRectAndRadius(r, const Radius.circular(3));
-        canvas.drawRRect(rr, Paint()..color = _heatColor(l, p));
+        final rounded = RRect.fromRectAndRadius(rect, const Radius.circular(4));
+        canvas.drawRRect(rounded, Paint()..color = _heatColor(level, palette));
         if ((w, d) == today) {
-          // Today: a small inner dot, not an outline.
-          canvas.drawCircle(
-            r.center,
-            math.max(1.5, cell * .12),
-            Paint()..color = l >= 2 ? p.onJade : p.jade,
+          canvas.drawRRect(
+            rounded.deflate(.6),
+            Paint()
+              ..color = palette.jade
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.2,
           );
         }
       }
@@ -672,7 +965,10 @@ class _HeatPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_HeatPainter old) =>
-      old.levels != levels || old.cell != cell || old.p != p;
+      old.levels != levels ||
+      old.cell != cell ||
+      old.palette != palette ||
+      old.today != today;
 }
 
 // ───────────────────────── 里程碑 ─────────────────────────
@@ -692,26 +988,20 @@ class _Milestones extends StatelessWidget {
     final next = streakMilestones
         .where((m) => !earned.containsKey(m))
         .firstOrNull;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 16, 6, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final m in streakMilestones)
-            Expanded(
-              child: _Badge(
-                key: ValueKey('milestone-$m'),
-                days: m,
-                earnedAt: earned[m],
-                progress: m == next
-                    ? (streak / m).clamp(0, 1).toDouble()
-                    : null,
-                remaining: m == next ? m - streak : null,
-                celebrate: m == celebrate,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final days in streakMilestones)
+          Expanded(
+            child: _Badge(
+              key: ValueKey('milestone-$days'),
+              days: days,
+              earnedAt: earned[days],
+              remaining: days == next ? days - streak : null,
+              celebrate: days == celebrate,
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
@@ -721,155 +1011,100 @@ class _Badge extends StatelessWidget {
     super.key,
     required this.days,
     required this.earnedAt,
-    required this.progress,
     required this.remaining,
     required this.celebrate,
   });
   final int days;
   final DateTime? earnedAt;
-  final double? progress;
   final int? remaining;
   final bool celebrate;
 
   @override
   Widget build(BuildContext context) {
-    final p = HipColors.palette;
+    final t = HipText.of(context);
     final earned = earnedAt != null;
-    final medal = SizedBox(
-      width: 46,
-      height: 46,
-      child: CustomPaint(
-        painter: _BadgePainter(earned: earned, progress: progress, p: p),
-        child: Center(
-          child: Text(
-            '$days',
-            style: TextStyle(
-              fontSize: days >= 100 ? 15 : 17,
-              fontWeight: FontWeight.w700,
-              height: 1,
-              color: earned
-                  ? p.onJade
-                  : progress != null
-                  ? p.text
-                  : p.faint,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
+    final next = remaining != null;
+    final medal = Container(
+      width: 38,
+      height: 38,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: earned
+            ? HipColors.primaryAction
+            : next
+            ? null
+            : HipColors.isDark
+            ? HipColors.surfaceHigh
+            : const Color(0xfff0f2f1),
+        border: next
+            ? Border.all(
+                width: 2.5,
+                color: HipColors.isDark
+                    ? HipColors.line
+                    : const Color(0xffe6eae8),
+              )
+            : null,
+        boxShadow: earned
+            ? HipColors.shadows([
+                BoxShadow(
+                  color: HipColors.jadeDeep.withValues(alpha: .16),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ])
+            : null,
+      ),
+      child: Text(
+        '$days',
+        style: TextStyle(
+          fontSize: days >= 100 ? 13 : 15,
+          fontWeight: FontWeight.w700,
+          height: 1,
+          color: earned
+              ? HipColors.onJade
+              : next
+              ? HipColors.text
+              : HipColors.faint,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
       ),
     );
     final caption = earned
         ? '${earnedAt!.month}/${earnedAt!.day}'
-        : remaining != null
-        ? HipText.of(context).pick('还差 $remaining 天', '$remaining left')
-        : HipText.of(context).pick('未解锁', 'Locked');
+        : next
+        ? t.pick('还差 $remaining 天', '$remaining left')
+        : t.pick('未解锁', 'Locked');
     return Column(
       children: [
         celebrate ? _Celebrate(child: medal) : medal,
         const SizedBox(height: 8),
         Text(
-          HipText.of(context).pick('$days 天', '$days d'),
+          t.pick('$days 天', '$days d'),
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: earned || progress != null ? p.text : p.faint,
+            fontSize: 10.5,
+            fontWeight: earned || next ? FontWeight.w700 : FontWeight.w400,
+            color: earned || next ? HipColors.text : HipColors.faint,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 3),
         Text(
           caption,
           maxLines: 1,
-          overflow: TextOverflow.visible,
-          softWrap: false,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 9.5,
             color: earned
                 ? HipColors.jadeText
-                : progress != null
-                ? p.muted
-                : p.faint.withValues(alpha: .7),
+                : next
+                ? HipColors.muted
+                : HipColors.faint,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
     );
   }
-}
-
-/// Six-notch medal: earned = solid jade with a soft halo; next = a track
-/// ring filling with the current streak; locked = a dim disc.
-class _BadgePainter extends CustomPainter {
-  _BadgePainter({
-    required this.earned,
-    required this.progress,
-    required this.p,
-  });
-  final bool earned;
-  final double? progress;
-  final HipPalette p;
-
-  Path _medal(Offset c, double r) {
-    // A rounded 12-point rosette, the HipIcon radar's six axes doubled.
-    final path = Path();
-    const n = 12;
-    for (var i = 0; i <= n * 2; i++) {
-      final a = -math.pi / 2 + i * math.pi / n;
-      final rr = i.isEven ? r : r * .9;
-      final pt = c + Offset(math.cos(a), math.sin(a)) * rr;
-      if (i == 0) {
-        path.moveTo(pt.dx, pt.dy);
-      } else {
-        path.lineTo(pt.dx, pt.dy);
-      }
-    }
-    return path..close();
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final r = size.shortestSide / 2;
-    if (earned) {
-      canvas.drawPath(
-        _medal(c, r),
-        Paint()..color = p.jade.withValues(alpha: .22),
-      );
-      canvas.drawCircle(c, r * .78, Paint()..color = p.jade);
-      return;
-    }
-    canvas.drawCircle(
-      c,
-      r * .78,
-      Paint()..color = p.text.withValues(alpha: progress != null ? .08 : .05),
-    );
-    if (progress != null) {
-      final ring = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round;
-      final rect = Rect.fromCircle(center: c, radius: r * .9);
-      canvas.drawArc(
-        rect,
-        0,
-        math.pi * 2,
-        false,
-        ring..color = p.text.withValues(alpha: .08),
-      );
-      if (progress! > 0) {
-        canvas.drawArc(
-          rect,
-          -math.pi / 2,
-          math.pi * 2 * progress!,
-          false,
-          ring..color = p.jade,
-        );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_BadgePainter old) =>
-      old.earned != earned || old.progress != progress || old.p != p;
 }
 
 /// One-time pop for a newly reached milestone: a small overshoot scale and

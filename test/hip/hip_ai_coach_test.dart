@@ -79,7 +79,11 @@ void main() {
         host.controller.profile.allowedActionIds,
         hiplabCoachAuthorizedActionIds,
       );
-      expect(host.controller.profile.allowedActionIds, hasLength(209));
+      expect(host.controller.profile.allowedActionIds, hasLength(248));
+      expect(
+        host.controller.profile.allowedActionIds,
+        isNot(contains('n-thomas-test')),
+      );
       expect(host.controller.profile.allowedActionIds, contains('chest-A'));
       expect(client.requests, isEmpty);
       await host.close();
@@ -208,12 +212,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(
-          available,
-          platform == TargetPlatform.android,
-          reason:
-              'Configured Android coaching is available in both supported UI languages; iOS and missing configuration keep their existing restrictions.',
-        );
+        expect(available, isTrue);
       });
     }
   }

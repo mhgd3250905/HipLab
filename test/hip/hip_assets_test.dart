@@ -42,10 +42,10 @@ void main() {
       expect(File(path).existsSync(), isTrue, reason: path);
     }
     expect(
-      Directory('assets/drill_media')
+      Directory('assets')
           .listSync(recursive: true)
           .whereType<File>()
-          .where((file) => file.path.endsWith('.mp4')),
+          .where((file) => file.path.toLowerCase().endsWith('.mp4')),
       isEmpty,
       reason: 'public clips must be resolved by the SDK media repository',
     );
@@ -53,39 +53,37 @@ void main() {
     expect(pubspec, isNot(contains('- assets/drill_media/')));
     expect(pubspec, contains('- assets/public_media/'));
     expect(pubspec, contains('- assets/public_posters/'));
+    expect(pubspec, contains('- assets/public_posters/r2-v11/cover/'));
+    expect(pubspec, contains('- assets/public_posters/r2-v11/thumbnail/'));
   });
 
-  test('public poster bundle exactly covers the full shared catalog', () {
+  test('r2-v11 artwork covers the explicit 248-action library scope', () {
     final expected = {
       for (final entry in actions.entries)
-        if (entry.value['trainingDefinitionComplete'] == true) entry.key,
+        if (entry.value['trainingDefinitionComplete'] == true &&
+            entry.key != 'n-thomas-test')
+          entry.key,
     };
-    final bundled = Directory('assets/public_posters')
-        .listSync()
-        .whereType<File>()
-        .map((file) => file.uri.pathSegments.last)
-        .toSet();
-    // r2-v1: 249 complete actions; posters cover HipLab's fixed 209 scope.
+    expect(publicCatalog['pack'], 'r2-v11');
     expect(actions, hasLength(249));
-    expect(expected, hasLength(249));
-    expect(hiplabCoachAuthorizedActionIds, hasLength(209));
-    expect(expected.containsAll(hiplabCoachAuthorizedActionIds), isTrue);
-    expect(hiplabCoachAuthorizedActionIds, contains('n-thomas-test'));
-    expect(bundled, {for (final id in hiplabCoachAuthorizedActionIds) '$id.webp'});
+    expect(expected, hasLength(248));
+    expect(hiplabCoachAuthorizedActionIds, expected);
+    expect(actions, contains('n-thomas-test'));
+    expect(hiplabCoachAuthorizedActionIds, isNot(contains('n-thomas-test')));
+    for (final kind in ['cover', 'thumbnail']) {
+      final bundled = Directory('assets/public_posters/r2-v11/$kind')
+          .listSync()
+          .whereType<File>()
+          .map((file) => file.uri.pathSegments.last)
+          .toSet();
+      expect(bundled, {for (final id in expected) '$id.webp'}, reason: kind);
+    }
     for (final id in hiplabCoachAuthorizedActionIds) {
-      final action = actions[id];
-      expect(action, isNotNull, reason: id);
-      final files = action!['files'] as Map;
+      final files = actions[id]!['files'] as Map;
       final video = files['video'] as Map;
-      final cover = files['cover'] as Map;
       expect(video['bytes'], greaterThan(0), reason: id);
       expect(video['sha256'], matches(RegExp(r'^[0-9a-f]{64}$')), reason: id);
       expect(Uri.parse(video['downloadUrl'] as String).scheme, 'https');
-      expect(cover['alpha'], isTrue, reason: id);
-      expect(
-        File('assets/public_posters/$id.webp').lengthSync(),
-        greaterThan(0),
-      );
     }
     expect(
       File('assets/public_media/catalog/catalog.json').existsSync(),

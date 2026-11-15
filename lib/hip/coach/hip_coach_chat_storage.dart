@@ -12,7 +12,8 @@ import '../domain/hip_settings.dart';
 
 /// The practice library remains the only writer of durable saved plans.
 class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
-  HiplabCoachPlanStore(this.store, {required this.catalog});
+  HiplabCoachPlanStore(this.store, {required this.catalog, this.canSave});
+  final bool Function()? canSave;
   final HipStore store;
   final coach.Catalog catalog;
   final List<String> unreadableExternalIds = [];
@@ -111,6 +112,9 @@ class HiplabCoachPlanStore extends CoachPlanStorageAdapter {
 
   @override
   Future<CoachPlanWriteResult> save(CoachPlanWriteRequest request) async {
+    if (canSave?.call() == false) {
+      return const CoachPlanWriteResult.failure(CoachPlanWriteStatus.readOnly);
+    }
     final update = request.mode == CoachPlanWriteMode.update;
     if (update && request.externalId == null) {
       return const CoachPlanWriteResult.failure(CoachPlanWriteStatus.deleted);
@@ -280,8 +284,8 @@ class HiplabCoachChatHistoryStore extends CoachChatHistoryStore {
   }) => _storage.write(lastPlanKey, jsonEncode(plan.toJson()));
 }
 
-/// SDK safety acceptance is separate from HipLab's existing onboarding facts;
-/// the App's blocked state always continues to veto training.
+/// SDK safety acceptance is the only safety gate; HipLab's old onboarding
+/// veto was removed with the first-launch flow.
 class HiplabCoachChatPreferenceStore extends CoachChatPreferenceStore {
   HiplabCoachChatPreferenceStore(this.store, {LocalStateStorage? storage})
     : _storage = storage ?? SharedPreferencesLocalStateStorage();
@@ -310,7 +314,7 @@ class HiplabCoachChatPreferenceStore extends CoachChatPreferenceStore {
 
   CoachChatPreferences get _value => CoachChatPreferences(
     safetyAccepted: _accepted,
-    safetyBlocked: _blocked || store.blocked,
+    safetyBlocked: _blocked,
     safetyChecking: _checking,
     appearance: store.theme.id,
     voice: store.voice.voice,

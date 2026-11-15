@@ -33,15 +33,16 @@ Future<void> openRecords(WidgetTester tester) =>
 
 /// Back to 首页 from any page opened from it.
 Future<void> backHome(WidgetTester tester) async {
+  final more = find.byKey(const ValueKey('home-more'));
   for (var i = 0; i < 6; i++) {
-    if (find
-        .byKey(const ValueKey('home-more'))
-        .hitTestable()
-        .evaluate()
-        .isNotEmpty) {
+    if (more.hitTestable().evaluate().isNotEmpty) return;
+    final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
+    if (!nav.canPop()) {
+      await tester.ensureVisible(more);
+      await tester.pumpAndSettle();
+      expect(more.hitTestable(), findsOneWidget);
       return;
     }
-    final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
     nav.pop();
     await tester.pumpAndSettle();
   }

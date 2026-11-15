@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hiplab/hip/coach/hip_coach_chat.dart';
+import 'package:hiplab/hip/control/hip_ai_consent.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/ui/coach/hip_coach_chat_page.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
@@ -12,6 +13,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/library_actions.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_coach_chat/ugk_coach_chat.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 
@@ -46,8 +48,12 @@ void main() {
           final disk = MemoryStorage();
           final store = HipStore(content: loadContent(), storage: disk);
           final bundle = _PendingCatalog();
+          SharedPreferences.setMockInitialValues({});
+          final consent = HipAiConsent();
+          await consent.grant();
           final host = HipCoachChat(
             store: store,
+            consent: consent,
             storage: disk,
             bundle: bundle,
             gateway: CoachGatewayBinding.shared(coach.FakeLlmClient(const [])),

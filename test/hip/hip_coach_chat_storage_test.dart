@@ -399,9 +399,9 @@ void main() {
       expect(store.theme, HipThemeChoice.dark);
       expect(store.voice.voice, isFalse);
       expect(store.voice.volume, .4);
+      // Legacy HipLab safety answers no longer veto SDK training.
       await store.setSafety({'existing-block': true});
-      expect((await preferences.load()).trainingAllowed, isFalse);
-      expect(store.safety, {'existing-block': true});
+      expect((await preferences.load()).trainingAllowed, isTrue);
       expect(
         disk.values[HiplabCoachChatPreferenceStore.legacyDisclaimerKey],
         '{"disclaimerAccepted":true}',

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/data/hip_public_display.dart';
 import 'package:hiplab/hip/data/hip_public_text_en.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 void main() {
   final source =
@@ -17,13 +19,21 @@ void main() {
       (row as Map<String, dynamic>)['id'] as String: row,
   };
   final chinese = RegExp(r'[\u3400-\u9fff]');
+  final blockedEnglish = RegExp(
+    r'\b(?:rehab|rehabilitation|therapy|treatment|physical therapy|medical)\b',
+    caseSensitive: false,
+  );
 
   test(
-    'every authorized public action has complete display-only English copy',
+    'English translations retain every authored line for 248 actions and the self-test demo',
     () {
-      expect(hipPublicTextEn.keys.toSet(), hiplabCoachAuthorizedActionIds);
+      expect(hiplabCoachAuthorizedActionIds, hasLength(248));
+      expect(hipPublicTextEn.keys.toSet(), {
+        ...hiplabCoachAuthorizedActionIds,
+        'n-thomas-test',
+      });
       var cueCount = 0, cautionCount = 0, contraindicationCount = 0;
-      for (final id in hiplabCoachAuthorizedActionIds) {
+      for (final id in hipPublicTextEn.keys) {
         final original = definitions[id]!;
         final copy = hipPublicTextEn[id]!;
         final cues = (original['cues'] as Map)['zh'] as List;
@@ -46,16 +56,44 @@ void main() {
         ]) {
           expect(text.trim(), isNotEmpty, reason: id);
           expect(chinese.hasMatch(text), isFalse, reason: '$id: $text');
+          expect(blockedEnglish.hasMatch(text), isFalse, reason: '$id: $text');
         }
         cueCount += copy.cues.length;
         cautionCount += copy.cautions.length;
         contraindicationCount += copy.contraindications.length;
       }
-      expect(cueCount, 689);
-      expect(cautionCount, 289);
-      expect(contraindicationCount, 200);
+      expect(cueCount, 815);
+      expect(cautionCount, 344);
+      expect(contraindicationCount, 253);
     },
   );
+
+  test('all library actions show English labels and guidance', () {
+    final display = hipEnglishPublicDisplay(coach.Catalog.fromJson(source))!;
+    for (final id in hiplabCoachAuthorizedActionIds) {
+      final original = definitions[id]!;
+      final text = display(id)!;
+      final copy = hipPublicTextEn[id]!;
+      expect(text.name, (original['name'] as Map)['en'], reason: id);
+      expect(text.metadata, isNotEmpty, reason: id);
+      expect(text.cues, copy.cues, reason: id);
+      expect(text.cautions, [
+        ...copy.cautions,
+        if (copy.contraindications.isNotEmpty)
+          'Caution areas: ${copy.contraindications.join(', ')}.',
+      ], reason: id);
+      for (final value in [
+        text.name!,
+        text.metadata!,
+        text.muscles!,
+        ...text.cues!,
+        ...text.cautions!,
+      ]) {
+        expect(chinese.hasMatch(value), isFalse, reason: '$id: $value');
+        expect(blockedEnglish.hasMatch(value), isFalse, reason: '$id: $value');
+      }
+    }
+  });
 
   test(
     'English metadata covers the actual catalogue taxonomy without changing IDs',

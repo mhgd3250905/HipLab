@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
+import '../control/hip_ai_consent.dart';
+import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
@@ -21,12 +24,15 @@ import '../voice/hip_voice.dart';
 import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
+import '../voice/voice_queue.dart';
+import 'hip_ai_consent_scope.dart';
 import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
 import 'hip_home_action_deck.dart';
 import 'hip_home_routine_folder.dart';
+import 'hip_membership_scope.dart';
 import 'hip_more_page.dart';
 import 'hip_page_kit.dart';
 import 'hip_player_page.dart';
@@ -39,6 +45,7 @@ import 'hip_text.dart';
 import 'hip_widgets.dart';
 import 'library/lib_text.dart';
 import 'library/library_actions.dart';
+import 'library/practice_page.dart';
 import 'hip_content_text.dart';
 import 'library/library_widgets.dart' show drillPoint;
 
@@ -52,6 +59,7 @@ class HipApp extends StatefulWidget {
     this.videoEnabled = true,
     this.voice,
     this.coach,
+    this.membership,
     this.mediaPolicy,
   });
 
@@ -66,6 +74,7 @@ class HipApp extends StatefulWidget {
   /// AI 定制 (docs/ai-coach.md). Injected in tests (SDK fake client);
   /// otherwise built from external configuration (unconfigured → hidden).
   final HipCoachChat? coach;
+  final HipMembership? membership;
   final trainer.TrainingMediaPolicy? mediaPolicy;
 
   @override
@@ -73,8 +82,30 @@ class HipApp extends StatefulWidget {
 }
 
 class _HipAppState extends State<HipApp> {
+  final _audioRoutes = RouteObserver<ModalRoute<dynamic>>();
+  late final _aiConsent = widget.coach?.consent ?? HipAiConsent();
   HipLanguage _loadingLanguage = HipLanguage.zh;
   late Future<(HipStore, HipVoice)> _loading = _load();
+
+  AppLifecycleListener? _membershipLifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.membership case final membership?) {
+      unawaited(membership.refresh());
+      _membershipLifecycle = AppLifecycleListener(
+        onResume: () => unawaited(membership.refresh()),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _membershipLifecycle?.dispose();
+    widget.membership?.dispose();
+    super.dispose();
+  }
 
   Future<(HipStore, HipVoice)> _load() async {
     final store = widget.store ?? HipStore(content: await loadHipContent());
@@ -152,9 +183,12 @@ class _HipAppState extends State<HipApp> {
           voice: voice,
           child: _shell(
             _mode(store.theme),
-            store.onboarded
-                ? HipHome(store: store, coach: widget.coach)
-                : HipOnboarding(store: store),
+            HipHome(
+              store: store,
+              coach: widget.coach,
+              membership: widget.membership,
+              aiConsent: _aiConsent,
+            ),
             language: store.language,
           ),
         ),
@@ -167,6 +201,9 @@ class _HipAppState extends State<HipApp> {
     Widget home, {
     HipLanguage language = HipLanguage.zh,
   }) => MaterialApp(
+    navigatorObservers: [
+      if (defaultTargetPlatform == TargetPlatform.iOS) _audioRoutes,
+    ],
     onGenerateTitle: (context) =>
         HipText.of(context).pick(hipAppName, 'HipLab · Hip Mobility'),
     debugShowCheckedModeBanner: false,
@@ -192,7 +229,12 @@ class _HipAppState extends State<HipApp> {
           child: content,
         );
       }
-      return _PaletteScope(child: content);
+      if (widget.membership case final membership?) {
+        content = HipMembershipScope(membership: membership, child: content);
+      }
+      return _PaletteScope(
+        child: HipAiConsentScope(consent: _aiConsent, child: content),
+      );
     },
     home: home,
   );
@@ -243,387 +285,6 @@ class _PaletteScopeState extends State<_PaletteScope> {
   }
 }
 
-// ───────────────────────── first launch: 3 safety cards + identity ─────────
-
-class HipOnboarding extends StatefulWidget {
-  const HipOnboarding({super.key, required this.store, this.review = false});
-  final HipStore store;
-
-  /// Opened again from settings: re-answer the cards, keep identity.
-  final bool review;
-  @override
-  State<HipOnboarding> createState() => _HipOnboardingState();
-}
-
-class _HipOnboardingState extends State<HipOnboarding> {
-  final _answers = <String, bool>{};
-  int _index = 0;
-  bool _busy = false;
-
-  List<SafetyCard> get _cards => widget.store.content.safetyCards;
-  bool get _onIdentity => _index >= _cards.length;
-
-  static const _icons = {
-    'pregnant_woman': HipGlyph.person,
-    'healing': HipGlyph.bandage,
-    'personal_injury': HipGlyph.clipboard,
-  };
-
-  // Transparent editorial cartoons share the surrounding light/dark surface.
-  // Older mannequin art remains in source history, outside the asset bundle.
-  static String heroAsset(String cardId) =>
-      'assets/hip/onboarding/$cardId-friendly.webp';
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    hipPrecache(context, [for (final c in _cards) heroAsset(c.id)]);
-  }
-
-  Future<void> _answer(bool yes) async {
-    if (_busy) return;
-    _busy = true;
-    try {
-      _answers[_cards[_index].id] = yes;
-      if (_index == _cards.length - 1) {
-        await widget.store.setSafety(_answers);
-        if (widget.review && mounted) {
-          Navigator.of(context).pop();
-          return;
-        }
-      }
-      if (mounted) setState(() => _index++);
-    } finally {
-      _busy = false;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final blocked = _answers.values.any((v) => v);
-    final body = Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-      child: HipFadeSwitcher(
-        child: KeyedSubtree(
-          key: ValueKey(_onIdentity ? 'identity' : 'card'),
-          child: _onIdentity ? _identity(blocked) : _safetyCard(),
-        ),
-      ),
-    );
-    // UI r2 (#9): opened again from 设置 it has a back and a title; first
-    // launch keeps none (the cards must be answered).
-    if (widget.review) {
-      return HipNavPage(
-        title: HipText.of(context).pick("安全提示", "Safety check"),
-        body: body,
-      );
-    }
-    return Scaffold(body: SafeArea(child: body));
-  }
-
-  Widget _safetyCard() {
-    final card = _cards[_index];
-    final hero = heroAsset(card.id);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            for (var i = 0; i < _cards.length; i++)
-              Expanded(
-                child: AnimatedContainer(
-                  duration: HipMotion.medium,
-                  height: 4,
-                  margin: EdgeInsets.only(right: i < _cards.length - 1 ? 6 : 0),
-                  decoration: BoxDecoration(
-                    color: i <= _index ? HipColors.jade : HipColors.surfaceHigh,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 18),
-        Row(
-          children: [
-            // From 设置 the bar already says 安全提示: no repeated eyebrow.
-            if (!widget.review)
-              Text(
-                HipText.of(
-                  context,
-                ).pick("开始之前 · 安全确认", "Before you start · Safety"),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: HipColors.jadeText,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            const Spacer(),
-            Text(
-              '${_index + 1} / ${_cards.length}',
-              style: TextStyle(fontSize: 14, color: HipColors.muted),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // On short screens art yields space to the question and buttons.
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, c) {
-              // Keep the complete character and annotations inside the frame.
-              final h = c.maxHeight.clamp(0.0, c.maxWidth).toDouble();
-              return Align(
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: c.maxWidth,
-                  height: h,
-                  child: HipMediaFrame(
-                    key: const ValueKey('onboarding-hero'),
-                    radius: 28,
-                    color: HipColors.surface,
-                    borderColor: HipColors.isDark
-                        ? HipColors.line
-                        : const Color(0x00000000),
-                    shadow: HipColors.cardShadow,
-                    child: HipFadeSwitcher(
-                      duration: HipMotion.slow,
-                      offset: 0,
-                      expand: true,
-                      child: Image.asset(
-                        hero,
-                        key: ValueKey(hero),
-                        fit: BoxFit.contain,
-                        gaplessPlayback: true,
-                        errorBuilder: (_, _, _) => _heroPlaceholder(card),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 22),
-        HipFadeSwitcher(
-          alignment: AlignmentDirectional.bottomStart,
-          child: Column(
-            key: ValueKey(card.id),
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                HipText.of(
-                  context,
-                ).pick("你现在有这种情况吗？", "Does this apply to you?"),
-                style: TextStyle(fontSize: 15, color: HipColors.muted),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                HipText.of(context).pick(card.title, switch (card.id) {
-                  'pregnancy' => 'Pregnant or within 6 months after childbirth',
-                  'surgery' =>
-                    'Hip, knee or back surgery, a joint replacement, or medical advice to limit activity',
-                  'acute' =>
-                    'A recent fall or sprain, or current pain or swelling in your hips, back or thighs',
-                  _ => card.title,
-                }),
-                style: const TextStyle(
-                  fontSize: 23,
-                  height: 1.4,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                HipText.of(context).pick(
-                  "如实选就好。选“有”也可以浏览动作，只是先不安排训练。",
-                  "Answer honestly. You can still browse moves if you choose Yes; training will stay paused.",
-                ),
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: HipColors.muted,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 22),
-        Row(
-          children: [
-            Expanded(
-              child: HipSecondaryButton(
-                key: const ValueKey('safety-yes'),
-                label: HipText.of(context).pick("有", "Yes"),
-                onPressed: () => _answer(true),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: HipPrimaryButton(
-                key: const ValueKey('safety-no'),
-                label: HipText.of(context).pick("没有", "No"),
-                onPressed: () => _answer(false),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        Text(
-          HipText.of(context).pick(
-            "这是运动练习，不能替代医生的建议。",
-            "Exercise guidance does not replace medical advice.",
-          ),
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 12, color: HipColors.muted),
-        ),
-      ],
-    );
-  }
-
-  /// Shown only if the art is missing from the bundle.
-  Widget _heroPlaceholder(SafetyCard card) => DecoratedBox(
-    decoration: BoxDecoration(
-      gradient: RadialGradient(
-        radius: .9,
-        colors: [HipColors.jade.withValues(alpha: .25), HipColors.surface],
-      ),
-    ),
-    child: Center(
-      child: HipIcon(
-        _icons[card.icon] ?? HipGlyph.info,
-        size: 96,
-        color: HipColors.jade,
-      ),
-    ),
-  );
-
-  Widget _identity(bool blocked) {
-    final choices = [
-      (
-        HipIdentity.office,
-        HipGlyph.chair,
-        HipText.of(context).pick(
-          "久坐上班，髋前侧和臀部发紧",
-          "Desk work leaves the front of your hips and glutes tight",
-        ),
-      ),
-      (
-        HipIdentity.dancer,
-        HipGlyph.dancer,
-        HipText.of(context).pick(
-          "跳舞 / Breaking，要开胯和控制",
-          "Dance or Breaking: hip mobility and control",
-        ),
-      ),
-      (
-        HipIdentity.other,
-        HipGlyph.person,
-        HipText.of(
-          context,
-        ).pick("想让髋更灵活、更舒服", "Move your hips more freely and comfortably"),
-      ),
-    ];
-    return ListView(
-      children: [
-        if (blocked) ...[
-          HipPanel(
-            borderColor: HipColors.tight.withValues(alpha: .5),
-            child: Row(
-              children: [
-                HipIcon(HipGlyph.clipboard, color: HipColors.tight),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    HipText.of(context).pick(
-                      "先问问医生或专业人士，再开始练习。你可以先看看动作。",
-                      "Ask a doctor or qualified professional before training. You can browse the moves for now.",
-                    ),
-                    style: TextStyle(fontSize: 15, height: 1.4),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-        const SizedBox(height: 12),
-        Text(
-          HipText.of(context).pick("最后一步", "One last step"),
-          style: TextStyle(
-            fontSize: 14,
-            color: HipColors.jadeText,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          HipText.of(context).pick("你是哪一种？", "What brings you here?"),
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 20),
-        for (final (id, icon, line) in choices) ...[
-          HipPanel(
-            padding: EdgeInsets.zero,
-            child: InkWell(
-              key: ValueKey('identity-${id.id}'),
-              onTap: () => widget.store.setIdentity(id),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: HipColors.jade.withValues(alpha: .12),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: HipIcon(icon, size: 30, color: HipColors.jade),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            HipText.of(context).pick(id.zh, switch (id) {
-                              HipIdentity.office => 'Desk worker',
-                              HipIdentity.dancer => 'Dancer',
-                              HipIdentity.other => 'Everyday mobility',
-                            }),
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            line,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: HipColors.muted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    HipIcon(
-                      HipGlyph.chevronRight,
-                      size: 20,
-                      color: HipColors.faint,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
-      ],
-    );
-  }
-}
-
 // ───────────────────────── home ─────────────────────────
 //
 // Home redesign r1 (开哥 2026-11-02): not a dashboard. One scene switch,
@@ -631,11 +292,19 @@ class _HipOnboardingState extends State<HipOnboarding> {
 // else lives in 「更多」 (top-right ⋯).
 
 class HipHome extends StatefulWidget {
-  const HipHome({super.key, required this.store, this.coach});
+  const HipHome({
+    super.key,
+    required this.store,
+    this.coach,
+    this.membership,
+    this.aiConsent,
+  });
   final HipStore store;
 
   /// AI 定制 service; null = built from --dart-define.
   final HipCoachChat? coach;
+  final HipMembership? membership;
+  final HipAiConsent? aiConsent;
   @override
   State<HipHome> createState() => _HipHomeState();
 }
@@ -657,9 +326,6 @@ class _HipHomeState extends State<HipHome> {
   bool _recordsOpening = false;
   HipStore get store => widget.store;
 
-  /// Explicitly selected routine position per scene (this launch only).
-  final _pick = <HipScene, int>{};
-
   AssetBundle? _posterBundle;
   int? _posterDecodeWidth;
   final _warmedPlanPosters = <String>{};
@@ -677,8 +343,8 @@ class _HipHomeState extends State<HipHome> {
       _warmedPlanPosters.clear();
     }
     for (final scene in HipScene.values) {
-      for (final routine in store.sceneRoutines(scene)) {
-        final first = store.planForRoutine(routine)?.steps.firstOrNull;
+      for (final id in store.homeRoutines(scene)) {
+        final first = store.planForHomeRoutine(id)?.steps.firstOrNull;
         final asset = first == null
             ? null
             : policy.posterAssetFor(first.drill.id);
@@ -701,7 +367,13 @@ class _HipHomeState extends State<HipHome> {
   final _practice = PracticeMemory();
 
   /// AI 定制 conversation: survives leaving the page and a session.
-  late final _coach = widget.coach ?? HipCoachChat(store: store);
+  late final _coach =
+      widget.coach ??
+      HipCoachChat(
+        store: store,
+        membership: widget.membership,
+        consent: widget.aiConsent,
+      );
   late final _library = LibraryActions(
     store: store,
     startPlan: _startPlan,
@@ -778,8 +450,7 @@ class _HipHomeState extends State<HipHome> {
         body: ListenableBuilder(
           listenable: store,
           builder: (context, _) {
-            final routine = _routine;
-            final plan = routine == null ? null : store.planForRoutine(routine);
+            final plan = _plan;
             return HipProgressPage(
               store: store,
               section: HipProgressSection.records,
@@ -801,16 +472,16 @@ class _HipHomeState extends State<HipHome> {
     }
   }
 
-  HipRoutine? get _routine {
-    final list = store.sceneRoutines(store.scene);
-    if (list.isEmpty) return null;
-    return list[(_pick[store.scene] ?? 0) % list.length];
+  /// The selected 首页 folder entry for the current scene, persisted.
+  String? get _routineId => store.homeRoutineId(store.scene);
+
+  TrainingPlan? get _plan {
+    final id = _routineId;
+    return id == null ? null : store.planForHomeRoutine(id);
   }
 
   HipDrill? get _heroDrill {
-    final r = _routine;
-    if (r == null) return null;
-    final plan = store.planForRoutine(r);
+    final plan = _plan;
     if (plan == null) return null;
     return (plan.steps.where((s) => s.drill.poster != null).firstOrNull ??
             plan.steps.firstOrNull)
@@ -856,130 +527,157 @@ class _HipHomeState extends State<HipHome> {
   @override
   Widget build(BuildContext context) {
     _warmPlanPosters();
-    final routine = _routine;
-    final plan = routine == null ? null : store.planForRoutine(routine);
+    final routineId = _routineId ?? '';
+    final plan = _plan;
     final alerts = [
       if (store.askNumbness) _numbnessCard(),
       for (final d in store.lockedDirections.keys) _lockCard(d),
     ];
-    final canRotate = store.sceneRoutines(store.scene).length > 1;
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _topBar(),
-              ),
-              if (plan != null && plan.steps.isNotEmpty)
-                Expanded(
-                  child: HipHomeActionDeck(
-                    key: const ValueKey('home-deck'),
-                    identity:
-                        '${dayKey(store.now())}/${store.scene.id}/${routine!.id}',
-                    drills: [for (final step in plan.steps) step.drill],
-                    doses: [
-                      for (final step in plan.steps)
-                        HipContentText.of(context).text(step.dose),
-                    ],
-                    cues: [
-                      for (final step in plan.steps)
-                        HipContentText.of(context).text(step.tip),
-                    ],
-                    descriptions: [
-                      for (final step in plan.steps)
-                        drillPoint(
-                          store.content,
-                          step.drill,
-                          HipText.of(context).languageTag,
-                        ),
-                    ],
-                  ),
-                )
-              else
-                const Spacer(),
-              for (final a in alerts) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: a,
-                ),
-                const SizedBox(height: 10),
-              ],
-              if (plan == null)
-                _blockedHero()
-              else
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(child: _headline(routine!, plan)),
-                      if (canRotate) ...[
-                        const SizedBox(width: 12),
-                        _routineFolder(),
-                      ],
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 20),
-              _dock(plan),
-            ],
-          ),
+    // The folder stays visible with just one 套路 because it also holds the
+    // 「训练组选择」 entry.
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          key: const ValueKey('home-page-header'),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: _topBar(),
         ),
-      ),
-    );
-  }
-
-  /// The reference dock: one floating liquid-glass capsule (办公 / 居家 with
-  /// a sliding inner pill, 更多) and, apart from it, the round jade glass
-  /// 开始 — the only accent.
-  Widget _dock(TrainingPlan? plan) {
-    // m4 (开哥 19:17: "操作栏不要这么大，要精致有质感"): 54pt.
-    const h = 54.0;
-    final idle = HipColors.text.withValues(alpha: .62);
-    return SizedBox(
-      height: h,
-      child: Row(
-        children: [
+        for (final a in alerts) ...[
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: a),
+          const SizedBox(height: 10),
+        ],
+        if (plan != null && plan.steps.isNotEmpty) ...[
+          const SizedBox(height: 20),
           Expanded(
-            child: HipGlass(
-              key: const ValueKey('home-dock'),
-              shape: HipGlassShape.capsule,
-              blur: true,
-              sigma: 20,
-              padding: const EdgeInsets.all(4),
-              child: Row(
-                children: [
-                  Expanded(flex: 2, child: _scenePicker(h - 8)),
-                  Expanded(
-                    child: HipPressable(
-                      key: const ValueKey('home-more'),
-                      semanticLabel: HipText.of(context).pick("更多", "More"),
-                      onTap: _openMore,
-                      scale: .94,
-                      child: _dockItem(
-                        HipGlyph.grid,
-                        HipText.of(context).pick("更多", "More"),
-                        idle,
-                        0,
-                      ),
+            // Tight intrinsic height establishes the scroll floor.
+            // Expanded still gets all additional viewport space.
+            child: SizedBox(
+              height: HipHomeActionDeck.minimumHeight(plan.steps.length),
+              child: HipHomeActionDeck(
+                key: const ValueKey('home-deck'),
+                identity: '${dayKey(store.now())}/${store.scene.id}/$routineId',
+                drills: [for (final step in plan.steps) step.drill],
+                doses: [
+                  for (final step in plan.steps)
+                    HipContentText.of(context).text(step.dose),
+                ],
+                cues: [
+                  for (final step in plan.steps)
+                    HipContentText.of(context).text(step.tip),
+                ],
+                descriptions: [
+                  for (final step in plan.steps)
+                    drillPoint(
+                      store.content,
+                      step.drill,
+                      HipText.of(context).languageTag,
                     ),
-                  ),
                 ],
               ),
             ),
           ),
-          if (plan != null) ...[
-            const SizedBox(width: 8),
-            _startButton(plan, h),
-          ],
+          SizedBox(height: plan.steps.length > 1 ? 6 : 18),
+        ] else
+          const Spacer(),
+        Padding(
+          key: const ValueKey('home-routine-section'),
+          padding: const EdgeInsets.only(left: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (plan != null)
+                Expanded(child: _headline(routineId, plan))
+              else
+                Expanded(
+                  child: Text(
+                    LibText.of(context).homeFolderEmpty,
+                    key: const ValueKey('home-title'),
+                    style: TextStyle(fontSize: 15, color: HipColors.muted),
+                  ),
+                ),
+              const SizedBox(width: 12),
+              _routineFolder(),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        _dock(plan),
+      ],
+    );
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const HipPageBackdrop(),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 18),
+              child: LayoutBuilder(
+                builder: (context, viewport) => SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: viewport.maxHeight,
+                      ),
+                      child: IntrinsicHeight(child: content),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _dock(TrainingPlan? plan) => SizedBox(
+    height: 52,
+    child: Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 274,
+              height: 48,
+              child: HipGlass(
+                key: const ValueKey('home-dock'),
+                shape: HipGlassShape.capsule,
+                blur: true,
+                sigma: 20,
+                dock: true,
+                padding: const EdgeInsets.all(6),
+                child: Row(
+                  children: [
+                    Expanded(flex: 2, child: _scenePicker(36)),
+                    Expanded(
+                      child: HipPressable(
+                        key: const ValueKey('home-more'),
+                        semanticLabel: HipText.of(context).pick('更多', 'More'),
+                        onTap: _openMore,
+                        scale: .94,
+                        child: _dockItem(
+                          HipGlyph.grid,
+                          HipText.of(context).pick('更多', 'More'),
+                          HipColors.muted,
+                          0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (plan != null) ...[const SizedBox(width: 6), _startButton(plan, 52)],
+      ],
+    ),
+  );
 
   // FittedBox: at large text sizes (×2.0) the 46pt dock row would overflow by
   // a pixel; scale the glyph + label down instead (no change at ×1).
@@ -999,7 +697,7 @@ class _HipHomeState extends State<HipHome> {
               fontSize: 10.5,
               height: 1.2,
               letterSpacing: .3,
-              fontWeight: t > .5 ? FontWeight.w600 : FontWeight.w500,
+              fontWeight: t > .5 ? FontWeight.w700 : FontWeight.w500,
               color: fg,
             ),
           ),
@@ -1008,53 +706,85 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  Widget _routineFolder() {
-    final scene = store.scene;
-    return HipHomeRoutineFolder(
-      key: const ValueKey('home-rotate'),
-      sceneLabel: scene == HipScene.chair
-          ? HipText.of(context).pick("办公", "Office")
-          : HipText.of(context).pick("居家", "Home"),
-      selectedId: _routine!.id,
-      choices: [
-        for (final r in store.sceneRoutines(scene))
-          if (store.planForRoutine(r) case final plan?
-              when plan.steps.isNotEmpty)
-            HipHomeRoutineChoice(
-              id: r.id,
-              title: _homeDisplay(r).$2,
-              subtitle: _homeDisplay(r).$3,
-              minutes: plan.minutes,
-              drills: [for (final step in plan.steps) step.drill],
-            ),
-      ],
-      onSelected: (id) {
-        if (!mounted || store.scene != scene || _routine?.id == id) return;
-        final routines = store.sceneRoutines(scene);
-        final index = routines.indexWhere((r) => r.id == id);
-        if (index < 0) return;
-        final plan = store.planForRoutine(routines[index]);
-        if (plan == null || plan.steps.isEmpty) return;
-        setState(() => _pick[scene] = index);
-      },
+  String _sceneLabel(HipScene scene) => scene == HipScene.chair
+      ? HipText.of(context).pick("办公", "Office")
+      : HipText.of(context).pick("居家", "Home");
+
+  /// The folder lists only the 编排套路 / 我的训练组 added to the current
+  /// scene's 首页 folder. A plan the profile emptied is not offered.
+  List<HipHomeRoutineChoice> _folderChoices() => [
+    for (final id in store.homeRoutines(store.scene))
+      if (store.planForHomeRoutine(id) case final plan?
+          when plan.steps.isNotEmpty)
+        HipHomeRoutineChoice(
+          id: id,
+          sceneLabel: _sceneLabel(store.scene),
+          title: _homeDisplay(id).$2,
+          subtitle: _homeDisplay(id).$3,
+          minutes: plan.minutes,
+          drills: [for (final step in plan.steps) step.drill],
+        ),
+  ];
+
+  Widget _routineFolder() => HipHomeRoutineFolder(
+    key: const ValueKey('home-rotate'),
+    sceneLabel: _sceneLabel(store.scene),
+    selectedId: _routineId ?? '',
+    choices: _folderChoices(),
+    onChooseGroups: _openGroupsForHome,
+    onSelected: (id) async {
+      if (!mounted || _routineId == id) return;
+      await store.pickSceneRoutine(store.scene, id);
+    },
+  );
+
+  /// 「训练组选择」: 训练组 opens on 推荐套路 with the current scene's add
+  /// controls in view; changes are live via the store listener.
+  void _openGroupsForHome() {
+    _practice.segment = 1;
+    Navigator.of(context).push(
+      HipRoute.content<void>(
+        (_) => PracticePage(
+          actions: _library,
+          memory: _practice,
+          homeScene: store.scene,
+          onStartAssessment: _startAssessment,
+        ),
+      ),
     );
   }
 
   Widget _topBar() => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Expanded(
-        child: Text(
-          _greeting(store.now()),
-          key: const ValueKey('home-greeting'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            height: 1.3,
-            letterSpacing: .3,
-            fontWeight: FontWeight.w500,
-            color: HipColors.text.withValues(alpha: .72),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _greeting(store.now()),
+              key: const ValueKey('home-greeting'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.3,
+                color: HipColors.muted,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              HipText.of(context).pick('今天练一会儿', 'A little movement today'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w700,
+                height: 1.2,
+                color: HipColors.text,
+              ),
+            ),
+          ],
         ),
       ),
       const SizedBox(width: 12),
@@ -1062,7 +792,6 @@ class _HipHomeState extends State<HipHome> {
     ],
   );
 
-  /// Keep the 24pt badge, with a full 44pt target for the records shortcut.
   Widget _streakChip() => HipPressable(
     key: const ValueKey('home-streak-button'),
     semanticLabel: HipText.of(context).pick(
@@ -1077,39 +806,43 @@ class _HipHomeState extends State<HipHome> {
         widthFactor: 1,
         heightFactor: 1,
         child: SizedBox(
-          height: 24,
-          child: HipGlass(
-            key: const ValueKey('home-streak'),
-            shape: HipGlassShape.capsule,
-            radius: 12,
-            blur: true,
-            sigma: 14,
-            shadow: false,
-            padding: const EdgeInsets.fromLTRB(8, 0, 10, 0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                HipIcon(
-                  HipGlyph.flame,
-                  size: 12,
-                  filled: true,
-                  color: HipColors.tight,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  HipText.of(context).pick(
-                    '${store.streak} 天',
-                    '${store.streak} ${store.streak == 1 ? 'day' : 'days'}',
+          key: const ValueKey('home-streak'),
+          width: 56,
+          height: 26,
+          child: HipCard(
+            radius: 13,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      HipIcon(
+                        HipGlyph.flame,
+                        size: 13,
+                        filled: true,
+                        color: HipColors.tight,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        HipText.of(context).pick(
+                          '${store.streak} 天',
+                          "${store.streak} ${store.streak == 1 ? 'day' : 'days'}",
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: HipColors.text,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
                   ),
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.2,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.text,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1117,7 +850,22 @@ class _HipHomeState extends State<HipHome> {
     ),
   );
 
-  (String, String, String) _homeDisplay(HipRoutine r) {
+  (String, String, String) _homeDisplay(String id) {
+    // 我的训练组 entries have no authored home copy: use the group name and
+    // its move count, in both languages.
+    final group = store.customRoutine(id);
+    if (group != null) {
+      final t = LibText.of(context);
+      return (
+        t.isEn ? 'MY GROUP' : '我的训练组',
+        group.name,
+        t.isEn
+            ? '${t.movesCount(group.steps.length)} · ${t.duration(group.seconds(store.content))}'
+            : '${t.movesCount(group.steps.length)} · ${t.duration(group.seconds(store.content))}',
+      );
+    }
+    final r = store.content.routines.where((x) => x.id == id).firstOrNull;
+    if (r == null) return ('', '', '');
     if (!HipText.of(context).isEn) {
       return _homeCopy[r.id] ?? (r.scene.zh, r.name, r.audience);
     }
@@ -1161,8 +909,8 @@ class _HipHomeState extends State<HipHome> {
     };
   }
 
-  Widget _headline(HipRoutine r, TrainingPlan plan) {
-    final (kicker, title, how) = _homeDisplay(r);
+  Widget _headline(String id, TrainingPlan plan) {
+    final (kicker, title, how) = _homeDisplay(id);
     return AnimatedSwitcher(
       duration: HipCalmMotion.of(context, HipCalmMotion.swap),
       switchInCurve: HipCalmMotion.curve,
@@ -1172,17 +920,17 @@ class _HipHomeState extends State<HipHome> {
         children: [...previous, ?current],
       ),
       child: Column(
-        key: ValueKey('headline-${store.scene.id}-${r.id}'),
+        key: ValueKey('headline-${store.scene.id}-$id'),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             kicker,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               height: 1.2,
               letterSpacing: 1.5,
-              fontWeight: FontWeight.w600,
-              color: HipColors.jadeText,
+              fontWeight: FontWeight.w700,
+              color: HipColors.jade,
             ),
           ),
           const SizedBox(height: 6),
@@ -1192,7 +940,7 @@ class _HipHomeState extends State<HipHome> {
             maxLines: HipText.of(context).isEn ? 2 : 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 31,
+              fontSize: 27,
               height: 1.12,
               letterSpacing: 1,
               fontWeight: FontWeight.w700,
@@ -1208,7 +956,7 @@ class _HipHomeState extends State<HipHome> {
                   ).pick('${plan.minutes} 分钟', '${plan.minutes} min'),
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
-                    color: HipColors.text.withValues(alpha: .85),
+                    color: HipColors.muted,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -1218,10 +966,10 @@ class _HipHomeState extends State<HipHome> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               height: 1.4,
               letterSpacing: .2,
-              color: HipColors.text.withValues(alpha: .7),
+              color: HipColors.muted,
             ),
           ),
         ],
@@ -1235,47 +983,15 @@ class _HipHomeState extends State<HipHome> {
     buttonKey: const ValueKey('start-today'),
     stage: HipColors.palette,
     size: size,
-    glass: true,
+    flatDisc: true,
     onTap: plan.steps.isEmpty
         ? null
         : () => _startPlan(
             plan,
             from: _startKey.currentContext,
             radius: size / 2,
-            originColor: HipColors.jade,
+            originColor: HipColors.primaryAction,
           ),
-  );
-
-  Widget _blockedHero() => HipPanel(
-    borderColor: HipColors.tight.withValues(alpha: .5),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        HipIcon(HipGlyph.clipboard, size: 40, color: HipColors.tight),
-        const SizedBox(height: 12),
-        Text(
-          HipText.of(context).pick(
-            "先问问医生或专业人士，再开始练习",
-            "Ask a doctor or qualified professional before training",
-          ),
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 4),
-        TextButton(
-          onPressed: () => Navigator.of(context).push(
-            HipRoute.content<void>(
-              (_) => HipOnboarding(store: store, review: true),
-              // 首页无返回键，安全提示页的返回键随页面滑入。
-              pinLeading: false,
-            ),
-          ),
-          child: Text(
-            HipText.of(context).pick("重新选择安全提示", "Review safety answers"),
-          ),
-        ),
-      ],
-    ),
   );
 
   Widget _numbnessCard() => HipPanel(
@@ -1327,6 +1043,7 @@ class _HipHomeState extends State<HipHome> {
     keyPrefix: 'scene',
     glass: true,
     bare: true,
+    accentSelection: true,
     duration: HipCalmMotion.swap,
     curve: HipCalmMotion.curve,
     height: height,
@@ -1354,6 +1071,9 @@ class _HipHomeState extends State<HipHome> {
 /// Which half of [HipProgressPage] to show: 「更多」 opens 训练记录 and 设置
 /// as two pages; the AI coach's 设置 link still opens [all].
 enum HipProgressSection { all, records, settings }
+
+// Keep this Settings label in sync with the trainer package in pubspec.lock.
+const _hipSdkRevision = '036b5fc';
 
 class HipProgressPage extends StatelessWidget {
   const HipProgressPage({
@@ -1495,18 +1215,6 @@ class HipProgressPage extends StatelessWidget {
           HipListGroup(
             children: [
               HipListRow(
-                key: const ValueKey('safety-review'),
-                glyph: HipGlyph.shield,
-                title: HipText.of(
-                  context,
-                ).pick("重新看安全提示", "Review safety check"),
-                onTap: () => Navigator.of(context).push(
-                  HipRoute.content<void>(
-                    (_) => HipOnboarding(store: store, review: true),
-                  ),
-                ),
-              ),
-              HipListRow(
                 key: const ValueKey('privacy-policy'),
                 glyph: HipGlyph.clipboard,
                 title: HipText.of(context).pick("隐私政策", "Privacy policy"),
@@ -1517,6 +1225,12 @@ class HipProgressPage extends StatelessWidget {
                 onTap: () => Navigator.of(
                   context,
                 ).push(HipRoute.content<void>((_) => const HipPrivacyPage())),
+              ),
+              HipListRow(
+                key: const ValueKey('sdk-revision'),
+                glyph: HipGlyph.info,
+                title: HipText.of(context).pick("SDK 提交号", "SDK commit"),
+                meta: _hipSdkRevision,
               ),
             ],
           ),
@@ -1565,10 +1279,7 @@ class HipVoiceSettingsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final v = store.voice;
-    // The iOS base release only opens background audio for guided
-    // exercise sessions. The shared settings preview has no session
-    // lifetime, so do not expose it on iOS.
-    final preview = Theme.of(context).platform != TargetPlatform.iOS;
+    final ios = Theme.of(context).platform == TargetPlatform.iOS;
     return Column(
       key: const ValueKey('voice-settings'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1646,7 +1357,9 @@ class HipVoiceSettingsPanel extends StatelessWidget {
                       onChanged: (x) => store.setVoice(v.copyWith(volume: x)),
                     ),
                   ),
-                  if (preview)
+                  if (ios)
+                    _HipIosVoicePreviewButton(settings: v)
+                  else
                     Tooltip(
                       message: HipText.of(context).pick("试听", "Preview"),
                       child: HipPressable(
@@ -1702,6 +1415,140 @@ class HipVoiceSettingsPanel extends StatelessWidget {
       q.tick(t);
       if (i >= cues.length && t > 6) timer.cancel();
     });
+  }
+}
+
+/// A short foreground preview owns its audio lifetime on iOS.
+class _HipIosVoicePreviewButton extends StatefulWidget {
+  const _HipIosVoicePreviewButton({required this.settings});
+  final VoiceSettings settings;
+
+  @override
+  State<_HipIosVoicePreviewButton> createState() =>
+      _HipIosVoicePreviewButtonState();
+}
+
+class _HipIosVoicePreviewButtonState extends State<_HipIosVoicePreviewButton>
+    with WidgetsBindingObserver, RouteAware {
+  Timer? _timer;
+  VoiceQueue? _queue;
+  StreamSubscription<AudioInterruption>? _interruptions;
+  RouteObserver<ModalRoute<dynamic>>? _routes;
+  ModalRoute<dynamic>? _route;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    final routes = Navigator.maybeOf(context)?.widget.observers
+        .whereType<RouteObserver<ModalRoute<dynamic>>>()
+        .firstOrNull;
+    if (_route != route || _routes != routes) {
+      _routes?.unsubscribe(this);
+      _route = route;
+      _routes = routes;
+      if (route != null) routes?.subscribe(this, route);
+    }
+    if (route?.isCurrent == false) _stopPreview();
+  }
+
+  // Release synchronously on navigation, before the new player is built.
+  @override
+  void didPushNext() => _stopPreview();
+
+  @override
+  void didPop() => _stopPreview();
+
+  @override
+  void didUpdateWidget(_HipIosVoicePreviewButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.settings != widget.settings) _stopPreview();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _stopPreview();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _routes?.unsubscribe(this);
+    _stopPreview();
+    super.dispose();
+  }
+
+  void _stopPreview() {
+    final elapsed = (_timer?.tick ?? 0) * .05;
+    _timer?.cancel();
+    _timer = null;
+    unawaited(_interruptions?.cancel());
+    _interruptions = null;
+    final queue = _queue;
+    _queue = null;
+    if (queue == null) return;
+    queue.cancelAll(elapsed);
+    // end invalidates this session synchronously; the SDK serializes its
+    // release with the next begin, including an immediately opened workout.
+    unawaited(queue.output.end());
+  }
+
+  void _preview() {
+    _stopPreview();
+    final voice = HipVoice.of(context);
+    final q = _queue = voice.queue();
+    unawaited(voice.output.begin());
+    if (voice.output case final InterruptibleVoiceOutput output) {
+      _interruptions = output.interruptions.listen((event) {
+        if (event != AudioInterruption.ended) _stopPreview();
+      });
+    }
+    final cues = [
+      const VoiceCue(0, ['p.ready'], CuePriority.call),
+      for (var k = 3; k >= 1; k--)
+        VoiceCue(4.0 - k, ['chime.tick', 'n.$k'], CuePriority.count),
+      const VoiceCue(4, ['chime.start', 'p.go'], CuePriority.call),
+    ];
+    var i = 0;
+    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      final t = timer.tick * .05;
+      while (i < cues.length && cues[i].at <= t) {
+        q.submit(cues[i++], t);
+      }
+      q.tick(t);
+      if (i >= cues.length && t > 6) _stopPreview();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.settings.voice || widget.settings.chimes;
+    return Tooltip(
+      message: HipText.of(context).pick('试听', 'Preview'),
+      child: HipPressable(
+        key: const ValueKey('voice-preview'),
+        semanticLabel: HipText.of(context).pick('试听', 'Preview'),
+        scale: .9,
+        onTap: enabled ? _preview : null,
+        child: SizedBox.square(
+          dimension: 44,
+          child: Center(
+            child: HipIcon(
+              HipGlyph.play,
+              size: 16,
+              filled: true,
+              color: enabled ? HipColors.jadeText : HipColors.faint,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

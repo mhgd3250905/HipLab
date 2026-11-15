@@ -1,0 +1,96 @@
+{
+  "identifier": "FF00A764",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [
+    {
+      "id": "68A02AFF",
+      "localizations": [],
+      "name": "HipLab Premium",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "billingPlans": [
+            {
+              "billingPlanType": "BILLED_UPFRONT",
+              "commitmentDisplayPrice": "2.99",
+              "displayPrice": "2.99",
+              "internalID": "48064E73",
+              "isEnabled": true
+            }
+          ],
+          "codeOffers": [],
+          "displayPrice": "2.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "A522C9BB",
+          "introductoryOffers": [],
+          "localizations": [
+            {
+              "description": "Unlock AI coach and custom workouts",
+              "displayName": "Monthly Premium",
+              "locale": "en_US"
+            },
+            {
+              "description": "解锁 AI 教练与自定义训练",
+              "displayName": "月付会员",
+              "locale": "zh_CN"
+            }
+          ],
+          "productID": "com.ugk.hipinterlude.premium.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "HipLab Premium Monthly",
+          "subscriptionGroupID": "68A02AFF",
+          "type": "RecurringSubscription",
+          "winbackOffers": []
+        },
+        {
+          "adHocOffers": [],
+          "billingPlans": [
+            {
+              "billingPlanType": "BILLED_UPFRONT",
+              "commitmentDisplayPrice": "19.99",
+              "displayPrice": "19.99",
+              "internalID": "E1DF0CB2",
+              "isEnabled": true
+            }
+          ],
+          "codeOffers": [],
+          "displayPrice": "19.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "BBA9F083",
+          "introductoryOffers": [],
+          "localizations": [
+            {
+              "description": "Unlock AI coach and custom workouts",
+              "displayName": "Yearly Premium",
+              "locale": "en_US"
+            },
+            {
+              "description": "解锁 AI 教练与自定义训练",
+              "displayName": "年付会员",
+              "locale": "zh_CN"
+            }
+          ],
+          "productID": "com.ugk.hipinterlude.premium.annual",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "HipLab Premium Annual",
+          "subscriptionGroupID": "68A02AFF",
+          "type": "RecurringSubscription",
+          "winbackOffers": []
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 6,
+    "minor": 3
+  }
+}

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +11,7 @@ import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_home_action_deck.dart';
+import 'package:hiplab/hip/ui/hip_home_action_inspect.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_routes.dart';
@@ -155,9 +159,11 @@ void main() {
     ),
   );
 
-  Finder artFor(HipDrill drill) => find.byWidgetPredicate(
-    (widget) => widget is HipDrillArt && widget.drill.id == drill.id,
-  );
+  Finder nextFace() => find.byKey(const ValueKey('home-deck-next-face'));
+
+  Finder paperFor(int index) => find.byKey(ValueKey('home-deck-paper-$index'));
+
+  Finder stackShadow() => find.byKey(const ValueKey('home-deck-stack-shadow'));
 
   Finder sourceCards() => find.byWidgetPredicate(
     (widget) =>
@@ -385,7 +391,8 @@ void main() {
     await showDeck(tester);
     await tester.pumpAndSettle();
     for (var i = 0; i < drills.length; i++) {
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsNWidgets(2));
       expect(find.byKey(const ValueKey('home-hero')), findsOneWidget);
       expect(frontId(tester), drills[i].id);
       expect(position(tester), '0${i + 1}');
@@ -471,15 +478,17 @@ void main() {
   );
 
   testWidgets(
-    'new bottom card emerges behind the moving stack before the turn commits',
+    'new bottom paper fades in without contents or another stack shadow',
     (tester) async {
       phone(tester);
       await showDeck(tester);
       await tester.pumpAndSettle();
       final replenishing = find.byKey(const ValueKey('home-deck-opacity-3'));
+      final incoming = paperFor(3);
       expect(replenishing, findsNothing);
-      expect(artFor(drills[3]), findsNothing);
-      final previousBottom = tester.getRect(artFor(drills[2]));
+      expect(incoming, findsNothing);
+      expect(stackShadow(), findsOneWidget);
+      final previousBottom = tester.getRect(paperFor(2));
       final width = tester
           .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
           .width!;
@@ -490,27 +499,29 @@ void main() {
       expect(frontId(tester), drills.first.id);
       expect(sourceCards(), findsNWidgets(4));
       expect(replenishing, findsOneWidget);
+      expect(stackShadow(), findsOneWidget);
+      expect(find.byType(HipDrillArt), findsNWidgets(2));
       final beginningOpacity = tester.widget<Opacity>(replenishing).opacity;
       expect(beginningOpacity, greaterThan(0));
       expect(beginningOpacity, lessThan(1));
-      final incomingRect = tester.getRect(artFor(drills[3]));
+      final incomingRect = tester.getRect(incoming);
       final incomingOpacityElement = tester.element(replenishing);
-      final incomingArtElement = tester.element(artFor(drills[3]));
-      final incomingMediaElement = tester.element(
-        find.descendant(
-          of: artFor(drills[3]),
-          matching: find.byType(trainer.TrainingLibraryActionArt),
-        ),
-      );
+      final incomingPaperElement = tester.element(incoming);
 
-      moveCard(drag, -width * .97);
+      moveCard(drag, -width * .42);
+      await tester.pump();
+      final middleOpacity = tester.widget<Opacity>(replenishing).opacity;
+      expect(middleOpacity, greaterThan(beginningOpacity));
+      expect(middleOpacity, lessThan(1));
+      expect(stackShadow(), findsOneWidget);
+
+      moveCard(drag, -width * .55);
       await tester.pump();
       expect(frontId(tester), drills.first.id);
       expect(tester.widget<Opacity>(replenishing).opacity, 1);
-      expect(tester.getRect(artFor(drills[3])), incomingRect);
-      expect(tester.getRect(artFor(drills[2])), isNot(previousBottom));
-      // The incoming artwork is already in its final bottom position. Committing
-      // the turn must keep that pose rather than suddenly adding another card.
+      expect(tester.getRect(incoming), incomingRect);
+      expect(tester.getRect(paperFor(2)), isNot(previousBottom));
+      // The reserve paper is already in the final bottom pose at handoff.
       drag.onPanEnd!(
         DragEndDetails(
           velocity: const Velocity(pixelsPerSecond: Offset(-800, 0)),
@@ -519,20 +530,12 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(frontId(tester), drills[1].id);
-      expect(replenishing, findsOneWidget);
       expect(tester.element(replenishing), same(incomingOpacityElement));
-      expect(tester.element(artFor(drills[3])), same(incomingArtElement));
-      expect(
-        tester.element(
-          find.descendant(
-            of: artFor(drills[3]),
-            matching: find.byType(trainer.TrainingLibraryActionArt),
-          ),
-        ),
-        same(incomingMediaElement),
-      );
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
-      final settledRect = tester.getRect(artFor(drills[3]));
+      expect(tester.element(incoming), same(incomingPaperElement));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsNWidgets(2));
+      expect(stackShadow(), findsOneWidget);
+      final settledRect = tester.getRect(incoming);
       expect(settledRect.left, closeTo(incomingRect.left, .01));
       expect(settledRect.top, closeTo(incomingRect.top, .01));
       expect(settledRect.right, closeTo(incomingRect.right, .01));
@@ -543,71 +546,112 @@ void main() {
   );
 
   testWidgets(
-    'an arriving card keeps its media and title proportions when it becomes the front',
+    'only the next card renders content and keeps its face on promotion',
     (tester) async {
       phone(tester);
-      await showDeck(
-        tester,
-        doses: List.filled(drills.length, '每侧 40 秒'),
-        cues: List.filled(drills.length, '轻松呼吸，保持骨盆稳定'),
-      );
+      final doses = [for (var i = 0; i < drills.length; i++) 'Dose ${i + 1}'];
+      await showDeck(tester, palette: HipPalette.light, doses: doses);
       await tester.pumpAndSettle();
-      final incoming = find.byKey(const ValueKey('home-deck-card-1'));
-      final backArt = find.byKey(const ValueKey('back-art-2'));
-      final backTitle = find.byKey(const ValueKey('back-caption-2'));
-      Rect proportions(Finder card, Finder content) {
-        final boundary = find
-            .descendant(of: card, matching: find.byType(RepaintBoundary))
-            .first;
-        final face = tester.renderObject<RenderBox>(boundary);
-        final item = tester.renderObject<RenderBox>(content);
-        final localRect = MatrixUtils.transformRect(
-          item.getTransformTo(face),
-          Offset.zero & item.size,
+
+      expect(sourceCards(), findsNWidgets(3));
+      expect(stackShadow(), findsOneWidget);
+      final nextOpacity = tester.widgetList<Opacity>(
+        find.ancestor(of: nextFace(), matching: find.byType(Opacity)),
+      );
+      expect(nextOpacity.every((opacity) => opacity.opacity == 1), isTrue);
+      expect(keyedOpacity(tester, 'home-deck-opacity-2'), 1);
+      final incomingFace = find.descendant(
+        of: nextFace(),
+        matching: find.byType(HipHomeActionFace),
+      );
+      final incomingElement = tester.element(incomingFace);
+      final incomingArt = find.descendant(
+        of: incomingFace,
+        matching: find.byType(HipDrillArt),
+      );
+      expect(tester.widget<HipDrillArt>(incomingArt).drill.id, drills[1].id);
+
+      final nextShadows = tester
+          .widgetList<DecoratedBox>(
+            find.descendant(
+              of: incomingFace,
+              matching: find.byType(DecoratedBox),
+            ),
+          )
+          .expand(
+            (box) => switch (box.decoration) {
+              BoxDecoration(:final boxShadow?) => boxShadow,
+              _ => const <BoxShadow>[],
+            },
+          );
+      final contact = nextShadows.single;
+      expect(contact.offset, const Offset(0, 1));
+      expect(contact.blurRadius, 3);
+      expect(contact.spreadRadius, 0);
+      expect(contact.color.a, closeTo(.05, .003));
+
+      final third = paperFor(2);
+      for (final (rear, angle) in [(nextFace(), -3.5), (third, -7.0)]) {
+        final rotation = tester.widget<Transform>(
+          find.ancestor(of: rear, matching: find.byType(Transform)).first,
         );
-        final topLeft = localRect.topLeft;
-        final bottomRight = localRect.bottomRight;
-        return Rect.fromLTRB(
-          topLeft.dx / face.size.width,
-          topLeft.dy / face.size.height,
-          bottomRight.dx / face.size.width,
-          bottomRight.dy / face.size.height,
+        final matrix = rotation.transform;
+        expect(
+          math.atan2(matrix.entry(1, 0), matrix.entry(0, 0)),
+          closeTo(angle * math.pi / 180, 1e-8),
         );
       }
+      final decoration =
+          tester.widget<DecoratedBox>(third).decoration as BoxDecoration;
+      expect(decoration.color, const Color(0xfff6f7f6));
+      expect(decoration.gradient, isNull);
+      final border = (decoration.border! as Border).top;
+      expect(border.width, .5);
+      expect(border.color.withValues(alpha: 1), Colors.black);
+      expect(border.color.a, closeTo(.06, .003));
+      expect(decoration.boxShadow ?? const [], isEmpty);
+      expect(
+        find.descendant(of: third, matching: find.byType(HipDrillArt)),
+        findsNothing,
+      );
+      expect(
+        find.descendant(of: third, matching: find.byType(Text)),
+        findsNothing,
+      );
+      expect(paperFor(3), findsNothing);
 
-      void sameProportions(Rect actual, Rect expected) {
-        expect(actual.left, closeTo(expected.left, .002));
-        expect(actual.top, closeTo(expected.top, .002));
-        expect(actual.width, closeTo(expected.width, .002));
-        expect(actual.height, closeTo(expected.height, .002));
-      }
-
-      final mediaBefore = proportions(incoming, backArt);
-      final titleBefore = proportions(incoming, backTitle);
-      final width = tester.widget<Positioned>(incoming).width!;
+      final width = tester.getSize(visualFront()).width;
       final drag = deckDrag(tester);
       drag.onPanStart!(DragStartDetails());
-      moveCard(drag, -width * 1.05);
+      moveCard(drag, -width * .65);
       await tester.pump();
-      // Compare in the paper's local coordinates, so fanning and perspective do
-      // not confuse a layout change with an axis-aligned bounding-box change.
-      final mediaAtTop = proportions(incoming, backArt);
-      final titleAtTop = proportions(incoming, backTitle);
-      sameProportions(mediaAtTop, mediaBefore);
-      sameProportions(titleAtTop, titleBefore);
-      expect(frontId(tester), drills.first.id);
+      expect(
+        tester.getRect(nextFace()).right,
+        greaterThan(tester.getRect(visualFront()).right + 30),
+      );
+      expect(tester.element(incomingFace), same(incomingElement));
+      expect(
+        find.descendant(of: incomingFace, matching: find.text(drills[1].name)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: incomingFace, matching: find.text(doses[1])),
+        findsOneWidget,
+      );
+
       drag.onPanEnd!(DragEndDetails());
       await tester.pumpAndSettle();
       expect(frontId(tester), drills[1].id);
-      final front = find.byKey(const ValueKey('home-deck-card-1'));
-      sameProportions(
-        proportions(front, find.byKey(const ValueKey('home-hero'))),
-        mediaAtTop,
+      expect(
+        tester.element(
+          find.descendant(
+            of: visualFront(),
+            matching: find.byType(HipHomeActionFace),
+          ),
+        ),
+        same(incomingElement),
       );
-      sameProportions(
-        proportions(front, find.byKey(const ValueKey('home-deck-caption'))),
-        titleAtTop,
-      );
+      expect(stackShadow(), findsOneWidget);
       expect(fixture.requested, isEmpty);
       expect(tester.takeException(), isNull);
     },
@@ -623,7 +667,7 @@ void main() {
     final width = tester
         .widget<Positioned>(find.byKey(const ValueKey('home-deck-card-0')))
         .width!;
-    final rest = tester.getRect(artFor(drills[2]));
+    final rest = tester.getRect(paperFor(2));
     for (final direction in [-1, 1]) {
       final drag = deckDrag(tester);
       drag.onPanStart!(DragStartDetails());
@@ -636,11 +680,12 @@ void main() {
       expect(position(tester), '01');
       expect(frontId(tester), drills.first.id);
       expect(replenishing, findsNothing);
-      expect(find.byType(HipDrillArt), findsNWidgets(3));
+      expect(sourceCards(), findsNWidgets(3));
+      expect(find.byType(HipDrillArt), findsNWidgets(2));
       // The rightward preview uses the reverse ordered stack. It may remain
       // ordered that way after cancellation, but the next left drag must restore
       // the same card geometry and never leave an extra card mounted.
-      if (direction == -1) expect(tester.getRect(artFor(drills[2])), rest);
+      if (direction == -1) expect(tester.getRect(paperFor(2)), rest);
       expect(tester.takeException(), isNull);
     }
     expect(fixture.requested, isEmpty);
@@ -683,7 +728,8 @@ void main() {
           expectedIndex = (expectedIndex + direction) % count;
           expect(frontId(tester), items[expectedIndex].id);
           expect(position(tester), '0${expectedIndex + 1}');
-          expect(find.byType(HipDrillArt), findsNWidgets(count));
+          expect(sourceCards(), findsNWidgets(count));
+          expect(find.byType(HipDrillArt), findsNWidgets(2));
           expect(reserve, findsNothing);
           expect(tester.takeException(), isNull);
         }
@@ -1434,6 +1480,111 @@ void main() {
   });
 
   testWidgets(
+    'an expanded card returns from background with a fully painted poster until the new first frame',
+    (tester) async {
+      phone(tester);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final platform = await readyCompactPlaybackCard(
+        tester,
+        items: [drills.first],
+        openAndClose: false,
+      );
+      await openActionCard(tester);
+      await tester.pumpAndSettle();
+      final art = find.descendant(
+        of: find.byKey(const ValueKey('home-hero')),
+        matching: find.byType(HipDrillArt),
+      );
+      final artState = tester.state(art);
+      final layers = find.descendant(
+        of: art,
+        matching: find.byType(IndexedStack),
+      );
+      int? visibleLayer() => tester.widget<IndexedStack>(layers).index;
+      final expanded = find.byKey(const ValueKey('home-deck-expanded'));
+      final before = tester.getRect(expanded);
+
+      double paintedPosterOpacity() {
+        final poster = find.descendant(
+          of: layers,
+          matching: find.byKey(
+            const ValueKey('public-action-poster'),
+            skipOffstage: false,
+          ),
+          skipOffstage: false,
+        );
+        final fade = find.descendant(
+          of: poster,
+          matching: find.byType(FadeTransition, skipOffstage: false),
+          skipOffstage: false,
+        );
+        return tester.widget<FadeTransition>(fade).opacity.value;
+      }
+
+      for (final wasPaused in [false, true]) {
+        if (wasPaused) {
+          await tester.tap(
+            find.byKey(const ValueKey('home-deck-expanded-media')),
+          );
+          await tester.pump();
+        }
+        expect(paintedPosterOpacity(), 0);
+        final oldPlayer = playerFor(tester, frontMedia());
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        if (!wasPaused) {
+          await tester.pump();
+          expect(paintedPosterOpacity(), 1);
+          expect(frontSurface(), findsNothing);
+        }
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.inactive,
+        );
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pump();
+        expect(paintedPosterOpacity(), 1);
+        expect(tester.getRect(expanded), before);
+        expect(tester.state(art), same(artState));
+        expect(
+          tester.widget<trainer.TrainingActionMedia>(frontMedia()).paused,
+          wasPaused,
+        );
+
+        await tester.pumpAndSettle();
+        final newPlayer = playerFor(tester, frontMedia());
+        expect(newPlayer, isNot(oldPlayer));
+        expect(platform.commands, contains((oldPlayer, 'dispose', null)));
+        platform.emit(oldPlayer, 'first-frame');
+        platform.emit(newPlayer, 'ready');
+        await tester.pump();
+        expect(paintedPosterOpacity(), 1);
+        platform.emit(newPlayer, 'first-frame');
+        await tester.pump();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 60));
+        expect(paintedPosterOpacity(), closeTo(.5, .05));
+        expect(visibleLayer(), 1);
+        await tester.pumpAndSettle();
+        expect(visibleLayer(), 0);
+        expect(paintedPosterOpacity(), 0);
+        expect(
+          platform.commands.any(
+            (command) => command.$1 == newPlayer && command.$2 == 'play',
+          ),
+          !wasPaused,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'a cold incoming card keeps its poster after a late frame and reveals the same video only on opening',
     (tester) async {
       phone(tester);
@@ -1441,7 +1592,7 @@ void main() {
         tester,
         neighborsReady: false,
       );
-      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingMedia = mediaOn(nextFace());
       final incomingState = tester.state(incomingMedia);
       final incomingSurface = find.descendant(
         of: incomingMedia,
@@ -1500,7 +1651,7 @@ void main() {
       final platform = await readyCompactPlaybackCard(tester);
       final originalState = tester.state(frontMedia());
       final originalSurface = tester.element(frontSurface());
-      final incomingMedia = mediaOn(find.byKey(const ValueKey('back-art-2')));
+      final incomingMedia = mediaOn(nextFace());
       final incomingState = tester.state(incomingMedia);
       final incomingSurface = tester.element(
         find.descendant(
@@ -1642,16 +1793,15 @@ void main() {
               .textureId,
           textureId,
         );
-        // Inspect the painted layer tree, not only Transform.filterQuality.
-        // The card's pose must wrap the composed texture in a matrix filter,
-        // keeping its perspective out of the packed RGB/alpha input space.
+        // Pure translation should paint the existing texture without filtering
+        // the entire card into an intermediate image.
         final pose = tester.renderObject<RenderTransform>(
           find.byKey(const ValueKey('home-deck-pose')),
         );
-        expect(pose.debugLayer, isA<ImageFilterLayer>());
-        final poseLayer = pose.debugLayer! as ImageFilterLayer;
-        expect(poseLayer.attached, isTrue);
-        final textureLayer = descendantLayers(poseLayer)
+        expect(pose.debugLayer, isNot(isA<ImageFilterLayer>()));
+        final front = tester.renderObject<RenderRepaintBoundary>(visualFront());
+        expect(front.debugLayer!.attached, isTrue);
+        final textureLayer = descendantLayers(front.debugLayer!)
             .whereType<TextureLayer>()
             .where((layer) => layer.textureId == textureId);
         expect(textureLayer, hasLength(1));
@@ -1849,10 +1999,10 @@ void main() {
         final restingPlacement = placement();
         final restingScale = inspectPrintedLabels();
         expect(restingPlacement.$2, height == 300 ? 8 : 24);
-        expect(restingPlacement.$3, 44);
+        expect(restingPlacement.$3, 48);
         expect(restingPlacement.$4, 28);
-        expect(restingScale[0], closeTo((height == 300 ? 10 : 17) / 46, 1e-8));
-        expect(restingScale[1], closeTo((height == 300 ? 8 : 10) / 11, 1e-8));
+        expect(restingScale[0], closeTo((height == 300 ? 10 : 15) / 46, 1e-8));
+        expect(restingScale[1], closeTo((height == 300 ? 8 : 9.5) / 11, 1e-8));
 
         await openActionCard(tester);
         var previousScale = restingScale;
@@ -2059,13 +2209,16 @@ void main() {
     'tapping a card opens a bounded action preview that pauses without rebuilding media',
     (tester) async {
       phone(tester);
-      const description = '动作介绍：保持骨盆稳定，缓慢完成动作。';
-      const cue = '动作提示：不要屏住呼吸';
+      const viewport = Size(412, 914);
+      tester.view.physicalSize = viewport;
+      final drill = content.drills['o-stand-lunge']!;
+      const description = '扶住椅子，后侧臀部收紧，髋往前推';
+      expect(drill.cautions, isNotEmpty);
       await showDeck(
         tester,
+        items: [drill],
         descriptions: [description],
-        cues: [cue],
-        doses: ['每侧 40 秒'],
+        doses: ['每侧 30 秒'],
         videoEnabled: true,
       );
       await tester.pumpAndSettle();
@@ -2077,29 +2230,43 @@ void main() {
       expect(expanded, findsOneWidget);
       final bounds = tester.getRect(expanded);
       expect(bounds.left, greaterThan(0));
-      expect(bounds.right, lessThan(394));
+      expect(bounds.right, lessThan(viewport.width));
       expect(bounds.top, greaterThan(0));
-      expect(bounds.bottom, lessThan(853));
+      expect(bounds.bottom, lessThan(viewport.height));
       expect(
         find.descendant(of: visualFront(), matching: find.text(description)),
         findsOneWidget,
       );
       expect(
-        find.descendant(of: visualFront(), matching: find.text(cue)),
-        findsOneWidget,
-      );
-      expect(
-        find.descendant(
-          of: visualFront(),
-          matching: find.text(drills.first.name),
-        ),
+        find.descendant(of: visualFront(), matching: find.text(drill.name)),
         findsOneWidget,
       );
       final mediaTap = find.byKey(const ValueKey('home-deck-expanded-media'));
+      final mediaBounds = tester.getRect(mediaTap);
+      final caption = tester.getRect(
+        find.byKey(const ValueKey('home-deck-caption')),
+      );
+      final notes = find.byKey(
+        const ValueKey('home-deck-expanded-description'),
+      );
+      final notesBody = find.descendant(
+        of: notes,
+        matching: find.byType(Column),
+      );
+      final scroll = tester.widget<SingleChildScrollView>(notes).controller!;
+      expect(mediaBounds.height, greaterThan(bounds.height * .52));
+      expect(caption.top - mediaBounds.bottom, inInclusiveRange(16, 22));
+      expect(scroll.position.maxScrollExtent, closeTo(0, 1));
+      expect(find.textContaining('留意 ·'), findsNothing);
+      expect(
+        tester.getRect(notes).bottom - tester.getRect(notesBody).bottom,
+        closeTo(0, 2),
+      );
       final media = find.descendant(
         of: mediaTap,
         matching: find.byType(trainer.TrainingActionMedia),
       );
+      expect(tester.getSize(media).shortestSide, greaterThan(345));
       final mediaElement = tester.element(media);
       final mediaState = tester.state(media);
       expect(tester.widget<trainer.TrainingActionMedia>(media).playing, isTrue);
@@ -2243,16 +2410,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(frontId(tester), drills[1].id);
       expect(position(tester), '02');
-      for (final art in tester.widgetList<trainer.TrainingLibraryActionArt>(
-        find.byType(trainer.TrainingLibraryActionArt),
-      )) {
-        expect(art.theme!.brightness, Brightness.light);
-        expect(art.theme!.mediaStage, HipPalette.light.mediaBackdrop);
-        expect(art.playing, isFalse);
-      }
+      expect(find.byType(trainer.TrainingLibraryActionArt), findsNothing);
       expect(
         tester.widget<trainer.TrainingActionMedia>(frontMedia()).stage,
-        HipPalette.light.mediaBackdrop,
+        Colors.transparent,
       );
       await showDeck(
         tester,
@@ -2416,10 +2577,13 @@ void main() {
       final store = await showHome(tester, MemoryStorage(), bundle: bundle);
       final candidates = <String>{
         for (final scene in [HipScene.chair, HipScene.home])
-          for (final routine in store.sceneRoutines(scene))
-            if (store.planForRoutine(routine) case final plan?)
-              if (plan.steps.isNotEmpty)
-                fixture.policy.posterAssetFor(plan.steps.first.drill.id)!,
+          for (final id in store.homeRoutines(scene))
+            for (final routine in store.libraryRoutines.where(
+              (r) => r.id == id,
+            ))
+              if (store.planForRoutine(routine) case final plan?)
+                if (plan.steps.isNotEmpty)
+                  fixture.policy.posterAssetFor(plan.steps.first.drill.id)!,
       };
       expect(candidates, isNotEmpty);
       final context = tester.element(find.byType(HipHomeActionDeck));
@@ -2472,7 +2636,9 @@ void main() {
         lessThanOrEqualTo(candidates.length),
       );
       expect(fixture.requested, isEmpty);
-      final nextRoutine = store.sceneRoutines(HipScene.chair).first;
+      final nextRoutine = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(HipScene.chair),
+      );
       final nextAction = store.planForRoutine(nextRoutine)!.steps.first.drill;
       final nextPoster = fixture.policy.posterAssetFor(nextAction.id)!;
       final before = bundle.loads.where((asset) => asset == nextPoster).length;
@@ -2490,7 +2656,7 @@ void main() {
   );
 
   testWidgets(
-    'routine folder cancels without changing a preview and directly chooses a non-adjacent plan without playing',
+    'routine folder cancels without changing a preview and directly chooses an added plan without playing',
     (tester) async {
       final (repository, platform) = homePlayback(tester);
       final storage = MemoryStorage();
@@ -2500,6 +2666,11 @@ void main() {
         videoEnabled: true,
         mediaPolicy: repository.policy,
       );
+      // The folder starts with one 居家 套路; add a second so choosing is real.
+      await store.setHomeRoutine(HipScene.home, 'C', added: true);
+      await tester.pumpAndSettle();
+      await store.pickSceneRoutine(HipScene.home, 'D');
+      await tester.pumpAndSettle();
       await nativeFrames(
         tester,
         platform,
@@ -2507,7 +2678,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       await next(tester);
-      final selected = store.sceneRoutines(store.scene).first;
+      final selected = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(store.scene),
+      );
       final persisted = Map<String, String>.of(storage.values);
       final minutes = store.minutes;
       final deckBefore = tester.widget<HipHomeActionDeck>(
@@ -2540,14 +2713,16 @@ void main() {
       } finally {
         semantic.dispose();
       }
-      final choices = store.sceneRoutines(store.scene);
-      expect(choices.length, greaterThanOrEqualTo(3));
-      for (final routine in choices) {
-        expect(
-          find.byKey(ValueKey('home-routine-choice-${routine.id}')),
-          findsOneWidget,
-        );
+      // The folder lists the current scene's added 套路 plus the groups tile.
+      final choices = store.homeRoutines(store.scene);
+      expect(choices, ['D', 'C']);
+      for (final id in choices) {
+        expect(find.byKey(ValueKey('home-routine-choice-$id')), findsOneWidget);
       }
+      expect(
+        find.byKey(const ValueKey('home-routine-choose-groups')),
+        findsOneWidget,
+      );
       expect(platform.sources, hasLength(creates));
       expect(repository.requested, hasLength(requested));
       expect(find.byType(HipPlayerPage), findsNothing);
@@ -2569,9 +2744,10 @@ void main() {
       );
       expect(storage.values, persisted);
 
-      final direct = choices[2];
-      final expected = store.planForRoutine(direct)!;
-      await chooseHomeRoutine(tester, direct.id);
+      final directId = choices.firstWhere((id) => id != selected.id);
+      final direct = store.libraryRoutines.firstWhere((r) => r.id == directId);
+      final expected = store.planForHomeRoutine(directId)!;
+      await chooseHomeRoutine(tester, directId);
       final deck = tester.widget<HipHomeActionDeck>(
         find.byType(HipHomeActionDeck),
       );
@@ -2584,7 +2760,23 @@ void main() {
       );
       expect(store.scene, HipScene.home);
       expect(store.minutes, minutes);
-      expect(storage.values, persisted);
+      // Choosing is durable: only the selected id changes; the folder stays
+      // in its scene (no implicit 办公/居家 switch).
+      Map<String, dynamic> saved(Map<String, String> disk) =>
+          Map<String, dynamic>.of(
+            jsonDecode(disk[HipStore.storageKey]!) as Map<String, dynamic>,
+          );
+      final before = saved(persisted);
+      final after = saved(storage.values);
+      expect(after.remove('sceneRoutinePicks'), {'home': directId});
+      expect(after.remove('homeRoutineIds'), {
+        'chair': ['A'],
+        'home': ['D', 'C'],
+      });
+      before
+        ..remove('sceneRoutinePicks')
+        ..remove('homeRoutineIds');
+      expect(after, before);
       expect(
         platform.commands.where((command) => command.$2 == 'play'),
         isEmpty,
@@ -2595,51 +2787,37 @@ void main() {
   );
 
   testWidgets(
-    'routine folder keeps a separate choice per scene and starts the chosen complete plan',
+    'the folder remembers its choice per scene and starts the complete plan',
     (tester) async {
       final storage = MemoryStorage();
       final store = await showHome(tester, storage);
-      final home = store.sceneRoutines(HipScene.home).last;
+      final home = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(HipScene.home),
+      );
       final homePlan = store.planForRoutine(home)!;
-      var persisted = Map<String, String>.of(storage.values);
+
+      // Add a second 居家 套路, then select the original one: the choice is
+      // saved to disk and the folder stays in the 居家 scene.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       await chooseHomeRoutine(tester, home.id);
-      expect(storage.values, persisted);
+      expect(store.scene, HipScene.home);
+      expect(store.homeRoutineId(HipScene.home), 'D');
+      expect(
+        storage.values[HipStore.storageKey],
+        contains('sceneRoutinePicks'),
+      );
       expect(
         tester
             .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
             .identity,
         endsWith('/${home.id}'),
       );
-
-      await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
-      await tester.pumpAndSettle();
-      final chair = store.sceneRoutines(HipScene.chair).last;
-      persisted = Map<String, String>.of(storage.values);
-      await chooseHomeRoutine(tester, chair.id);
-      expect(storage.values, persisted);
-      expect(
-        tester
-            .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
-            .identity,
-        endsWith('/${chair.id}'),
-      );
-
-      for (final scene in [HipScene.home, HipScene.chair, HipScene.home]) {
-        await tester.tap(find.byKey(ValueKey('scene-$scene')));
-        await tester.pumpAndSettle();
-        final expected = scene == HipScene.home ? home : chair;
-        expect(
-          tester
-              .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
-              .identity,
-          endsWith('/${expected.id}'),
-        );
-        expect(position(tester), '01');
-      }
+      expect(position(tester), '01');
       expect(fixture.requested, isEmpty);
       expect(find.byType(HipPlayerPage), findsNothing);
 
-      // Selecting the already-current group closes the folder without losing
+      // Selecting the already-current 套路 closes the folder without losing
       // the user's inspected action; actual Start still uses the whole plan.
       await next(tester);
       final preview = frontId(tester);
@@ -2700,8 +2878,9 @@ void main() {
         await change();
         await tester.pump();
         await tester.pump();
-        final routines = store.sceneRoutines(scene);
-        final routine = routines[pick % routines.length];
+        final routine = store.libraryRoutines.firstWhere(
+          (r) => r.id == store.homeRoutineId(scene),
+        );
         final plan = store.planForRoutine(routine)!;
         final expected = plan.steps.first.drill;
         final deck = tester.widget<HipHomeActionDeck>(
@@ -2803,13 +2982,15 @@ void main() {
       await changedPlan(HipScene.home, 0, () async {
         await tester.tap(find.byKey(ValueKey('scene-${HipScene.home}')));
       });
-      await changedPlan(HipScene.home, 1, () async {
-        await chooseHomeRoutine(
-          tester,
-          store.sceneRoutines(HipScene.home)[1].id,
-        );
+      await changedPlan(HipScene.chair, 0, () async {
+        await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
+        await tester.pumpAndSettle();
+        // 办公 gains a second 套路 in this scene and the folder chooses it.
+        await store.setHomeRoutine(HipScene.chair, 'B', added: true);
+        await tester.pumpAndSettle();
+        await chooseHomeRoutine(tester, 'B');
       });
-      await changedPlan(HipScene.home, 1, () async {
+      await changedPlan(HipScene.chair, 0, () async {
         now = now.add(const Duration(days: 1));
         await store.choose();
       });
@@ -3356,10 +3537,12 @@ void main() {
       expect(store.sessions, isEmpty);
       expect(store.streak, 0);
       final defaultPlan = store.todayPlan!;
-      final choices = store.sceneRoutines(store.scene);
-      final selected = choices
-          .skip(1)
-          .firstWhere((routine) => routine.id != defaultPlan.refId);
+      // Add a second 居家 套路 to this scene's folder, then choose it.
+      await store.setHomeRoutine(store.scene, 'B', added: true);
+      await tester.pumpAndSettle();
+      final selected = store.libraryRoutines.firstWhere(
+        (routine) => routine.id == 'B',
+      );
       final expected = store.planForRoutine(selected)!;
       expect(expected.refId, isNot(defaultPlan.refId));
       await chooseHomeRoutine(tester, selected.id);
@@ -3374,7 +3557,7 @@ void main() {
       expect(tester.getSize(badge).height, greaterThanOrEqualTo(44));
       expect(
         tester.getSize(find.byKey(const ValueKey('home-streak'))).height,
-        24,
+        26,
       );
       final semantics = tester.ensureSemantics();
       try {
@@ -3419,12 +3602,125 @@ void main() {
     },
   );
 
+  testWidgets('home shadow meets the visible poster and skips props', (
+    tester,
+  ) async {
+    phone(tester);
+    final bare = content.drills['n-pelvis-circle']!;
+    final mat = content.drills['s-kneel-hipflex']!;
+    final chair = content.drills['o-seated-fig4']!;
+    final shadow = find.byKey(const ValueKey('face-contact-shadow'));
+
+    await showDeck(tester, items: [bare], palette: HipPalette.light);
+    await tester.pumpAndSettle();
+    final media = tester.getRect(find.byKey(const ValueKey('home-hero')));
+    final side = media.shortestSide;
+    final art = Rect.fromCenter(
+      center: media.center,
+      width: side,
+      height: side,
+    );
+    final contact = tester.getRect(shadow);
+    // Bundled 640px pelvis-circle poster alpha bounds: (208, 42, 413, 599).
+    expect(contact.width, closeTo(side * (413 - 208) / 640 * .6, .001));
+    expect(contact.height, 10);
+    expect(contact.center.dx, closeTo(art.left + side * 310.5 / 640, .001));
+    expect(contact.center.dy, closeTo(art.top + side * 599 / 640, .001));
+
+    for (final withProp in [mat, chair]) {
+      await showDeck(tester, items: [withProp], palette: HipPalette.light);
+      await tester.pumpAndSettle();
+      expect(shadow, findsNothing);
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
-    'home clips cards at the real screen edges outside its 16 point padding',
+    'home deck uses 90 percent of the height and width available to the cards',
+    (tester) async {
+      await showHome(tester, MemoryStorage());
+      final header = find.byKey(const ValueKey('home-page-header'));
+      final pagination = find.byKey(const ValueKey('home-deck-pagination'));
+      final routine = find.byKey(const ValueKey('home-routine-section'));
+      final start = find.byKey(const ValueKey('start-today'));
+
+      // Exercise both the height limit and the width limit at the same width.
+      for (final height in [780.0, 980.0]) {
+        tester.view.physicalSize = Size(394, height);
+        await tester.pumpAndSettle();
+
+        final card = tester.getRect(visualFront());
+        final dots = tester.getRect(pagination);
+        final group = tester.getRect(routine);
+        final headerBottom = tester.getRect(header).bottom;
+        final availableHeight = group.top - 6 - 5 - 26 - (headerBottom + 20);
+        final widthLimitedHeight = (394 - 44) / .62;
+        final originalHeight = math.min(availableHeight, widthLimitedHeight);
+        expect(card.height, closeTo(originalHeight * .9, .01));
+        expect(card.width / card.height, closeTo(.62, .001));
+        expect(card.left, greaterThanOrEqualTo(22 - .01));
+        expect(card.right, lessThanOrEqualTo(394 - 22 + .01));
+        expect(dots.top - card.bottom, closeTo(26, .01));
+        expect(dots.height, closeTo(5, .01));
+        expect(group.top - dots.bottom, closeTo(6 + originalHeight * .05, .01));
+        final originalWidth = originalHeight * .62;
+        final originalLeft = math.max(22, (394 - originalWidth) / 2 - 18);
+        expect(card.center.dx, closeTo(originalLeft + originalWidth / 2, .01));
+        expect(tester.getRect(start).top - group.bottom, closeTo(20, .01));
+        expect(tester.getRect(start).bottom, closeTo(height - 34 - 18, .01));
+        for (final rear in [nextFace(), paperFor(2)]) {
+          expect(tester.getSize(rear).width, closeTo(card.width, .01));
+          expect(tester.getSize(rear).height, closeTo(card.height, .01));
+        }
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets('small home scrolls with a 360 point card and full footer', (
+    tester,
+  ) async {
+    await showHome(tester, MemoryStorage());
+    final routine = find.byKey(const ValueKey('home-routine-section'));
+    final start = find.byKey(const ValueKey('start-today'));
+    final normalRoutineHeight = tester.getSize(routine).height;
+    final normalStartSize = tester.getSize(start);
+
+    tester.view.physicalSize = const Size(394, 520);
+    await tester.pumpAndSettle();
+    final card = tester.getRect(visualFront());
+    expect(card.height, closeTo(360, .01));
+    expect(card.width / card.height, closeTo(.62, .001));
+    expect(tester.getSize(routine).height, closeTo(normalRoutineHeight, .01));
+    expect(tester.getSize(start), normalStartSize);
+    final scroll = tester.state<ScrollableState>(
+      find.ancestor(of: routine, matching: find.byType(Scrollable)).first,
+    );
+    expect(scroll.position.maxScrollExtent, greaterThan(0));
+    expect(start.hitTestable(), findsNothing);
+
+    await tester.ensureVisible(start);
+    await tester.pumpAndSettle();
+    expect(scroll.position.pixels, greaterThan(0));
+    expect(tester.getRect(routine).top, greaterThanOrEqualTo(47));
+    expect(
+      find.byKey(const ValueKey('home-rotate')).hitTestable(),
+      findsOneWidget,
+    );
+    expect(start.hitTestable(), findsOneWidget);
+    expect(
+      tester.getRect(start).top - tester.getRect(routine).bottom,
+      closeTo(20, .01),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'home clips cards at the real screen edges outside its 14 point padding',
     (tester) async {
       final store = await showHome(tester, MemoryStorage());
       final deck = find.byType(HipHomeActionDeck);
-      expect(tester.getTopLeft(deck).dx, 16);
+      expect(tester.getTopLeft(deck).dx, 14);
       final clipping = find
           .descendant(
             of: find.byType(HipHomeActionDeck),
@@ -3438,10 +3734,17 @@ void main() {
       final box = tester.renderObject<RenderBox>(clipping);
       expect(box.localToGlobal(localClip.topLeft).dx, closeTo(0, .01));
       expect(box.localToGlobal(localClip.topRight).dx, closeTo(394, .01));
+      expect(box.localToGlobal(localClip.topLeft).dy, lessThanOrEqualTo(0));
+      expect(
+        box.localToGlobal(localClip.bottomRight).dy,
+        greaterThanOrEqualTo(853),
+      );
       final title = tester
           .widget<Text>(find.byKey(const ValueKey('home-title')))
           .data;
-      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
+      // Add a second 居家 套路 and switch the folder selection to it.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       expect(
         tester.widget<Text>(find.byKey(const ValueKey('home-title'))).data,
         isNot(title),
@@ -3473,7 +3776,9 @@ void main() {
     (tester) async {
       final storage = MemoryStorage();
       final store = await showHome(tester, storage);
-      final routine = store.sceneRoutines(store.scene).first;
+      final routine = store.libraryRoutines.firstWhere(
+        (r) => r.id == store.homeRoutineId(store.scene),
+      );
       final expected = store.planForRoutine(routine)!;
       expect(expected.steps.length, greaterThan(1));
       final persisted = Map<String, String>.of(storage.values);
@@ -3537,7 +3842,9 @@ void main() {
       final identity = tester
           .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
           .identity;
-      await chooseHomeRoutine(tester, store.sceneRoutines(store.scene)[1].id);
+      // Add a second 套路 and select it: the deck identity must change.
+      await store.setHomeRoutine(HipScene.home, 'B', added: true);
+      await tester.pumpAndSettle();
       expect(
         tester
             .widget<HipHomeActionDeck>(find.byType(HipHomeActionDeck))
@@ -3546,6 +3853,7 @@ void main() {
       );
       expect(position(tester), '01');
       await next(tester);
+      // The scene switch still resolves each scene's remembered 套路.
       await tester.tap(find.byKey(ValueKey('scene-${HipScene.chair}')));
       await tester.pumpAndSettle();
       expect(store.scene, HipScene.chair);
@@ -3556,8 +3864,9 @@ void main() {
         'acute': true,
       });
       await tester.pumpAndSettle();
-      expect(find.byType(HipHomeActionDeck), findsNothing);
-      expect(find.byKey(const ValueKey('start-today')), findsNothing);
+      // Legacy safety answers are inert: the home deck stays available.
+      expect(find.byType(HipHomeActionDeck), findsOneWidget);
+      expect(find.byKey(const ValueKey('start-today')), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
     },
   );

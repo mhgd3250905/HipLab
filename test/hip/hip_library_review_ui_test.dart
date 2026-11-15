@@ -307,7 +307,7 @@ void main() {
   });
 
   testWidgets(
-    'routine step opens scoped SDK detail and keeps host safety gate',
+    'routine step opens scoped SDK detail without the removed safety gate',
     (tester) async {
       await pumpApp(
         tester,
@@ -343,14 +343,14 @@ void main() {
         find.byType(trainer.TrainingLibraryDetail),
       );
       expect(detail.action.id, 'o-stand-lunge');
-      expect(detail.canStart, isFalse);
+      expect(detail.canStart, isTrue);
       expect(
         tester
             .widget<FilledButton>(
               find.byKey(const ValueKey('library-detail-start')),
             )
             .onPressed,
-        isNull,
+        isNotNull,
       );
       Navigator.of(
         tester.element(find.byType(trainer.TrainingLibraryDetail)),
