@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-15 SDK 主线播放器候选 +69
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建源 ce4d0bc4888883cb3f677b8e9e2d860707c736a4，REDMI 2602BRT18C 同签覆盖安装，原安装时间和数据目录保留。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc/hiplab-1.1.2+69-sdk-main-036b5fc-arm64-profile.apk。本机及设备 SHA-256：d059f952d68bb34ad4516d8a3fddf5c5f5e56942ef75aef4bf08b460c6f451a6。
+
 ## 2026-11-14 训练播放器休息反馈卡片
 
 1.1.2+69，Android arm64 版本码 2069。Profile 构建提交 f768b2a63c72b4f0f37e324491d4cb7be9a466cf，同签覆盖安装至 2602BRT18C，原安装时间和数据目录保留。APK 路径 E:/AII-3D/hiplab-releases/player-ui-sdk-69-rest-feedback/hiplab-1.1.2+69-player-ui-sdk-arm64-profile.apk，本机与设备 SHA-256 均为 2d7f70b50492ca95c0445a9aab72c1c18abf044e863ff0f0ba0ef228a552a750。

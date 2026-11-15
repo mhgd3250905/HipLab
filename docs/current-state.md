@@ -1,5 +1,9 @@
 # 当前状态
 
+## 2026-11-15 SDK 主线播放器候选 +69
+
+候选分支 feat/sdk-main-036b5fc 已合入 HipLab main 2c5533b9，锁定 SDK 036b5fcd。Android 2602BRT18C 已同签覆盖安装 +69 Profile，实测新版播放页、组间反馈与已缓存的 r2-v16 讲解。[验证台账](verification.md#2026-11-15-sdk-主线播放器候选-69)
+
 ## 2026-11-14 训练播放器休息反馈卡片
 
 feat/player-ui-sdk 的训练休息区使用 SDK V1 语义色卡片，版本保持 1.1.2+69，SDK 固定 d9405e4c。Android 2602BRT18C 已覆盖安装并启动，用户已在真机验收休息反馈卡片。[验证台账](verification.md#2026-11-14-训练播放器休息反馈卡片)
