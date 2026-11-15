@@ -14,6 +14,7 @@ import 'package:hiplab/hip/voice/voice_queue.dart';
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart' show pumpTrainerControl;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -121,7 +122,9 @@ void main() {
         methods(),
         replayDelay == Duration.zero ? ['start'] : ['start', 'stop'],
       );
-      await tester.tap(find.byKey(const ValueKey('player-again')));
+      final replay = find.byKey(const ValueKey('player-again'));
+      await pumpTrainerControl(tester, replay);
+      await tester.tap(replay);
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.state(find.byType(HipPlayerPage)), same(player));
       expect(methods(), [

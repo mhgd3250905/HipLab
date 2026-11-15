@@ -29,11 +29,11 @@ Future<void> expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).dim, isTrue);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).dim, isTrue);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {

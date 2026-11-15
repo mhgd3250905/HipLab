@@ -96,10 +96,10 @@ Future<void> _expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {
@@ -126,7 +126,7 @@ void main() {
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('finish')), findsNothing);
       // The shared stage pins the counter and transport in the viewport.
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await _expectPausedClock(tester);
       handle.dispose();
