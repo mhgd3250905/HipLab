@@ -512,6 +512,18 @@ class _HipSource extends trainer.VoiceSource {
     required String lang,
   }) => _clips.drillText(exerciseId, line, lang: lang);
   @override
+  coach.PoseHubVoiceGuide? voiceGuide(String exerciseId) =>
+      _clips.voiceGuide(exerciseId);
+  @override
+  String? voiceGuideClipKey(
+    String exerciseId,
+    String clipId, {
+    required String lang,
+  }) => _clips.voiceGuideClipKey(exerciseId, clipId, lang: lang);
+  @override
+  List<String> voiceGuideCommonKeys(String key, {required String lang}) =>
+      _clips.voiceGuideCommonKeys(key, lang: lang);
+  @override
   String? call(trainer.VoiceCall c) => lib.call(c);
   @override
   String? drill(String id, trainer.DrillLine line) {

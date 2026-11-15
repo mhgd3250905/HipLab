@@ -1072,6 +1072,9 @@ class _HipHomeState extends State<HipHome> {
 /// as two pages; the AI coach's 设置 link still opens [all].
 enum HipProgressSection { all, records, settings }
 
+// Keep this Settings label in sync with the trainer package in pubspec.lock.
+const _hipSdkRevision = '036b5fc';
+
 class HipProgressPage extends StatelessWidget {
   const HipProgressPage({
     super.key,
@@ -1222,6 +1225,12 @@ class HipProgressPage extends StatelessWidget {
                 onTap: () => Navigator.of(
                   context,
                 ).push(HipRoute.content<void>((_) => const HipPrivacyPage())),
+              ),
+              HipListRow(
+                key: const ValueKey('sdk-revision'),
+                glyph: HipGlyph.info,
+                title: HipText.of(context).pick("SDK 提交号", "SDK commit"),
+                meta: _hipSdkRevision,
               ),
             ],
           ),
