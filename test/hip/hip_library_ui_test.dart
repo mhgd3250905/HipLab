@@ -21,6 +21,7 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart';
 import 'public_media_fixture.dart';
+import 'trainer_test_pump.dart' show pumpTrainerControl;
 
 final _now = DateTime(2026, 10, 19, 9, 41);
 
@@ -203,8 +204,9 @@ void main() {
         expect(player.plan.steps.single.sets, 1);
         expect(player.plan.steps.single.kitDose.seconds, 60);
         await tester.tap(find.byKey(const ValueKey('close')));
-        await tester.pump(const Duration(milliseconds: 400));
-        await tester.tap(find.byKey(const ValueKey('close-confirm')));
+        final confirmClose = find.byKey(const ValueKey('close-confirm'));
+        await pumpTrainerControl(tester, confirmClose);
+        await tester.tap(confirmClose);
         await tester.pumpAndSettle();
         expect(find.byType(HipPlayerPage), findsNothing);
         expect(store.sessions.single.source, PlanSource.single);

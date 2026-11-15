@@ -34,11 +34,11 @@ Future<void> expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).dim, isTrue);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).dim, isTrue);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {
@@ -225,7 +225,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('start-today')));
       await pumpTrainerReady(tester);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       // The training package owns the playback controls and its icon set.
       expect(find.byType(trainer.TrainerPlayer), findsOneWidget);
       expect(find.byKey(const ValueKey('pause')), findsOneWidget);
@@ -309,7 +309,7 @@ void main() {
       expect(route, isA<trainer.TrainerSlideRoute>());
       expect(route!.transitionDuration, const Duration(milliseconds: 300));
       expect(find.byKey(const ValueKey('training-slide')), findsOneWidget);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);
     });
@@ -515,7 +515,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 120));
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await pumpTrainerReady(tester);
-      expect(find.byType(trainer.TrainerCountdownDigits), findsOneWidget);
+      expect(find.byType(trainer.TrainerV1PhaseCountdown), findsOneWidget);
       expect(find.byType(Hero, skipOffstage: false), findsNothing);
       await tester.tap(find.byKey(const ValueKey('pause')));
       await expectPausedClock(tester);

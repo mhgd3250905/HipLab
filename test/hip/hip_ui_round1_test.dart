@@ -30,11 +30,11 @@ Future<void> expectPausedClock(WidgetTester tester) async {
         .isPlaying,
     isFalse,
   );
-  final digits = find.byType(trainer.TrainerCountdownDigits);
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).dim, isTrue);
-  final before = tester.widget<trainer.TrainerCountdownDigits>(digits).value;
+  final clock = find.byType(trainer.TrainerV1PhaseCountdown);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).dim, isTrue);
+  final before = tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value;
   await tester.pump(const Duration(seconds: 2));
-  expect(tester.widget<trainer.TrainerCountdownDigits>(digits).value, before);
+  expect(tester.widget<trainer.TrainerV1PhaseCountdown>(clock).value, before);
 }
 
 void main() {
@@ -251,10 +251,7 @@ void main() {
     // Floating bar: the title sits in the 44pt row below the status inset.
     final page = tester.element(find.byType(HipNavPage).last);
     final topInset = MediaQuery.paddingOf(page).top;
-    expect(
-      title.center.dy,
-      closeTo(topInset + HipNavBar.height / 2, 14),
-    );
+    expect(title.center.dy, closeTo(topInset + HipNavBar.height / 2, 14));
     expect(find.text('自测完成'), findsOneWidget);
     // Recommended route card: content height, thumbnails fully inside.
     final card = tester.getRect(find.byKey(const ValueKey('route-card')));

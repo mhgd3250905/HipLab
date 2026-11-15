@@ -42,34 +42,29 @@ void main() {
     }
   });
 
-  test('public transparent posters are the pinned SDK r2-v1 posters', () {
-    final config = File('.dart_tool/package_config.json');
-    final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
-    final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
-    final sdkRoot = Directory.fromUri(
-      config.uri.resolve(sdk['rootUri'] as String),
-    ).uri;
-    final standing = sdkRoot.resolve(
-      'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v1/standing/',
-    );
+  test('public transparent posters match the iOS release baseline', () {
     final bundled = Directory(
       'assets/public_posters',
     ).listSync().whereType<File>().map((f) => f.uri.pathSegments.last).toSet();
     expect(bundled, {
       for (final id in hiplabCoachAuthorizedActionIds) '$id.webp',
     });
-    for (final id in hiplabCoachAuthorizedActionIds) {
+    final ids = hiplabCoachAuthorizedActionIds.toList()..sort();
+    final manifest = StringBuffer();
+    for (final id in ids) {
       final path = 'assets/public_posters/$id.webp';
       final bytes = File(path).readAsBytesSync();
-      final source = File.fromUri(
-        standing.resolve('$id.webp'),
-      ).readAsBytesSync();
-      expect(bytes.length, source.length, reason: path);
-      expect(_sha256Hex(bytes), _sha256Hex(source), reason: path);
+      manifest.writeln('$id:${_sha256Hex(bytes)}');
       // RIFF/WEBP VP8X with the alpha flag set: transparent poster.
       expect(String.fromCharCodes(bytes.sublist(12, 16)), 'VP8X', reason: path);
       expect(bytes[20] & 0x10, 0x10, reason: path);
     }
+    // The runtime SDK changes independently of the iOS r2-v1 bundle.
+    // Digest of the sorted IDs and their poster hashes at a359278.
+    expect(
+      _sha256Hex(Uint8List.fromList(utf8.encode(manifest.toString()))),
+      'adfc52807d5ff8821db18c2e5b1e0c036283196828047bde2613b23f1b2e0ea1',
+    );
   });
 
   test('retained assessment stage matches the App palette', () {

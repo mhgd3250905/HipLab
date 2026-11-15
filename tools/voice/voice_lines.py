@@ -10,6 +10,13 @@ the English wording from the tables below.
 
 # ── fixed phrases ────────────────────────────────────────────────────────
 PHRASES = {
+    # Ordinal units follow the SDK language-specific word order.
+    'p.di': ('第', 'Number'),
+    'p.set': ('组', 'Set'),
+    'p.round': ('轮', 'Round'),
+    'u.sets': ('组', 'sets'),
+    'u.rounds': ('轮', 'rounds'),
+
     # session
     'p.welcome': ('开始训练', "Let's begin"),
     'p.total': ('全程大约', 'about'),
@@ -61,10 +68,18 @@ PHRASES = {
     'a.done': ('自测完成，来看看你的结果', 'Check complete. Here are your results'),
 }
 
-# Spoken numbers. Countdown uses 1–5 (and 10), counting uses 1–10.
-NUMBERS_ZH = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+# Spoken numbers. Countdown uses 1–5 (and 10); custom reps count through 30.
+NUMBERS_ZH = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十',
+              '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+              '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八',
+              '二十九', '三十']
 NUMBERS_EN = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
-              'eight', 'nine', 'ten']
+              'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
+              'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+              'twenty-one', 'twenty-two', 'twenty-three', 'twenty-four', 'twenty-five',
+              'twenty-six', 'twenty-seven', 'twenty-eight', 'twenty-nine', 'thirty']
+# Counts are recorded up to the largest custom rep count any plan allows
+# (SDK PlanLimits reps 1–30; HipLab single practice / kit steps ≤ 20).
 
 
 def seconds_text(s):

@@ -236,22 +236,16 @@ bool playerIsRunning(WidgetTester tester) => tester
     .widget<trainer.UgkPlayPauseButton>(find.byKey(const ValueKey('pause')))
     .isPlaying;
 
-String playerCounter(WidgetTester tester) => tester
-    .widget<trainer.TrainerCountdownDigits>(
-      find.byType(trainer.TrainerCountdownDigits),
-    )
-    .value;
+trainer.TrainerV1PhaseCountdown playerCountdown(WidgetTester tester) =>
+    tester.widget<trainer.TrainerV1PhaseCountdown>(
+      find.byType(trainer.TrainerV1PhaseCountdown),
+    );
+
+String playerCounter(WidgetTester tester) => playerCountdown(tester).value;
 
 void expectPlayerPaused(WidgetTester tester) {
   expect(playerIsRunning(tester), isFalse);
-  expect(
-    tester
-        .widget<trainer.TrainerCountdownDigits>(
-          find.byType(trainer.TrainerCountdownDigits),
-        )
-        .dim,
-    isTrue,
-  );
+  expect(playerCountdown(tester).dim, isTrue);
 }
 
 void main() {
@@ -375,11 +369,7 @@ void main() {
         await tester.tap(ring);
         await tester.pump();
         expect(
-          tester
-              .widget<trainer.TrainerCountdownDigits>(
-                find.byType(trainer.TrainerCountdownDigits),
-              )
-              .dim,
+          playerCountdown(tester).dim,
           isFalse,
           reason: 'the session clock resumes only after the user taps',
         );
@@ -418,14 +408,7 @@ void main() {
       // paused. Resume is ignored until the platform reports ended.
       await tester.tap(find.byKey(const ValueKey('pause')));
       await tester.pump();
-      expect(
-        tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
-            )
-            .dim,
-        isTrue,
-      );
+      expect(playerCountdown(tester).dim, isTrue);
       expect(output.reactivations, 0);
       await tester.pump(const Duration(seconds: 20));
       expectPlayerPaused(tester);
@@ -444,14 +427,7 @@ void main() {
         trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
       expect(playerIsRunning(tester), isTrue);
-      expect(
-        tester
-            .widget<trainer.TrainerCountdownDigits>(
-              find.byType(trainer.TrainerCountdownDigits),
-            )
-            .dim,
-        isFalse,
-      );
+      expect(playerCountdown(tester).dim, isFalse);
       expect(output.reactivations, 1);
       await tester.pump(const Duration(seconds: 1));
       expect(playerCounter(tester), isNot(pausedCounter));

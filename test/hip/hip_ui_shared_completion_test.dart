@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:flutter/material.dart';
@@ -542,6 +544,33 @@ void main() {
       expect(tester.getSemantics(find.byKey(ValueKey(key))).label, label);
     }
     semantics.dispose();
+  });
+
+  testWidgets('settings displays the locked trainer SDK commit', (
+    tester,
+  ) async {
+    final lockfile = File('pubspec.lock').readAsStringSync();
+    final lockedRevision = const LineSplitter()
+        .convert(lockfile)
+        .skipWhile((line) => line != '  ugk_trainer_runtime:')
+        .skip(1)
+        .takeWhile((line) => line.startsWith('    '))
+        .firstWhere((line) => line.startsWith('      resolved-ref: '));
+    final revision = RegExp('[0-9a-f]{40}').stringMatch(lockedRevision)!;
+
+    final store = HipStore(content: loadContent(), storage: MemoryStorage());
+    await store.initialize();
+    await tester.pumpWidget(_host(HipSettingsPage(store: store)));
+    final row = find.byKey(const ValueKey('sdk-revision'));
+    await tester.scrollUntilVisible(row, 200);
+    expect(
+      find.descendant(of: row, matching: find.text('SDK 提交号')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: row, matching: find.text(revision.substring(0, 7))),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

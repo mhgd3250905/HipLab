@@ -100,10 +100,15 @@ class _HipAppState extends State<HipApp> {
     } else if (!widget.videoEnabled) {
       voice = HipVoice.silent;
     } else {
+      final lib = await VoiceLibrary.load();
+      final catalog = HipPublicMedia.current?.catalog;
       voice = HipVoice(
-        lib: await VoiceLibrary.load(),
+        lib: lib,
         output: JustAudioVoiceOutput(),
         settingsOf: () => store.voice,
+        online: catalog == null
+            ? null
+            : await trainer.withPoseHubCatalogVoice(lib, catalog: catalog),
       );
     }
     return (store, voice);
@@ -727,7 +732,9 @@ class _HipHomeState extends State<HipHome> {
       firstPosterAsset: first == null ? null : policy?.posterAssetFor(first),
       mediaPolicy: policy,
       theme: HipSharedLibrary.theme(context),
-      planActionIds: plan.steps.map((step) => step.drill.id),
+      planActionIds: HipMediaPolicy.of(context)
+          ? plan.steps.map((step) => step.drill.id)
+          : const [],
     );
   }
 
@@ -1351,6 +1358,9 @@ class _HipHomeState extends State<HipHome> {
 /// as two pages; the AI coach's 设置 link still opens [all].
 enum HipProgressSection { all, records, settings }
 
+// Keep this Settings label in sync with the trainer package in pubspec.lock.
+const _hipSdkRevision = '036b5fc';
+
 class HipProgressPage extends StatelessWidget {
   const HipProgressPage({
     super.key,
@@ -1472,7 +1482,9 @@ class HipProgressPage extends StatelessWidget {
                           : policy?.posterAssetFor(first),
                       mediaPolicy: policy,
                       theme: HipSharedLibrary.theme(context),
-                      planActionIds: plan.steps.map((step) => step.drill.id),
+                      planActionIds: HipMediaPolicy.of(context)
+                          ? plan.steps.map((step) => step.drill.id)
+                          : const [],
                     );
                   },
                 ),
@@ -1511,6 +1523,12 @@ class HipProgressPage extends StatelessWidget {
                 onTap: () => Navigator.of(
                   context,
                 ).push(HipRoute.content<void>((_) => const HipPrivacyPage())),
+              ),
+              HipListRow(
+                key: const ValueKey('sdk-revision'),
+                glyph: HipGlyph.info,
+                title: HipText.of(context).pick('SDK 提交号', 'SDK commit'),
+                meta: _hipSdkRevision,
               ),
             ],
           ),
