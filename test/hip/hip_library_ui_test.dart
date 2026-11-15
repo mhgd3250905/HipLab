@@ -18,6 +18,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
 import 'package:hiplab/hip/ui/library/library_widgets.dart';
+import 'package:hiplab/hip/ui/library/practice_page.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
@@ -144,7 +145,10 @@ void main() {
     ) async {
       const screen = Size(390, 844);
       const systemBottom = 24.0;
-      tester.view.padding = const FakeViewPadding(bottom: systemBottom);
+      tester.view.padding = const FakeViewPadding(
+        top: 26,
+        bottom: systemBottom,
+      );
       await pumpApp(tester, size: screen);
       await toPractice(tester);
 
@@ -160,6 +164,13 @@ void main() {
       final filterRect = tester.getRect(filter);
       final allRect = tester.getRect(allChip);
 
+      final bar = find.descendant(
+        of: find.byType(PracticePage),
+        matching: find.byType(HipNavBar),
+      );
+      final navInset = hipNavInset(tester.element(search));
+      expect(tester.widget<HipNavBar>(bar).fade, kHipNavFade);
+      expect(searchRect.top, navInset + 4);
       expect(searchRect.height, 36);
       expect(searchRect.left, kHipPageEdge);
       expect(searchRect.right, screen.width - kHipPageEdge);
@@ -208,6 +219,13 @@ void main() {
         ),
       );
       final position = tester.state<ScrollableState>(verticalScroll).position;
+      expect(tester.getRect(list).top, 0);
+      final fadeMiddle = navInset - kHipNavFade / 2;
+      final firstCard = cards.first;
+      position.jumpTo(tester.getRect(firstCard).top - fadeMiddle);
+      await tester.pumpAndSettle();
+      expect(tester.getRect(firstCard).top, closeTo(fadeMiddle, .001));
+
       // Scroll to the true end after the lazy list settles its estimated extent.
       for (var jump = 0; jump < 6 && position.extentAfter > .001; jump++) {
         position.jumpTo(position.maxScrollExtent);

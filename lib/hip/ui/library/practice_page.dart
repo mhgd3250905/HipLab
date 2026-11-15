@@ -100,6 +100,7 @@ class _PracticePageState extends State<PracticePage> {
       title: widget.library ? t.libraryTitle : t.groupsTitle,
       leadingKey: const ValueKey('practice-back'),
       trailing: widget.trailing,
+      bodyScrollsUnderBar: widget.library,
       body: ListenableBuilder(
         listenable: actions.store,
         builder: (context, _) => _build(context),
@@ -184,7 +185,12 @@ class _PracticePageState extends State<PracticePage> {
         child: ListView.builder(
           key: const ValueKey('practice-list'),
           // HipNavPage already provides the device's bottom safe area.
-          padding: const EdgeInsets.fromLTRB(kHipPageEdge, 4, kHipPageEdge, 36),
+          padding: EdgeInsets.fromLTRB(
+            kHipPageEdge,
+            hipNavInset(context) + 4,
+            kHipPageEdge,
+            36,
+          ),
           itemCount: header.length + rows.length,
           itemBuilder: (context, i) =>
               i < header.length ? header[i] : rows.row(i - header.length),
