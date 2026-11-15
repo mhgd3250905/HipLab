@@ -1,5 +1,9 @@
 # 版本交付台账
 
+## 2026-11-15 动作库对齐与留白
+
+1.1.2+69，Android arm64 版本码 2069。Profile 构建源 26bfbec63d4bf16a1e406070bf1c094d38c140fa，同签覆盖安装到 2602BRT18C，保留原安装时间和数据目录。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc-library-layout/hiplab-1.1.2+69-sdk-main-036b5fc-library-layout-arm64-profile.apk。本机及设备 SHA-256：0db4245e9c2d42e35471b673410456c60686b0c7f9fced9f6453fa4c8e7e6a22。
+
 ## 2026-11-15 SDK 主线播放器候选 +69
 
 1.1.2+69，Android arm64 版本码 2069。Profile 构建源 ce4d0bc4888883cb3f677b8e9e2d860707c736a4，REDMI 2602BRT18C 同签覆盖安装，原安装时间和数据目录保留。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc/hiplab-1.1.2+69-sdk-main-036b5fc-arm64-profile.apk。本机及设备 SHA-256：d059f952d68bb34ad4516d8a3fddf5c5f5e56942ef75aef4bf08b460c6f451a6。
