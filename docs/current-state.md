@@ -1,5 +1,11 @@
 # 当前状态
 
+## 2026-11-16 Android SDK 基准 +71
+
+Android SDK 基准候选 `1.1.4+71` 位于 `codex/sdk-baseline-4eb87ce`，以 HipLab main `165f3b4` 为基线，四个 SDK 依赖及 coach override 锁定 `4eb87ce`（0.9.0）。动作库使用当前目录的默认素材，Android 交付身份见[版本台账](version-ledger.md#2026-11-16-android-sdk-基准-71)，验证见[验证台账](verification.md#2026-11-16-android-sdk-基准-71)。
+
+2602BRT18C 已同签覆盖安装 +71，用户已确认真机验收通过。
+
 ## 2026-11-15 动作库采用共享顶栏渐隐
 
 feat/sdk-main-036b5fc 的动作库启用 HipNavPage 的正文滚入顶栏模式，首屏搜索框避开渐隐段。2602BRT18C 已装 +69 Profile，用户已通过真机验收。[验证台账](verification.md#2026-11-15-动作库采用共享顶栏渐隐)

@@ -1,5 +1,13 @@
 # 版本交付台账
 
+## 2026-11-16 Android SDK 基准 +71
+
+`1.1.4+71`，Android arm64 release 测试 APK，版本码 `2071`。构建源 `9ac638be4542ae2652a0a6566cf6080499a6052a`，SDK 固定 `4eb87ceabd39bfd132cd6c79c0474de3be683feb`。APK SHA-256 `e51c599822583c353a22ad8768b3c0b8205270894db508412975347b2ea1475f`，与模拟器安装后的 base.apk 一致。沿用 +70 测试证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，16 KB 对齐和重签载荷一致性通过。
+
+本机 APK：`E:/AII-3D/hiplab-releases/sdk-baseline-4eb87ce/hiplab-1.1.4+71-arm64-device-test-signed.apk`。
+
+2602BRT18C 从 +70 同签覆盖到 +71，安装后的 APK SHA-256 与交付一致，原始安装时间保留。
+
 ## 2026-11-15 动作库采用共享顶栏渐隐
 
 1.1.2+69，Android arm64 版本码 2069。Profile 构建源 c5a7c4bf9e531dff2b014b273986a394c5380fc3，同签覆盖安装到 2602BRT18C，保留原安装时间和数据目录。APK：E:/AII-3D/hiplab-releases/sdk-main-036b5fc-library-nav/hiplab-1.1.2+69-sdk-main-036b5fc-library-nav-arm64-profile.apk。本机及设备 SHA-256：927278a6821d53d7365669fe5e338f437d1a558cef34646313097824bc2cbd04。
