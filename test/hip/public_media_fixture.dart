@@ -12,13 +12,15 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 /// Uses the real public manifest while keeping host widget tests off disk,
 /// network and native video channels. SDK tests own decoder/cache behavior.
 class PublicMediaFixture implements trainer.CatalogMediaRepository {
-  PublicMediaFixture()
-    : catalog = coach.PoseHubAppTestCatalog.fromBytes(
-        File(hipPublicCatalogAsset).readAsBytesSync(),
-        semanticCatalogBytes: File(
-          hipPublicSemanticsAsset,
-        ).readAsBytesSync(),
-      );
+  PublicMediaFixture({coach.PoseHubAppTestCatalog? catalog})
+    : catalog =
+          catalog ??
+          coach.PoseHubAppTestCatalog.fromBytes(
+            File(hipPublicCatalogAsset).readAsBytesSync(),
+            semanticCatalogBytes: File(
+              hipPublicSemanticsAsset,
+            ).readAsBytesSync(),
+          );
 
   @override
   final coach.PoseHubAppTestCatalog catalog;

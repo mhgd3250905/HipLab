@@ -14,6 +14,7 @@ import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/hip_assessment_page.dart';
 import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_page_kit.dart';
+import 'package:hiplab/hip/ui/hip_poster_bounds_fit.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/group_editor_page.dart';
@@ -140,6 +141,56 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
+    testWidgets('updated library artwork uses the SDK thumbnail and retains '
+        'the bundled crop as fallback', (tester) async {
+      final bundled = PublicMediaFixture();
+      addTearDown(bundled.dispose);
+      final catalog = coach.PoseHubAppTestCatalog.fromJson({
+        ...bundled.catalog.raw,
+        'pack': 'r2-v16',
+      });
+      final updated = PublicMediaFixture(catalog: catalog);
+      final previousPolicy = HipPublicMedia.current;
+      addTearDown(() {
+        HipPublicMedia.current = previousPolicy;
+        updated.dispose();
+      });
+
+      const id = 's-pigeon';
+      final action = updated.policy.actionFor(id)!;
+      final poster = HipPublicMedia.thumbnailAssetFor(id)!;
+      final card = MaterialApp(
+        home: Scaffold(
+          body: ActionCard(
+            item: HipActionItem(
+              id: id,
+              name: action.nameZh,
+              parts: const [],
+              equipment: const [],
+              type: hipTypeRelax,
+              places: const {},
+              level: null,
+              dose: '',
+              poster: poster,
+            ),
+            onTap: (_) {},
+          ),
+        ),
+      );
+      HipPublicMedia.current = updated.policy;
+      await tester.pumpWidget(card);
+      final photo = tester.widget<trainer.PoseHubStandingImage>(
+        find.byType(trainer.PoseHubStandingImage),
+      );
+
+      expect(photo.action, same(action));
+      expect(photo.thumbnail, isTrue);
+      expect(photo.repository, same(updated));
+      final fallback = photo.legacyFallback! as HipPosterBoundsFit;
+      expect(fallback.bounds, libraryPosterBounds[id]);
+      expect(((fallback.child as Image).image as AssetImage).assetName, poster);
+    });
+
     testWidgets('library aligns search, filters, and cards to page edges', (
       tester,
     ) async {
@@ -253,6 +304,7 @@ void main() {
       expect(second.size, first.size);
       expect(second.top, first.top);
       expect(second.left - first.right, 12);
+      expect(find.byType(trainer.PoseHubStandingImage), findsNothing);
       final artwork = find.descendant(
         of: cards.first,
         matching: find.byType(ClipRect),
