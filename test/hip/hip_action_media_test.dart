@@ -74,16 +74,7 @@ void main() {
     }
   });
 
-  test('retained standing posters match the previous SDK r2-v10 pack', () {
-    final config = File('.dart_tool/package_config.json');
-    final packages = jsonDecode(config.readAsStringSync())['packages'] as List;
-    final sdk = packages.firstWhere((p) => p['name'] == 'ugk_coach') as Map;
-    final sdkRoot = Directory.fromUri(
-      config.uri.resolve(sdk['rootUri'] as String),
-    ).uri;
-    final standing = sdkRoot.resolve(
-      'packages/ugk_trainer/assets/pose_hub/app-pack-r2-v10/standing/',
-    );
+  test('retained standing posters match the frozen SDK r2-v10 assets', () {
     final bundled =
         Directory('assets/public_posters')
             .listSync()
@@ -98,16 +89,21 @@ void main() {
       _sha256Hex(Uint8List.fromList(utf8.encode(bundled.join('\n')))),
       'b35af75aa9e49965bf02f3a99d7d2837c5cced84d1306e41a038aec565d0076c',
     );
+    final digests = <String>[];
     for (final name in bundled) {
       final path = 'assets/public_posters/$name';
       final bytes = File(path).readAsBytesSync();
-      final source = File.fromUri(standing.resolve(name)).readAsBytesSync();
-      expect(bytes.length, source.length, reason: path);
-      expect(_sha256Hex(bytes), _sha256Hex(source), reason: path);
+      digests.add(_sha256Hex(bytes));
       // RIFF/WEBP VP8X with the alpha flag set: transparent poster.
       expect(String.fromCharCodes(bytes.sublist(12, 16)), 'VP8X', reason: path);
       expect(bytes[20] & 0x10, 0x10, reason: path);
     }
+    // SHA-256 of the newline-separated file hashes from SDK 036b5fc, in
+    // the same filename order. Later SDK releases can drop the old pack.
+    expect(
+      _sha256Hex(Uint8List.fromList(utf8.encode(digests.join('\n')))),
+      'a2f2db43b5403ad3ceff62662856e62bd0b2c1dfbd62e7585d55a2015b0c1a57',
+    );
   });
 
   test('retained assessment stage matches the App palette', () {

@@ -13,6 +13,7 @@ import '../../data/hip_action_scope.dart';
 import '../../data/hip_library_poster_bounds.dart';
 import '../../data/hip_public_media.dart';
 import '../../data/hip_shared_library.dart';
+import '../../data/posehub_catalog_updates.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
 import '../hip_icons.dart';
@@ -1200,14 +1201,29 @@ class _LibraryPoster extends StatelessWidget {
       excludeFromSemantics: true,
       errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
-    if (bounds == null) return image;
+    // The alpha bounds are measured from the bundled thumbnail.
+    final fallback = bounds == null
+        ? image
+        : HipPosterBoundsFit(
+            sourceSize: const Size.square(libraryPosterPixels),
+            bounds: bounds,
+            child: image,
+          );
 
-    // Keep the existing decoded thumbnail, but lay out its visible alpha
-    // rectangle instead of the surrounding transparent square.
-    return HipPosterBoundsFit(
-      sourceSize: const Size.square(libraryPosterPixels),
-      bounds: bounds,
-      child: image,
+    final policy = HipPublicMedia.current;
+    final action = policy?.actionFor(item.id);
+    if (policy == null ||
+        action == null ||
+        trainer.poseHubPackVersionOf(policy.catalog) == hipBundledPoseHubPack) {
+      return fallback;
+    }
+    return ExcludeSemantics(
+      child: trainer.PoseHubStandingImage(
+        action: action,
+        thumbnail: true,
+        repository: policy.repository,
+        legacyFallback: fallback,
+      ),
     );
   }
 }
