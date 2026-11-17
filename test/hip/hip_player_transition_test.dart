@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
 
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
@@ -19,6 +20,7 @@ void main() {
     WidgetTester tester, {
     Size size = const Size(390, 844),
     double textScale = 1,
+    HipThemeChoice theme = HipThemeChoice.system,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -35,6 +37,7 @@ void main() {
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
       ..scene = HipScene.chair
+      ..theme = theme
       ..minutes = 5;
     await tester.pumpWidget(
       HipApp(
@@ -122,6 +125,56 @@ void main() {
     expect(find.text(first.drill.name), findsOneWidget);
     expect(find.textContaining(first.dose), findsWidgets);
   });
+
+  testWidgets(
+    'dark home start keeps the trainer dark from prep to completion',
+    (tester) async {
+      await start(tester, theme: HipThemeChoice.dark);
+      final player = find.byType(trainer.TrainerPlayer);
+      final dark = tester.widget<trainer.TrainerPlayer>(player).theme;
+      expect(dark.brightness, Brightness.dark);
+      expect(dark.usePlayerV1, isTrue);
+      expect(dark.accent, HipPalette.dark.jadeDeep);
+
+      final stage = find.ancestor(
+        of: find.byKey(const ValueKey('player-v1-media-viewport')),
+        matching: find.byWidgetPredicate((widget) {
+          if (widget is! DecoratedBox || widget.decoration is! BoxDecoration) {
+            return false;
+          }
+          final gradient = (widget.decoration as BoxDecoration).gradient;
+          return gradient is LinearGradient &&
+              gradient.colors.first == dark.stageTop &&
+              gradient.colors.last == dark.stageBottom;
+        }),
+      );
+      expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
+      expect(stage, findsOneWidget);
+
+      await enterRest(tester);
+      final panel = tester.widget<trainer.TrainerRestFeedbackPanel>(
+        find.byType(trainer.TrainerRestFeedbackPanel),
+      );
+      expect(panel.theme, same(dark));
+      expect(stage, findsOneWidget);
+
+      final finish = find.byKey(const ValueKey('finish'));
+      final skip = find.byKey(const ValueKey('skip')).hitTestable();
+      for (var phase = 0; phase < 40 && finish.evaluate().isEmpty; phase++) {
+        expect(skip, findsOneWidget);
+        await tester.tap(skip);
+        await tester.pumpAndSettle();
+      }
+      expect(finish, findsOneWidget);
+      final hero = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('completion-hero')),
+      );
+      final gradient = (hero.decoration as BoxDecoration).gradient!;
+      expect(gradient.colors, [dark.heroTop, dark.heroBottom]);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets('rest: SDK cards render HipLab labels with semantic colors', (
     tester,

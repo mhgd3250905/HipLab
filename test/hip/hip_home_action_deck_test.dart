@@ -545,6 +545,37 @@ void main() {
     },
   );
 
+  testWidgets('dark deck tints the rear paper and edges by depth', (
+    tester,
+  ) async {
+    phone(tester);
+    await showDeck(tester, palette: HipPalette.dark);
+    await tester.pumpAndSettle();
+
+    final front = find
+        .descendant(of: visualFront(), matching: find.byType(DecoratedBox))
+        .first;
+    final rear = find
+        .descendant(of: nextFace(), matching: find.byType(DecoratedBox))
+        .first;
+    final papers = [
+      for (final layer in [front, rear, paperFor(2)])
+        tester.widget<DecoratedBox>(layer).decoration as BoxDecoration,
+    ];
+    final base = [HipPalette.dark.surfaceHigh, HipPalette.dark.surface];
+    expect((papers.first.gradient! as LinearGradient).colors, base);
+    for (final (index, tint) in [(1, .04), (2, .08)]) {
+      final paper = papers[index];
+      final overlay = Colors.white.withValues(alpha: tint);
+      expect((paper.gradient! as LinearGradient).colors, [
+        for (final background in base) Color.alphaBlend(overlay, background),
+      ]);
+      final edge = (paper.border! as Border).top;
+      expect(edge.width, .6);
+      expect(edge.color, Colors.white.withValues(alpha: .08));
+    }
+  });
+
   testWidgets(
     'only the next card renders content and keeps its face on promotion',
     (tester) async {

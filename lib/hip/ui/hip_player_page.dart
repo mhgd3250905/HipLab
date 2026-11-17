@@ -366,7 +366,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
   }
 
-  Widget _restFeedback(BuildContext context, trainer.TrainerRestFeedback at) {
+  Widget _restFeedback(
+    BuildContext context,
+    trainer.TrainerRestFeedback at,
+    trainer.TrainerTheme theme,
+  ) {
     final index = at.completedPhase.itemIndex;
     final text = HipText.of(context);
     return StatefulBuilder(
@@ -377,7 +381,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         }
 
         return trainer.TrainerRestFeedbackPanel(
-          theme: trainer.TrainerTheme.playerV1,
+          theme: theme,
           title: text.pick('刚才感觉怎么样？', 'How did that feel?'),
           recordedTitle: text.pick('已记录', 'Recorded'),
           description: text.pick(
@@ -415,13 +419,36 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
   }
 
-  trainer.TrainerTheme get _theme =>
-      trainer.TrainerTheme.playerV1.copyWith(fontFamily: hipFontFamily);
+  trainer.TrainerTheme _playerTheme(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return trainer.TrainerTheme.playerV1.copyWith(fontFamily: hipFontFamily);
+    }
+    const theme = trainer.TrainerTheme.playerV1Dark;
+    const palette = HipPalette.dark;
+    final tint = Color.alphaBlend(
+      palette.jade.withValues(alpha: .14),
+      theme.card,
+    );
+    return theme.copyWith(
+      fontFamily: hipFontFamily,
+      // The SDK completion button uses white text, so keep its jade fill deep.
+      accent: palette.jadeDeep,
+      accentDeep: Color.lerp(palette.jadeDeep, palette.background, .28),
+      accentText: palette.jade,
+      accentSubtle: tint,
+      pausedColor: palette.jadeDeep,
+      glow: palette.jade,
+      tint: tint,
+      heroTop: palette.background,
+      heroBottom: palette.jadeDeep,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final voice = HipVoice.of(context);
     final script = _script();
+    final theme = _playerTheme(context);
     return trainer.TrainerPlayer(
       plan: _displayPlan(),
       sessionBuilder: _builder(script),
@@ -430,7 +457,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       strings: HipText.of(context).isEn
           ? trainer.TrainerStrings.en()
           : trainer.TrainerStrings.zh(),
-      theme: _theme,
+      theme: theme,
       notificationIcon: 'mipmap/ic_launcher_monochrome',
       voice: trainer.TrainerVoice(
         source: script.source,
@@ -496,7 +523,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ? null
           : _pain,
       announceDiscomfortPause: false,
-      restFeedbackBuilder: _restFeedback,
+      restFeedbackBuilder: (context, feedback) =>
+          _restFeedback(context, feedback, theme),
       replayBuilder: (context, result, replay) =>
           widget.plan.source != PlanSource.single ||
               _ladder.skippedDirections.isNotEmpty ||

@@ -16,6 +16,7 @@ class HipRevenueCatStore implements MembershipStore {
 
   static const defaultPublicKey = String.fromEnvironment('HIP_RC_ANDROID_KEY');
   static const iosPublicKey = String.fromEnvironment('HIP_RC_IOS_KEY');
+  static const _playProduct = 'hip_premium';
   static const _iosMonthlyProduct = 'com.ugk.hipinterlude.premium.monthly';
   static const _iosAnnualProduct = 'com.ugk.hipinterlude.premium.annual';
   final String publicKey;
@@ -113,6 +114,12 @@ class HipRevenueCatStore implements MembershipStore {
   });
 
   Future<Map<MembershipTerm, _Quote>> _loadQuotes() async {
+    // RevenueCat's offering is cached during the app session. Query Play
+    // for this subscription product before treating the store as reachable.
+    if (!_usesAppStore &&
+        (await rc.Purchases.getProducts([_playProduct])).isEmpty) {
+      return const {};
+    }
     final offering = (await rc.Purchases.getOfferings()).current;
     if (offering == null || offering.identifier != 'default') return const {};
     final quotes = <MembershipTerm, _Quote>{};

@@ -57,15 +57,19 @@
 
 ## iOS 对齐要点
 
-共享 Dart 实现从本分支接收，版本名 `1.1.4`，共用构建号 `72`。Android 自用 arm64 split 的版本码是 `2072`。iOS 归档时以自身的 `CFBundleShortVersionString` 和 `CFBundleVersion` 回读为准。
+共享 Dart 实现从本分支接收，版本名 `1.1.4`，共用构建号 `73`。Android 自用 arm64 split 目标版本码为 `2073`。iOS 归档时以自身的 `CFBundleShortVersionString` 和 `CFBundleVersion` 回读为准。
 
 | 页面或入口 | iOS 对齐／复查项 | 涉及文件 | 规范 |
 |---|---|---|---|
 | 首页 → 更多、训练记录、训练组 | 无源胶囊，目标胶囊随整页滑动；推荐文件夹先收起 | [hip_app.dart](../lib/hip/ui/hip_app.dart) | §1.5；手册 §4.1 |
+| 首页动作叠卡 | 深色后两层用前卡深色纸面叠白 4% 和 8%，描边白 8%／0.6pt；保留浅色纸面、阴影和切牌动效 | [hip_home_action_deck.dart](../lib/hip/ui/hip_home_action_deck.dart)、[hip_home_action_inspect.dart](../lib/hip/ui/hip_home_action_inspect.dart) | §6；本轮深色真机反馈 |
 | 更多 → 设置 → 隐私、训练记录 → 全部训练 | 单标题首屏避开状态栏 + 44 + 24；滚动时正文穿过透明渐变；返回时固定一枚胶囊 | [hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart)、[hip_routes.dart](../lib/hip/ui/hip_routes.dart)、[hip_records_page.dart](../lib/hip/ui/hip_records_page.dart) | §1.1–1.5；手册 §2–5 |
 | 动作库、训练组、动作／套路详情、组编辑、添加动作 | 动作库和详情穿透；训练组分段与编辑表单保持固定区。双标题区 52，控制轨 44。只读详情首屏为安全区 + 52 + 24 + 12。编辑器按原退出确认拦截侧滑 | [practice_page.dart](../lib/hip/ui/library/practice_page.dart)、[group_editor_page.dart](../lib/hip/ui/library/group_editor_page.dart)、[hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart) | §1.3–1.5；手册 §2、§4 |
 | 自测说明、题目、结果 | 说明和结果使用共享顶栏；题目保留从按钮展开、48pt 控制轨和既有关闭回调 | [hip_assessment_page.dart](../lib/hip/ui/hip_assessment_page.dart)、[hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart) | §1.4–1.5；手册 §5 |
 | 会员两态、系统购买、隐私 | 关闭键在左侧 44pt 控制轨，购买与已订阅正文滚动，固定底栏避开 Home Indicator。在 iOS 核对系统购买返回及原回执处理 | [hip_membership_page.dart](../lib/hip/ui/hip_membership_page.dart)、[hip_membership_scope.dart](../lib/hip/ui/hip_membership_scope.dart) | §1.3–1.5、§7；手册 §4 |
+| 会员报价暂不可用 | Android 使用同一套餐布局，优先显示上次成功取得的本地价格，无缓存时显示标明币种的美区参考价。App Store 对齐时换用该店已核实的价格和提示，离线只展示有条件的试用说明；重试成功后使用实时套餐发起购买 | [hip_membership.dart](../lib/hip/control/hip_membership.dart)、[hip_membership_page.dart](../lib/hip/ui/hip_membership_page.dart)、[hip_revenuecat.dart](../lib/hip/platform/hip_revenuecat.dart) | §7；[Android 订阅配置](android-membership-2026-11-11.md#play-和-revenuecat) |
 | Coach、同意弹层与 SDK 页面 | 宿主加载/错误壳共享顶栏；SDK 会话和计划详情保留 SDK 顶栏。SDK 到宿主页时胶囊随页。播放器、动作详情弹层及 SDK 退出流程按原行为核对 | [hip_coach_chat_page.dart](../lib/hip/ui/coach/hip_coach_chat_page.dart)、[hip_ai_consent_sheet.dart](../lib/hip/ui/coach/hip_ai_consent_sheet.dart)、[hip_routes.dart](../lib/hip/ui/hip_routes.dart) | §1.4–1.5；手册 §4–5 |
+| 训练准备、训练中、休息、完成 | 播放器按宿主 Material 亮度选 SDK V1 主题，宿主休息反馈和 SDK 共用该主题。深色保留 HipLab 绿，SDK 固定版本不变 | [hip_player_page.dart](../lib/hip/ui/hip_player_page.dart) | §7 训练播放器休息反馈；本轮深色真机反馈 |
+| 宿主通知条、训练组徽标 | 深色通知用主题面板色及对应的文字／关闭按钮颜色，训练组「已加入首页」用深色主题文字色；核对宿主弹层、底部表单和空状态 | [hip_theme.dart](../lib/hip/ui/hip_theme.dart)、[practice_page.dart](../lib/hip/ui/library/practice_page.dart) | §2–3；本轮深色真机反馈 |
 
 iPhone 验收时重点看刘海或灵动岛下的首行、Home Indicator 上的固定底栏、键盘避让，以及浅色和深色下的返回按钮。用 首页 → 更多 → 设置 验证 400/340ms 进退、慢拖完成和取消回弹，再开启「减少动态效果」重复。Widget Test 中的 iOS 平台模拟提供软件回归证据，iOS 原生安装、系统购买和播放需要单独验收。

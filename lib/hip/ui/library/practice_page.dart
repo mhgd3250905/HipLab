@@ -385,7 +385,7 @@ class _PracticePageState extends State<PracticePage> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeDeep,
+                      color: HipColors.jadeText,
                     ),
                   ),
                 ],
@@ -843,7 +843,7 @@ class _GroupHomeMembership extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeDeep,
+                      color: HipColors.jadeText,
                     ),
                   ),
                 ],

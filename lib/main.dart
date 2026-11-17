@@ -24,7 +24,10 @@ Future<void> main() async {
   // request awaits this same operation; storage errors keep offline use working
   // and can be retried before any network request sends a device ID.
   final membership = switch ((kIsWeb, defaultTargetPlatform)) {
-    (false, TargetPlatform.android) => HipMembership(HipRevenueCatStore()),
+    (false, TargetPlatform.android) => HipMembership(
+      HipRevenueCatStore(),
+      playOfflineQuotes: true,
+    ),
     (false, TargetPlatform.iOS) => HipMembership(
       HipRevenueCatStore(HipRevenueCatStore.iosPublicKey),
     ),

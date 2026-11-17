@@ -813,6 +813,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double height, {
     double expansion = 0,
     bool rear = false,
+    double rearDepth = 0,
     bool contactShadow = false,
   }) => KeyedSubtree(
     key: ValueKey(rear ? 'home-deck-next-face' : 'home-deck-live-face'),
@@ -830,6 +831,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       expanded: !rear && _expanded,
       paused: rear || _paused,
       rear: rear,
+      rearDepth: rearDepth,
       contactShadow: contactShadow,
       compact: height < 330,
       dose: widget.doses.elementAtOrNull(index) ?? '',
@@ -906,6 +908,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     next,
                     height,
                     rear: true,
+                    rearDepth: 1 - progress,
                     contactShadow: count == 3 || replenishing,
                   ),
                 ),
@@ -991,15 +994,20 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         child: DecoratedBox(
           key: ValueKey('home-deck-paper-$index'),
           decoration: BoxDecoration(
-            color: Color.lerp(
-              const Color(0xfffbfcfb),
-              const Color(0xfff6f7f6),
-              (depth - 1).clamp(0, 1),
-            ),
+            color: HipColors.isDark
+                ? null
+                : Color.lerp(
+                    const Color(0xfffbfcfb),
+                    const Color(0xfff6f7f6),
+                    (depth - 1).clamp(0, 1),
+                  ),
+            gradient: HipColors.isDark ? hipHomeDarkActionPaper(depth) : null,
             borderRadius: BorderRadius.circular(26),
             border: Border.all(
-              color: Colors.black.withValues(alpha: .06),
-              width: .5,
+              color: HipColors.isDark
+                  ? Colors.white.withValues(alpha: .08)
+                  : Colors.black.withValues(alpha: .06),
+              width: HipColors.isDark ? .6 : .5,
             ),
             boxShadow: bottom
                 ? null
