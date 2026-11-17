@@ -4,9 +4,25 @@
 
 `1.1.4+71`，Android arm64 release 测试 APK，版本码 `2071`。构建源 `9ac638be4542ae2652a0a6566cf6080499a6052a`，SDK 固定 `4eb87ceabd39bfd132cd6c79c0474de3be683feb`。APK SHA-256 `e51c599822583c353a22ad8768b3c0b8205270894db508412975347b2ea1475f`，与模拟器安装后的 base.apk 一致。沿用 +70 测试证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，16 KB 对齐和重签载荷一致性通过。
 
+2026-11-16 以 Flutter 3.44.7 执行 `flutter build apk --release --no-pub --split-per-abi --target-platform=android-arm64 --dart-define-from-file=<构建定义文件>`，采用 +70 的构建定义和 stable 渠道，随后以既有测试证书重签并验包。
+
 本机 APK：`E:/AII-3D/hiplab-releases/sdk-baseline-4eb87ce/hiplab-1.1.4+71-arm64-device-test-signed.apk`。
 
 2602BRT18C 从 +70 同签覆盖到 +71，安装后的 APK SHA-256 与交付一致，原始安装时间保留。
+
+2026-11-17 主线接收：[PR #39](https://github.com/mhgd3250905/HipLab/pull/39) 合并至 `ba0d0c16ae56d7b679572be3a380969f0679b2dd`。
+
+## 2026-11-15 至 17 商店渠道回执
+
+| 渠道 | 可核对的版本与事件 | 来源 |
+| --- | --- | --- |
+| Google Play Alpha | `1.1.3+70` / 商店版本码 `70`，来源 `ff351152f1b2bc3969f9636e87b3a43262b41171`，代码随 PR #37 合入 main。PR 中的轨道目标为封闭测试 Alpha | [PR #37](https://github.com/mhgd3250905/HipLab/pull/37) |
+| Google Play 正式版权限 | 2026-11-15 10:54（北京时间），`com.ugk.hiplab` 的权限申请已提交，后台当时回读已收件、审核中 | 当次 Play Console 回执及飞书原话题 |
+| iOS App Review 基线 | `1.1.0 (61)` 送审源码 `a359278f6bd04a8a8d55f8aff1587bff86cda0ba` | [PR #38 基线说明](https://github.com/mhgd3250905/HipLab/pull/38) |
+| iOS 透明视频候选 | `1.1.3 (71)`，源码 `d28169592a279867d67103ee1d656a23660c23cb`，SDK 固定 `63e24819406d843d6eabd5f95df98bbfdecc36f0`。2026-11-17 GitHub 回读仍为 Draft | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
+
+本次渠道台账补记以所列证据日期为准。实际送审、审核通过、测试轨道发布和公开发布各自需要对应的控制台回执。
+
 
 ## 2026-11-15 动作库采用共享顶栏渐隐
 

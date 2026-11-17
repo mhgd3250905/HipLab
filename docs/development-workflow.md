@@ -2,41 +2,17 @@
 
 ## UI实现与文档维护
 
-设计数值由[UI规范](ui-design-standard.md)维护；实现、依赖边界、跨App配方及完整画廊见[UI复用手册](ui-kit/README.md)。代码/设计变动时同步规范与对应样例，历史交付报告只追加事实，不把已淘汰方案当作当前接入方式。文档收束仅检查相关事实、链接、示例与diff；不因整理文档重复构建或增加版本。本阶段记录见[closeout报告](ui-documentation-closeout-2026-11-07.md)。
+设计数值由[UI规范](ui-design-standard.md)维护；实现、依赖边界、跨App配方及完整画廊见[UI复用手册](ui-kit/README.md)。代码/设计变动时同步规范与对应样例，历史交付报告只追加事实，不把已淘汰方案当作当前接入方式。文档收束仅检查相关事实、链接、示例与diff；不因整理文档重复构建或增加版本。历史 UI 阶段见[收束报告](ui-documentation-closeout-2026-11-07.md)。
 
 ## 工作区与版本
 
-`main` 为开发基线，会员阶段在 `feat/membership` 收束。执行前核对当前工作树、分支和 HEAD。源码版本、各渠道和实机状态统一从[当前状态](current-state.md)及[版本台账](version-ledger.md)核对。当前素材准备从[文档入口](README.md#新机器拉素材mac--windows)开始。
+`main` 是开发基线。先核对工作树、分支和 HEAD，再查[当前状态](current-state.md)和[版本台账](version-ledger.md)。素材准备见[文档入口](README.md#新机器拉素材mac--windows)。
 
-## 2026-11-07 开发入口快照（历史）
+Windows 固定 Flutter 3.44.7 入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，Mac 也使用 3.44.7。
 
-日常目录`E:/AII-3D/3D-Hip`已切回`main`，接收完整已验收UI、首页卡片/文件夹、英文和友善安全插画。当前`1.1.0+61`/2061，SDK固定`fa957ff405cc57cd10d53987430313822ff20607`；后续从main继续，按任务建分支即可。旧UI和SDK候选分支保留，不再把`feat/ui-detail-polish`当作最新运行源。Flutter仍3.44.7，媒体r2-v1、209授权动作/封面、0内置MP4；依赖只按现有lock恢复。下方2026-11-04 main +34是历史快照。[本轮回执](ui-main-integration-2026-11-07.md)。
-
-## 2026-11-04 主线和媒体准备快照（历史）
-
-日常目录main本次文档收束前为2400b34，已含PR26/27/28/30；当前1.1.0+34/2034、四SDK实际包及coach override固定f7b8a8e（v0.7.2内容），Flutter3.44.7。UI r3 Draft PR29仍在候选分支，与SDK问答v3是不同事项；未经真机反馈不按本轮文档整理推进该UI候选合并。
-
-当前新机器使用Git中的`assets/public_media/`、`assets/public_posters/`、`assets/coach/ai-tags/`和pubspec锁文件准备依赖，再按[文档入口](README.md#新机器拉素材mac--windows)执行严格锁解析，保持当前lock的pub.dev源。+34已验证源码0f0882e与功能集成点同树，本次只改文档，不重复测试/构建。0内置MP4，视频由SDK按需缓存；**下方v0.2.0 ZIP同步仅适用于旧分支，不在当前main执行回填**。本页旧版本、安装与工具默认路径描述均按其日期保留；实际操作先核对工作区与显式Flutter入口，不依据历史快照改动环境。
-
-## 2026-10-24 Windows 固定工具入口
-
-本机默认E:/flutter已为3.47.8；HipLab仍按约定使用3.44.7。本轮独立E盘工具入口为 `E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat`，框架84fc5cbb、Dart3.12.2。执行pub get/analyze/test/build时显式用此入口，避免因默认工具变化升级无关hosted依赖；不切换或重置其它项目的工具。当时三个SDK正式tag及该轮直接合main授权见[补丁回执](sdk-tag-patch-2026-10-24.md)。
-
-本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，本工作目录 `E:\AII-3D\3D-Hip` 用于后续 main 主线开发。开始前读[当前状态](current-state.md)和[开发事项](development-roadmap.md)，核对 Git 实际状态。
+旧版主线协作和工具快照见[历史工作流](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/docs/development-workflow.md)。
 
 ## 主线基线与更新
-
-历史基线：2026-10-21，训练包及AI新入口已获准合入并推送两个main：HipLab集成点691ace2，SDK d193a70（coach0.1.3/trainer0.1.4）。当前共用版本与手机均为0.3.9+17，构建运行源79c172d，已保留数据安装；锁屏冻结仍已知失败，交用户后测。本次文档收束不重建/重测/操作手机。见[当前交付与合并](android-lockscreen-fix-2026-10-21.md#主线合并确认2026-10-21)及[版本台账](version-ledger.md)。
-
-2026-10-20早间基线（历史）：main已合PR25，0.3.7+12 AI测试包当时仅构建未安装，手机当时为0.3.6+11；见[历史包身份](android-test-build-0.3.7-2026-10-20.md)。下列其他基线段落亦保留各自日期的历史。
-
-此前2026-10-19的main已合入#22/#24及重播hold适配，业务集成点b33ed21；最新实际安装为0.3.6+11 debug arm64 / 9b22dcc（2026-10-19 23:15:53），安装SHA与数据保持已核验。主线运行代码与该已验源一致，沿用387pass/1条件skip、analyze0及本轮原生结果；文档提交不触发新构建或安装。以[当前状态](current-state.md)、[版本台账](version-ledger.md)、[验证台账](verification.md)区分当前事实与逐次交付。
-
-此前阶段基线（历史）：main基线交付为0.3.6+11修复包（运行源`6dd16ed`），PR #17/#18已合入；2026-10-19本轮审阅包运行源`c7def28`同为0.3.6+11，用户报告已安装且简单真机测试通过，三PR及全部修复已按#19→#20→#21顺序合入并推送main（业务集成点b9646d4）。安装反馈和主线状态分别登记；最新事实见[当前状态](current-state.md)及[修复合并记录](pr17-pr18-fixes-and-merge-2026-10-18.md)。下方0.3.0与Pose-Hub v0.1.0段落保留首次集成历史，不代表当前安装或素材版本。
-
-2026-10-17 已按用户明确授权完成 HipLab #2 → `feat/initial-migration`、#1 → main 的审核合并，首次业务集成提交 `656ee28`，来源与验证见[集成记录](mainline-integration-2026-10-17.md)。本地 main 已跟踪 origin/main，App 与制作成果不再停留在迁移分支。
-
-2026-10-18，main 已顺序集成 #7/#8/#9 及 rebased #10，并接入 Pose-Hub v0.1.0；业务代码 `9ef59a1` 已推送 origin/main，GitHub 确认四个 PR 均 MERGED。CSS 首帧修复已通过 Chrome 原 H.264 探针和构建检查，最终 APK 未重新安装手机，原生首帧复验仍待补。Windows 主干线按用户明确授权验证后直接提交推送 main，无需新 PR；Mac 和其他贡献方仍用分支 + PR。
 
 本地 fetch 为 `+refs/heads/*:refs/remotes/origin/*`。工作区干净时更新主线：
 
@@ -54,7 +30,7 @@ git pull --ff-only
 
 Windows 主干线可在 main 推进已授权工作，按事项 ID 记录目标、验收和检查结果，验证后直接提交推送。其他贡献方从同步后的 main 建分支并提 PR，由主干线审核集成，遵循 [AGENTS.md](../AGENTS.md)。已有明确授权不重复询问，执行前仍核对目标和版本。
 
-Dart 改动完成后运行 analyze 和 test，必要时做真机验证。当前本机解析缓存已可运行：
+Dart 改动完成后运行 analyze 和 test，必要时做真机验证。已有依赖解析缓存时可执行：
 
 ```powershell
 flutter analyze --no-pub
@@ -81,7 +57,7 @@ Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-以下为旧内置媒体分支历史流程，不在当前 main 执行。旧版取用 Pose-Hub v0.2.0，冻结 lock / manifest 仍保留；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当前视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用 README 中已双重校验并解压的 ZIP：
+以下为旧内置媒体分支历史流程，不在当前 main 执行。旧版取用 Pose-Hub v0.2.0，冻结 lock / manifest 仍保留；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当时视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用[历史恢复步骤](README.md#冻结-v020-zip-恢复仅旧分支历史)中已校验并解压的 ZIP：
 
 ```powershell
 python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --dry-run
@@ -123,4 +99,4 @@ adb -s $deviceSerial install -r build/app/outputs/flutter-apk/app-debug.apk
 
 安装前保留旧 APK 和必要的数据备份，安装后回读包版本、冷启动并检查本轮受影响功能，涉及媒体则验证原生视频播放。记录 APK 字节数/SHA、代码提交、设备、数据保持结果与证据目录到版本/验证台账。用户数据备份、密钥、截图日志留忽略目录，不提交仓库。
 
-debug 安装和商店发布各自登记；0.2.0+4 正式签名 AAB 送 Alpha 是历史记录，iOS 与商店后续状态仍按发布记录维护。本仓库 Android release 缺少 `android/key.properties` 时构建失败，不自动回退 debug 签名；内部测试包须单独核对实际旧包证书（本轮+34基线为+32），不得标成商店上传包。
+安装和商店发布按[版本台账](version-ledger.md)分别登记。Android release 使用配置的发布签名，内部测试 APK 覆盖前核对实际旧安装包证书。

@@ -2,7 +2,9 @@
 
 ## 2026-11-16 Android SDK 基准 +71
 
-Flutter 3.44.7 严格离线锁文件解析通过。静态分析 0 问题，全量 683 通过、0 失败、69 条件跳过。动作库回归验证新目录使用 SDK 缩略图，旧目录沿用本地裁切。
+2026-11-16，运行和构建源为 `9ac638be4542ae2652a0a6566cf6080499a6052a`。Flutter 3.44.7 执行 `flutter pub get --offline --enforce-lockfile` 通过，`flutter analyze --no-pub --fatal-infos` 为 0 问题，`flutter test --no-pub --concurrency=2 --reporter expanded` 为 683 通过、0 失败、69 条件跳过。动作库回归覆盖新目录的 SDK 缩略图和旧目录的本地裁切。
+
+2026-11-17 核对 `git diff --exit-code 9ac638b ba0d0c1 -- . ':(exclude)docs/**'` 通过，集成点沿用上述源码证据。此后的文档收束仅校验 Git 差异、链接和台账。
 
 API 35 模拟器安装 +71 arm64 release 并回读版本、ABI 和 APK 哈希。首次冷启动前目录回执不存在，启动后回读 stable `r2-v16`，目录 SHA-256 `c8536ffcf13e677449c251720183bcf099ae5ca166182026be411544d9bfa562`。dev、beta、stable 线上指针及 SDK 内置目录与该哈希一致。
 
@@ -725,7 +727,7 @@ Android 16 上 `adb install -r` 更新至 versionCode 3 / 0.1.2，冷启动正�
 | `player.js` 行为探针（Playwright Chromium，VP9 转码副本） | 静音自动播放、首帧事件、隐藏暂停、可见继续、宿主暂停后不自动播放均符合预期 | Chromium 而非 WebKit；未验证 H.264 / WKWebView |
 | 合并 #8 后 `build_hip_content.py` | 生成结果与提交一致，无差异 | — |
 
-需在 Mac/真机确认的项目见 [iOS 运行与上架说明](ios-setup-and-release.md#真机确认清单)。
+需在 Mac/真机确认的项目见 [iOS 运行与上架说明](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/docs/ios-setup-and-release.md#真机确认清单)。
 
 ## 第一轮 Android 集成验证（2026-10-17，本地未合并）
 

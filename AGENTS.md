@@ -2,93 +2,19 @@
 
 ## 当前入口
 
-先核对实际工作树、分支和 HEAD，再从 [文档入口](docs/README.md)、[当前状态](docs/current-state.md) 和 [开发事项](docs/development-roadmap.md) 确认任务范围。会员阶段使用 `feat/membership`，`main` 仍为开发基线。Git 版本、安装和发布分别登记在 [版本台账](docs/version-ledger.md)。当前界面以 [UI 设计规范](docs/ui-design-standard.md) 为准，通用实现配方见 [UI 复用手册](docs/ui-kit/README.md)。
+先核对实际工作树、分支和 HEAD，再从[文档入口](docs/README.md)、[当前状态](docs/current-state.md)和[开发事项](docs/development-roadmap.md)确认范围。`main` 是开发基线。构建、安装和商店记录见[版本台账](docs/version-ledger.md)。界面以[UI 设计规范](docs/ui-design-standard.md)为准，实现配方见[UI 复用手册](docs/ui-kit/README.md)。
 
-## 历史阶段与当时授权
+各历史阶段的约束和当次授权见[历史协作约定](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/AGENTS.md)。本轮范围按当前用户指令执行。
 
-下列带日期的记录用于追溯各阶段，实际状态与本轮范围按当前入口和用户指令核对。
+## 工作区与交付
 
-## 2026-11-08 SDK 同步候选（不合 main）
-
-本轮用户明确要求从 `main@54471ae` 建 `codex/sdk-sync-r1-20261108`，
-版本 `1.1.0+62` / arm64 `2062`，五处 ref 统一 SDK 集成分支
-`886ffd50bda196de06674debbf1a8958e3900d2f`，r2-v10、stable 渠道。SDK 普通 merge 保留
-`01a12f5` 与 `fa957ff` 两边历史，Draft PR #26 只供审阅。本轮在最终软件检查后交付
-APK并推候选分支；不合 main、不打 tag、不操作手机或商店。旧 +61 UI 验收保持，
-+62 真机验收单独记录。详情见 `docs/sdk-sync-r1-2026-11-08.md`。
-
-
-## UI规范与复用入口（2026-11-07文档收束）
-
-本项目设计数值以`docs/ui-design-standard.md`为准；跨App实现学习从`docs/ui-kit/README.md`进入，含实际组件合同、完整Flutter画廊与样例验证。样例属于docs内的学习入口，不替换App运行入口，也未发布为独立Pub包。变更设计时同步规范与配方；不要照搬旧交付报告或源码文件头中的历史参数。阶段事实与证据绑定见`docs/ui-documentation-closeout-2026-11-07.md`，版本/锁文件/运行内容保持+61。
-
-## 2026-11-07 历史口径：已验收UI / +61接收main
-
-用户已确认截至+61的本轮UI全部验证通过，明确授权合入并推送main作为后续开发主线。日常目录`E:/AII-3D/3D-Hip`切回main；已验收候选`6e49ac7f7c22370c54f4d1c5068166c7f200c0bb`完整快进接收，包含r2-v1接入、UI r4补全、首页卡片/持久视频/任意方向拖动/杂志展开、推荐文件夹、导航性能/固定按钮锚点、条目图标、全App英文及友善安全插画。版本保持`1.1.0+61`/2061，四实际SDK包及coach override固定`fa957ff405cc57cd10d53987430313822ff20607`；后续以main为准，旧候选分支和产物保留。
-
-本次用户验收与本轮完整软件检查见[主线回执](docs/ui-main-integration-2026-11-07.md)。不把历史iOS/锁屏/语音/通知/实模等独立未验项改写成Agent实测通过。另一SDK升级App分支的新增语音/计数提交未在+61内，不自动混入；SDK仓库main、release/1.0、tag和商店不属于本次集成。以下日期段落保留历史口径，不代表当前main版本或等待UI批准。
-
-## 2026-11-04 历史口径：QA v3 / +34 已入 main
-
-PR #30 已合入，功能集成点为 `2400b344183e1d57636412309899b4a1481966a7`；版本 `1.1.0+34`，arm64 split `2034`，四个实际 SDK 依赖及 coach override 固定 `f7b8a8e4853e9f50fc93888e1768ec1dbc75b588`（用户对齐口径为 v0.7.2 内容）。App 继续使用 SDK 聊天页，开启 qaV2 入口、由固定 SDK 承载问答 v3，传入 209 条未审 AI 标签，不增加 App 问答适配层。版本、依赖源及交付身份见 [版本管理](docs/version-management.md)、[版本台账](docs/version-ledger.md)。
-
-测试/构建源 `0f0882ede92b796ba53a03df1097f11232cb2d69` 与上述集成点完整文件树相同；analyze 0、全量 461 通过 / 0 失败 / 68 既有跳过及 +34 APK 归该运行源。本轮文档收束不重跑、不重建。用户确认 +33 从未出包、手机现装 +32；+34 已与实际 +32 验签一致，但尚无 +34 真机验收。+31 的旧 SDK 实模对话不能替代当前验证。UI r3 PR #29 仍为 Draft，独立等待真机反馈。
-
-本轮已明确授权文档整理、保存提交及普通 push main；保持版本、锁文件和运行代码，不操作手机、release/1.0、tag 或商店。当前事实见 [当前状态](docs/current-state.md)及[验证台账](docs/verification.md)。下列日期段落保留原阶段口径，不作为当前版本、安装状态或待合并条件。
-
-## 2026-11-04 SDK 0.6 文档收束快照（历史）
-
-main 已含 PR #26 首页主题、PR #27 UI r2/混合组、PR #28 SDK v0.6.0；本次收束前 main/origin/main 为 `0737e4e3e34cc7116e03554e977a0d8e65b39267`。共用版本 `1.1.0+30`，SDK 四个实际依赖和 coach override 固定 `693cbc02cdf284163409868e117e438515c6a8d8`。PR #29 是后续 UI r3 Draft 候选，仍待用户正常字号真机反馈；整理文档和 push 不表示验收或合并该候选。
-
-当前资源为 SDK 公共目录/语义、211 公共封面及按需视频，App 不内置 MP4；动作库/训练组选项 210（排除自测演示），Coach 范围 211，8 条不完整动作不开放。下方 Pose-Hub v0.2.0 ZIP/lock 的 46 视频恢复约定保留为旧分支历史，不能用于当前 main 回填已移除的视频。新机器按 [文档入口](docs/README.md#新机器拉素材mac--windows) 的当前流程准备。
-
-本轮用户已明确授权文档整理、保存提交及普通 push；仅改文档，不增版本、不重建、不操作手机、release/1.0 或商店。最新状态、包身份与证据分别见 [当前状态](docs/current-state.md)、[版本台账](docs/version-ledger.md)、[验证台账](docs/verification.md)。下方带日期的授权与现场描述保留原阶段范围，不作为当前版本或待合并状态。
-
-## 2026-10-24 Controller 合入已获批准
-
-开哥已明确同意将固定候选 `448f1096a96746a235913a58a172826431b3ec13` 合入 main 并推送。本机已完成快进和普通推送，远端回读一致；下方“仍须开哥同意”是批准前的候选约束，已由本次同意满足。release/1.0保持8880c71。后续回执只改文档，运行代码及既有分析0、全量454通过/1条件跳过、专项44通过保持；不重建或操作手机。[集成回执](docs/sdk-conversation-controller-2026-10-24.md#主线集成回执)。
-
-## 2026-10-24 CoachConversationController 候选授权
-
-本轮从 HipLab main 64daf6a 建分支，锁 coach0.5.0 / trainer0.2.3（d7e0b8f），UI0.1.1不变。仅用 SDK controller 替换会话/问题状态，保持 App 认证、白名单/profile、映射和开练边界，无 Key 隐藏全部入口。执行严格锁文件 pub get、分析和全量测试，本轮不需真机；**验证完成后仍须开哥同意才合入 main 并推送**，覆盖下方上一轮补丁“直接合入并推送main，无需再请求合并同意”的授权。release/1.0不动，不改SDK或复制其他App代码。见[接入记录](docs/sdk-conversation-controller-2026-10-24.md)。
-
-## 2026-10-24 SDK 补丁与直接集成授权
-
-用户已确认 `ugk_coach-v0.4.2`、`ugk_trainer-v0.2.2`、`ugk_coach_ui-v0.1.1`（均3302d62）已推送，并明确授权在候选5c4d32e上改锁、远端pub get、分析和测试通过后直接合入并推送main，无需再请求合并同意。release/1.0不动；若无需App源码适配，沿用已有真机验收，不重做。本轮已按授权合入并推送main（功能集成点88d8802），release仍8880c71。共用版本保持1.1.0+21。固定Flutter仍3.44.7；本机默认工具已升级，当前可显式使用E:/DevCaches/flutter-3.44.7-hiplab/bin/flutter.bat，避免无关框架及hosted依赖升级。[本轮回执](docs/sdk-tag-patch-2026-10-24.md)。
-
-## 2026-10-24 main 后续 SDK 共用界面接入
-
-本轮用户要求从最新 main 建分支接入正式 tags `ugk_coach-v0.4.1`、`ugk_trainer-v0.2.1`、`ugk_coach_ui-v0.1.0`，不改 SDK、不复制 SmartFit。无 Key 时全部 AI 入口隐藏，覆盖下文基础版“保留现有 AI 入口”的历史决定。此要求仅作用于本轮开发分支；`release/1.0` 不动。测试、编译和训练链路验证完成后，仍须开哥同意才合入 main 并推送，覆盖本轮自动合 main 的一般授权。用户随后明确可以使用当前真机，停止模拟器验证以减少电脑资源占用；真机覆盖安装须保持测试签名和已有数据。
-
-本轮开发共用版本 `1.1.0+21`；送审基础版仍为 `1.0.0+20`。接入和实际验证见 [SDK 共用界面记录](docs/sdk-shared-ui-2026-10-24.md)。
-
-## 2026-10-24 Mac iOS 发布授权
-
-本轮从 `release/1.0` 准备 iOS 1.0.0(20)，复用 Hip Interlude 的 `com.ugk.hipinterlude`（不是独立的 `com.ugk.hiplab` App 记录）。用户已授权自动签名、TestFlight 上传、提交推送 release 并合回 main；2026-10-24 用户随后明确授权填写目标 App 的商店资料并提交 App Review，覆盖原第七条；审核后保留手动发布，尚未授权正式公开发布。本轮 iOS 隐藏 AI 入口且不传 Key，覆盖下文旧的 iOS 禁传及保留 AI 入口限制；Android 仍按其原决定。只改 iOS 配置、iOS 平台界面守卫及发布证据，保持 Android、业务规则、版本、SDK 和依赖不变。真实耳机/锁屏验收不可由模拟器替代。当前证据见 [iOS 发布记录](docs/release-1.0/ios/README.md)。
-
-用户随后明确“声音部分可以不用测试，跳过，我确认 ok，后续自己使用测试反馈”。本轮声音/耳机听感记为用户确认与主动跳过，不再等待耳机就绪，不写成 Agent 实测通过；真机非声音的完整训练、锁屏计时、保存与崩溃检查仍按实际证据记录。
-
-同轮用户再次明确首版不再关注测试细节、优先完成 Apple 商店申请，后续亲自使用测试并迭代。按此要求收束额外验收；完整训练与锁屏持续播放保留未验，不再作为本轮申请准备的阻塞项。用户已明确回复“授权填写资料并提交审核”，目标限定为 Hip Interlude 记录（com.ugk.hipinterlude）的 HipLab 1.0.0 (20)。可更新对应公开隐私/支持页，保留其它 App/Android 政策和另一条等待审核记录。
-
-## 2026-10-24 上架执行追加授权
-
-用户在本轮物料交付后明确授权使用 Playwright MCP 复用其指定浏览器登录态，制作并上传 YouTube 演示、执行 Google Play 上传/填写/送审及完成当前可用发布流程；隐私政策、使用条款等必要公开页面可直接部署，允许使用本机已配置的 Cloudflare。此授权覆盖下文旧“Play 后台由开哥操作”的限制，不包括伪造测试者、绕过正式版权限或虚构审核通过。当前正式版受至少12人连续14天封闭测试门槛限制，先完成现有 Alpha 轨道提交；实际平台状态、账号门槛和本机验证分开记录。
-
-## 2026-10-24 基础版上架分支（用户新授权）
-
-- `release/1.0` 从 main `e456d2a` 建立，只接纳上架和审核修复，完成后合回 main；后续功能在 main 开发。Mac 本轮从 `release/1.0` 开 `ios/…` 分支打 iOS 包，不带入未验收的 AI 0.2 或液态玻璃候选。
-- 共用版本为 `1.0.0+20`，Android applicationId 保持 `com.ugk.hiplab`。SDK 固定到完整 commit `d193a703e3a8bef6d41e7705a55ae250e23e6a69`；不传 AI Key。用户同日最新决定保留现有 AI 入口，无 Key 使用本地预设回落，覆盖此前“全部隐藏”的要求。
-- 已授权本机修改发布配置、复用并备份既有上传密钥、构建上传签名 release AAB、验证和推送 release 分支；这些是下文旧“发布配置仅版本号”限制的本轮例外。签名凭据、产物和用户数据不进 Git。
-- 真机耳机完整训练、锁屏/后台及结束通知清理是本轮明确验收项，优先于下文旧“不扩展耳机/锁屏矩阵”的阶段限制；用户报告与本机实际验证分开记录，不把历史 D-34 改成通过。
-- 不在 Google Play 后台执行任何操作，由开哥上传、填写声明和提交审核；不上传 App Store/TestFlight。参阅 [本轮交付](docs/release-1.0/README.md)。
-
-- 本仓库 `mhgd3250905/HipLab` 是 HipLab App 主仓库，`main` 是开发基线，本目录为日常开发入口；后续动作素材由 `mhgd3250905/3D-Pose-Hub` 按发布版本提供。开工先读 `docs/README.md`、`docs/current-state.md` 和 `docs/development-roadmap.md`，再检查实际 Git 状态；手机已安装、分支已推送、main 已合并分别记录，不能混用。
+- 动作素材按 `mhgd3250905/3D-Pose-Hub` 的明确版本接入。
 - 本机 Windows 是主干线：按用户 2026-10-18 明确授权审核合并贡献 PR，验证后直接提交和推送 main，无需再开 PR；不要 force push。其他贡献方仍走分支 + PR。已有明确授权不重复询问。
 - 本仓库暂无 CI。提 PR 前本地跑 `flutter analyze` 和 `flutter test`，结果写进 PR 说明。
 - 本项目新建 worktree、审核/测试克隆及大体积构建产物一律放非 C 盘，先检查并优先复用已有非 C 盘副本。新工作副本默认 `E:/AII-3D/3D-Hip-worktrees/<task>/3D-Hip`，交付产物默认 `E:/AII-3D/hiplab-releases/`；禁止默认使用 C 盘 `.codex/worktrees`、`.config/superpowers/worktrees` 或 Temp。创建前核对工具的实际输出路径；工具不能指定位置且尚未核实其配置时，不使用会落到 C 盘的默认创建，改用显式指定 E 盘路径的 Git 工作副本，并说明工具限制。
 - 整理 Codex 托管副本前核对聊天绑定、Git 登记、未提交/未跟踪文件及忽略目录中的唯一产物；先在非 C 盘保存唯一产物，再通过可保持 Git 登记和聊天附件一致的流程归档。不得直接拖动或删除目录来迁移托管副本。具体执行流程见 `docs/development-workflow.md`。
 - 仅文档改动验证事实、链接和 `git diff --check`，不增加 App 版本、不重复构建。功能变更按影响范围测试，涉及原生播放或安装需补真机证据；未执行检查明确写出。
-- 当前阶段按用户2026-10-19最新要求，以正常字号和日常设备使用为兼容性验收范围；极大系统字号等极端显示环境不列为当前合并门槛，不为其继续扩展实现或验收。已有记录保留历史，常规数据正确性继续验证。按用户同日最新要求，本轮原生验收以正常播放无误为门槛，不再扩展耳机/蓝牙、外部音乐ducking及锁屏/系统中断矩阵；未验项目与历史失败如实保留，不改记为通过。
+- 验收范围取当前任务的明确要求，尚未执行的场景和历史失败按原证据记录。
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。
 - 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望）。当前素材按 [文档入口](docs/README.md#新机器拉素材mac--windows) 准备。v0.2.0 ZIP 与旧同步工具用于历史分支追溯。
@@ -98,5 +24,5 @@ main 已含 PR #26 首页主题、PR #27 UI r2/混合组、PR #28 SDK v0.6.0；�
 - Android 更新保持包名和签名连续，覆盖安装保留用户数据；不要清数据。用户数据备份、密钥、APK 和运行截图日志留 Git 忽略目录，文档路径不代表已备份到远端。
 
 - Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、媒体 lock、依赖和版本号；Mac 只改 `ios/` 及少量 iOS 专属平台代码，不升级依赖或素材版本。新环境按 [文档入口](docs/README.md#新机器拉素材mac--windows) 恢复锁定依赖和随 Git 提供的公共媒体。两端 Flutter 统一 **3.44.7 stable**；版本由 Windows 统一递增。
-- Mac 从最新 main 开 `ios/…` 分支并提 PR，本机主干线负责审核集成；Windows 可直接在 main 推进已授权工作。跨端共享音视频改动必须补 Android 复查。
-- 本轮及后续未另获授权前，不上传 Play / App Store / TestFlight，不调整商店或发布配置；发布配置变更当前只允许 pubspec.yaml 共用版本号递增；本机完成本轮开发与验证后推送 main 已授权。手机拔线时不执行 ADB，网页结果不代替 native/iOS 验收。
+- Mac 从核对后的 main 开 `ios/…` 分支并提 PR，Windows 主干线负责审核集成。跨端共享音视频改动补 Android 复查。
+- 商店上传、送审和发布按各自授权执行。实机验收按实际设备和对应包记录。
