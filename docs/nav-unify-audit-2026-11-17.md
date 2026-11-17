@@ -54,3 +54,18 @@
 - 恢复共享胶囊的 44pt 圆面、32pt 字形、2pt 描边和标题 17pt/w600。单双标题的左右控制轨均为 44pt，双标题区为 52pt。Coach「计划」的新建操作也收进 44pt 控制轨。
 - 标准页进入 400ms、返回 340ms，使用原 `HipMotion` 曲线。下一层最多偏移 .28 屏宽，浅色／深色遮暗分别为 .14／.32。返回键或关闭键仍触发页面原回调。iOS 手势跟手，抬手可完成返回或回弹，系统取消即使拖过阈值也回弹。减少动态效果时直接到终态，保留返回手势。
 - 浅色截图来自 Flutter Widget Test。可滚动页面检查首屏及滚动后，内容不足一屏的详情另用紧凑视口。素材、权益和 SDK 网络状态由测试夹具提供。测试结果及文件路径见[验证台账](verification.md#2026-11-17-顶栏与页面转场)。
+
+## iOS 对齐要点
+
+共享 Dart 实现从本分支接收，版本名 `1.1.4`，共用构建号 `72`。Android 自用 arm64 split 的版本码是 `2072`。iOS 归档时以自身的 `CFBundleShortVersionString` 和 `CFBundleVersion` 回读为准。
+
+| 页面或入口 | iOS 对齐／复查项 | 涉及文件 | 规范 |
+|---|---|---|---|
+| 首页 → 更多、训练记录、训练组 | 无源胶囊，目标胶囊随整页滑动；推荐文件夹先收起 | [hip_app.dart](../lib/hip/ui/hip_app.dart) | §1.5；手册 §4.1 |
+| 更多 → 设置 → 隐私、训练记录 → 全部训练 | 单标题首屏避开状态栏 + 44 + 24；滚动时正文穿过透明渐变；返回时固定一枚胶囊 | [hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart)、[hip_routes.dart](../lib/hip/ui/hip_routes.dart)、[hip_records_page.dart](../lib/hip/ui/hip_records_page.dart) | §1.1–1.5；手册 §2–5 |
+| 动作库、训练组、动作／套路详情、组编辑、添加动作 | 动作库和详情穿透；训练组分段与编辑表单保持固定区。双标题区 52，控制轨 44。只读详情首屏为安全区 + 52 + 24 + 12。编辑器按原退出确认拦截侧滑 | [practice_page.dart](../lib/hip/ui/library/practice_page.dart)、[group_editor_page.dart](../lib/hip/ui/library/group_editor_page.dart)、[hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart) | §1.3–1.5；手册 §2、§4 |
+| 自测说明、题目、结果 | 说明和结果使用共享顶栏；题目保留从按钮展开、48pt 控制轨和既有关闭回调 | [hip_assessment_page.dart](../lib/hip/ui/hip_assessment_page.dart)、[hip_page_kit.dart](../lib/hip/ui/hip_page_kit.dart) | §1.4–1.5；手册 §5 |
+| 会员两态、系统购买、隐私 | 关闭键在左侧 44pt 控制轨，购买与已订阅正文滚动，固定底栏避开 Home Indicator。在 iOS 核对系统购买返回及原回执处理 | [hip_membership_page.dart](../lib/hip/ui/hip_membership_page.dart)、[hip_membership_scope.dart](../lib/hip/ui/hip_membership_scope.dart) | §1.3–1.5、§7；手册 §4 |
+| Coach、同意弹层与 SDK 页面 | 宿主加载/错误壳共享顶栏；SDK 会话和计划详情保留 SDK 顶栏。SDK 到宿主页时胶囊随页。播放器、动作详情弹层及 SDK 退出流程按原行为核对 | [hip_coach_chat_page.dart](../lib/hip/ui/coach/hip_coach_chat_page.dart)、[hip_ai_consent_sheet.dart](../lib/hip/ui/coach/hip_ai_consent_sheet.dart)、[hip_routes.dart](../lib/hip/ui/hip_routes.dart) | §1.4–1.5；手册 §4–5 |
+
+iPhone 验收时重点看刘海或灵动岛下的首行、Home Indicator 上的固定底栏、键盘避让，以及浅色和深色下的返回按钮。用 首页 → 更多 → 设置 验证 400/340ms 进退、慢拖完成和取消回弹，再开启「减少动态效果」重复。Widget Test 中的 iOS 平台模拟提供软件回归证据，iOS 原生安装、系统购买和播放需要单独验收。
