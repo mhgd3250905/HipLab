@@ -220,7 +220,7 @@ void main() {
         matching: find.byType(HipNavBar),
       );
       final navInset = hipNavInset(tester.element(search));
-      expect(tester.widget<HipNavBar>(bar).fade, kHipNavFade);
+      expect(tester.getRect(bar), Rect.fromLTWH(0, 0, screen.width, navInset));
       expect(searchRect.top, navInset + 4);
       expect(searchRect.height, 36);
       expect(searchRect.left, kHipPageEdge);

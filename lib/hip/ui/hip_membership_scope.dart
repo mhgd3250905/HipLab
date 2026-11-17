@@ -26,6 +26,7 @@ Future<void> openHipMembership(
   BuildContext context,
   HipMembership membership, {
   LibraryActions? actions,
+  bool pinLeading = true,
 }) async {
   await Navigator.of(context).push<bool>(
     HipRoute.content<bool>((pageContext) {
@@ -58,15 +59,18 @@ Future<void> openHipMembership(
                 }
               },
       );
-    }),
+    }, pinLeading: pinLeading),
   );
 }
 
-Future<bool> ensureHipPremium(BuildContext context) async {
+Future<bool> ensureHipPremium(
+  BuildContext context, {
+  bool pinLeading = true,
+}) async {
   final membership = context
       .getInheritedWidgetOfExactType<HipMembershipScope>()
       ?.notifier;
   if (membership == null || membership.isPremium) return true;
-  await openHipMembership(context, membership);
+  await openHipMembership(context, membership, pinLeading: pinLeading);
   return context.mounted && membership.isPremium;
 }

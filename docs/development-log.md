@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-17 顶栏与页面转场
+
+`feat/nav-unify` 从 `origin/main@60b1618` 建立。统一常驻渐隐顶栏、44pt 返回胶囊和标准页面的滑动表面。修复首页直达训练组、本地动作详情、会员页、Coach 宿主转场及边缘拖动取消。[逐页核对](nav-unify-audit-2026-11-17.md)。
+
 ## 2026-11-17 Android +71 合入与文档收束
 
 [PR #39](https://github.com/mhgd3250905/HipLab/pull/39) 合入 main。版本管理和台账已区分主线、自用包、商店渠道和 iOS 候选，当前入口链接到对应来源。[当前状态](current-state.md)。

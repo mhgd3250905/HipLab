@@ -2,12 +2,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../control/hip_membership.dart';
 import '../data/hip_shared_library.dart';
 import 'hip_icons.dart';
+import 'hip_page_kit.dart';
 import 'hip_privacy_page.dart';
 import 'hip_routes.dart';
 import 'hip_text.dart';
@@ -157,22 +157,9 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
       final active = widget.membership.activeSnapshot;
       return FutureBuilder<List<MembershipOffer>>(
         future: _offers,
-        builder: (context, snapshot) => AnnotatedRegion<SystemUiOverlayStyle>(
-          value: HipColors.isDark
-              ? SystemUiOverlayStyle.light
-              : SystemUiOverlayStyle.dark,
-          child: Scaffold(
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                const HipPageBackdrop(),
-                active == null
-                    ? _unsubscribed(context, snapshot)
-                    : _subscribed(context, active),
-              ],
-            ),
-          ),
-        ),
+        builder: (context, snapshot) => active == null
+            ? _unsubscribed(context, snapshot)
+            : _subscribed(context, active),
       );
     },
   );
@@ -365,91 +352,49 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
 
   Widget _layout({required Widget content, required List<Widget> footer}) {
     final text = HipText.of(context);
-    final safe = MediaQuery.paddingOf(context);
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, safe.top + 8, 10, 8),
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: Tooltip(
-              message: text.pick('关闭', 'Close'),
-              child: HipPressable(
-                key: const ValueKey('membership-close'),
-                semanticLabel: text.pick('关闭', 'Close'),
-                onTap: () => Navigator.of(context).maybePop(),
-                child: SizedBox.square(
-                  dimension: 44,
-                  child: Center(
-                    child: HipCard(
-                      radius: 16,
-                      shadows: const [
-                        BoxShadow(
-                          color: Color(0x1214281F),
-                          offset: Offset(0, 3),
-                          blurRadius: 12,
-                        ),
-                      ],
-                      child: SizedBox.square(
-                        dimension: 32,
-                        child: Center(
-                          child: HipIcon(
-                            HipGlyph.close,
-                            size: 19,
-                            color: _ink,
-                            strokeWidth: 1.8,
-                          ),
-                        ),
-                      ),
-                    ),
+    return HipNavPage(
+      title: text.pick('HipLab 会员', 'HipLab Premium'),
+      leading: HipNavLeading.close,
+      leadingKey: const ValueKey('membership-close'),
+      bodyScrollsUnderBar: true,
+      body: SingleChildScrollView(
+        key: const ValueKey('membership-scroll'),
+        padding: EdgeInsets.fromLTRB(16, hipNavInset(context), 16, 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: content,
+          ),
+        ),
+      ),
+      bottomBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.symmetric(horizontal: 16),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 4),
+          child: Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ...footer,
+                  const SizedBox(height: 8),
+                  _LegalLinks(
+                    restore: widget.membership.busy ? null : () => _transact(),
+                    terms: _terms,
+                    privacy: () => Navigator.of(
+                      context,
+                    ).push(HipRoute.content((_) => const HipPrivacyPage())),
                   ),
-                ),
+                ],
               ),
             ),
           ),
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            key: const ValueKey('membership-scroll'),
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: content,
-              ),
-            ),
-          ),
-        ),
-        SafeArea(
-          top: false,
-          minimum: const EdgeInsets.symmetric(horizontal: 16),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 4),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...footer,
-                    const SizedBox(height: 8),
-                    _LegalLinks(
-                      restore: widget.membership.busy
-                          ? null
-                          : () => _transact(),
-                      terms: _terms,
-                      privacy: () => Navigator.of(
-                        context,
-                      ).push(HipRoute.content((_) => const HipPrivacyPage())),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

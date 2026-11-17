@@ -750,6 +750,7 @@ class _HipHomeState extends State<HipHome> {
           homeScene: store.scene,
           onStartAssessment: _startAssessment,
         ),
+        pinLeading: false,
       ),
     );
   }

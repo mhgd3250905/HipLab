@@ -149,7 +149,7 @@ class HipRoute<T> extends PageRoute<T> {
   @override
   void install() {
     super.install();
-    if (transition == HipTransition.push || transition == HipTransition.rise) {
+    if (transition != HipTransition.expand) {
       _curve = CurvedAnimation(
         parent: animation!,
         curve: HipMotion.enter,
@@ -289,18 +289,21 @@ class HipRoute<T> extends PageRoute<T> {
 
   // ── iOS edge swipe back (the same contract as Cupertino's) ──
 
-  bool get _gestureEnabled => popGestureEnabled;
+  bool get _gestureEnabled =>
+      isCurrent && !popGestureInProgress && popGestureEnabled;
 
   void _gestureStart() => navigator!.didStartUserGesture();
 
   void _gestureUpdate(double delta) => controller!.value -= delta;
 
-  void _gestureEnd(double velocity) {
+  void _gestureEnd(double velocity, {bool cancelled = false}) {
     final c = controller!;
     final nav = navigator!;
     final bool forward;
     if (!isCurrent) {
       forward = isActive;
+    } else if (cancelled) {
+      forward = true;
     } else if (velocity.abs() >= 1.0) {
       forward = velocity <= 0;
     } else {
@@ -335,6 +338,35 @@ class HipRoute<T> extends PageRoute<T> {
     } else {
       nav.didStopUserGesture();
     }
+  }
+}
+
+/// Moves the surface of a content route while leaving the app's shared
+/// leading control outside this subtree when both pages have that control.
+class HipRouteSurface extends StatelessWidget {
+  const HipRouteSurface({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final route = ModalRoute.of(context);
+    if (route is! HipRoute ||
+        route.transition != HipTransition.content ||
+        route._reduceMotion(context)) {
+      return child;
+    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: route.navigator!.userGestureInProgressNotifier,
+      child: child,
+      builder: (context, dragging, child) => SlideTransition(
+        position: Tween(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(dragging ? route.animation! : route._curve!),
+        child: child,
+      ),
+    );
   }
 }
 
@@ -571,6 +603,7 @@ class _HipBackGesture extends StatefulWidget {
 
 class _HipBackGestureState extends State<_HipBackGesture> {
   HorizontalDragGestureRecognizer? _drag;
+  int? _edgePointer;
   bool _active = false;
 
   @override
@@ -611,11 +644,25 @@ class _HipBackGestureState extends State<_HipBackGesture> {
   void _cancel() {
     if (!_active) return;
     _active = false;
-    widget.route._gestureEnd(0);
+    widget.route._gestureEnd(0, cancelled: true);
   }
 
   void _pointerDown(PointerDownEvent e) {
-    if (widget.route._gestureEnabled) _drag?.addPointer(e);
+    if (_edgePointer != null || !widget.route._gestureEnabled) return;
+    _edgePointer = e.pointer;
+    _drag?.addPointer(e);
+  }
+
+  void _pointerUp(PointerUpEvent e) {
+    if (e.pointer == _edgePointer) _edgePointer = null;
+  }
+
+  void _pointerCancel(PointerCancelEvent e) {
+    if (e.pointer != _edgePointer) return;
+    _edgePointer = null;
+    // An accepted drag reports PointerCancelEvent through onEnd. Restore
+    // the page before the recognizer considers its velocity.
+    _cancel();
   }
 
   @override
@@ -633,6 +680,8 @@ class _HipBackGestureState extends State<_HipBackGesture> {
           child: Listener(
             key: const ValueKey('hip-back-edge'),
             onPointerDown: _pointerDown,
+            onPointerUp: _pointerUp,
+            onPointerCancel: _pointerCancel,
             behavior: HitTestBehavior.translucent,
           ),
         ),

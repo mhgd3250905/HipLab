@@ -172,7 +172,7 @@ class _HipCoachChatPageState extends State<HipCoachChatPage> {
             }
           });
         }
-        return CoachChatPage(controller: chat);
+        return HipRouteSurface(child: CoachChatPage(controller: chat));
       }
       final failed =
           snapshot.connectionState == ConnectionState.done && snapshot.hasError;
@@ -315,15 +315,18 @@ Future<CoachChatController> loadHipChat(
       },
       onOpenAction: (context, request) => HipSharedLibrary.current != null
           ? HipSharedLibrary.openDetail(context, actions, request.actionId)
-          : _push(
+          : _pushFromSdkCoach(
               context,
               DrillDetailPage(actions: actions, drillId: request.actionId),
             ),
       onOpenLibrary: (context, request) => _pushPractice(context, actions, 0),
       onOpenSavedPlans: (context) => _pushPractice(context, actions, 2),
       onOpenCustomPlan: (context) async {
-        if (!await ensureHipPremium(context) || !context.mounted) return;
-        await _push(
+        if (!await ensureHipPremium(context, pinLeading: false) ||
+            !context.mounted) {
+          return;
+        }
+        await _pushFromSdkCoach(
           context,
           GroupEditorPage(
             actions: actions,
@@ -337,20 +340,23 @@ Future<CoachChatController> loadHipChat(
         );
       },
       onOpenSettings: (context) =>
-          _push(context, HipSettingsPage(store: store)),
+          _pushFromSdkCoach(context, HipSettingsPage(store: store)),
     ),
   );
 }
 
-Future<void> _push(BuildContext context, Widget page) async {
-  await Navigator.of(context).push(HipRoute.content<void>((_) => page));
+Future<void> _pushFromSdkCoach(BuildContext context, Widget page) async {
+  // The SDK's back button does not take part in HipLab's shared chip.
+  await Navigator.of(
+    context,
+  ).push(HipRoute.content<void>((_) => page, pinLeading: false));
 }
 
 Future<void> _pushPractice(
   BuildContext context,
   LibraryActions actions,
   int segment,
-) => _push(
+) => _pushFromSdkCoach(
   context,
   Builder(
     builder: (pageContext) => PracticePage(
@@ -359,25 +365,26 @@ Future<void> _pushPractice(
       memory: PracticeMemory()..segment = segment,
       // UI r2: 去排一套 is the bar's trailing action.
       trailing: segment == 2
-          ? HipPressable(
-              key: const ValueKey('practice-compose'),
-              semanticLabel: HipText.of(context).pick('去排一套', 'Create a plan'),
-              scale: .95,
-              onTap: () {
-                Navigator.of(pageContext).pop();
-                actions.coach!.requestCompose();
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                child: Text(
-                  HipText.of(context).pick('去排一套', 'Create plan'),
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: HipColors.jadeText,
+          ? Tooltip(
+              message: HipText.of(pageContext).pick('去排一套', 'Create a plan'),
+              child: HipPressable(
+                key: const ValueKey('practice-compose'),
+                semanticLabel: HipText.of(
+                  pageContext,
+                ).pick('去排一套', 'Create a plan'),
+                scale: .95,
+                onTap: () {
+                  Navigator.of(pageContext).pop();
+                  actions.coach!.requestCompose();
+                },
+                child: SizedBox.square(
+                  dimension: HipNavBar.chip,
+                  child: Center(
+                    child: HipIcon(
+                      HipGlyph.plus,
+                      size: 20,
+                      color: HipColors.jadeText,
+                    ),
                   ),
                 ),
               ),
@@ -385,11 +392,15 @@ Future<void> _pushPractice(
           : null,
       onStartAssessment:
           ({BuildContext? from, double radius = 28, Color? color}) {
-            _push(
-              pageContext,
-              HipAssessmentPage(
-                store: actions.store,
-                onStartPlan: actions.startPlan,
+            Navigator.of(pageContext).push(
+              HipRoute.expandFrom<void>(
+                from,
+                (_) => HipAssessmentPage(
+                  store: actions.store,
+                  onStartPlan: actions.startPlan,
+                ),
+                radius: radius,
+                color: color ?? HipColors.jade,
               ),
             );
           },
@@ -422,9 +433,11 @@ Future<void> openHipSavedCoachPlan(
     );
     return;
   }
-  await _push(
-    context,
-    CoachChatPlanDetailsPage(controller: chat, plan: prepared.reference!),
+  await Navigator.of(context).push(
+    HipRoute.push<void>(
+      (_) =>
+          CoachChatPlanDetailsPage(controller: chat, plan: prepared.reference!),
+    ),
   );
 }
 
@@ -470,9 +483,10 @@ Future<void> openHipCoachChat(
       !hasHipPremium(context)) {
     return;
   }
-  await _push(
-    context,
-    HipCoachChatPage(actions: actions, composeOnOpen: composeOnOpen),
+  await Navigator.of(context).push(
+    HipRoute.content<void>(
+      (_) => HipCoachChatPage(actions: actions, composeOnOpen: composeOnOpen),
+    ),
   );
 }
 

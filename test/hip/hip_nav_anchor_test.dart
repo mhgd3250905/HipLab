@@ -27,6 +27,7 @@ void main() {
     Widget home, {
     double top = 47,
     bool reduce = false,
+    TargetPlatform? platform,
   }) async {
     tester.view
       ..physicalSize = phone
@@ -35,7 +36,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
-        theme: hipTheme(HipPalette.dark),
+        theme: hipTheme(HipPalette.dark).copyWith(platform: platform),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(disableAnimations: reduce),
           child: child!,
@@ -66,6 +67,97 @@ void main() {
     }
   }
 
+  for (final reduced in [false, true]) {
+    testWidgets('route surface and chip follow edge cancellation ($reduced)', (
+      tester,
+    ) async {
+      const bodyKey = ValueKey('route-surface-body');
+      const actionKey = ValueKey('route-surface-action');
+      var buttonPresses = 0;
+      await shell(
+        tester,
+        const HipNavPage(title: 'Below', body: SizedBox.expand()),
+        reduce: reduced,
+        platform: TargetPlatform.iOS,
+      );
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      final route = HipRoute.content<void>(
+        (context) => HipNavPage(
+          title: 'Above',
+          subtitle: 'Subtitle',
+          body: const SizedBox.expand(key: bodyKey),
+          trailing: const SizedBox.square(key: actionKey, dimension: 20),
+          onLeading: () {
+            buttonPresses++;
+            Navigator.of(context).maybePop();
+          },
+        ),
+      );
+      navigator.push(route);
+      await tester.pump();
+      expect(
+        route.transitionDuration,
+        reduced ? Duration.zero : const Duration(milliseconds: 400),
+      );
+      expect(
+        route.reverseTransitionDuration,
+        reduced ? Duration.zero : const Duration(milliseconds: 340),
+      );
+      if (!reduced) {
+        await tester.pump(const Duration(milliseconds: 120));
+        expect(route.animation!.value, closeTo(.3, .001));
+        expectChip(tester, top: 47);
+        final title = tester.getCenter(find.text('Above'));
+        final body = tester.getTopLeft(find.byKey(bodyKey));
+        final action = tester.getCenter(find.byKey(actionKey));
+        expect(body.dx, greaterThan(0));
+        expect(title.dx - body.dx, closeTo(phone.width / 2, .001));
+        expect(action.dx - body.dx, closeTo(phone.width - 26, .001));
+      }
+      await tester.pumpAndSettle();
+      final gesture = await tester.startGesture(const Offset(3, 400));
+      await gesture.moveBy(const Offset(30, 0));
+      await tester.pump(step);
+      await gesture.moveBy(const Offset(230, 0));
+      await tester.pump(step);
+      expect(navigator.userGestureInProgress, isTrue);
+      expect(route.animation!.value, lessThan(.5));
+      expect(
+        tester.getTopLeft(find.byKey(bodyKey)).dx,
+        closeTo(reduced ? 0 : phone.width * (1 - route.animation!.value), .001),
+      );
+      expectChip(tester, top: 47);
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+      expect(navigator.userGestureInProgress, isFalse);
+      expect(route.isCurrent, isTrue);
+      expect(route.animation!.value, 1);
+      expectChip(tester, top: 47);
+
+      if (reduced) {
+        final back = await tester.startGesture(const Offset(3, 400));
+        await back.moveBy(const Offset(30, 0));
+        await tester.pump(step);
+        await back.moveBy(const Offset(230, 0));
+        await tester.pump(step);
+        await back.up();
+        await tester.pumpAndSettle();
+        expect(buttonPresses, 0);
+      } else {
+        await tester.tap(find.byType(HipNavBackChip));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 110));
+        expect(route.animation!.value, closeTo(1 - 110 / 340, .001));
+        expect(tester.getTopLeft(find.byKey(bodyKey)).dx, greaterThan(0));
+        expectChip(tester, top: 47);
+        await tester.pumpAndSettle();
+        expect(buttonPresses, 1);
+      }
+      expect(find.text('Below'), findsOneWidget);
+      expectChip(tester, top: 47);
+    });
+  }
+
   for (final top in [0.0, 47.0]) {
     for (final leading in HipNavLeading.values) {
       testWidgets(
@@ -82,7 +174,6 @@ void main() {
                   subtitle: subtitle,
                   leading: leading,
                   topInset: top,
-                  fade: kHipNavFade,
                   trailing: const SizedBox.square(dimension: 20, key: action),
                 ),
               ),

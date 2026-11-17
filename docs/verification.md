@@ -1,5 +1,15 @@
 # 验证台账
 
+## 2026-11-17 顶栏与页面转场
+
+`feat/nav-unify` 基于 `origin/main@60b1618`。Flutter 3.44.7 严格离线恢复锁文件成功，分析 0 问题。全量测试 689 通过、0 失败、69 条件跳过。最终边缘指针取消改动另复跑了 49 项导航、遮罩和路由专项，全部通过。
+
+16 个浅色 Widget Test 场景生成 63 张有效截图，含 21 张实际滚动后画面。覆盖单双标题、动作库和详情、训练组编辑和只读详情、会员两态、自测、记录、Coach 宿主和 SDK 页面。普通动画采集进入、返回、手势中和回弹中画面。减少动态效果检查直接到终态、手势完成与取消。
+
+截图保存在 `E:/AII-3D/hiplab-releases/nav-unify-20261117/`，汇总为 `01-light-first-and-scrolled.png` 和 `02-light-route-frames.png`，原帧在 `final/`。页面入口、安全区与例外见[逐页核对](nav-unify-audit-2026-11-17.md)。
+
+权益与 SDK 内容来自测试夹具。系统购买、真机和实时 3D 没有实测；在已打开的路由内调整测试视口曾触发 Flutter Overlay 尺寸断言，截图复查改用固定视口，真机旋转未验。
+
 ## 2026-11-16 Android SDK 基准 +71
 
 2026-11-16，运行和构建源为 `9ac638be4542ae2652a0a6566cf6080499a6052a`。Flutter 3.44.7 执行 `flutter pub get --offline --enforce-lockfile` 通过，`flutter analyze --no-pub --fatal-infos` 为 0 问题，`flutter test --no-pub --concurrency=2 --reporter expanded` 为 683 通过、0 失败、69 条件跳过。动作库回归覆盖新目录的 SDK 缩略图和旧目录的本地裁切。

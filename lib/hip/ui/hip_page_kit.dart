@@ -1,15 +1,11 @@
 // UI r2 (2026-11-03): the shared page kit — one navigation bar, one grouped
 // list language for every HipLab page that is not 首页 or SDK UI.
-// UI r4 (开哥 2026-11-05, reference iOS Settings 搜索页): the bar is an iOS
-// floating frost, not a Material app bar — see HipNavBar.
 //
 //   HipNavBar     44 high: 44pt iOS-style back chip on the left edge,
-//                 centred 17 w600 title. Always a translucent blur; [fade]
-//                 extra points of blur + gradient below the row so the body
-//                 reads as sliding under the glass. No hairline.
+//                 centred 17 w600 title, and a background fade from the
+//                 status bar to 24pt below the title row.
 //   HipNavPage    backdrop + safe area + body + the bar overlaid on top; the
-//                 body's viewport starts at the row, so its top [kHipNavFade]
-//                 points sit behind the glass.
+//                 body can scroll under the bar or start below the fade.
 //   HipSection    12 w600 muted group title, 24 above / 8 below.
 //   HipListGroup  flat panel, radius 12, no border, no shadow, inset hairlines.
 //   HipListRow    32×32 tinted icon, 16 w500 title, 13 muted subtitle,
@@ -37,16 +33,12 @@ const double kHipRowPad = 16;
 /// Where a row's text starts when it has an icon (16 + 30 + 12).
 const double kHipRowTextInset = kHipRowPad + 30 + 12;
 
-/// How far the bar's material reaches below its row before it is fully gone.
-/// [HipNavPage] lets the body's viewport start at the row, so this much of the
-/// content passes behind the frost and thins out there instead of hitting a
-/// hard edge.
+/// How far the bar's background fade reaches below the title row.
 const double kHipNavFade = 24;
 
 /// What a page's scrollable really has to clear when the body scrolls under
 /// the bar: the status bar, the row, and the transition strip. Content at rest
-/// must start below the strip, otherwise the first line sits in the fading
-/// glass and reads as blurred (开哥 2026-11-05, routine detail).
+/// must start below the strip so the gradient leaves it fully legible.
 double hipNavInset(BuildContext context, {bool hasSubtitle = false}) =>
     MediaQuery.paddingOf(context).top +
     (hasSubtitle ? HipNavBar.heightWithSubtitle : HipNavBar.height) +
@@ -63,7 +55,6 @@ class HipNavBar extends StatelessWidget {
     this.onLeading,
     this.leadingKey,
     this.trailing,
-    this.fade = 0,
     this.topInset = 0,
     this.showLeading = true,
   });
@@ -81,12 +72,7 @@ class HipNavBar extends StatelessWidget {
   /// One text or icon action on the right (keep it ≤ 44 wide-ish).
   final Widget? trailing;
 
-  /// Extra points of material below the row (0 for a bar that is not overlaid
-  /// on scrolling content).
-  final double fade;
-
-  /// Height of the status bar. The material runs up through it, so scrolled
-  /// content disappears under the system icons the way it does in iOS.
+  /// Height of the status bar. The gradient starts above it at screen y=0.
   final double topInset;
 
   /// False when the caller paints [HipNavBackChip] itself (HipNavPage keeps
@@ -109,12 +95,12 @@ class HipNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final band = topInset + row + fade;
+    final band = topInset + row + kHipNavFade;
     return SizedBox(
       height: band,
       child: Stack(
         children: [
-          Positioned.fill(child: _HipBarGlass(band: band)),
+          const Positioned.fill(child: _HipNavMask()),
           if (title != null)
             Positioned(
               top: topInset,
@@ -135,9 +121,9 @@ class HipNavBar extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 17,
                             height: 1.2,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             color: HipColors.text,
                           ),
                         ),
@@ -190,7 +176,7 @@ class HipNavBar extends StatelessWidget {
 /// The back / close chip on its own 44pt hit target.
 ///
 /// [HipNavPage] keeps this one control still while the rest of the page —
-/// including the bar's glass, title and trailing action — slides with the
+/// including the bar's gradient, title and trailing action — slides with the
 /// route, so navigation always has a fixed anchor (开哥 2026-11-05).
 class HipNavBackChip extends StatelessWidget {
   const HipNavBackChip({
@@ -210,12 +196,11 @@ class HipNavBackChip extends StatelessWidget {
   Widget build(BuildContext context) {
     if (leading == HipNavLeading.none) return const SizedBox.shrink();
     final close = leading == HipNavLeading.close;
-    final size = close ? 32.0 : 36.0;
     final label = close
         ? HipText.of(context).pick('关闭', 'Close')
         : HipText.of(context).pick('返回', 'Back');
     return SizedBox.square(
-      dimension: 44,
+      dimension: HipNavBar.chip,
       child: Tooltip(
         message: label,
         child: HipPressable(
@@ -223,26 +208,13 @@ class HipNavBackChip extends StatelessWidget {
           semanticLabel: label,
           scale: .9,
           onTap: onLeading ?? () => Navigator.of(context).maybePop(),
-          child: Center(
-            child: HipCard(
-              radius: size / 2,
-              shadows: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: .07),
-                  offset: const Offset(0, 3),
-                  blurRadius: 12,
-                ),
-              ],
-              child: SizedBox.square(
-                dimension: size,
-                child: Center(
-                  child: HipIcon(
-                    close ? HipGlyph.close : HipGlyph.back,
-                    size: 18,
-                    strokeWidth: 1.8,
-                    color: HipColors.text,
-                  ),
-                ),
+          child: _HipChipSurface(
+            child: Center(
+              child: HipIcon(
+                close ? HipGlyph.close : HipGlyph.back,
+                size: 32,
+                strokeWidth: 2,
+                color: HipColors.text,
               ),
             ),
           ),
@@ -272,116 +244,96 @@ class _HipUncoveredLeading extends StatelessWidget {
   }
 }
 
-/// The bar's glass — a frosted strip painted as a colour gradient.
-///
-/// 开哥 2026-11-05: opaque at the top of the screen, then a shallow ease down
-/// to a slightly translucent strip by 60% of the band, and a parabola from
-/// there to fully clear at the bottom (just below the back button). The strip
-/// is opaque *paint*, not a masked copy of the page backdrop — a ShaderMask
-/// over a RepaintBoundary was letting the body's text bleed through on
-/// Impeller. Three masked blurs under it keep what passes through frosted.
-class _HipBarGlass extends StatelessWidget {
-  const _HipBarGlass({required this.band});
-
-  /// Total painted height: status bar + control row + the transition strip.
-  final double band;
+/// The status bar and title row share a background gradient that stays mounted
+/// while the page scrolls.
+class _HipNavMask extends StatelessWidget {
+  const _HipNavMask();
 
   /// Points sampled along the gradient; enough for a smooth curve.
   static const int _samples = 12;
 
-  /// The curve holds near-full strength until here, then accelerates away
-  /// (开哥 2026-11-05: "在 60% 左右的区域开始加速").
+  /// The curve falls more quickly after 60% of the full band.
   static const double _knee = .6;
 
-  /// Alpha at the knee: the strip above it is never fully opaque — it stays
-  /// slightly translucent so the frosted content glows through (开哥
-  /// 2026-11-05: "0~60 过渡慢一点，有些许透明，透光模糊").
   static const double _kneeAlpha = .86;
 
   /// Opaque at the top, easing down to [_kneeAlpha] by [_knee], then a
-  /// parabola that accelerates to zero by [reach].
-  static double _fade(double t, double reach) {
-    if (reach <= 0) return 0;
-    final knee = _knee < reach ? _knee : reach;
-    if (t <= knee) {
-      final u = knee == 0 ? 1.0 : t / knee;
+  /// parabola that accelerates to zero at the bottom.
+  static double _fade(double t) {
+    if (t <= _knee) {
+      final u = t / _knee;
       return 1 - (1 - _kneeAlpha) * u * u;
     }
-    final u = ((t - knee) / (reach - knee)).clamp(0.0, 1.0);
+    final u = (t - _knee) / (1 - _knee);
     return _kneeAlpha * (1 - u * u);
   }
 
   @override
   Widget build(BuildContext context) {
-    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
     final bg = HipColors.background;
-    return RepaintBoundary(
-      // BackdropFilter uses the ancestor paint clip, not its child's layout
-      // bounds. Limit all three frost passes to this band; without this clip,
-      // two sliding navigation bars can each read back the whole viewport.
-      child: ClipRect(
-        key: const ValueKey('hip-nav-frost-clip'),
-        child: IgnorePointer(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Frost that follows the same curve: the heaviest layer fades out
-              // highest, the lightest reaches the bottom, so the blur thins with
-              // the strip instead of ending on a line.
-              if (!high) ...[
-                _frost(34, reach: .78),
-                _frost(20, reach: .9),
-                _frost(9, reach: 1),
-              ],
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      for (var i = 0; i <= _samples; i++)
-                        bg.withValues(alpha: _fade(i / _samples, 1)),
-                    ],
-                    stops: [for (var i = 0; i <= _samples; i++) i / _samples],
-                  ),
-                ),
-              ),
+    return IgnorePointer(
+      child: DecoratedBox(
+        key: const ValueKey('hip-nav-mask'),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              for (var i = 0; i <= _samples; i++)
+                bg.withValues(alpha: _fade(i / _samples)),
             ],
+            stops: [for (var i = 0; i <= _samples; i++) i / _samples],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _frost(double sigma, {required double reach}) => ShaderMask(
-    blendMode: BlendMode.dstIn,
-    shaderCallback: (r) => LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        for (var i = 0; i <= _samples; i++)
-          Colors.white.withValues(
-            alpha: _fade(i / _samples, reach).clamp(0.0, 1.0),
-          ),
-      ],
-      stops: [for (var i = 0; i <= _samples; i++) i / _samples],
-    ).createShader(r),
-    child: BackdropFilter(
-      filter: ui.ImageFilter.blur(
-        sigmaX: sigma,
-        sigmaY: sigma,
-        tileMode: TileMode.mirror,
+/// The capsule's own tint, hairline rim and locally clipped backdrop sample.
+class _HipChipSurface extends StatelessWidget {
+  const _HipChipSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = HipColors.isDark;
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    final fill = high
+        ? (dark ? const Color(0xFF1C1C1E) : Colors.white)
+        : Colors.white.withValues(alpha: dark ? .12 : .38);
+    final rim = dark
+        ? Colors.white.withValues(alpha: high ? .45 : .16)
+        : Colors.black.withValues(alpha: high ? .35 : .10);
+    final face = ColoredBox(color: fill, child: child);
+    return DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: rim, width: high ? 1 : .75),
       ),
-      child: const ColoredBox(color: Color(0x00000000)),
-    ),
-  );
+      child: ClipOval(
+        child: high
+            ? face
+            : BackdropFilter(
+                filter: ui.ImageFilter.blur(
+                  sigmaX: 12,
+                  sigmaY: 12,
+                  tileMode: TileMode.mirror,
+                ),
+                child: face,
+              ),
+      ),
+    );
+  }
 }
 
 /// A pushed page: backdrop, body, and [HipNavBar] overlaid on top of it. With
 /// [bodyScrollsUnderBar] the body reaches the top of the screen and the page's
 /// scrollable clears [hipNavInset]; otherwise a spacer keeps the body below
-/// the row.
-class HipNavPage extends StatefulWidget {
+/// the full gradient.
+class HipNavPage extends StatelessWidget {
   const HipNavPage({
     super.key,
     required this.body,
@@ -403,10 +355,9 @@ class HipNavPage extends StatefulWidget {
   final Key? leadingKey;
   final Widget? trailing;
 
-  /// iOS behaviour: the body's viewport starts at the top of the safe area and
-  /// the bar floats over it, so content is visible through the glass while it
-  /// scrolls past. The page's own scrollable must then start its content
-  /// [hipNavInset] down; otherwise the first rows sit behind the bar.
+  /// The body's viewport starts at screen y=0 and the bar overlays it, so
+  /// content fades under it while scrolling. The page's own scrollable starts
+  /// its content [hipNavInset] down so the first rows are visible at rest.
   final bool bodyScrollsUnderBar;
 
   /// Fixed action bar under the content (library footers). Owns the bottom
@@ -417,99 +368,42 @@ class HipNavPage extends StatefulWidget {
   final Widget? backdrop;
 
   @override
-  State<HipNavPage> createState() => _HipNavPageState();
-}
-
-class _HipNavPageState extends State<HipNavPage> {
-  CurvedAnimation? _curve;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final route = ModalRoute.of(context);
-    final parent =
-        route is HipRoute && route.transition == HipTransition.content
-        ? route.animation
-        : null;
-    if (identical(_curve?.parent, parent)) return;
-    _curve?.dispose();
-    _curve = parent == null
-        ? null
-        : CurvedAnimation(
-            parent: parent,
-            curve: HipMotion.enter,
-            reverseCurve: HipMotion.exit.flipped,
-          );
-  }
-
-  @override
-  void dispose() {
-    _curve?.dispose();
-    super.dispose();
-  }
-
-  /// A shared-bar route keeps only the back chip still: the whole page
-  /// surface — backdrop, body, footer, and the bar's glass/title/trailing —
-  /// slides in horizontally, so the page underneath is revealed on pop
-  /// instead of a flash of empty background.
-  Widget _enter(Widget child, Animation<double> curve) => SlideTransition(
-    position: Tween(begin: const Offset(1, 0), end: Offset.zero).animate(curve),
-    child: child,
-  );
-
-  @override
   Widget build(BuildContext context) {
-    final backdrop = widget.backdrop ?? const HipPageBackdrop();
     final route = ModalRoute.of(context);
-    final hip = route is HipRoute ? route : null;
-    final shared = hip?.transition == HipTransition.content;
     // Pin the chip only when both pages have one (the source sets
     // [HipRoute.pinLeading] false for the bar-less home shell).
-    final pin = shared && (hip?.pinLeading ?? false);
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final anim = shared ? hip?.animation : null;
-    final curve = anim == null || reduce
-        ? null
-        : route is HipRoute && route.popGestureInProgress
-        ? anim
-        : _curve;
-    Widget content = Column(
+    final pin =
+        leading != HipNavLeading.none &&
+        route is HipRoute &&
+        route.transition == HipTransition.content &&
+        route.pinLeading;
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(
-          height: widget.bodyScrollsUnderBar
-              ? 0
-              : MediaQuery.paddingOf(context).top +
-                    (widget.subtitle == null
-                        ? HipNavBar.height
-                        : HipNavBar.heightWithSubtitle),
-        ),
+        if (!bodyScrollsUnderBar)
+          SizedBox(height: hipNavInset(context, hasSubtitle: subtitle != null)),
         Expanded(
-          child: SafeArea(
-            top: false,
-            bottom: widget.bottomBar == null,
-            child: widget.body,
-          ),
+          child: SafeArea(top: false, bottom: bottomBar == null, child: body),
         ),
       ],
     );
     final topInset = MediaQuery.paddingOf(context).top;
-    Widget page = Stack(
+    final surface = Stack(
       fit: StackFit.expand,
       children: [
-        backdrop,
+        backdrop ?? const HipPageBackdrop(),
         Scaffold(
           backgroundColor: Colors.transparent,
           // Scaffold resizes its body for the keyboard, but leaves a bottom
           // navigation bar at the screen edge. Lift that shared action area
           // here; pages still own only their ordinary bottom SafeArea.
-          bottomNavigationBar: widget.bottomBar == null
+          bottomNavigationBar: bottomBar == null
               ? null
               : Padding(
                   padding: EdgeInsets.only(
                     bottom: MediaQuery.viewInsetsOf(context).bottom,
                   ),
-                  child: widget.bottomBar,
+                  child: bottomBar,
                 ),
           // No SafeArea here: with the bar floating over the body the
           // viewport has to reach the very top of the screen, so the content
@@ -528,15 +422,12 @@ class _HipNavPageState extends State<HipNavPage> {
           child: Material(
             type: MaterialType.transparency,
             child: HipNavBar(
-              title: widget.title,
-              subtitle: widget.subtitle,
-              leading: widget.leading,
-              onLeading: widget.onLeading,
-              leadingKey: widget.leadingKey,
-              trailing: widget.trailing,
-              // Only a body that scrolls under the bar needs the extra
-              // transition strip; a spacer layout ends at the row.
-              fade: widget.bodyScrollsUnderBar ? kHipNavFade : 0,
+              title: title,
+              subtitle: subtitle,
+              leading: leading,
+              onLeading: onLeading,
+              leadingKey: leadingKey,
+              trailing: trailing,
               // Not inside SafeArea: the band has to reach the top of the
               // screen, while its row still sits below the status bar.
               topInset: topInset,
@@ -548,25 +439,23 @@ class _HipNavPageState extends State<HipNavPage> {
         ),
       ],
     );
-    if (curve != null) page = _enter(page, curve);
-    final chip = widget.leading == HipNavLeading.none
-        ? null
-        : HipNavBackChip(
-            leading: widget.leading,
-            onLeading: widget.onLeading,
-            leadingKey: widget.leadingKey,
-          );
     return Stack(
       fit: StackFit.expand,
       children: [
-        page,
-        if (pin && chip != null)
+        HipRouteSurface(child: surface),
+        if (pin)
           Positioned(
             left: HipNavBar.chipEdge,
             top: topInset,
-            // The one fixed control: the bar's glass, title and trailing
+            // The one fixed control: the bar's gradient, title and trailing
             // action slide with their page, the chip stays put.
-            child: _HipUncoveredLeading(child: chip),
+            child: _HipUncoveredLeading(
+              child: HipNavBackChip(
+                leading: leading,
+                onLeading: onLeading,
+                leadingKey: leadingKey,
+              ),
+            ),
           ),
       ],
     );

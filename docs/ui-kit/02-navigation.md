@@ -1,6 +1,6 @@
 # 导航：状态栏、浮动顶栏与唯一返回胶囊
 
-本章冻结于 HipLab `84202688b3c43015c0f8c66d8b9d7b07988f3e8b` 的生产实现，讲清一组需要一起移植的约定。这里是 Flutter 自绘的仿 iOS 设计语言，跨 Android/iOS 使用，不是系统原生导航栏，也不声称完整复刻系统私有材质。
+本章说明 HipLab 共享顶栏与页面转场的实现，尺寸以《UI 设计规范》为准。这里是 Flutter 自绘的仿 iOS 设计语言，跨 Android/iOS 使用，不是系统原生导航栏，也不声称完整复刻系统私有材质。
 
 完整可编译样例：[navigation_example.dart](examples/navigation_example.dart)。公开入口 `NavigationRecipeHome` 可放入画廊的 `MaterialApp` 首页，或由画廊启动器推入。它展示“无返回键首页 → 更多单标题 → 添加动作双标题 → 动作说明单标题”，另含不穿透顶栏的固定正文页。
 
@@ -11,8 +11,8 @@
 | 依据 | 负责什么 |
 |---|---|
 | [hip_app.dart](../../lib/hip/ui/hip_app.dart) 的 `AnnotatedRegion<SystemUiOverlayStyle>` | 系统状态栏/导航栏图标及底色随主题变化 |
-| [hip_page_kit.dart](../../lib/hip/ui/hip_page_kit.dart) 的 `HipNavBar`、`HipNavPage`、`HipNavBackChip` | 统一几何、玻璃、正文安全区、固定胶囊的分层 |
-| [hip_routes.dart](../../lib/hip/ui/hip_routes.dart) 的 `HipRoute`、`HipCoveredTransition` | 页面动画、下页响应、iOS 边缘返回、减少动画 |
+| [hip_page_kit.dart](../../lib/hip/ui/hip_page_kit.dart) 的 `HipNavBar`、`HipNavPage`、`HipNavBackChip` | 统一几何、渐隐遮罩、正文安全区、固定胶囊的分层 |
+| [hip_routes.dart](../../lib/hip/ui/hip_routes.dart) 的 `HipRoute`、`HipRouteSurface`、`HipCoveredTransition` | 页面动画、下页响应、iOS 边缘返回、减少动画 |
 | [hip_theme.dart](../../lib/hip/ui/hip_theme.dart) 的 `HipMotion`、`HipColors` | 全局色板、时长和曲线 |
 | [hip_widgets.dart](../../lib/hip/ui/hip_widgets.dart) 的 `HipTopBar` | 自测等沉浸页独立的48点控制轨道 |
 
@@ -35,7 +35,7 @@
 | 标题 | 17/w600/行高1.2，单行省略 | 正文大标题 |
 | 副标题 | 12/muted/行高1.25，单行省略 | 靠改变整行中心位置容纳 |
 | 标题缩放 | 最多1.3；生产组件内限定 | 整个 App 的字号支持承诺 |
-| 磨砂过渡带 | 标题行下24 | 正文静止时可以压在这24点里 |
+| 遮罩过渡段 | 标题行下24 | 正文静止时可以压在这24点里 |
 | 页面水平外边距 | `kHipPageEdge = 20` | 返回按钮也跟着变成20 |
 
 穿透页面的正文首个内容必须清除完整材料带：
@@ -67,25 +67,15 @@ y=safeTop │ [44×44胶囊]       标题       [44点操作轨道]       │
 | 模式 | 组件行为 | 页面正文需要做的事 |
 |---|---|---|
 | `bodyScrollsUnderBar:true` | 视口到达屏幕顶部，顶栏覆盖在上面 | 给自己的滚动内容添加 `hipNavInset`，双标题传 `hasSubtitle:true` |
-| `bodyScrollsUnderBar:false` | 组件先保留 `safeTop + 44/52` | 只加正文间距；不要再加顶部 `SafeArea` 或 `hipNavInset` |
+| `bodyScrollsUnderBar:false` | 组件先保留 `safeTop + 44/52 + 24` | 只加正文间距；不要再加顶部 `SafeArea` 或 `hipNavInset` |
 
 `HipNavPage.bottomBar` 接收页面底部操作条。操作条负责自身底部 `SafeArea`；有操作条时，正文不会再叠底部安全区。键盘出现时页面组件利用 `viewInsets.bottom` 抬起操作条，调用方不能再加一份相同的键盘位移。
 
-## 3. 玻璃和返回按钮应当是什么样
+## 3. 渐隐遮罩和返回按钮
 
-### 3.1 顶栏材料
+### 3.1 顶栏遮罩
 
-`_HipBarGlass` 是三层真实 `BackdropFilter` 加一层背景色渐变。不是先截取页面背景再伪造一张磨砂图片，也不是把正文一起模糊。
-
-| 层 | σ | 在完整材料带的结束位置 |
-|---|---:|---:|
-| 最重模糊 | 34 | 78% |
-| 中层模糊 | 20 | 90% |
-| 最轻模糊 | 9 | 100% |
-
-填色采用13个采样点：顶端不透明，到整个材料带60%处缓慢降为α=.86，其后用抛物线加速降至透明。这里的60%是**完整材料带**，包含状态栏和标题行，不是最后24点的60%。模糊也分别渐弱，避免在同一条水平线上突然截止。采样边缘使用 `TileMode.mirror`。
-
-高对比度下不绘制三层取样模糊；仍保留可读的背景填色。不要用把文字变淡的方式模拟高对比度支持。
+背景色渐变覆盖状态栏、标题区和 24 点过渡段。渐变以 13 个采样近似，在带高 60% 处降到 α=.86，随后按抛物线降到完全透明。浅色和深色取当前背景色，内容滑到遮罩下方时仍可辨认轮廓。遮罩常驻，无背景模糊、实色底板或分割线。
 
 ### 3.2 返回/关闭胶囊
 
@@ -102,22 +92,22 @@ y=safeTop │ [44×44胶囊]       标题       [44点操作轨道]       │
 
 ## 4. 页面与胶囊的分层和所有权
 
-`HipRoute.content` 和 `HipNavPage` 必须配对。content路由本身不平移整个child，由 `HipNavPage` 按路由动画时钟移动页面表面。
+`HipRoute.content` 和 `HipNavPage` 必须配对。content路由本身不平移整个child，由 `HipRouteSurface` 按路由动画时钟移动页面表面。
 
 ```text
 Navigator
 └─ HipRoute.content：掌握正向/反向/手势进度
    └─ HipNavPage 外层 Stack
-      ├─ 滑动表面 SlideTransition
+      ├─ 滑动表面 HipRouteSurface
       │  ├─ 页面背景 backdrop
       │  ├─ 透明 Scaffold
       │  │  ├─ body
       │  │  └─ bottomBar（如有）
-      │  └─ 顶栏玻璃 + 标题 + 右侧操作
+      │  └─ 顶栏遮罩 + 标题 + 右侧操作
       └─ 固定胶囊（仅 pinLeading=true；不在滑动表面内）
 ```
 
-只有胶囊固定，玻璃、标题和右操作不能留在原地。pop时整张表面退向右侧，仍存活的下层页直接露出，避免先淡成空背景。
+只有胶囊固定，遮罩、标题和右侧操作随页面滑动。pop时整张表面退向右侧，仍存活的下层页直接露出，避免先淡成空背景。
 
 ### 4.1 两类来源调用点
 
@@ -221,26 +211,9 @@ Navigator.of(context).push(
 
 两段调用分别对应不同来源，不应连续执行。实际导入和回调位置已完整写在样例文件中。列表样式由共享组件负责，页面不额外嵌套Material AppBar或重复绘制返回键。
 
-## 7. 卡顿优化：限定采样，不能只限定布局
+## 7. 遮罩与胶囊的绘制范围
 
-真实修复点是 `_HipBarGlass` 的祖先paint clip：
-
-```text
-RepaintBoundary
-└─ ClipRect（实际可绘制范围 = 当前bar band）
-   └─ IgnorePointer
-      └─ Stack
-         ├─ ShaderMask → BackdropFilter σ34
-         ├─ ShaderMask → BackdropFilter σ20
-         ├─ ShaderMask → BackdropFilter σ9
-         └─ 背景色渐变
-```
-
-`BackdropFilter` 根据祖先实际绘制裁剪取样，不按子节点layout尺寸自动收窄。两个页面同时滑动时，如果每个顶栏都回读整个视口，三层模糊会重复扩大渲染负担。只加 `SizedBox`、`RepaintBoundary`，或者依赖没有发生子布局溢出的默认Stack裁剪，都不能证明限制了取样。
-
-返回胶囊有独立 `ClipOval` 限制σ12范围，不必把胶囊滤镜混算为顶栏的第四层。高对比度不采样。动画curve在State生命周期中绑定和dispose，避免在build里反复创建带监听的 `CurvedAnimation`。
-
-这些是可检查的结构性约束，组件测试能证明clip与层级正确；能否达到目标设备帧预算，仍需profile模式或真实设备帧时证据，不能把ClipRect测试通过写成稳定60/120fps。
+顶栏遮罩直接绘制在自己的带高内。返回胶囊是独立控件，`ClipOval` 限定其 σ12 的采样范围，高对比度使用实色和边线。路由进入和退出的曲线在路由生命周期绑定与释放，拖动时直接使用原始路由进度。
 
 ## 8. 常见做歪方式
 
@@ -252,12 +225,12 @@ RepaintBoundary
 | 一调用pop就显示来源胶囊 | 退出中出现两只按钮 | 等secondary进度回到0 |
 | 44点按钮居中放在52点标题区 | 进双标题页时下移4点 | 左右控件固定topInset/44点轨道 |
 | 顶部包SafeArea，正文又加hipNavInset | 额外空白，材料不到状态栏下面 | 区分材料坐标与正文首行坐标 |
-| 首行只避开44点标题，不避24点尾带 | 静止第一条内容发灰、模糊 | `hipNavInset`包含24 |
+| 首行只避开44点标题，不避24点尾带 | 静止第一条内容发灰 | `hipNavInset`包含24 |
 | `HipRoute.push`再包自行固定Topbar | 路由和页面各滑一次或拆层错误 | HipNavPage目的页使用content配对 |
-| content路由用于普通Scaffold，却没有HipNavPage | 因content本身不变换child而没有预期滑入 | 同时迁移路由与页面骨架 |
+| content路由用于普通Scaffold，却没有HipNavPage | 因content本身不变换child而没有预期滑入 | 宿主页使用 HipNavPage；从宿主包裹 SDK 页时可用 HipRouteSurface 或 push |
 | Pop先淡掉整张页面 | 短暂空背景/穿帮 | 同一surface反向滑出露出存活下页 |
-| ShaderMask直接淡掉正文/背景快照 | 字体透出、材质像遮罩或假玻璃 | 真实BackdropFilter + 独立填色渐变 |
-| 只用布局尺寸“限制”模糊 | 二级页面同时采样全屏，转场更卡 | 验证实际paint clip |
+| ShaderMask直接淡掉正文/背景快照 | 字体意外透出 | 使用独立背景色渐变遮罩 |
+| 给顶栏遮罩加滤镜 | 滚动内容被模糊 | 采样只发生在胶囊 ClipOval 内 |
 | 手势过程仍走enter曲线 | 页面滞后或超前于指尖 | 拖动直接使用线性route进度 |
 | 深浅色切换只改正文 | 状态栏图标、胶囊边缘仍沿用旧亮度 | 同步主题宿主、色板、系统栏样式 |
 
@@ -266,7 +239,7 @@ RepaintBoundary
 | 文件 | 原断言覆盖 |
 |---|---|
 | [hip_nav_anchor_test.dart](../../test/hip/hip_nav_anchor_test.dart) | safeTop=0/47；back/close/none；单双标题连续push/pop；pin true/false；键盘/减少动画；真实新建训练组；沉浸48点轨道 |
-| [hip_nav_blur_bounds_test.dart](../../test/hip/hip_nav_blur_bounds_test.dart) | RenderClipRect真实paint clip尺寸；深浅主题/单双标题；高对比无取样；嵌套push中两页各有局部band |
+| [hip_nav_blur_bounds_test.dart](../../test/hip/hip_nav_blur_bounds_test.dart) | 渐变区起止和正文间距；深浅主题、单双标题和胶囊局部采样 |
 | [hip_ui_round2_test.dart](../../test/hip/hip_ui_round2_test.dart) | 首页胶囊随页进入；固定胶囊；push/pop及取消侧滑的双胶囊回归；容器扩张不同时飞Hero |
 | [hip_transition_test.dart](../../test/hip/hip_transition_test.dart) | 渐进push/pop；下页仅压暗；容器变换；减少动画最终态可交互；tab fade-through |
 
