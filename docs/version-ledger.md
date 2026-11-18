@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-18 Android 2077 展示素材候选
+
+HipLab 1.2.0+77 Android arm64 release 测试包，版本码 2077，包名 com.ugk.hiplab。构建源 0c53e0997c82c90870eeb7b756c39101e34d29c2，四个 SDK 依赖固定 codex/v1.0.1-asset-persist 的 85b57fda632f1f25eb94514d44e00e214cf9f7f5。与 +75 同一测试签名，验证了 16 KB 对齐和重签载荷一致性。
+
+本机 APK 位于 E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2077/hiplab-1.2.0+77-arm64-device-test-signed.apk。SHA-256 为 a3a47c84acfbd7c8385effa378cfbe4f6fd6383387f325e0b31e1d3e077f7363。APK 内的 r2-v18 两份目录、站位图索引和 747 张静态图已逐个核验。[验证台账](verification.md#2026-11-18-android-2077-展示素材候选)
+
 ## 2026-11-18 Android SDK 1.0.0 候选
 
 Android arm64 release 测试 APK 为 +76，版本名 1.2.0，版本码 2076，包名 com.ugk.hiplab。构建源 `86e4b2cde6b5ac95d03f0d0e2338e96167e6eaf9`，SDK 固定 ugk_trainer-v1.0.0（89fb916eca0c8a07b37d93988f51e52f57cf2ecb）。
