@@ -11,6 +11,7 @@ import 'public_media_fixture.dart';
 class HomeDeckPlaybackRepository extends PublicMediaFixture {
   @override
   Future<Uri> ensureFile(coach.PoseHubPackFile file) {
+    if (!isVideoFile(file)) return super.ensureFile(file);
     requested.add(file.path);
     return Future.value(file.resolve(mediaBaseUri));
   }
@@ -44,7 +45,10 @@ class HomeDeckPlaybackPlatform extends trainer.PackedAlphaPlatform
   }
 
   @override
-  Future<({int playerId, int textureId})> createRgba({String? asset, Uri? sourceUri}) {
+  Future<({int playerId, int textureId})> createRgba({
+    String? asset,
+    Uri? sourceUri,
+  }) {
     if (!nativeRgba || sourceUri == null) {
       throw StateError('This fixture accepts enabled public RGBA sources only');
     }

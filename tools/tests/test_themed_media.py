@@ -5,8 +5,6 @@ import copy
 import io
 from pathlib import Path
 import hashlib
-import json
-from urllib.parse import unquote, urlparse
 import unittest
 from unittest import mock
 
@@ -38,27 +36,23 @@ class ThemedMediaTest(unittest.TestCase):
         self.assertIn(f'color=0x{tm.STAGE["light"]}', g)
 
     def test_public_posters_and_retained_stills_match_their_manifests(self):
-        packages = json.loads((ROOT / '.dart_tool/package_config.json').read_text(encoding='utf-8'))['packages']
-        sdk = next(package for package in packages if package['name'] == 'ugk_coach')
-        uri = urlparse(sdk['rootUri'])
-        sdk_root = Path(unquote(uri.path).lstrip('/') if uri.scheme == 'file' else ROOT / '.dart_tool' / sdk['rootUri'])
-        index = sdk_root / 'packages/ugk_trainer/assets/pose_hub/app-test-pack-r1/standing/index.json'
-        catalog = json.loads(index.read_text(encoding='utf-8'))
-        covers = {action['id']: action for action in catalog['actions']}
-        delivery = json.loads((ROOT / 'assets/public_media/catalog.json').read_text(encoding='utf-8'))
-        complete_ids = {action['id'] for action in delivery['actions']
-                        if action['trainingDefinitionComplete'] is True}
-        self.assertEqual(len(complete_ids), 211)
-        self.assertTrue(complete_ids.issubset(covers))
-        posters = list((ROOT / 'assets/public_posters').glob('*.webp'))
-        self.assertEqual({poster.stem for poster in posters}, complete_ids)
+        poster_root = ROOT / 'assets/public_posters'
+        index = tm.load_json(poster_root / 'standing-index.json')
+        delivery = tm.load_json(ROOT / 'assets/public_media/catalog.json')
+        videos = {action['id']: action['files']['video']
+                  for action in delivery['actions']}
+        posters = list(poster_root.glob('*.webp'))
+        self.assertEqual(index['pack'], delivery['pack'])
+        self.assertEqual(index['actions'].keys(), videos.keys())
+        self.assertEqual({poster.stem for poster in posters}, videos.keys())
         for poster in posters:
-            cover = covers[poster.stem]
+            entry = index['actions'][poster.stem]
+            video = videos[poster.stem]
             data = poster.read_bytes()
-            self.assertEqual(len(data), cover['bytes'], poster.name)
-            self.assertEqual(hashlib.sha256(data).hexdigest(), cover['sha256'], poster.name)
-            self.assertTrue(cover['alpha'], poster.name)
-            self.assertEqual(cover['sourceVideo']['frameIndex'], 0, poster.name)
+            self.assertEqual(len(data), entry['imageBytes'], poster.name)
+            self.assertEqual(hashlib.sha256(data).hexdigest(), entry['imageSha256'], poster.name)
+            self.assertEqual(entry['videoPath'], video['path'], poster.name)
+            self.assertEqual(entry['videoSha256'], video['sha256'], poster.name)
         manifest = tm.load_json(tm.MANIFEST)
         still_count = 0
         for still_set in manifest['stills'].values():

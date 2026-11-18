@@ -5,7 +5,6 @@ import '../../core/platform/screen_awake.dart';
 import '../../core/platform/training_service.dart';
 import 'package:flutter/material.dart';
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
-import '../data/hip_public_media.dart';
 import '../data/hip_shared_library.dart';
 import 'library/library_actions.dart';
 import 'library/library_widgets.dart'
@@ -18,6 +17,7 @@ import '../domain/hip_session.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_queue.dart';
+import 'hip_action_artwork.dart';
 import 'hip_icons.dart';
 import 'hip_page_kit.dart';
 import 'hip_theme.dart';
@@ -540,6 +540,7 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
 
   Widget _demo(AssessmentItem item) {
     final demo = item.demoArt(widget.store.content.drills);
+    final policy = HipActionArtwork.policyOf(context);
     final fallback = item.options.length > 1 ? item.options[1].image : null;
     final scoped =
         demo != null &&
@@ -615,10 +616,10 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
         expand: true,
         child: KeyedSubtree(
           key: ValueKey('demo-${item.id}'),
-          child: demo?.id == 'n-thomas-test' && HipPublicMedia.current != null
+          child: demo?.id == 'n-thomas-test' && policy != null
               ? trainer.TrainingActionMedia(
                   actionId: 'n-thomas-test',
-                  policy: HipPublicMedia.current,
+                  policy: policy,
                   playing: _demoPlaying && HipMediaPolicy.of(context),
                   mirrored: _side == HipSide.right,
                   stage: HipColors.mediaBackdrop,
@@ -639,12 +640,20 @@ class _HipAssessmentPageState extends State<HipAssessmentPage> {
                   fit: BoxFit.contain,
                   mirror: _side == HipSide.right,
                 )
-              : fallback != null
-              ? Image.asset(
-                  HipMediaVariants.themed(fallback),
-                  fit: BoxFit.contain,
-                )
-              : HipPendingArt(label: _copy.pick('动画待渲染', 'Demo coming soon')),
+              : Transform.flip(
+                  flipX: _side == HipSide.right,
+                  child: HipActionArtwork(
+                    actionId: demo.id,
+                    fallback: fallback == null
+                        ? HipPendingArt(
+                            label: _copy.pick('动画待渲染', 'Demo coming soon'),
+                          )
+                        : Image.asset(
+                            HipMediaVariants.themed(fallback),
+                            fit: BoxFit.contain,
+                          ),
+                  ),
+                ),
         ),
       ),
     );

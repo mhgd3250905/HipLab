@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
 import 'package:hiplab/hip/data/hip_public_media.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/domain/hip_settings.dart';
@@ -15,6 +16,8 @@ import 'package:hiplab/hip/ui/hip_content_text.dart';
 import 'package:hiplab/hip/ui/hip_home_action_inspect.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 import 'package:hiplab/hip/ui/library/lib_text.dart';
+import 'package:hiplab/hip/ui/library/library_actions.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
@@ -267,9 +270,7 @@ void main() {
           expect(
             find.descendant(
               of: detail,
-              matching: find.textContaining(
-                'Place soft padding under the kneeling knee.',
-              ),
+              matching: find.textContaining('Pad under your kneeling knee.'),
             ),
             findsOneWidget,
           );
@@ -277,7 +278,7 @@ void main() {
             find.descendant(
               of: detail,
               matching: find.textContaining(
-                'Squeeze your glute and slowly shift your body forward.',
+                'Squeeze your butt and slowly shift forward',
               ),
             ),
             findsOneWidget,
@@ -298,4 +299,94 @@ void main() {
       }
     },
   );
+
+  testWidgets('an open SDK detail follows the installed catalog', (
+    tester,
+  ) async {
+    const id = 's-kneel-hipflex';
+    final initial = installPublicMediaFixture(sharedLibrary: true);
+    final action = initial.catalog.tryGet(id)!;
+    final coverPath = action.cover.path.replaceFirst('/r2-v18/', '/r2-v19/');
+    expect(coverPath, isNot(action.cover.path));
+    final replacement = PublicMediaFixture(
+      catalog: coach.PoseHubAppTestCatalog.fromJson({
+        ...initial.catalog.raw,
+        'pack': 'r2-v19',
+        'actions': [
+          for (final entry in initial.catalog.allActions)
+            if (entry.id == id)
+              {
+                ...entry.raw,
+                'files': {
+                  ...entry.files.map((key, value) => MapEntry(key, value.raw)),
+                  'cover': {
+                    ...entry.cover.raw,
+                    'path': coverPath,
+                    'downloadUrl': entry.cover.downloadUri
+                        .toString()
+                        .replaceFirst('/r2-v18/', '/r2-v19/'),
+                  },
+                },
+              }
+            else
+              entry.raw,
+        ],
+      }, semanticCatalog: initial.catalog.toAiCatalog().raw),
+    );
+    final active = ValueNotifier(initial.policy);
+    addTearDown(active.dispose);
+    addTearDown(replacement.dispose);
+    final store = HipStore(content: content, storage: MemoryStorage());
+    final actions = LibraryActions(
+      store: store,
+      startPlan: (_, {from, originColor, radius = 0}) async {},
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: hipTheme(HipPalette.light),
+        builder: (_, child) => ValueListenableBuilder(
+          valueListenable: active,
+          child: child,
+          builder: (_, policy, navigator) => trainer.TrainingMediaPolicyScope(
+            policy: policy,
+            child: navigator!,
+          ),
+        ),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  HipSharedLibrary.openDetail(context, actions, id),
+              child: const Text('Open detail'),
+            ),
+          ),
+        ),
+      ),
+    );
+    final button = find.text('Open detail');
+    await tester.runAsync(
+      () => trainer.TrainingPosterImages.prepareAsset(
+        tester.element(button),
+        initial.policy.posterAssetFor(id)!,
+      ),
+    );
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    final detail = find.byType(trainer.TrainingLibraryDetail);
+    expect(
+      tester.widget<trainer.TrainingLibraryDetail>(detail).action.cover.path,
+      action.cover.path,
+    );
+    final sheetState = tester.state(detail);
+
+    active.value = replacement.policy;
+    await tester.pumpAndSettle();
+
+    expect(tester.state(detail), same(sheetState));
+    expect(
+      tester.widget<trainer.TrainingLibraryDetail>(detail).action.cover.path,
+      coverPath,
+    );
+    expect(replacement.requested, isEmpty);
+  });
 }

@@ -53,30 +53,32 @@ void main() {
     expect(pubspec, isNot(contains('- assets/drill_media/')));
     expect(pubspec, contains('- assets/public_media/'));
     expect(pubspec, contains('- assets/public_posters/'));
-    expect(pubspec, contains('- assets/public_posters/r2-v11/cover/'));
-    expect(pubspec, contains('- assets/public_posters/r2-v11/thumbnail/'));
+    expect(pubspec, contains('- assets/public_posters/r2-v18/cover/'));
+    expect(pubspec, contains('- assets/public_posters/r2-v18/thumbnail/'));
   });
 
-  test('r2-v11 artwork covers the explicit 248-action library scope', () {
+  test('r2-v18 artwork covers the 248-action library and assessment demo', () {
     final expected = {
       for (final entry in actions.entries)
         if (entry.value['trainingDefinitionComplete'] == true &&
             entry.key != 'n-thomas-test')
           entry.key,
     };
-    expect(publicCatalog['pack'], 'r2-v11');
+    expect(publicCatalog['pack'], 'r2-v18');
     expect(actions, hasLength(249));
     expect(expected, hasLength(248));
     expect(hiplabCoachAuthorizedActionIds, expected);
     expect(actions, contains('n-thomas-test'));
     expect(hiplabCoachAuthorizedActionIds, isNot(contains('n-thomas-test')));
     for (final kind in ['cover', 'thumbnail']) {
-      final bundled = Directory('assets/public_posters/r2-v11/$kind')
+      final bundled = Directory('assets/public_posters/r2-v18/$kind')
           .listSync()
           .whereType<File>()
           .map((file) => file.uri.pathSegments.last)
           .toSet();
-      expect(bundled, {for (final id in expected) '$id.webp'}, reason: kind);
+      expect(bundled, {
+        for (final id in actions.keys) '$id.webp',
+      }, reason: kind);
     }
     for (final id in hiplabCoachAuthorizedActionIds) {
       final files = actions[id]!['files'] as Map;

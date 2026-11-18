@@ -72,8 +72,8 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   final _mediaKeys = <int, GlobalKey>{};
   final _readyCallbacks = <int, ValueChanged<bool>>{};
   final _readyFrames = <int>{};
-  // The first visible cold card follows the same rule as a cold incoming card:
-  // prepare underneath its still, but reveal only on an intentional opening.
+  final _openedMedia = <int>{};
+  // Cold cards show their still until the user opens the demonstration.
   final _posterLocked = <int>{0};
   bool _committing = false;
   Offset _flightDirection = Offset.zero;
@@ -89,11 +89,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
   bool get _multiple => widget.drills.length > 1;
   bool get _reduced => MediaQuery.disableAnimationsOf(context);
   bool get _videoEnabled => HipMediaPolicy.of(context);
-  Set<int> get _warmIndices => {
+  Set<int> get _retentionWindow => {
     _index,
     if (_videoEnabled && _multiple) _at(1),
     if (_videoEnabled && _multiple) _at(-1),
   };
+  Set<int> get _warmIndices => _retentionWindow.intersection(_openedMedia);
 
   GlobalKey _mediaKey(int index) => _mediaKeys.putIfAbsent(
     index,
@@ -163,7 +164,10 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _position.stop();
       _vertical.stop();
       _flight.stop();
-      if (_committing) _index = _at(_toward);
+      if (_committing) {
+        _index = _at(_toward);
+        _openedMedia.retainAll(_retentionWindow);
+      }
       _committing = false;
       _position.value = 0;
       _vertical.value = 0;
@@ -201,10 +205,12 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       _mediaKeys.clear();
       _readyCallbacks.clear();
       _readyFrames.clear();
+      _openedMedia.clear();
       _posterLocked.clear();
       if (reuseVisible) {
         _mediaKeys[0] = previousKey!;
         _readyFrames.add(0);
+        _openedMedia.add(0);
         if (wasPosterLocked) _posterLocked.add(0);
       } else {
         _posterLocked.add(0);
@@ -281,6 +287,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     setState(() {
       _expanded = true;
       _paused = true;
+      _openedMedia.add(_index);
       _posterLocked.remove(_index);
     });
     _history = LocalHistoryEntry(
@@ -503,6 +510,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     if (!mounted || generation != _generation) return;
     setState(() {
       _index = _at(direction);
+      _openedMedia.retainAll(_retentionWindow);
       _committing = false;
       _position.value = 0;
       _vertical.value = 0;
@@ -813,6 +821,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
     double height, {
     double expansion = 0,
     bool rear = false,
+    double rearDepth = 0,
     bool contactShadow = false,
   }) => KeyedSubtree(
     key: ValueKey(rear ? 'home-deck-next-face' : 'home-deck-live-face'),
@@ -823,6 +832,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       number: index + 1,
       total: widget.drills.length,
       mediaKey: _mediaKey(index),
+      videoRequested: _openedMedia.contains(index),
       revealPausedFrame: !_posterLocked.contains(index),
       onFrameReadyChanged: _readyCallback(index),
       restingSize: Size(_cardWidth, height),
@@ -830,6 +840,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
       expanded: !rear && _expanded,
       paused: rear || _paused,
       rear: rear,
+      rearDepth: rearDepth,
       contactShadow: contactShadow,
       compact: height < 330,
       dose: widget.doses.elementAtOrNull(index) ?? '',
@@ -906,6 +917,7 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
                     next,
                     height,
                     rear: true,
+                    rearDepth: 1 - progress,
                     contactShadow: count == 3 || replenishing,
                   ),
                 ),
@@ -991,15 +1003,20 @@ class _HipHomeActionDeckState extends State<HipHomeActionDeck>
         child: DecoratedBox(
           key: ValueKey('home-deck-paper-$index'),
           decoration: BoxDecoration(
-            color: Color.lerp(
-              const Color(0xfffbfcfb),
-              const Color(0xfff6f7f6),
-              (depth - 1).clamp(0, 1),
-            ),
+            color: HipColors.isDark
+                ? null
+                : Color.lerp(
+                    const Color(0xfffbfcfb),
+                    const Color(0xfff6f7f6),
+                    (depth - 1).clamp(0, 1),
+                  ),
+            gradient: HipColors.isDark ? hipHomeDarkActionPaper(depth) : null,
             borderRadius: BorderRadius.circular(26),
             border: Border.all(
-              color: Colors.black.withValues(alpha: .06),
-              width: .5,
+              color: HipColors.isDark
+                  ? Colors.white.withValues(alpha: .08)
+                  : Colors.black.withValues(alpha: .06),
+              width: HipColors.isDark ? .6 : .5,
             ),
             boxShadow: bottom
                 ? null

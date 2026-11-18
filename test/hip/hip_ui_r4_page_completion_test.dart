@@ -266,6 +266,9 @@ void main() {
   });
 
   testWidgets('推荐套路 offers all authored 套路 and home controls', (tester) async {
+    final previousPalette = HipColors.palette;
+    HipColors.palette = HipPalette.dark;
+    addTearDown(() => HipColors.palette = previousPalette);
     final a = await actions();
     await openPage(
       tester,
@@ -289,6 +292,18 @@ void main() {
     expect(find.byKey(const ValueKey('home-scene-note')), findsOneWidget);
     // A is the 办公 default; B is not yet in the folder.
     expect(find.byKey(const ValueKey('home-added-routine-A')), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: find.byKey(const ValueKey('home-added-routine-A')),
+              matching: find.text(LibText.zh.homeAdded),
+            ),
+          )
+          .style
+          ?.color,
+      HipPalette.dark.jade,
+    );
     expect(find.byKey(const ValueKey('home-toggle-routine-A')), findsOneWidget);
     expect(find.byKey(const ValueKey('home-added-routine-B')), findsNothing);
     // Removing is a destructive action: red text, the add pill stays jade.

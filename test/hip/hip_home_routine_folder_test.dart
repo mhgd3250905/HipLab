@@ -173,6 +173,7 @@ void main() {
     bool reduced = false,
     List<HipHomeRoutineChoice>? items,
     VoidCallback? onChooseGroups,
+    ValueNotifier<trainer.TrainingMediaPolicy>? activePolicy,
   }) async {
     tester.view
       ..physicalSize = size
@@ -183,15 +184,18 @@ void main() {
     final host = GlobalKey<_FolderHostState>();
     final navigator = GlobalKey<NavigatorState>();
     final selected = <String>[];
+    final folder = _FolderHost(
+      key: host,
+      choices: items ?? choices,
+      navigatorKey: navigator,
+      reduced: reduced,
+      onSelected: selected.add,
+      onChooseGroups: onChooseGroups,
+    );
     await tester.pumpWidget(
-      _FolderHost(
-        key: host,
-        choices: items ?? choices,
-        navigatorKey: navigator,
-        reduced: reduced,
-        onSelected: selected.add,
-        onChooseGroups: onChooseGroups,
-      ),
+      activePolicy == null
+          ? folder
+          : MediaArtworkTestScope(policy: activePolicy, child: folder),
     );
     await tester.pumpAndSettle();
     return (host, navigator, selected);
@@ -202,6 +206,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(_panel), findsOneWidget);
   }
+
+  testWidgets('home folder swaps the active thumbnail with a local fallback', (
+    tester,
+  ) async {
+    final choice = choices.first;
+    final id = choice.drills.first.id;
+    final updated = fixture.withUpdatedThumbnail(id, 'h-sumo-pry');
+    final active = ValueNotifier(fixture.policy);
+    addTearDown(updated.dispose);
+    addTearDown(active.dispose);
+    await mount(tester, items: [choice], activePolicy: active);
+
+    final photo = find.byType(trainer.PoseHubStandingImage);
+    final before = tester.widget<trainer.PoseHubStandingImage>(photo);
+    expect(before.thumbnail, isTrue);
+    expect(fixture.requestedArtwork, contains(before.action.thumbnail));
+
+    active.value = updated.policy;
+    await tester.pumpAndSettle();
+    final after = tester.widget<trainer.PoseHubStandingImage>(photo);
+    expect(after.thumbnail, isTrue);
+    expect(after.repository, same(updated));
+    expect(
+      after.action.thumbnail.sha256,
+      isNot(before.action.thumbnail.sha256),
+    );
+    expect(updated.requestedArtwork, contains(after.action.thumbnail));
+    expect(updated.requested, isEmpty);
+    final fallback = tester.widget<trainer.TrainerPoster>(
+      find.descendant(of: photo, matching: find.byType(trainer.TrainerPoster)),
+    );
+    expect(fallback.asset, HipPublicMedia.thumbnailAssetFor(id));
+  });
 
   double sourceOpacity(WidgetTester tester) =>
       tester.widget<Opacity>(find.byKey(_source)).opacity;

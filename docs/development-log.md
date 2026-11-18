@@ -1,5 +1,25 @@
 # 开发日志
 
+## 2026-11-18 HipLab 1.2.0+77 展示素材持久化
+
+Android 候选基于 PR #40 的 +76。四个 SDK 依赖统一锁到 codex/v1.0.1-asset-persist 提交 85b57fda632f1f25eb94514d44e00e214cf9f7f5。随包目录、封面、缩略图和与视频对应的站位图同步到 r2-v18。展示素材由 SDK 校验完成后原子切换，原页面从目录变更通知刷新。首页只在动作打开后准备视频，训练按当前动作请求视频和语音，已开始的训练继续使用启动时的配置。
+
+## 2026-11-18 HipLab 1.2.0 Android SDK 1.0.0 候选
+
+从真机已验收的 `codex/nav-unify-feedback-75@7348188` 建立候选，固定 `ugk_trainer-v1.0.0`（`89fb916`），设置页显示同一 SDK 提交号。SDK tag 的兼容包包含 `r2-v18`，HipLab 使用 SDK runtime，沿用自己的 `r2-v11` 离线目录和 stable 在线更新。Android 自用 arm64 目标版本码为 `2076`。
+
+## 2026-11-18 Trainer 休息反馈与完成页
+
+`1.1.4+74` 从 `feat/nav-unify@a26a9ea` 接入 SDK `a5d55e96`。SDK 收起已提交的休息反馈并在完成页为动作显示已记录感受，HipLab 保存原练习记录后向 SDK 提供连续天数。宿主保留单练说明和安全提示。
+
+## 2026-11-17 会员离线报价与深色候选
+
+`1.1.4+73` 在 `origin/feat/nav-unify@66468db` 上补齐 Play 断线报价与购买重连，修正首页叠卡、训练页面和宿主提示的深色配色。Android 候选先交 Chrome 预览。[验证台账](verification.md#2026-11-17-会员离线报价与深色候选)。
+
+## 2026-11-17 顶栏与页面转场
+
+`feat/nav-unify` 从 `origin/main@60b1618` 建立。统一常驻渐隐顶栏、44pt 返回胶囊和标准页面的滑动表面。修复首页直达训练组、本地动作详情、会员页、Coach 宿主转场及边缘拖动取消。[逐页核对](nav-unify-audit-2026-11-17.md)。
+
 ## 2026-11-17 Android +71 合入与文档收束
 
 [PR #39](https://github.com/mhgd3250905/HipLab/pull/39) 合入 main。版本管理和台账已区分主线、自用包、商店渠道和 iOS 候选，当前入口链接到对应来源。[当前状态](current-state.md)。

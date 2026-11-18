@@ -13,6 +13,10 @@ Git 基线核对于 **2026-11-17（北京时间）**。设备和渠道分别附�
 | iOS App Store 审核 | iOS PR #38 以 **1.1.0 (61)** 的送审源码为基线，审核结果以 App Store Connect 为准 | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
 | iOS 开发候选 | 独立 Draft PR #38，**1.1.3 (71)**，SDK 固定 `63e2481` | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38)、[渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
 
+Android 展示素材候选 **1.2.0+77 / 2077** 已签包并通过软件检查。随包为 r2-v18，SDK 更新器会在检测到较新版本时下载展示素材并校验切换。真机验收改用 2077。[包身份](version-ledger.md#2026-11-18-android-2077-展示素材候选) · [验证台账](verification.md#2026-11-18-android-2077-展示素材候选)
+
+Android 候选 **1.2.0+76 / 2076** 位于 codex/sdk-v1.0.0，基于用户已验收的 +75，锁定 Trainer SDK 1.0.0。测试签名 APK 已通过包体验证，+76 真机验收暂缓。随包离线目录为 r2-v11，已核实 stable 在线目录为 r2-v18。[包身份](version-ledger.md#2026-11-18-android-sdk-100-候选)、[验证台账](verification.md#2026-11-18-android-sdk-100-候选)。
+
 Android +71 的应用内随包目录是 `r2-v11`，稳定渠道冷启动验证取得 `r2-v16`。动作库和训练视频均已抽样回读默认 V4 素材。模拟器透明轮廓在 +70/+71 均可复现，Android 真机验收结论来自用户的 +71 实际使用。[验证台账](verification.md#2026-11-16-android-sdk-基准-71)
 
 商店栏是最后可追溯的记录，日期与证据来源以各条回执为准。后续验收见[开发事项](development-roadmap.md)，早期状态见[历史快照](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/docs/current-state.md)。

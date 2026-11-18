@@ -13,7 +13,6 @@ import 'hip_page_kit.dart';
 import 'hip_routes.dart';
 import 'hip_theme.dart';
 import 'hip_text.dart';
-import 'hip_widgets.dart';
 import 'library/action_filter.dart';
 import 'library/lib_text.dart';
 import 'library/library_actions.dart';
@@ -26,13 +25,12 @@ class HipMorePage extends StatelessWidget {
     required this.actions,
     required this.practice,
     required this.onStartAssessment,
-    this.cover,
+    this.coverActionId,
   });
   final HipStore store;
 
-  /// Poster of the routine on 首页: blurred, darkened, it is the depth the
-  /// glass panels refract (null: plain depth gradient).
-  final String? cover;
+  /// The leading move in the home routine supplies the glass backdrop.
+  final String? coverActionId;
   final LibraryActions actions;
 
   /// 练习库 segment and filter, shared with every opening of the library.
@@ -45,9 +43,7 @@ class HipMorePage extends StatelessWidget {
     title: HipText.of(context).pick('更多', 'More'),
     leadingKey: const ValueKey('more-back'),
     bodyScrollsUnderBar: true,
-    backdrop: HipGlassBackdrop(
-      image: cover == null ? null : HipMediaVariants.themed(cover!),
-    ),
+    backdrop: HipGlassBackdrop(actionId: coverActionId),
     body: ListenableBuilder(
       listenable: store,
       builder: (context, _) => _list(context),

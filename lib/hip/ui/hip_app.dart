@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_coach_ui/ugk_coach_ui.dart'
+    show PoseHubDisplayUpdateDialogHost;
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../coach/hip_coach_chat.dart';
@@ -12,10 +15,11 @@ import '../control/hip_membership.dart';
 import '../control/hip_store.dart';
 import '../data/hip_action_media_loader.dart';
 import '../data/hip_content_loader.dart';
+import '../data/hip_public_catalog.dart';
 import '../data/hip_public_media.dart';
 import '../data/hip_shared_library.dart';
 import '../data/hip_action_scope.dart';
-import '../coach/hip_coach_profile.dart' show loadHipCoachCatalog;
+import '../data/posehub_catalog_updates.dart';
 import '../domain/hip_models.dart';
 import '../domain/hip_settings.dart';
 import '../domain/hip_progress.dart' show dayKey;
@@ -25,6 +29,7 @@ import '../voice/just_audio_output.dart';
 import '../voice/session_script.dart';
 import '../voice/voice_library.dart';
 import '../voice/voice_queue.dart';
+import 'hip_action_artwork.dart';
 import 'hip_ai_consent_scope.dart';
 import 'hip_assessment_page.dart';
 import 'hip_calm.dart';
@@ -61,6 +66,7 @@ class HipApp extends StatefulWidget {
     this.coach,
     this.membership,
     this.mediaPolicy,
+    this.catalogUpdates,
   });
 
   /// Injected in tests; otherwise loaded from assets + SharedPreferences.
@@ -76,6 +82,7 @@ class HipApp extends StatefulWidget {
   final HipCoachChat? coach;
   final HipMembership? membership;
   final trainer.TrainingMediaPolicy? mediaPolicy;
+  final PoseHubCatalogUpdates? catalogUpdates;
 
   @override
   State<HipApp> createState() => _HipAppState();
@@ -88,10 +95,16 @@ class _HipAppState extends State<HipApp> {
   late Future<(HipStore, HipVoice)> _loading = _load();
 
   AppLifecycleListener? _membershipLifecycle;
+  StreamSubscription<coach.PoseHubAppTestCatalog>? _catalogChanges;
+  final _ownedMedia = <trainer.TrainingMediaPolicy>[];
+  HipVoice? _updatedVoice;
 
   @override
   void initState() {
     super.initState();
+    _catalogChanges = widget.catalogUpdates?.updater.catalogChanges.listen(
+      (catalog) => unawaited(_applyCatalogUpdate(catalog)),
+    );
     if (widget.membership case final membership?) {
       unawaited(membership.refresh());
       _membershipLifecycle = AppLifecycleListener(
@@ -102,13 +115,20 @@ class _HipAppState extends State<HipApp> {
 
   @override
   void dispose() {
+    unawaited(_catalogChanges?.cancel());
     _membershipLifecycle?.dispose();
     widget.membership?.dispose();
+    for (final policy in _ownedMedia) {
+      policy.repository.dispose();
+    }
     super.dispose();
   }
 
   Future<(HipStore, HipVoice)> _load() async {
-    final store = widget.store ?? HipStore(content: await loadHipContent());
+    final catalog = widget.mediaPolicy?.catalog ?? await loadHipPublicCatalog();
+    final store =
+        widget.store ??
+        HipStore(content: await loadHipContentWithCatalog(catalog));
     if (widget.store == null) {
       await store.initialize();
       // 办公 by weekday daytime, 居家 otherwise, unless picked today
@@ -117,10 +137,13 @@ class _HipAppState extends State<HipApp> {
     }
     _loadingLanguage = store.language;
     HipMediaVariants.media = await loadHipActionMedia();
-    HipPublicMedia.current = widget.mediaPolicy ?? await HipPublicMedia.load();
+    final policy =
+        widget.mediaPolicy ?? await HipPublicMedia.load(activeCatalog: catalog);
+    if (widget.mediaPolicy == null) _ownedMedia.add(policy);
+    HipPublicMedia.current = policy;
     HipSharedLibrary.current = hipSharedLibraryConfig(
       hipActionScope(
-        store.content.publicCatalog ?? await loadHipCoachCatalog(),
+        store.content.publicCatalog ?? hipCoachCatalogFromPublic(catalog),
       ),
     );
     HipVoice voice;
@@ -134,13 +157,63 @@ class _HipAppState extends State<HipApp> {
         lib: lib,
         output: JustAudioVoiceOutput(),
         settingsOf: () => store.voice,
-        online: await trainer.withPoseHubCatalogVoice(
-          lib,
-          catalog: HipPublicMedia.current!.catalog,
-        ),
+        online: await trainer.withPoseHubCatalogVoice(lib, catalog: catalog),
       );
     }
     return (store, voice);
+  }
+
+  Future<void> _applyCatalogUpdate(coach.PoseHubAppTestCatalog catalog) async {
+    if (widget.store != null || widget.mediaPolicy != null) return;
+    trainer.TrainingMediaPolicy? pending;
+    try {
+      final (store, initialVoice) = await _loading;
+      final active = HipPublicMedia.current;
+      if (!mounted ||
+          (active != null &&
+              poseHubCatalogRevisionOf(active.catalog) ==
+                  poseHubCatalogRevisionOf(catalog))) {
+        return;
+      }
+      final content = applyHipPublicTraining(store.content, catalog);
+      final library = hipSharedLibraryConfig(
+        hipActionScope(content.publicCatalog!),
+      );
+      final policy = pending = await HipPublicMedia.load(
+        activeCatalog: catalog,
+      );
+      final voice =
+          widget.voice ?? await _voiceForCatalog(initialVoice, catalog);
+      if (!mounted) return;
+      setState(() {
+        _ownedMedia.add(policy);
+        pending = null;
+        _updatedVoice = voice;
+        HipPublicMedia.current = policy;
+        HipSharedLibrary.current = library;
+        store.usePublicTrainingContent(content);
+      });
+    } on Object catch (error) {
+      debugPrint('PoseHub catalogue could not be applied to HipLab: $error');
+    } finally {
+      pending?.repository.dispose();
+    }
+  }
+
+  Future<HipVoice> _voiceForCatalog(
+    HipVoice voice,
+    coach.PoseHubAppTestCatalog catalog,
+  ) async {
+    if (!widget.videoEnabled) return voice;
+    return HipVoice(
+      lib: voice.lib,
+      output: voice.output,
+      settingsOf: voice.settingsOf,
+      online: await trainer.withPoseHubCatalogVoice(
+        voice.lib,
+        catalog: catalog,
+      ),
+    );
   }
 
   static ThemeMode _mode(HipThemeChoice c) => switch (c) {
@@ -179,19 +252,25 @@ class _HipAppState extends State<HipApp> {
       final (store, voice) = loaded;
       return ListenableBuilder(
         listenable: store,
-        builder: (context, _) => HipVoiceScope(
-          voice: voice,
-          child: _shell(
-            _mode(store.theme),
-            HipHome(
-              store: store,
-              coach: widget.coach,
-              membership: widget.membership,
-              aiConsent: _aiConsent,
+        builder: (context, _) {
+          final home = HipHome(
+            store: store,
+            coach: widget.coach,
+            membership: widget.membership,
+            aiConsent: _aiConsent,
+          );
+          final updates = widget.catalogUpdates;
+          return HipVoiceScope(
+            voice: _updatedVoice ?? voice,
+            child: _shell(
+              _mode(store.theme),
+              updates == null
+                  ? home
+                  : _DisplayUpdateHome(updates: updates, child: home),
+              language: store.language,
             ),
-            language: store.language,
-          ),
-        ),
+          );
+        },
       );
     },
   );
@@ -237,6 +316,36 @@ class _HipAppState extends State<HipApp> {
       );
     },
     home: home,
+  );
+}
+
+/// Starts the first check once the SDK host is mounted under the Navigator.
+class _DisplayUpdateHome extends StatefulWidget {
+  const _DisplayUpdateHome({required this.updates, required this.child});
+
+  final PoseHubCatalogUpdates updates;
+  final Widget child;
+
+  @override
+  State<_DisplayUpdateHome> createState() => _DisplayUpdateHomeState();
+}
+
+class _DisplayUpdateHomeState extends State<_DisplayUpdateHome> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.updates.onAppReady();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => PoseHubDisplayUpdateDialogHost(
+    progress: widget.updates.updater.displayProgress,
+    onRetry: () async {
+      await widget.updates.checkNow();
+    },
+    child: widget.child,
   );
 }
 
@@ -333,7 +442,7 @@ class _HipHomeState extends State<HipHome> {
   // Warm only selectable plans' first covers, using the exact key TrainerPoster
   // will resolve. A cold image decode must not add a blank frame to scene swaps.
   void _warmPlanPosters() {
-    final policy = HipPublicMedia.current;
+    final policy = HipActionArtwork.policyOf(context);
     if (policy == null) return;
     final bundle = DefaultAssetBundle.of(context);
     final width = trainer.TrainingPosterImages.decodeWidth(context);
@@ -393,11 +502,19 @@ class _HipHomeState extends State<HipHome> {
     double radius = 31,
     Color? originColor,
   }) async {
-    final policy = HipPublicMedia.current;
+    final policy =
+        trainer.TrainingMediaPolicyScope.read(context) ??
+        HipPublicMedia.current;
     final first = plan.steps.firstOrNull?.drill.id;
+    final player = HipPlayerPage(
+      store: store,
+      plan: plan,
+      trainingContent: store.content,
+      trainingVoice: HipVoice.of(context),
+    );
     await trainer.TrainerLauncher.open<void>(
       context,
-      builder: (_) => HipPlayerPage(store: store, plan: plan),
+      builder: (_) => player,
       firstPosterAsset: first == null ? null : policy?.posterAssetFor(first),
       mediaPolicy: policy,
       theme: HipSharedLibrary.theme(context),
@@ -427,9 +544,7 @@ class _HipHomeState extends State<HipHome> {
     HipRoute.content<void>(
       (_) => HipMorePage(
         store: store,
-        cover: _heroDrill == null
-            ? null
-            : HipPublicMedia.current?.posterAssetFor(_heroDrill!.id),
+        coverActionId: _heroDrill?.id,
         actions: _library,
         practice: _practice,
         onStartAssessment: _startAssessment,
@@ -750,6 +865,7 @@ class _HipHomeState extends State<HipHome> {
           homeScene: store.scene,
           onStartAssessment: _startAssessment,
         ),
+        pinLeading: false,
       ),
     );
   }
@@ -1073,7 +1189,7 @@ class _HipHomeState extends State<HipHome> {
 enum HipProgressSection { all, records, settings }
 
 // Keep this Settings label in sync with the trainer package in pubspec.lock.
-const _hipSdkRevision = '4eb87ce';
+const _hipSdkRevision = '85b57fd';
 
 class HipProgressPage extends StatelessWidget {
   const HipProgressPage({
@@ -1186,11 +1302,19 @@ class HipProgressPage extends StatelessWidget {
                   onTap: () {
                     final plan = store.microPlan;
                     if (plan == null) return;
-                    final policy = HipPublicMedia.current;
+                    final policy =
+                        trainer.TrainingMediaPolicyScope.read(context) ??
+                        HipPublicMedia.current;
                     final first = plan.steps.firstOrNull?.drill.id;
+                    final player = HipPlayerPage(
+                      store: store,
+                      plan: plan,
+                      trainingContent: store.content,
+                      trainingVoice: HipVoice.of(context),
+                    );
                     trainer.TrainerLauncher.open<void>(
                       context,
-                      builder: (_) => HipPlayerPage(store: store, plan: plan),
+                      builder: (_) => player,
                       firstPosterAsset: first == null
                           ? null
                           : policy?.posterAssetFor(first),

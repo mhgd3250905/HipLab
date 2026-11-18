@@ -8,7 +8,7 @@ import 'posehub_catalog_updates.dart';
 const hipPublicCatalogAsset = 'assets/public_media/catalog.json';
 const hipPublicSemanticsAsset = 'assets/public_media/catalog/catalog.json';
 
-/// Use a verified cache only when it is newer than the bundled r2-v11 copy.
+/// Use a verified cache only when it is newer than the bundled copy.
 Future<coach.PoseHubAppTestCatalog> loadHipPublicCatalog({
   AssetBundle? bundle,
   trainer.PoseHubCatalogStore? verifiedCache,
@@ -26,6 +26,12 @@ Future<coach.PoseHubAppTestCatalog> loadHipPublicCatalog({
       return cached;
     }
   }
+  return loadHipBundledPublicCatalog(bundle: bundle);
+}
+
+Future<coach.PoseHubAppTestCatalog> loadHipBundledPublicCatalog({
+  AssetBundle? bundle,
+}) async {
   final assets = bundle ?? rootBundle;
   // Large loadString assets decode in an isolate outside widget fake clocks.
   // Read exact bytes; the SDK verifies the canonical semantics descriptor.

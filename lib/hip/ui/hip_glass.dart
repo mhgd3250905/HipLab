@@ -20,6 +20,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../data/hip_public_media.dart';
+import 'hip_action_artwork.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
@@ -327,34 +329,56 @@ class HipGlassRimPainter extends CustomPainter {
 /// upscaling blurs it for free — no ImageFilter), darkened/lightened toward
 /// the page colour, plus a vignette. Static, its own layer.
 class HipGlassBackdrop extends StatelessWidget {
-  const HipGlassBackdrop({super.key, this.image});
+  const HipGlassBackdrop({super.key, this.actionId});
 
-  /// Asset path of the cover (already themed), or null for the plain depth
-  /// gradient.
-  final String? image;
+  final String? actionId;
 
   @override
   Widget build(BuildContext context) {
     final bg = HipColors.background;
     final dark = HipColors.isDark;
+    final id = actionId;
+    final asset = id == null
+        ? null
+        : HipActionArtwork.policyOf(context)?.posterAssetFor(id) ??
+              HipPublicMedia.coverAssetFor(id);
+    final pixels = dark ? 18 : 10;
     return RepaintBoundary(
       child: IgnorePointer(
         child: Stack(
           fit: StackFit.expand,
           children: [
             ColoredBox(color: bg),
-            if (image != null)
+            if (id != null)
               // m6: in light mode the grey figure read as blotches through
               // the light wash — keep only a faint tint of the cover there.
               Opacity(
                 opacity: dark ? .55 : .14,
-                child: Image.asset(
-                  image!,
+                child: FittedBox(
                   fit: BoxFit.cover,
-                  cacheWidth: dark ? 18 : 10,
-                  filterQuality: FilterQuality.medium,
                   alignment: const Alignment(0, -.3),
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox.square(
+                    dimension: pixels.toDouble(),
+                    child: ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                      child: ExcludeSemantics(
+                        child: HipActionArtwork(
+                          actionId: id,
+                          preferCover: true,
+                          fallback: asset == null
+                              ? const SizedBox.shrink()
+                              : Image.asset(
+                                  HipMediaVariants.themed(asset),
+                                  cacheWidth: pixels,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) =>
+                                      const SizedBox.shrink(),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             // Soft jade glow top-left, deeper corners: depth to refract.

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hiplab/hip/data/hip_action_scope.dart';
 import 'package:hiplab/hip/domain/hip_action_media.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
 
@@ -42,13 +41,13 @@ void main() {
     }
   });
 
-  test('r2-v11 covers and thumbnails match the pinned public catalog', () {
+  test('r2-v18 covers and thumbnails match the pinned public catalog', () {
     final catalogBytes = File(
       'assets/public_media/catalog.json',
     ).readAsBytesSync();
     expect(
       _sha256Hex(catalogBytes),
-      '6f46c0a3fc0b6546193e2e3d867d90add55ce21bf0b8f3c482edaa507cdcabc0',
+      '1de7303f94fe0441ed4d006d4a4aa7ceac0e160b1c2527ae0f875b112bb52203',
     );
     final catalog = jsonDecode(utf8.decode(catalogBytes)) as Map;
     final semantics = catalog['semanticCatalog'] as Map;
@@ -60,11 +59,11 @@ void main() {
     final actions = {
       for (final action in catalog['actions'] as List) action['id']: action,
     };
-    for (final id in hiplabCoachAuthorizedActionIds) {
+    for (final id in actions.keys) {
       final files = actions[id]['files'] as Map;
       for (final kind in ['cover', 'thumbnail']) {
         final entry = files[kind] as Map;
-        final path = 'assets/public_posters/r2-v11/$kind/$id.webp';
+        final path = 'assets/public_posters/r2-v18/$kind/$id.webp';
         final bytes = File(path).readAsBytesSync();
         expect(bytes.length, entry['bytes'], reason: path);
         expect(_sha256Hex(bytes), entry['sha256'], reason: path);
@@ -74,36 +73,44 @@ void main() {
     }
   });
 
-  test('retained standing posters match the frozen SDK r2-v10 assets', () {
-    final bundled =
-        Directory('assets/public_posters')
-            .listSync()
-            .whereType<File>()
-            .map((f) => f.uri.pathSegments.last)
-            .toList()
-          ..sort();
-    expect(bundled, hasLength(209));
-    // Freeze the previous list, including the Thomas assessment demo, without
-    // using today's larger browse/Coach scope to identify legacy assets.
+  test('standing frames match the bundled SDK r2-v18 index and video', () {
+    final indexBytes = File(
+      'assets/public_posters/standing-index.json',
+    ).readAsBytesSync();
     expect(
-      _sha256Hex(Uint8List.fromList(utf8.encode(bundled.join('\n')))),
-      'b35af75aa9e49965bf02f3a99d7d2837c5cced84d1306e41a038aec565d0076c',
+      _sha256Hex(indexBytes),
+      '4f87a641321e5e3aaa85091f0370441b0ead27ac4a0a8f19701a21aadb77a79c',
     );
-    final digests = <String>[];
-    for (final name in bundled) {
-      final path = 'assets/public_posters/$name';
+    final index = jsonDecode(utf8.decode(indexBytes)) as Map;
+    final standing = (index['actions'] as Map).cast<String, Map>();
+    final catalog =
+        jsonDecode(File('assets/public_media/catalog.json').readAsStringSync())
+            as Map;
+    final videos = {
+      for (final item in catalog['actions'] as List)
+        item['id']: item['files']['video'] as Map,
+    };
+    final bundled = Directory('assets/public_posters')
+        .listSync()
+        .whereType<File>()
+        .map((f) => f.uri.pathSegments.last)
+        .where((name) => name.endsWith('.webp'))
+        .toSet();
+    expect(index['pack'], 'r2-v18');
+    expect(standing.keys.toSet(), videos.keys.toSet());
+    expect(bundled, {for (final id in videos.keys) '$id.webp'});
+    for (final entry in standing.entries) {
+      final id = entry.key;
+      final image = entry.value;
+      final video = videos[id]!;
+      final path = 'assets/public_posters/$id.webp';
       final bytes = File(path).readAsBytesSync();
-      digests.add(_sha256Hex(bytes));
-      // RIFF/WEBP VP8X with the alpha flag set: transparent poster.
-      expect(String.fromCharCodes(bytes.sublist(12, 16)), 'VP8X', reason: path);
-      expect(bytes[20] & 0x10, 0x10, reason: path);
+      expect(image['videoPath'], video['path'], reason: path);
+      expect(image['videoSha256'], video['sha256'], reason: path);
+      expect(bytes.length, image['imageBytes'], reason: path);
+      expect(_sha256Hex(bytes), image['imageSha256'], reason: path);
+      expect(_hasWebpAlpha(bytes), isTrue, reason: path);
     }
-    // SHA-256 of the newline-separated file hashes from SDK 036b5fc, in
-    // the same filename order. Later SDK releases can drop the old pack.
-    expect(
-      _sha256Hex(Uint8List.fromList(utf8.encode(digests.join('\n')))),
-      'a2f2db43b5403ad3ceff62662856e62bd0b2c1dfbd62e7585d55a2015b0c1a57',
-    );
   });
 
   test('retained assessment stage matches the App palette', () {

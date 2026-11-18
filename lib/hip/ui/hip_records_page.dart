@@ -8,6 +8,7 @@ import '../control/hip_store.dart';
 import '../data/hip_public_media.dart';
 import '../domain/hip_library.dart';
 import '../domain/hip_progress.dart';
+import 'hip_action_artwork.dart';
 import 'hip_content_text.dart';
 import 'hip_icons.dart';
 import 'hip_page_kit.dart';
@@ -316,10 +317,6 @@ class _HipRecordsViewState extends State<HipRecordsView> {
                   : store.customRoutine(ref)?.steps.firstOrNull?.kitId,
             _ => builtIn?.steps.firstOrNull?.drillId,
           };
-    final asset = actionId == null
-        ? null
-        : HipPublicMedia.current?.posterAssetFor(actionId) ??
-              HipPublicMedia.coverAssetFor(actionId);
     // Only known authored routine IDs can supply translated titles. Keep
     // custom/AI titles and ambiguous historical text exactly as stored.
     final title = t.isEn && s.source == PlanSource.routine && builtIn != null
@@ -332,7 +329,7 @@ class _HipRecordsViewState extends State<HipRecordsView> {
       timestamp: '$day $time',
       unfinished: !s.completed,
       duration: t.pick('$mins 分钟', '$mins min'),
-      asset: asset,
+      actionId: actionId,
     );
   }
 }
@@ -343,17 +340,22 @@ class _RecordRow extends StatelessWidget {
     required this.timestamp,
     required this.unfinished,
     required this.duration,
-    required this.asset,
+    required this.actionId,
   });
 
   final String title;
   final String timestamp;
   final bool unfinished;
   final String duration;
-  final String? asset;
+  final String? actionId;
 
   @override
   Widget build(BuildContext context) {
+    final id = actionId;
+    final asset = id == null
+        ? null
+        : HipActionArtwork.policyOf(context)?.posterAssetFor(id) ??
+              HipPublicMedia.coverAssetFor(id);
     final fallback = Center(
       child: HipIcon(
         unfinished ? HipGlyph.pause : HipGlyph.checkCircle,
@@ -379,17 +381,23 @@ class _RecordRow extends StatelessWidget {
                       : const [Color(0xfff1f3f2), Color(0xffeaedeb)],
                 ),
               ),
-              child: ExcludeSemantics(
-                child: asset == null
-                    ? fallback
-                    : trainer.TrainerPoster(
-                        asset: asset!,
-                        radius: 10,
-                        decodeWidth:
-                            (38 * MediaQuery.devicePixelRatioOf(context))
-                                .ceil(),
-                        fallback: fallback,
-                      ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: ExcludeSemantics(
+                  child: HipActionArtwork(
+                    actionId: id,
+                    thumbnail: true,
+                    fallback: asset == null
+                        ? fallback
+                        : trainer.TrainerPoster(
+                            asset: asset,
+                            decodeWidth:
+                                (38 * MediaQuery.devicePixelRatioOf(context))
+                                    .ceil(),
+                            fallback: fallback,
+                          ),
+                  ),
+                ),
               ),
             ),
           ),

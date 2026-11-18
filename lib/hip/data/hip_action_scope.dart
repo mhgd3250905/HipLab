@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 
-/// The 248 trainable actions from the verified r2-v11 delivery catalog.
+/// The 248 trainable actions from the verified r2-v18 delivery catalog.
 /// `n-thomas-test` stays in the media catalog for assessment only.
 /// Keep this list explicit so catalogue updates cannot expand authorization.
 const hiplabCoachAuthorizedActionIds = <String>{

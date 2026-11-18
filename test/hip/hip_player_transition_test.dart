@@ -3,8 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_content_loader.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_player_page.dart';
+import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:hiplab/hip/ui/hip_widgets.dart' show HipMediaPolicy;
+import 'package:hiplab/hip/ui/library/library_actions.dart';
+import 'package:hiplab/hip/voice/hip_voice.dart';
+import 'package:hiplab/hip/voice/voice_library.dart';
+import 'package:hiplab/hip/voice/voice_queue.dart' show VoiceSettings;
 
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
@@ -15,10 +24,98 @@ import 'public_media_fixture.dart';
 void main() {
   final content = loadContent();
 
+  testWidgets(
+    'a mounted player keeps its training cadence and media snapshot',
+    (tester) async {
+      const id = 'h-sumo-pry';
+      final original = installPublicMediaFixture(sharedLibrary: true);
+      final updated = original.withUpdatedThumbnail(id, 's-pigeon');
+      addTearDown(updated.dispose);
+      final trainingContent = applyHipPublicTraining(content, original.catalog);
+      final updatedContent = trainingContent.withPublicTraining(
+        trainingContent.publicCatalog!,
+        {...trainingContent.publicRhythms, id: trainer.Rhythm.selfPacedReps},
+      );
+      final store = HipStore(
+        content: trainingContent,
+        storage: MemoryStorage(),
+      );
+      await store.initialize();
+      final actions = LibraryActions(
+        store: store,
+        startPlan: (_, {from, radius = 52, originColor}) async {},
+      );
+      final plan = HipSharedLibrary.planFor(actions, id)!;
+      expect(plan.sdkPlan, isNotNull);
+
+      HipVoice voiceOf(String revision) => HipVoice(
+        lib: VoiceLibrary.empty,
+        output: const trainer.MutedVoiceOutput(),
+        settingsOf: () => const VoiceSettings(voice: false, chimes: false),
+        online: VoiceLibrary(const {}, const {}, const {}, {
+          'catalogue-marker': {'zh': revision},
+        }),
+      );
+      final newVoice = voiceOf('new');
+      final active = ValueNotifier((original.policy, voiceOf('old'), 0));
+      addTearDown(active.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ValueListenableBuilder(
+            valueListenable: active,
+            builder: (context, state, _) => trainer.TrainingMediaPolicyScope(
+              policy: state.$1,
+              child: HipVoiceScope(
+                voice: state.$2,
+                child: HipMediaPolicy(
+                  videoEnabled: false,
+                  child: HipPlayerPage(
+                    key: ValueKey(state.$3),
+                    store: store,
+                    plan: state.$3 == 0
+                        ? plan
+                        : HipSharedLibrary.planFor(actions, id)!,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final player = find.byType(trainer.TrainerPlayer);
+      trainer.TrainerPlayer current() => tester.widget(player);
+      trainer.TrainingMediaPolicy? policy() =>
+          trainer.TrainingMediaPolicyScope.read(tester.element(player));
+      String? voiceLine() =>
+          current().voice!.source.line('catalogue-marker', lang: 'zh');
+      final rhythm = current().sessionBuilder!.rhythms[id];
+      expect(rhythm, same(trainingContent.publicRhythms[id]));
+      expect(voiceLine(), 'old');
+      expect(policy(), same(original.policy));
+
+      store.usePublicTrainingContent(updatedContent);
+      active.value = (updated.policy, newVoice, 0);
+      await tester.pump();
+      expect(current().sessionBuilder!.rhythms[id], same(rhythm));
+      expect(voiceLine(), 'old');
+      expect(policy(), same(original.policy));
+
+      active.value = (updated.policy, newVoice, 1);
+      await tester.pump();
+      expect(
+        current().sessionBuilder!.rhythms[id],
+        trainer.Rhythm.selfPacedReps,
+      );
+      expect(voiceLine(), 'new');
+      expect(policy(), same(updated.policy));
+    },
+  );
+
   Future<HipStore> start(
     WidgetTester tester, {
     Size size = const Size(390, 844),
     double textScale = 1,
+    HipThemeChoice theme = HipThemeChoice.system,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -35,6 +132,7 @@ void main() {
       ..safety = {'pregnancy': false, 'surgery': false, 'acute': false}
       ..identity = HipIdentity.office
       ..scene = HipScene.chair
+      ..theme = theme
       ..minutes = 5;
     await tester.pumpWidget(
       HipApp(
@@ -86,12 +184,17 @@ void main() {
     final skip = find.byKey(const ValueKey('skip'));
     await tester.tap(skip); // prep → work
     await tester.pumpAndSettle();
-    await tester.tap(skip); // work → rest
+    final completeSet = find.byKey(const ValueKey('complete-set-button'));
+    final feedback = find.byKey(const ValueKey('player-v1-rest-comfortable'));
+    // A skipped work phase no longer offers feedback. Finish the set.
+    for (var second = 0; second < 40 && feedback.evaluate().isEmpty; second++) {
+      if (completeSet.hitTestable().evaluate().isNotEmpty) {
+        await tester.tap(completeSet);
+      }
+      await tester.pump(const Duration(seconds: 1));
+    }
     // V1 expands the dock before showing and enabling the feedback choices.
-    await pumpTrainerControl(
-      tester,
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    );
+    await pumpTrainerControl(tester, feedback);
   }
 
   testWidgets('prep: the top card and App demo follow the shared stage', (
@@ -122,6 +225,68 @@ void main() {
     expect(find.text(first.drill.name), findsOneWidget);
     expect(find.textContaining(first.dose), findsWidgets);
   });
+
+  testWidgets(
+    'dark home start keeps the trainer dark from prep to completion',
+    (tester) async {
+      final store = await start(tester, theme: HipThemeChoice.dark);
+      final player = find.byType(trainer.TrainerPlayer);
+      final dark = tester.widget<trainer.TrainerPlayer>(player).theme;
+      expect(dark.brightness, Brightness.dark);
+      expect(dark.usePlayerV1, isTrue);
+      expect(dark.accent, HipPalette.dark.jadeDeep);
+
+      final stage = find.ancestor(
+        of: find.byKey(const ValueKey('player-v1-media-viewport')),
+        matching: find.byWidgetPredicate((widget) {
+          if (widget is! DecoratedBox || widget.decoration is! BoxDecoration) {
+            return false;
+          }
+          final gradient = (widget.decoration as BoxDecoration).gradient;
+          return gradient is LinearGradient &&
+              gradient.colors.first == dark.stageTop &&
+              gradient.colors.last == dark.stageBottom;
+        }),
+      );
+      expect(find.textContaining('准备 · 第一个动作'), findsOneWidget);
+      expect(stage, findsOneWidget);
+
+      await enterRest(tester);
+      final panel = tester.widget<trainer.TrainerRestFeedbackPanel>(
+        find.byType(trainer.TrainerRestFeedbackPanel),
+      );
+      expect(panel.theme, same(dark));
+      expect(stage, findsOneWidget);
+      await tester.tap(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      );
+      await tester.pumpAndSettle();
+
+      final finish = find.byKey(const ValueKey('finish'));
+      final skip = find.byKey(const ValueKey('skip')).hitTestable();
+      for (var phase = 0; phase < 40 && finish.evaluate().isEmpty; phase++) {
+        expect(skip, findsOneWidget);
+        await tester.tap(skip);
+        await tester.pumpAndSettle();
+      }
+      expect(finish, findsOneWidget);
+      final hero = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('completion-hero')),
+      );
+      final gradient = (hero.decoration as BoxDecoration).gradient!;
+      expect(gradient.colors, [dark.heroTop, dark.heroBottom]);
+      expect(store.streak, 1);
+      expect(tester.widget<trainer.TrainerPlayer>(player).streakDays, 1);
+      expect(
+        find.byKey(const ValueKey('completion-item-rest-feedback-0')),
+        findsOneWidget,
+      );
+      expect(find.text('本次感受'), findsNothing);
+      expect(find.byKey(const ValueKey('player-done-note')), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets('rest: SDK cards render HipLab labels with semantic colors', (
     tester,
@@ -212,19 +377,25 @@ void main() {
     // The V1 header stays on the completed move while the rest clock runs.
     expect(
       find.byKey(const ValueKey('player-v1-rest-comfortable')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(completedNumber, findsOneWidget);
     expect(nextMove, findsOneWidget);
     final after = countdownSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
-    await tester.tap(find.byKey(const ValueKey('player-v1-rest-tight')));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
+    );
+    final tight = find.byKey(const ValueKey('player-v1-rest-tight'));
+    await pumpTrainerControl(tester, tight);
+    await tester.tap(tight);
+    await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
       findsOneWidget,
     );
+    expect(tight, findsNothing);
     // the countdown ends on its own → the drill starts, the row goes away
     await tester.pump(Duration(seconds: after + 1));
     await tester.pump(
@@ -250,7 +421,7 @@ void main() {
     await tester.tapAt(const Offset(195, 80));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
       findsOneWidget,
     );
     expect(countdownSeconds(tester), closeTo(before, 1));

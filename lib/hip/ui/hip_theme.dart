@@ -338,6 +338,17 @@ ThemeData hipTheme([HipPalette p = HipPalette.dark]) {
         foregroundColor: p.isDark ? p.jade : p.jadeDeep,
       ),
     ),
+    snackBarTheme: p.isDark
+        ? SnackBarThemeData(
+            backgroundColor: p.surfaceHigh,
+            contentTextStyle: base.textTheme.bodyMedium!.copyWith(
+              color: p.text,
+            ),
+            actionTextColor: p.jade,
+            disabledActionTextColor: p.muted,
+            closeIconColor: p.muted,
+          )
+        : null,
     chipTheme: ChipThemeData(
       backgroundColor: p.surfaceHigh,
       selectedColor: p.jade.withValues(alpha: p.isDark ? .22 : .16),

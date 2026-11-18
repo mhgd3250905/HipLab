@@ -2,12 +2,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../control/hip_membership.dart';
 import '../data/hip_shared_library.dart';
 import 'hip_icons.dart';
+import 'hip_page_kit.dart';
 import 'hip_privacy_page.dart';
 import 'hip_routes.dart';
 import 'hip_text.dart';
@@ -47,10 +47,91 @@ class HipMembershipPage extends StatefulWidget {
 
 class _HipMembershipPageState extends State<HipMembershipPage> {
   MembershipTerm _selected = MembershipTerm.annual;
-  late Future<List<MembershipOffer>> _offers = _loadOffers();
+  Future<List<MembershipOffer>>? _offers;
+  Future<List<MembershipOffer>>? _playConnection;
+  List<MembershipOffer> _offlineOffers = const [];
+  List<MembershipOffer> _liveOffers = const [];
+  bool _checkoutStarting = false;
 
   Future<List<MembershipOffer>> _loadOffers() =>
       Future.sync(widget.membership.offers);
+
+  @override
+  void initState() {
+    super.initState();
+    _resetOffers();
+  }
+
+  void _resetOffers() {
+    final membership = widget.membership;
+    _selected = MembershipTerm.annual;
+    _checkoutStarting = false;
+    _playConnection = null;
+    _liveOffers = const [];
+    if (membership.playOfflineQuotes) {
+      _offers = null;
+      _offlineOffers = membership.defaultPlayOffers;
+      _readOfflineOffers(membership);
+      _connectPlay();
+    } else {
+      _offlineOffers = const [];
+      _offers = _loadOffers();
+    }
+  }
+
+  Future<void> _readOfflineOffers(HipMembership membership) async {
+    final offers = await membership.offlinePlayOffers();
+    if (mounted && membership == widget.membership) {
+      setState(() => _offlineOffers = offers);
+    }
+  }
+
+  Future<List<MembershipOffer>> _connectPlay() {
+    return _playConnection ??= _fetchPlayQuotes(widget.membership);
+  }
+
+  Future<List<MembershipOffer>> _fetchPlayQuotes(
+    HipMembership membership,
+  ) async {
+    List<MembershipOffer> live;
+    try {
+      live = await Future.sync(membership.offers);
+    } on Exception {
+      live = const [];
+    }
+    if (mounted && membership == widget.membership) {
+      setState(() {
+        _liveOffers = live;
+        if (live.isNotEmpty && !live.any((offer) => offer.term == _selected)) {
+          _selected = live.first.term;
+        }
+        _playConnection = null;
+      });
+      if (live.isNotEmpty) _readOfflineOffers(membership);
+    }
+    return live;
+  }
+
+  Future<void> _subscribe(MembershipTerm term) async {
+    final membership = widget.membership;
+    if (membership.busy || _checkoutStarting) return;
+    if (!membership.playOfflineQuotes || _liveOffers.isNotEmpty) {
+      await _transact(term: term);
+      return;
+    }
+    _checkoutStarting = true;
+    try {
+      final live = await _connectPlay();
+      if (mounted &&
+          membership == widget.membership &&
+          ModalRoute.of(context)?.isCurrent == true &&
+          live.any((offer) => offer.term == term)) {
+        await _transact(term: term);
+      }
+    } finally {
+      if (mounted && membership == widget.membership) _checkoutStarting = false;
+    }
+  }
 
   void _reloadOffers() {
     final offers = _loadOffers();
@@ -63,8 +144,7 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
   void didUpdateWidget(HipMembershipPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.membership != widget.membership) {
-      _selected = MembershipTerm.annual;
-      _offers = _loadOffers();
+      _resetOffers();
     }
   }
 
@@ -101,7 +181,12 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
       if (mounted &&
           membership == widget.membership &&
           ModalRoute.of(context)?.isCurrent == true) {
-        // Play may have returned a different quote or trial eligibility.
+        if (term != null && membership.playOfflineQuotes) {
+          setState(() => _liveOffers = const []);
+          _readOfflineOffers(membership);
+          return;
+        }
+        // The store may have returned a different quote or trial eligibility.
         if (term != null) _reloadOffers();
         _showMessage(_storeUnavailable);
       }
@@ -155,44 +240,45 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
     listenable: widget.membership,
     builder: (context, _) {
       final active = widget.membership.activeSnapshot;
+      if (active != null) return _subscribed(context, active);
+      if (widget.membership.playOfflineQuotes) {
+        final disconnected = _liveOffers.isEmpty;
+        return _unsubscribed(
+          context,
+          disconnected ? _offlineOffers : _liveOffers,
+          disconnected: disconnected,
+        );
+      }
       return FutureBuilder<List<MembershipOffer>>(
         future: _offers,
-        builder: (context, snapshot) => AnnotatedRegion<SystemUiOverlayStyle>(
-          value: HipColors.isDark
-              ? SystemUiOverlayStyle.light
-              : SystemUiOverlayStyle.dark,
-          child: Scaffold(
-            body: Stack(
-              fit: StackFit.expand,
-              children: [
-                const HipPageBackdrop(),
-                active == null
-                    ? _unsubscribed(context, snapshot)
-                    : _subscribed(context, active),
-              ],
-            ),
-          ),
-        ),
+        builder: (context, snapshot) {
+          final loading = snapshot.connectionState == ConnectionState.waiting;
+          return _unsubscribed(
+            context,
+            loading ? const [] : snapshot.data ?? const [],
+            loading: loading,
+          );
+        },
       );
     },
   );
 
   Widget _unsubscribed(
     BuildContext context,
-    AsyncSnapshot<List<MembershipOffer>> snapshot,
-  ) {
+    List<MembershipOffer> quotes, {
+    bool loading = false,
+    bool disconnected = false,
+  }) {
     final text = HipText.of(context);
-    final loading = snapshot.connectionState == ConnectionState.waiting;
-    final offers = {
-      if (!loading)
-        for (final offer in snapshot.data ?? const <MembershipOffer>[])
-          offer.term: offer,
-    };
+    final offers = {for (final quote in quotes) quote.term: quote};
     final annual = offers[MembershipTerm.annual];
     final monthly = offers[MembershipTerm.monthly];
     final selected = offers[_selected] ?? annual ?? monthly;
     final busy = widget.membership.busy;
     final trial = _trialDays(selected);
+    final advertisedTrial = disconnected
+        ? selected?.term.playAdvertisedTrialDays
+        : null;
     final price = selected == null ? null : _cyclePrice(selected);
     return _layout(
       content: Column(
@@ -224,7 +310,10 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
                 },
                 _ => null,
               },
-              trial: _trialDays(offer),
+              trial: disconnected
+                  ? term.playAdvertisedTrialDays
+                  : _trialDays(offer),
+              trialConditional: disconnected,
               savings: term == MembershipTerm.annual
                   ? _annualSavings(monthly, annual)
                   : null,
@@ -234,7 +323,10 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
                   : () => setState(() => _selected = term),
             ),
           ],
-          if (loading)
+          if (disconnected) ...[
+            const SizedBox(height: 10),
+            _PlayConnectionNotice(onRetry: _connectPlay),
+          ] else if (loading)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Center(
@@ -274,7 +366,7 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
             key: const ValueKey('membership-subscribe'),
             onPressed: busy || selected == null
                 ? null
-                : () => _transact(term: selected.term),
+                : () => _subscribe(selected.term),
             style: TextButton.styleFrom(
               foregroundColor: Colors.white,
               disabledForegroundColor: Colors.white,
@@ -305,9 +397,14 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
                 '试用结束后 ${price.zh}，自动续订',
                 'After the trial, ${price.en}. Renews automatically.',
               ),
-            if (price != null && trial == null)
+            if (price != null && advertisedTrial != null)
+              text.pick(
+                '符合资格可试用 $advertisedTrial 天，之后 ${price.zh}，自动续订',
+                '$advertisedTrial-day trial if eligible, then ${price.en}. Renews automatically.',
+              ),
+            if (price != null && trial == null && advertisedTrial == null)
               text.pick('订阅将自动续订。', 'Subscription renews automatically.'),
-            _renewalDisclosure(text, trial != null),
+            _renewalDisclosure(text, trial != null || advertisedTrial != null),
           ].join('\n'),
           style: _style(11.5, _muted, height: 1.35),
           textAlign: TextAlign.center,
@@ -365,91 +462,49 @@ class _HipMembershipPageState extends State<HipMembershipPage> {
 
   Widget _layout({required Widget content, required List<Widget> footer}) {
     final text = HipText.of(context);
-    final safe = MediaQuery.paddingOf(context);
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, safe.top + 8, 10, 8),
-          child: Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: Tooltip(
-              message: text.pick('关闭', 'Close'),
-              child: HipPressable(
-                key: const ValueKey('membership-close'),
-                semanticLabel: text.pick('关闭', 'Close'),
-                onTap: () => Navigator.of(context).maybePop(),
-                child: SizedBox.square(
-                  dimension: 44,
-                  child: Center(
-                    child: HipCard(
-                      radius: 16,
-                      shadows: const [
-                        BoxShadow(
-                          color: Color(0x1214281F),
-                          offset: Offset(0, 3),
-                          blurRadius: 12,
-                        ),
-                      ],
-                      child: SizedBox.square(
-                        dimension: 32,
-                        child: Center(
-                          child: HipIcon(
-                            HipGlyph.close,
-                            size: 19,
-                            color: _ink,
-                            strokeWidth: 1.8,
-                          ),
-                        ),
-                      ),
-                    ),
+    return HipNavPage(
+      title: text.pick('HipLab 会员', 'HipLab Premium'),
+      leading: HipNavLeading.close,
+      leadingKey: const ValueKey('membership-close'),
+      bodyScrollsUnderBar: true,
+      body: SingleChildScrollView(
+        key: const ValueKey('membership-scroll'),
+        padding: EdgeInsets.fromLTRB(16, hipNavInset(context), 16, 20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: content,
+          ),
+        ),
+      ),
+      bottomBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.symmetric(horizontal: 16),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 4),
+          child: Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ...footer,
+                  const SizedBox(height: 8),
+                  _LegalLinks(
+                    restore: widget.membership.busy ? null : () => _transact(),
+                    terms: _terms,
+                    privacy: () => Navigator.of(
+                      context,
+                    ).push(HipRoute.content((_) => const HipPrivacyPage())),
                   ),
-                ),
+                ],
               ),
             ),
           ),
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            key: const ValueKey('membership-scroll'),
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: content,
-              ),
-            ),
-          ),
-        ),
-        SafeArea(
-          top: false,
-          minimum: const EdgeInsets.symmetric(horizontal: 16),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 4),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...footer,
-                    const SizedBox(height: 8),
-                    _LegalLinks(
-                      restore: widget.membership.busy
-                          ? null
-                          : () => _transact(),
-                      terms: _terms,
-                      privacy: () => Navigator.of(
-                        context,
-                      ).push(HipRoute.content((_) => const HipPrivacyPage())),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -493,6 +548,56 @@ String _termLabel(HipText text, MembershipTerm term) => switch (term) {
   MembershipTerm.annual => text.pick('年付', 'Yearly'),
   MembershipTerm.monthly => text.pick('月付', 'Monthly'),
 };
+
+class _PlayConnectionNotice extends StatelessWidget {
+  const _PlayConnectionNotice({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = HipText.of(context);
+    final borderRadius = BorderRadius.circular(17);
+    return Semantics(
+      liveRegion: true,
+      child: Material(
+        color: _p.withValues(alpha: .08),
+        borderRadius: borderRadius,
+        child: InkWell(
+          key: const ValueKey('membership-retry'),
+          onTap: onRetry,
+          borderRadius: borderRadius,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 34),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              child: Row(
+                children: [
+                  Icon(Icons.refresh_rounded, size: 16, color: _p),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      text.pick(
+                        '暂未连上 Google Play，价格以商店显示为准',
+                        'Google Play unavailable. Store prices apply.',
+                      ),
+                      style: _style(12, _muted, height: 1.15),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    text.pick('重试', 'Retry'),
+                    style: _style(12, _p, weight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 ({String zh, String en}) _cyclePrice(MembershipOffer offer) =>
     switch (offer.term) {
@@ -782,6 +887,7 @@ class _OfferCard extends StatelessWidget {
     required this.price,
     required this.priceDetail,
     required this.trial,
+    required this.trialConditional,
     required this.savings,
     required this.selected,
     required this.onTap,
@@ -791,6 +897,7 @@ class _OfferCard extends StatelessWidget {
   final String? price;
   final String? priceDetail;
   final int? trial;
+  final bool trialConditional;
   final int? savings;
   final bool selected;
   final VoidCallback? onTap;
@@ -815,7 +922,12 @@ class _OfferCard extends StatelessWidget {
                   if (trial case final days?) ...[
                     const SizedBox(height: 3),
                     Text(
-                      text.pick('$days 天免费试用', '$days-day free trial'),
+                      trialConditional
+                          ? text.pick(
+                              '符合资格可免费试用 $days 天',
+                              '$days-day free trial if eligible',
+                            )
+                          : text.pick('$days 天免费试用', '$days-day free trial'),
                       style: _style(12, _g2),
                     ),
                   ],

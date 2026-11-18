@@ -9,13 +9,13 @@ import '../../domain/hip_models.dart';
 import '../../domain/hip_library.dart';
 import '../../data/hip_public_media.dart';
 import '../../data/hip_public_text_en.dart';
+import '../hip_action_artwork.dart';
 import '../hip_icons.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import '../hip_content_text.dart';
 
-/// Only brand roles, local artwork and the existing native preview are bound
-/// here. The SDK owns chat layout, states, controls and animation.
+/// HipLab binds its palette, catalogue artwork and native preview to SDK chat.
 CoachChatVisuals hipCoachChatVisuals(
   HipContent content, {
   coach.Catalog? catalog,
@@ -36,14 +36,17 @@ CoachChatVisuals hipCoachChatVisuals(
       final lang = languageTagOf?.call() ?? 'zh';
       final english = lang == 'en';
       final copy = english ? HipContentText.en : HipContentText.zh;
-      final translated = english ? hipPublicTextEn[id] : null;
+      final translated = english
+          ? hipPublicEnglishTextFor(
+              id,
+              catalog: HipPublicMedia.current?.catalog,
+            )
+          : null;
       final drill = content.drills[id];
       final public = (content.publicCatalog ?? catalog)?[id];
       final action = HipPublicMedia.current?.actionFor(id);
-      final poster = HipPublicMedia.current?.posterAssetFor(id);
       if (!hiplabCoachAuthorizedActionIds.contains(id) ||
-          (drill == null && public == null) ||
-          poster == null) {
+          (drill == null && public == null)) {
         return null;
       }
       final dark = brightness == Brightness.dark;
@@ -51,9 +54,15 @@ CoachChatVisuals hipCoachChatVisuals(
       return CoachExercise(
         id: id,
         name: public?.name.of(lang) ?? copy.drillName(drill!),
-        poster: poster,
+        poster: HipPublicMedia.coverAssetFor(id) ?? hipCoachStandingAsset(id),
         cutout: hipCoachStandingAsset(id),
         stillCutout: hipCoachStandingAsset(id),
+        artworkBuilder: (context, {required bool thumbnail}) =>
+            HipActionArtwork(
+              actionId: id,
+              thumbnail: thumbnail,
+              fallback: trainer.TrainerPoster(asset: hipCoachStandingAsset(id)),
+            ),
         categoryLabel: english
             ? switch (public?.category) {
                 'strength' => 'Strength',
@@ -90,11 +99,42 @@ CoachChatVisuals hipCoachChatVisuals(
         ),
       );
     },
+    mediaBuilder: (context, request) =>
+        !hiplabCoachAuthorizedActionIds.contains(request.exercise.id)
+        ? null
+        : HipActionArtwork(
+            actionId: request.exercise.id,
+            thumbnail: true,
+            fit: request.fit,
+            fallback: Image.asset(
+              request.asset,
+              fit: request.fit,
+              alignment: request.alignment,
+              gaplessPlayback: request.cutout,
+              semanticLabel: request.semanticLabel,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
     cutoutFor: (id, _) => hiplabCoachAuthorizedActionIds.contains(id)
         ? AssetImage(hipCoachStandingAsset(id))
         : null,
+    cutoutBuilder: (context, id, size, _) =>
+        !hiplabCoachAuthorizedActionIds.contains(id)
+        ? const SizedBox.shrink()
+        : ClipOval(
+            child: SizedBox.fromSize(
+              size: size,
+              child: HipActionArtwork(
+                actionId: id,
+                thumbnail: true,
+                fallback: trainer.TrainerPoster(
+                  asset: hipCoachStandingAsset(id),
+                ),
+              ),
+            ),
+          ),
     preloadPoster: (context, id) async {
-      final poster = HipPublicMedia.current?.posterAssetFor(id);
+      final poster = HipActionArtwork.policyOf(context)?.posterAssetFor(id);
       if (poster != null) {
         await trainer.TrainingPosterImages.prepareAsset(context, poster);
       }

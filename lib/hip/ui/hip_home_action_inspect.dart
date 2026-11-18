@@ -11,6 +11,19 @@ import 'hip_content_text.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart';
 
+/// Dark paper for the front and rear cards, with a 4% lift per depth.
+LinearGradient hipHomeDarkActionPaper(double depth) {
+  final tint = Colors.white.withValues(alpha: .04 * depth.clamp(0, 2));
+  return LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.alphaBlend(tint, HipColors.surfaceHigh),
+      Color.alphaBlend(tint, HipColors.surface),
+    ],
+  );
+}
+
 /// The shared printed face for the front and the next action.
 class HipHomeActionFace extends StatefulWidget {
   const HipHomeActionFace({
@@ -21,7 +34,9 @@ class HipHomeActionFace extends StatefulWidget {
     required this.restingSize,
     this.mediaKey,
     this.rear = false,
+    this.rearDepth = 0,
     this.contactShadow = false,
+    required this.videoRequested,
     this.revealPausedFrame = true,
     this.onFrameReadyChanged,
     this.expansion = 0,
@@ -39,8 +54,9 @@ class HipHomeActionFace extends StatefulWidget {
   final HipDrill drill;
   final int number, total;
   final Size restingSize;
-  final double expansion;
+  final double expansion, rearDepth;
   final bool expanded, paused, compact, rear, contactShadow;
+  final bool videoRequested;
   final bool revealPausedFrame;
   final Key? mediaKey;
   final ValueChanged<bool>? onFrameReadyChanged;
@@ -409,13 +425,21 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
 
       return DecoratedBox(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: HipColors.isDark
-                ? [HipColors.surfaceHigh, HipColors.surface]
-                : const [Colors.white, Color(0xfffafbfa)],
-          ),
+          gradient: HipColors.isDark
+              ? hipHomeDarkActionPaper(widget.rearDepth)
+              : const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.white, Color(0xfffafbfa)],
+                ),
+          border: HipColors.isDark && widget.rear
+              ? Border.all(
+                  color: Colors.white.withValues(
+                    alpha: .08 * widget.rearDepth.clamp(0, 1),
+                  ),
+                  width: .6,
+                )
+              : null,
           borderRadius: BorderRadius.circular(radius),
           boxShadow: HipColors.shadows([
             if (!widget.rear)
@@ -708,6 +732,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                           drill: drill,
                           play: widget.expanded && !widget.paused,
                           holdVideo: true,
+                          videoRequested: widget.videoRequested,
                           revealPausedFrame: widget.revealPausedFrame,
                           onFrameReadyChanged: widget.onFrameReadyChanged,
                           showPendingLabel: false,

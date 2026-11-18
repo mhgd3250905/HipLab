@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_membership.dart';
 import 'package:hiplab/hip/ui/hip_membership_page.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const _month = MembershipOffer(
   term: MembershipTerm.monthly,
@@ -95,6 +96,8 @@ void main() {
 
   Finder memberCard(Finder subtitle) =>
       find.ancestor(of: subtitle, matching: find.byType(ClipRRect)).first;
+
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   setUpAll(() async {
     await (FontLoader(
@@ -233,6 +236,106 @@ void main() {
       expect(find.text('No active subscription was found.'), findsOneWidget);
     },
   );
+
+  testWidgets('Play failure keeps both plans and checkout available', (
+    tester,
+  ) async {
+    var attempts = 0;
+    final store = _Store(() async {
+      attempts++;
+      throw Exception('Play disconnected');
+    });
+    final membership = HipMembership(store, playOfflineQuotes: true);
+    await mount(tester, membership, locale: const Locale('zh'));
+    await tester.pumpAndSettle();
+
+    final retry = find.byKey(const ValueKey('membership-retry'));
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text(r'US$19.99'), findsOneWidget);
+    expect(find.text(r'US$2.99'), findsOneWidget);
+    expect(find.text('符合资格可免费试用 7 天'), findsOneWidget);
+    expect(find.text('符合资格可免费试用 3 天'), findsOneWidget);
+    expect(find.text('暂未连上 Google Play，价格以商店显示为准'), findsOneWidget);
+    await tester.ensureVisible(retry);
+    expect(tester.getSize(retry).height, 34);
+    expect(tester.widget<TextButton>(subscribe).onPressed, isNotNull);
+    await tester.tap(subscribe);
+    await tester.pumpAndSettle();
+    expect(attempts, 2);
+    expect(store.purchases, isEmpty);
+    expect(retry, findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(tester.widget<TextButton>(subscribe).onPressed, isNotNull);
+  });
+
+  testWidgets('Play retry updates prices without starting a purchase', (
+    tester,
+  ) async {
+    final store = _Store(() async => []);
+    await mount(tester, HipMembership(store, playOfflineQuotes: true));
+    await tester.pumpAndSettle();
+    final retry = find.byKey(const ValueKey('membership-retry'));
+    await tester.ensureVisible(retry);
+    store.load = () async => [_monthlyTrial, _year];
+    await tester.tap(retry);
+    await tester.pumpAndSettle();
+    expect(retry, findsNothing);
+    expect(find.text(r'$30.00'), findsOneWidget);
+    expect(find.text('Start 7-day free trial'), findsOneWidget);
+    expect(store.purchases, isEmpty);
+  });
+
+  testWidgets('Play failure prefers the persisted local prices', (
+    tester,
+  ) async {
+    final previous = HipMembership(
+      _Store(() async => [_month, _year]),
+      playOfflineQuotes: true,
+    );
+    await previous.offers();
+    previous.dispose();
+
+    final store = _Store(() async => []);
+    await mount(tester, HipMembership(store, playOfflineQuotes: true));
+    await tester.pumpAndSettle();
+    expect(find.text(r'$5.00'), findsOneWidget);
+    expect(find.text(r'$30.00'), findsOneWidget);
+    expect(find.text(r'US$19.99'), findsNothing);
+    expect(find.text('7-day free trial if eligible'), findsOneWidget);
+    expect(store.purchases, isEmpty);
+  });
+
+  testWidgets('Play checkout reconnects once for the selected plan', (
+    tester,
+  ) async {
+    var attempts = 0;
+    final store = _Store(() async {
+      attempts++;
+      return [];
+    });
+    await mount(tester, HipMembership(store, playOfflineQuotes: true));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(monthly);
+    await tester.tap(monthly);
+    await tester.pumpAndSettle();
+    final reconnect = Completer<List<MembershipOffer>>();
+    store.load = () {
+      attempts++;
+      return reconnect.future;
+    };
+    await tester.tap(subscribe);
+    await tester.tap(subscribe);
+    await tester.pump();
+    expect(attempts, 2);
+    expect(store.purchases, isEmpty);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(tester.widget<TextButton>(subscribe).onPressed, isNotNull);
+
+    reconnect.complete([_monthlyTrial, _year]);
+    await tester.pumpAndSettle();
+    expect(store.purchases, [MembershipTerm.monthly]);
+    expect(find.byKey(const ValueKey('membership-retry')), findsNothing);
+  });
 
   testWidgets(
     'both states fit 360dp at 1.5x with pinned actions',

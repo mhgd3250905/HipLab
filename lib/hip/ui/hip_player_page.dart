@@ -3,6 +3,7 @@ import 'package:ugk_coach/ugk_coach.dart' as coach;
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
 import '../control/hip_store.dart';
+import '../domain/hip_models.dart' show HipContent;
 import '../domain/hip_pain.dart';
 import '../domain/hip_session.dart';
 import '../domain/hip_library.dart' show hipSdkDrill, LibraryDose, doseText;
@@ -11,6 +12,7 @@ import '../data/hip_public_text_en.dart';
 import '../trainer/hip_trainer_plan.dart';
 import '../voice/hip_voice.dart';
 import '../voice/session_script.dart';
+import 'hip_action_artwork.dart';
 import 'hip_icons.dart';
 import 'hip_content_text.dart';
 import 'hip_text.dart';
@@ -25,17 +27,25 @@ class HipPlayerPage extends StatefulWidget {
     required this.store,
     required this.plan,
     this.sdkBuilder,
+    this.trainingContent,
+    this.trainingVoice,
   });
   final HipStore store;
   final TrainingPlan plan;
   final trainer.SessionBuilder? sdkBuilder;
+  final HipContent? trainingContent;
+  final HipVoice? trainingVoice;
 
   @override
   State<HipPlayerPage> createState() => _HipPlayerPageState();
 }
 
 class _HipPlayerPageState extends State<HipPlayerPage> {
-  late var _ladder = SessionPainLadder(widget.store.content);
+  // The public catalogue can refresh while this route is on the stack.
+  late final _content = widget.trainingContent ?? widget.store.content;
+  late final _voice = widget.trainingVoice ?? HipVoice.of(context);
+  late final _mediaPolicy = HipActionArtwork.policyOf(context);
+  late var _ladder = SessionPainLadder(_content);
   late final _steps = [...widget.plan.steps];
   final Map<int, String> _felt = {};
   final Set<int> _omitted = {};
@@ -56,9 +66,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
 
   String _drillName(String id) {
     final t = HipText.of(context);
-    final definition = widget.store.content.publicCatalog?[id];
+    final definition = _content.publicCatalog?[id];
     if (definition != null) return definition.name.of(t.languageTag);
-    final drill = widget.store.content.drills[id];
+    final drill = _content.drills[id];
     return drill == null ? id : HipContentText.of(context).drillName(drill);
   }
 
@@ -113,7 +123,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
 
   String _dose(PlanStep step) {
     if (!HipText.of(context).isEn) return step.dose;
-    final kit = widget.store.content.kit(step.drill.id);
+    final kit = _content.kit(step.drill.id);
     if (kit != null) {
       return doseText(
         kit,
@@ -134,12 +144,12 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
   }
 
   HipSessionScript _script() {
-    final voice = HipVoice.of(context);
+    final voice = _voice;
     return HipSessionScript(
       lib: voice.lib,
       lang: voice.lang,
       steps: _steps,
-      kits: widget.store.content.kits,
+      kits: _content.kits,
       routineIds: [for (final r in widget.plan.routines) r.id],
       restSeconds: widget.plan.transitionSeconds,
       useSdkPhases: widget.plan.sdkPlan != null,
@@ -151,9 +161,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       widget.plan.sdkPlan != null
       ? widget.sdkBuilder ??
             hipSdkSessionBuilder(
-              widget.store.content,
+              _content,
               switchSecondsFor: script.switchSecondsFor,
-              prepSecondsFor: HipVoice.of(context).settings.voice
+              prepSecondsFor: _voice.settings.voice
                   ? script.prepSecondsFor
                   : null,
               transitionSeconds: widget.plan.transitionSeconds,
@@ -231,7 +241,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     if (!mounted || kind == null) return null;
     final actualDrill = _activeSdkPlan == null
         ? null
-        : widget.store.content.drills[at.phase.exerciseId];
+        : _content.drills[at.phase.exerciseId];
     final target = actualDrill == null
         ? _steps[index]
         : _steps[index].copyWith(drill: actualDrill);
@@ -294,7 +304,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             }
             break;
           }
-          final kit = widget.store.content.kit(reduced.drill.id);
+          final kit = _content.kit(reduced.drill.id);
           if (kit != null && SessionScript.noFullRep(reduced, kit)) {
             _omitted.add(index);
             restart = index + 1;
@@ -304,7 +314,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           }
         }
       case PainActionType.substitute:
-        final alt = widget.store.content.drill(action.substituteId!);
+        final alt = _content.drill(action.substituteId!);
         if (_activeSdkPlan case final sdk?) {
           _activeSdkPlan = substituteSdkExercise(sdk, target.drill.id, alt.id);
         }
@@ -325,7 +335,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         if (_activeSdkPlan case final sdk?) {
           for (final phase in _builder(_script()).phases(sdk)) {
             if (!phase.isWork || phase.itemIndex < restart) continue;
-            final drill = widget.store.content.drills[phase.exerciseId];
+            final drill = _content.drills[phase.exerciseId];
             if (drill != null &&
                 drill.directions.first == direction &&
                 !drill.isRelax) {
@@ -366,7 +376,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
   }
 
-  Widget _restFeedback(BuildContext context, trainer.TrainerRestFeedback at) {
+  Widget _restFeedback(
+    BuildContext context,
+    trainer.TrainerRestFeedback at,
+    trainer.TrainerTheme theme,
+  ) {
     final index = at.completedPhase.itemIndex;
     final text = HipText.of(context);
     return StatefulBuilder(
@@ -377,7 +391,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         }
 
         return trainer.TrainerRestFeedbackPanel(
-          theme: trainer.TrainerTheme.playerV1,
+          theme: theme,
           title: text.pick('刚才感觉怎么样？', 'How did that feel?'),
           recordedTitle: text.pick('已记录', 'Recorded'),
           description: text.pick(
@@ -415,14 +429,39 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
     );
   }
 
-  trainer.TrainerTheme get _theme =>
-      trainer.TrainerTheme.playerV1.copyWith(fontFamily: hipFontFamily);
+  trainer.TrainerTheme _playerTheme(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return trainer.TrainerTheme.playerV1.copyWith(fontFamily: hipFontFamily);
+    }
+    const theme = trainer.TrainerTheme.playerV1Dark;
+    const palette = HipPalette.dark;
+    final tint = Color.alphaBlend(
+      palette.jade.withValues(alpha: .14),
+      theme.card,
+    );
+    return theme.copyWith(
+      fontFamily: hipFontFamily,
+      // The SDK completion button uses white text, so keep its jade fill deep.
+      accent: palette.jadeDeep,
+      accentDeep: Color.lerp(palette.jadeDeep, palette.background, .28),
+      accentText: palette.jade,
+      accentSubtle: tint,
+      pausedColor: palette.jadeDeep,
+      glow: palette.jade,
+      tint: tint,
+      heroTop: palette.background,
+      heroBottom: palette.jadeDeep,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final voice = HipVoice.of(context);
+    final voice = _voice;
     final script = _script();
-    return trainer.TrainerPlayer(
+    final theme = _playerTheme(context);
+    final policy = _mediaPolicy;
+    final videoEnabled = HipMediaPolicy.of(context);
+    final player = trainer.TrainerPlayer(
       plan: _displayPlan(),
       sessionBuilder: _builder(script),
       prepSeconds: 15,
@@ -430,8 +469,34 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
       strings: HipText.of(context).isEn
           ? trainer.TrainerStrings.en()
           : trainer.TrainerStrings.zh(),
-      theme: _theme,
+      theme: theme,
+      streakDays: widget.store.streak,
       notificationIcon: 'mipmap/ic_launcher_monochrome',
+      mediaBuilder: videoEnabled || policy == null
+          ? null
+          : (context, request) {
+              final id = request.drill.media?.actionId ?? request.drill.id;
+              final asset = policy.posterAssetFor(id);
+              final experience = trainer.TrainerExperienceScope.maybeOf(
+                context,
+              );
+              return ColoredBox(
+                color: request.theme.mediaStage,
+                child: Transform.flip(
+                  flipX: request.mirrored,
+                  child: HipActionArtwork(
+                    actionId: id,
+                    fallback: asset == null
+                        ? const SizedBox.expand()
+                        : trainer.TrainerPoster(
+                            asset: asset,
+                            bundle: experience?.bundle,
+                            decodeWidth: experience?.decodeWidth,
+                          ),
+                  ),
+                ),
+              );
+            },
       voice: trainer.TrainerVoice(
         source: script.source,
         output: voice.output,
@@ -441,13 +506,11 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
         scriptBuilder: (_, _) => script,
       ),
       drillOf: (id) {
-        final drill =
-            hipSdkDrill(widget.store.content, id) ??
-            widget.store.content.drills[id];
+        final drill = hipSdkDrill(_content, id) ?? _content.drills[id];
         if (drill == null) return null;
-        final definition = widget.store.content.publicCatalog?[id];
+        final definition = _content.publicCatalog?[id];
         final translated = HipText.of(context).isEn
-            ? hipPublicTextEn[id]
+            ? hipPublicEnglishTextFor(id, catalog: policy?.catalog)
             : null;
         final step = _steps.where((s) => s.drill.id == id).firstOrNull;
         return trainer.TrainerDrill(
@@ -464,6 +527,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               translated?.cues ??
               definition?.cues[HipText.of(context).languageTag] ??
               const [],
+          thumbnailAsset: HipPublicMedia.thumbnailAssetFor(id),
           precautions: [
             if (translated != null) ...[
               ...translated.cautions,
@@ -479,9 +543,9 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
             id: id,
             actionId: id,
             videoAsset: '',
-            posterAsset: HipPublicMedia.current?.posterAssetFor(id) ?? '',
+            posterAsset: policy?.posterAssetFor(id) ?? '',
             duration: 0,
-            videoAvailable: HipMediaPolicy.of(context),
+            videoAvailable: videoEnabled,
           ),
         );
       },
@@ -496,7 +560,8 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ? null
           : _pain,
       announceDiscomfortPause: false,
-      restFeedbackBuilder: _restFeedback,
+      restFeedbackBuilder: (context, feedback) =>
+          _restFeedback(context, feedback, theme),
       replayBuilder: (context, result, replay) =>
           widget.plan.source != PlanSource.single ||
               _ladder.skippedDirections.isNotEmpty ||
@@ -512,7 +577,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
                   )
                   ? null
                   : () {
-                      _ladder = SessionPainLadder(widget.store.content);
+                      _ladder = SessionPainLadder(_content);
                       _steps
                         ..clear()
                         ..addAll(widget.plan.steps);
@@ -537,40 +602,30 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               ),
               textAlign: TextAlign.center,
             ),
-          ] else
+          ] else if (widget.plan.source == PlanSource.single)
             Text(
-              widget.plan.source == PlanSource.single
-                  ? HipText.of(context).pick(
-                      '单练记入练习记录，不计连续天数',
-                      'Individual moves are logged without extending your streak',
-                    )
-                  : HipText.of(context).pick(
-                      '连续 ${widget.store.streak} 天',
-                      '${widget.store.streak}-day streak',
-                    ),
+              HipText.of(context).pick(
+                '单练记入练习记录，不计连续天数',
+                'Individual moves are logged without extending your streak',
+              ),
               key: const ValueKey('player-done-note'),
             ),
           if (_ladderCue != null) Text(_ladderCue!),
-          if (_felt.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(HipText.of(context).pick('本次感受', 'How you felt')),
-            for (final entry in _felt.entries)
-              Text(
-                '${_drillName(_steps[entry.key].drill.id)} · ${switch (entry.value) {
-                  'ok' => HipText.of(context).pick('舒服', 'Good'),
-                  'tight' => HipText.of(context).pick('有点紧', 'Tight'),
-                  _ => HipText.of(context).pick('疼', 'Pain'),
-                }}',
-              ),
-          ],
         ],
       ),
-      onFinished: (result) => widget.store.saveTrainerSession(
-        result,
-        plan: widget.plan,
-        ladder: _ladder,
-        feedback: _felt,
-      ),
+      onFinished: (result) async {
+        await widget.store.saveTrainerSession(
+          result,
+          plan: widget.plan,
+          ladder: _ladder,
+          feedback: _felt,
+        );
+        // The SDK completion card reads the updated streak after the save.
+        if (mounted) setState(() {});
+      },
     );
+    return policy == null
+        ? player
+        : trainer.TrainingMediaPolicyScope(policy: policy, child: player);
   }
 }

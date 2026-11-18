@@ -174,7 +174,7 @@ class _PracticePageState extends State<PracticePage> {
         ActionCard(
           key: ValueKey('drill-card-${a.id}'),
           item: a,
-          onTap: (from) => _openDrill(a.id, from),
+          onTap: (_) => _openDrill(a.id),
         ),
     ]);
     return Align(
@@ -199,18 +199,15 @@ class _PracticePageState extends State<PracticePage> {
     );
   }
 
-  Future<void> _openDrill(String id, BuildContext from) async {
+  Future<void> _openDrill(String id) async {
     if (HipSharedLibrary.current != null) {
       await HipSharedLibrary.openDetail(context, actions, id);
       return;
     }
     if (content.drills[id] == null) return;
     final jump = await Navigator.of(context).push<Object?>(
-      HipRoute.expandFrom<Object?>(
-        from,
+      HipRoute.content<Object?>(
         (_) => DrillDetailPage(actions: actions, drillId: id),
-        radius: 20,
-        color: HipColors.surface,
       ),
     );
     _applyJump(jump);
@@ -388,7 +385,7 @@ class _PracticePageState extends State<PracticePage> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeDeep,
+                      color: HipColors.jadeText,
                     ),
                   ),
                 ],
@@ -706,8 +703,14 @@ class _SavedGroupPage extends StatelessWidget {
           actions: actions,
           group: group,
         ),
+        bodyScrollsUnderBar: true,
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            hipNavInset(context, hasSubtitle: true) + 12,
+            20,
+            20,
+          ),
           children: [
             if (group.coachPlan == null)
               Text('${t.restBetween} ${t.restValue(group.restSeconds)}'),
@@ -840,7 +843,7 @@ class _GroupHomeMembership extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: HipColors.jadeDeep,
+                      color: HipColors.jadeText,
                     ),
                   ),
                 ],

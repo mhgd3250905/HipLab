@@ -83,8 +83,7 @@ Future<void> _dispose(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// After the skip: the rest before [next] runs with optional feedback, then
-/// [next] starts normally.
+/// A skip still offers feedback during the rest before [next].
 Future<void> _restThenNext(
   WidgetTester tester,
   TrainingPlan plan,
@@ -96,10 +95,8 @@ Future<void> _restThenNext(
     findsOneWidget,
   );
   expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-  expect(
-    find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    findsOneWidget,
-  );
+  final feedback = find.byKey(const ValueKey('player-v1-rest-comfortable'));
+  await pumpTrainerControl(tester, feedback);
   final before = _secondsLeft(tester);
   expect(
     before,
@@ -107,17 +104,12 @@ Future<void> _restThenNext(
   );
   await tester.pump(const Duration(seconds: 2));
   expect(_secondsLeft(tester), inInclusiveRange(before - 3, before - 1));
-  await tester.tap(find.byKey(const ValueKey('player-v1-rest-comfortable')));
-  await tester.pump(const Duration(milliseconds: 300));
-  expect(find.text('已记录'), findsOneWidget);
+  expect(feedback.hitTestable(), findsOneWidget);
   await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
   await tester.pump(
     trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
   );
-  expect(
-    find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    findsNothing,
-  );
+  expect(feedback, findsNothing);
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
   expect(
@@ -178,7 +170,7 @@ void main() {
       });
     }
 
-    testWidgets('F7 group h-squat 1 次 × 3 组 → skip, rest + feedback, then the '
+    testWidgets('F7 group h-squat 1 次 × 3 组 → skip, rest, then the '
         'next step runs', (tester) async {
       final store = await _store();
       final plan = _group(store, [
@@ -191,8 +183,8 @@ void main() {
       await _dispose(tester);
     });
 
-    testWidgets('F7 sided glute-max-A 1 次 × 2 组 (no tight side) → skip, rest '
-        '+ feedback, then the next step runs', (tester) async {
+    testWidgets('F7 sided glute-max-A 1 次 × 2 组 (no tight side) → skip, rest, '
+        'then the next step runs', (tester) async {
       final store = await _store();
       final plan = _group(store, [
         ('glute-max-A', const LibraryDose(reps: 1, sets: 2)),
@@ -211,7 +203,7 @@ void main() {
     });
 
     testWidgets('F7 sided glute-max-A 1 次 × 3 组, left tight (+1 组) → skip, '
-        'rest + feedback, then the next step runs', (tester) async {
+        'rest, then the next step runs', (tester) async {
       final store = await _store();
       final dir = store.content.drill('glute-max-A').directions.first;
       final plan = _group(store, [

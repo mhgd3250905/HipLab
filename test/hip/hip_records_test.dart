@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
-import 'package:hiplab/hip/data/hip_public_media.dart';
 import 'package:hiplab/hip/domain/hip_library.dart';
 import 'package:hiplab/hip/domain/hip_progress.dart';
 import 'package:hiplab/hip/ui/hip_records_page.dart';
 import 'package:hiplab/hip/ui/hip_widgets.dart';
-import 'package:ugk_trainer_runtime/ugk_trainer.dart' show TrainerPoster;
+import 'package:ugk_trainer_runtime/ugk_trainer.dart'
+    show PoseHubStandingImage, TrainerPoster;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
+import 'public_media_fixture.dart';
 
 void main() {
   test('streakHistory: best run and the day each milestone was reached', () {
@@ -128,6 +129,12 @@ void main() {
       clock: () => now,
     );
     const action = 'o-stand-lunge';
+    final bundled = PublicMediaFixture();
+    final updated = bundled.withUpdatedThumbnail(action, 'h-sumo-pry');
+    final active = ValueNotifier(bundled.policy);
+    addTearDown(bundled.dispose);
+    addTearDown(updated.dispose);
+    addTearDown(active.dispose);
     store.sessions.addAll([
       for (var i = 1; i <= 5; i++)
         SessionRecord(
@@ -155,6 +162,8 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        builder: (_, child) =>
+            MediaArtworkTestScope(policy: active, child: child!),
         home: Scaffold(body: HipRecordsView(store: store)),
       ),
     );
@@ -167,7 +176,7 @@ void main() {
     expect(tiles, hasLength(3));
     expect(
       tiles.map((tile) => tile.asset),
-      everyElement(HipPublicMedia.coverAssetFor(action)),
+      everyElement(bundled.policy.posterAssetFor(action)),
     );
     expect(
       tiles.map((tile) => tile.stageColor),
@@ -176,6 +185,29 @@ void main() {
     expect(
       tester.getSize(find.byType(TrainerPoster).first),
       const Size(38, 40),
+    );
+
+    final oldDigest = bundled.policy.actionFor(action)!.thumbnail.sha256;
+    active.value = updated.policy;
+    await tester.pumpAndSettle();
+    final photos = tester.widgetList<PoseHubStandingImage>(
+      find.byType(PoseHubStandingImage),
+    );
+    final selected = updated.policy.actionFor(action)!.thumbnail;
+    expect(selected.sha256, isNot(oldDigest));
+    expect(photos, hasLength(3));
+    for (final photo in photos) {
+      expect(photo.thumbnail, isTrue);
+      expect(photo.action.thumbnail, same(selected));
+      expect(photo.repository, same(updated));
+    }
+    expect(updated.requestedArtwork, contains(selected));
+    expect(updated.requested, isEmpty);
+    expect(
+      tester
+          .widgetList<TrainerPoster>(find.byType(TrainerPoster))
+          .map((tile) => tile.asset),
+      everyElement(bundled.policy.posterAssetFor(action)),
     );
 
     await tester.tap(find.byKey(const ValueKey('records-all')));

@@ -71,6 +71,51 @@ Widget _host(Widget child, {bool reduced = false, double top = 0}) =>
     );
 
 void main() {
+  testWidgets('app snackbars respect the dark surface and keep light colors', (
+    tester,
+  ) async {
+    const message = 'Saved';
+    for (final palette in [HipPalette.dark, HipPalette.light]) {
+      final theme = hipTheme(palette);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text(message))),
+                child: const Text('Show message'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Show message'));
+      await tester.pumpAndSettle();
+
+      final messageFinder = find.text(message);
+      final material = tester.widget<Material>(
+        find
+            .descendant(
+              of: find.byType(SnackBar),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      expect(
+        material.color,
+        palette.isDark ? palette.surfaceHigh : theme.colorScheme.inverseSurface,
+      );
+      expect(
+        DefaultTextStyle.of(tester.element(messageFinder)).style.color,
+        palette.isDark ? palette.text : theme.colorScheme.onInverseSurface,
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+    }
+  });
+
   testWidgets(
     'a pressable card preserves independent child semantics actions',
     (tester) async {
