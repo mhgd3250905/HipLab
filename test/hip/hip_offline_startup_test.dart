@@ -14,6 +14,7 @@ import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
 import 'package:hiplab/hip/ui/library/action_filter.dart';
 import 'package:hiplab/hip/ui/library/lib_text.dart';
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import 'hip_domain_test.dart' show MemoryStorage, loadContent;
 import 'home_nav.dart' show openPractice;
@@ -95,7 +96,10 @@ void main() {
         config: const CoachConfig(appKey: 'offline-test'),
       );
       final policy = await tester.runAsync(
-        () => HipPublicMedia.load(rootDirectory: root!.path),
+        () => HipPublicMedia.load(
+          rootDirectory: root!.path,
+          prefetchBeforeTraining: true,
+        ),
       );
       try {
         expect(policy!.prefetchBeforeTraining, isTrue);
@@ -136,8 +140,7 @@ void main() {
         // the rows below the fold, inside the same offline zone.
         await tester.runAsync(() async {
           for (final item in items) {
-            final asset =
-                'assets/public_posters/r2-v11/thumbnail/${item.id}.webp';
+            final asset = HipPublicMedia.thumbnailAssetFor(item.id)!;
             expect(item.poster, asset, reason: item.id);
             await _decodeBundledImage(asset);
           }
@@ -147,15 +150,13 @@ void main() {
         final firstItem = tester.widget<ActionCard>(firstCard).item;
         final cardImage = find.descendant(
           of: firstCard,
-          matching: find.byType(Image),
+          matching: find.byType(trainer.PoseHubCatalogImage),
         );
+        final artwork = tester.widget<trainer.PoseHubCatalogImage>(cardImage);
+        expect(artwork.thumbnail, isTrue);
         expect(
-          tester.widget<Image>(cardImage).image,
-          isA<AssetImage>().having(
-            (image) => image.assetName,
-            'assetName',
-            firstItem.poster,
-          ),
+          artwork.thumbnailFile.sha256,
+          policy.actionFor(firstItem.id)!.thumbnail.sha256,
         );
         expect(tester.takeException(), isNull);
         // Startup and browsing stay offline with a configured coach and

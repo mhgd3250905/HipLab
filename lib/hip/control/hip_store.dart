@@ -27,7 +27,7 @@ class CoachRoutineWriteResult {
 /// FlareLab's `LearningStore` key from the time both shared one project).
 class HipStore extends ChangeNotifier {
   HipStore({
-    required this.content,
+    required this._content,
     LocalStateStorage? storage,
     ReminderScheduler? reminders,
     DateTime Function()? clock,
@@ -37,12 +37,21 @@ class HipStore extends ChangeNotifier {
 
   static const storageKey = 'hiplab.state.v1';
 
-  final HipContent content;
+  HipContent _content;
+  HipContent get content => _content;
   final LocalStateStorage _storage;
   final ReminderScheduler reminders;
   final DateTime Function() _clock;
   late final scorer = HipAssessmentScorer(content.rules);
-  late final planner = TrainingPlanner(content);
+  late TrainingPlanner _planner = TrainingPlanner(content);
+  TrainingPlanner get planner => _planner;
+
+  /// Refreshes public definitions while retaining the live user state.
+  void usePublicTrainingContent(HipContent content) {
+    _content = content;
+    _planner = TrainingPlanner(content);
+    notifyListeners();
+  }
 
   DateTime now() => _clock();
 

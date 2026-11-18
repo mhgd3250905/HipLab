@@ -64,7 +64,7 @@ void main() {
         coach.DoseMode.time,
         coach.DoseMode.time,
       ]);
-      expect(items.map((item) => item.sets), [3, 4]);
+      expect(items.map((item) => item.sets), [3, 3]);
       expect(items.map((item) => item.workSeconds), [20, 10]);
       expect(items.map((item) => item.restSeconds), [20, 20]);
       expect(disk.values[HipStore.storageKey], persisted);

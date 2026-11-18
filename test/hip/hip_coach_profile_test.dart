@@ -201,15 +201,15 @@ void main() {
         );
       }
     }
-    // r2-v1 authors an execution rhythm for every action.
+    // The bundled r2-v18 pack authors an execution rhythm for every action.
     expect(authored, 249);
-    // r2-v1 dropped defaultDose.holdSeconds; the hold is the authored phase.
+    // With no defaultDose hold override, use the signed execution phase.
     double holdPhase(String id) =>
         rhythms[id]!.phases.firstWhere((p) => p.id == 'hold').seconds;
     expect(rhythms['h-sumo-pry']!.holdSeconds, isNull);
-    expect(holdPhase('h-sumo-pry'), 1.9);
+    expect(holdPhase('h-sumo-pry'), 2.5);
     expect(rhythms['n-seated-knee-lift']!.holdSeconds, isNull);
-    expect(holdPhase('n-seated-knee-lift'), 2.1);
+    expect(holdPhase('n-seated-knee-lift'), 1.5);
   });
 
   test('ambient equipment codes match public catalog IDs through SDK tags', () {

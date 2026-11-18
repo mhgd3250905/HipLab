@@ -141,44 +141,54 @@ void main() {
   });
 
   group('SDK 动作库与宿主单练', () {
-    testWidgets('updated library artwork uses the SDK thumbnail and retains '
-        'the bundled crop as fallback', (tester) async {
+    testWidgets('library thumbnail follows an inherited catalogue change '
+        'and retains the bundled crop as fallback', (tester) async {
+      const id = 's-pigeon';
       final bundled = PublicMediaFixture();
       addTearDown(bundled.dispose);
-      final catalog = coach.PoseHubAppTestCatalog.fromJson({
-        ...bundled.catalog.raw,
-        'pack': 'r2-v16',
-      });
-      final updated = PublicMediaFixture(catalog: catalog);
+      final updated = bundled.withUpdatedThumbnail(id, 'h-sumo-pry');
       final previousPolicy = HipPublicMedia.current;
+      final active = ValueNotifier(bundled.policy);
       addTearDown(() {
         HipPublicMedia.current = previousPolicy;
         updated.dispose();
+        active.dispose();
       });
 
-      const id = 's-pigeon';
       final action = updated.policy.actionFor(id)!;
       final poster = HipPublicMedia.thumbnailAssetFor(id)!;
       final card = MaterialApp(
         home: Scaffold(
-          body: ActionCard(
-            item: HipActionItem(
-              id: id,
-              name: action.nameZh,
-              parts: const [],
-              equipment: const [],
-              type: hipTypeRelax,
-              places: const {},
-              level: null,
-              dose: '',
-              poster: poster,
+          body: MediaArtworkTestScope(
+            policy: active,
+            child: ActionCard(
+              item: HipActionItem(
+                id: id,
+                name: action.nameZh,
+                parts: const [],
+                equipment: const [],
+                type: hipTypeRelax,
+                places: const {},
+                level: null,
+                dose: '',
+                poster: poster,
+              ),
+              onTap: (_) {},
             ),
-            onTap: (_) {},
           ),
         ),
       );
-      HipPublicMedia.current = updated.policy;
+      HipPublicMedia.current = bundled.policy;
       await tester.pumpWidget(card);
+      await tester.pumpAndSettle();
+      final before = tester.widget<trainer.PoseHubStandingImage>(
+        find.byType(trainer.PoseHubStandingImage),
+      );
+      expect(before.repository, same(bundled));
+      expect(bundled.requestedArtwork, contains(before.action.thumbnail));
+
+      active.value = updated.policy;
+      await tester.pumpAndSettle();
       final photo = tester.widget<trainer.PoseHubStandingImage>(
         find.byType(trainer.PoseHubStandingImage),
       );
@@ -189,6 +199,10 @@ void main() {
       final fallback = photo.legacyFallback! as HipPosterBoundsFit;
       expect(fallback.bounds, libraryPosterBounds[id]);
       expect(((fallback.child as Image).image as AssetImage).assetName, poster);
+      expect(updated.requestedArtwork, contains(action.thumbnail));
+      expect(action.thumbnail.sha256, isNot(before.action.thumbnail.sha256));
+      expect(bundled.requested, isEmpty);
+      expect(updated.requested, isEmpty);
     });
 
     testWidgets('library aligns search, filters, and cards to page edges', (
@@ -304,7 +318,13 @@ void main() {
       expect(second.size, first.size);
       expect(second.top, first.top);
       expect(second.left - first.right, 12);
-      expect(find.byType(trainer.PoseHubStandingImage), findsNothing);
+      expect(
+        find.descendant(
+          of: cards.first,
+          matching: find.byType(trainer.PoseHubStandingImage),
+        ),
+        findsOneWidget,
+      );
       final artwork = find.descendant(
         of: cards.first,
         matching: find.byType(ClipRect),

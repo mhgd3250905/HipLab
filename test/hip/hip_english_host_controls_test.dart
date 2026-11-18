@@ -13,6 +13,7 @@ import 'package:hiplab/hip/ui/hip_widgets.dart';
 import 'package:hiplab/hip/voice/hip_voice.dart';
 import 'package:hiplab/hip/voice/voice_library.dart';
 import 'package:hiplab/hip/voice/voice_queue.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 void main() {
   const english = Locale('en');
@@ -30,13 +31,12 @@ void main() {
   test(
     'existing translated actions retain all authored English display lines',
     () {
-      final source =
-          jsonDecode(
-                File(
-                  'assets/public_media/catalog/catalog.json',
-                ).readAsStringSync(),
-              )
-              as Map;
+      final semantics = File('assets/public_media/catalog/catalog.json');
+      final source = jsonDecode(semantics.readAsStringSync()) as Map;
+      final catalog = coach.PoseHubAppTestCatalog.fromBytes(
+        File('assets/public_media/catalog.json').readAsBytesSync(),
+        semanticCatalogBytes: semantics.readAsBytesSync(),
+      );
       final actions = <String, Map>{
         for (final action in source['drills'] as List)
           if (hipPublicTextEn.containsKey((action as Map)['id']))
@@ -46,7 +46,10 @@ void main() {
       expect(actions, hasLength(249));
       var cues = 0, cautions = 0, contraindications = 0;
       for (final entry in actions.entries) {
-        final translated = hipPublicTextEn[entry.key]!;
+        final translated = hipPublicEnglishTextFor(
+          entry.key,
+          catalog: catalog,
+        )!;
         expect(
           translated.cues.length,
           ((entry.value['cues'] as Map)['zh'] as List).length,
@@ -79,20 +82,26 @@ void main() {
         cautions += translated.cautions.length;
         contraindications += translated.contraindications.length;
       }
-      expect(cues, 815);
-      expect(cautions, 344);
+      expect(cues, 825);
+      expect(cautions, 353);
       expect(contraindications, 253);
       expect(
-        hipPublicTextEn['h-band-hip-extension']!.cautions.last,
-        'Do not attach the band to the chair.',
+        hipPublicEnglishTextFor(
+          'h-band-hip-extension',
+          catalog: catalog,
+        )!.cautions.last,
+        'Never tie the band to the chair.',
       );
       expect(
-        hipPublicTextEn['abs-A']!.cues.last,
-        contains('Do not hold your breath'),
+        hipPublicEnglishTextFor('abs-A', catalog: catalog)!.cues.last,
+        contains('keep breathing'),
       );
       expect(
-        hipPublicTextEn['adductors-B']!.cautions.single,
-        contains('Stop immediately'),
+        hipPublicEnglishTextFor(
+          'adductors-B',
+          catalog: catalog,
+        )!.cautions.single,
+        contains('Stop right away'),
       );
     },
   );

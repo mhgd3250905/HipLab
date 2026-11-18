@@ -8,10 +8,10 @@ import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 import '../../core/media/drill_media.dart';
 import '../../core/media/media_controller.dart';
-import '../data/hip_public_media.dart';
 import '../data/hip_shared_library.dart';
 import '../domain/hip_action_media.dart';
 import '../domain/hip_models.dart';
+import 'hip_action_artwork.dart';
 import 'hip_icons.dart';
 import 'hip_tactile.dart';
 import 'hip_glass.dart';
@@ -324,6 +324,7 @@ class HipDrillArt extends StatefulWidget {
     required this.drill,
     this.play = false,
     this.holdVideo = false,
+    this.videoRequested = true,
     this.revealPausedFrame = true,
     this.stage,
     this.onFrameReadyChanged,
@@ -343,6 +344,9 @@ class HipDrillArt extends StatefulWidget {
   /// Keep one decoded, paused video surface between compact and expanded views.
   /// Ordinary library artwork keeps its existing poster-only behavior.
   final bool holdVideo;
+
+  /// The deck can show a still before the user opens that occurrence.
+  final bool videoRequested;
   final bool revealPausedFrame;
   final Color? stage;
   final ValueChanged<bool>? onFrameReadyChanged;
@@ -470,7 +474,7 @@ class _HipDrillArtState extends State<HipDrillArt>
 
   @override
   Widget build(BuildContext context) {
-    final policy = HipPublicMedia.current;
+    final policy = HipActionArtwork.policyOf(context);
     if (policy == null || policy.actionFor(widget.drill.id) == null) {
       return HipPendingArt(
         label: widget.showPendingLabel
@@ -494,12 +498,13 @@ class _HipDrillArtState extends State<HipDrillArt>
       actionId: widget.drill.id,
       policy: policy,
       playing:
+          widget.videoRequested &&
           (widget.play || widget.holdVideo) &&
           (!widget.holdVideo || _heldMediaForeground) &&
           !_retired &&
           HipMediaPolicy.of(context),
       paused: !widget.play,
-      prepareFirstFrame: widget.holdVideo,
+      prepareFirstFrame: widget.holdVideo && widget.videoRequested,
       showLoadingIndicator: !widget.holdVideo,
       retainPausedSurfaceWhileCovered: widget.holdVideo,
       nativeAlpha: widget.holdVideo,
@@ -522,13 +527,20 @@ class _HipDrillArtState extends State<HipDrillArt>
       children: [
         media,
         if (hasCover)
-          trainer.TrainerPoster(
+          ColoredBox(
             key: const ValueKey('home-action-resume-poster'),
-            asset: poster,
-            mirrored: widget.mirror,
-            stageColor: widget.stage ?? HipColors.mediaBackdrop,
-            bundle: experience?.bundle,
-            decodeWidth: experience?.decodeWidth,
+            color: widget.stage ?? HipColors.mediaBackdrop,
+            child: Transform.flip(
+              flipX: widget.mirror,
+              child: HipActionArtwork(
+                actionId: widget.drill.id,
+                fallback: trainer.TrainerPoster(
+                  asset: poster,
+                  bundle: experience?.bundle,
+                  decodeWidth: experience?.decodeWidth,
+                ),
+              ),
+            ),
           ),
       ],
     );

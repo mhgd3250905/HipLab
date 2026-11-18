@@ -7,7 +7,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-THUMBNAILS = ROOT / "assets/public_posters/r2-v11/thumbnail"
+THUMBNAILS = ROOT / "assets/public_posters/r2-v18/thumbnail"
 OUTPUT = ROOT / "lib/hip/data/hip_library_poster_bounds.dart"
 THUMBNAIL_SIZE = 192
 

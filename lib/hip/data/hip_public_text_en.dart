@@ -1,7 +1,8 @@
-// Display-only English translations of the 248 HipLab-authorized public
-// actions and the self-test demo in the r2-v11 catalogue. Each cue and
-// caution preserves the source order; training, safety decisions, IDs and
-// stored user text remain in the authoritative source models.
+// Display-only English guidance for authorized public actions. The original
+// HipLab translations remain available for legacy catalogs and locales.
+
+import 'package:ugk_coach/ugk_coach.dart' as coach;
+import 'package:ugk_trainer_runtime/ugk_trainer_runtime.dart' as trainer;
 
 class HipPublicEnglishText {
   const HipPublicEnglishText({
@@ -12,6 +13,53 @@ class HipPublicEnglishText {
   });
   final String purpose;
   final List<String> cues, cautions, contraindications;
+}
+
+HipPublicEnglishText? hipPublicEnglishTextFor(
+  String id, {
+  coach.PoseHubAppTestCatalog? catalog,
+}) {
+  final fallback = hipPublicTextEn[id];
+  if (fallback == null || catalog == null) return fallback;
+  final revision = trainer.comparePoseHubPacks(
+    trainer.poseHubPackVersionOf(catalog),
+    'r2-v18',
+  );
+  if (revision == null || revision < 0) return fallback;
+  final action = catalog.tryGet(id);
+  if (action == null) return fallback;
+  final data = action.raw;
+  final purpose = data['purposeEn'];
+  final sourceCues = data['cues'];
+  final cues = _translatedLines(
+    data['cuesEn'],
+    sourceCues is Map ? sourceCues['zh'] : null,
+  );
+  final cautions = _translatedLines(data['cautionsEn'], data['cautions']);
+  if (purpose is! String ||
+      purpose.trim().isEmpty ||
+      cues == null ||
+      cautions == null) {
+    return fallback;
+  }
+  return HipPublicEnglishText(
+    purpose: purpose,
+    cues: cues,
+    cautions: cautions,
+    contraindications: fallback.contraindications,
+  );
+}
+
+List<String>? _translatedLines(Object? translated, Object? source) {
+  if (translated is! List ||
+      source is! List ||
+      translated.length != source.length ||
+      !translated.every(
+        (value) => value is String && value.trim().isNotEmpty,
+      )) {
+    return null;
+  }
+  return List.unmodifiable(translated.cast<String>());
 }
 
 const hipPublicTextSourceSha256 =

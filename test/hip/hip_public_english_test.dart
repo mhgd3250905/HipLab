@@ -9,11 +9,13 @@ import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 void main() {
+  final semantics = File('assets/public_media/catalog/catalog.json');
   final source =
-      jsonDecode(
-            File('assets/public_media/catalog/catalog.json').readAsStringSync(),
-          )
-          as Map<String, dynamic>;
+      jsonDecode(semantics.readAsStringSync()) as Map<String, dynamic>;
+  final delivery = coach.PoseHubAppTestCatalog.fromBytes(
+    File('assets/public_media/catalog.json').readAsBytesSync(),
+    semanticCatalogBytes: semantics.readAsBytesSync(),
+  );
   final definitions = {
     for (final row in source['drills'] as List)
       (row as Map<String, dynamic>)['id'] as String: row,
@@ -35,7 +37,12 @@ void main() {
       var cueCount = 0, cautionCount = 0, contraindicationCount = 0;
       for (final id in hipPublicTextEn.keys) {
         final original = definitions[id]!;
-        final copy = hipPublicTextEn[id]!;
+        final copy = hipPublicEnglishTextFor(id, catalog: delivery)!;
+        final authored = delivery.tryGet(id)!.raw;
+        expect(copy.purpose, authored['purposeEn'], reason: id);
+        expect(copy.cues, authored['cuesEn'], reason: id);
+        expect(copy.cautions, authored['cautionsEn'], reason: id);
+        expect(copy.contraindications, hipPublicTextEn[id]!.contraindications);
         final cues = (original['cues'] as Map)['zh'] as List;
         expect(copy.cues.length, cues.length, reason: '$id cue coverage');
         expect(
@@ -62,18 +69,21 @@ void main() {
         cautionCount += copy.cautions.length;
         contraindicationCount += copy.contraindications.length;
       }
-      expect(cueCount, 815);
-      expect(cautionCount, 344);
+      expect(cueCount, 825);
+      expect(cautionCount, 353);
       expect(contraindicationCount, 253);
     },
   );
 
   test('all library actions show English labels and guidance', () {
-    final display = hipEnglishPublicDisplay(coach.Catalog.fromJson(source))!;
+    final display = hipEnglishPublicDisplay(
+      delivery.toAiCatalog(),
+      delivery: delivery,
+    )!;
     for (final id in hiplabCoachAuthorizedActionIds) {
       final original = definitions[id]!;
       final text = display(id)!;
-      final copy = hipPublicTextEn[id]!;
+      final copy = hipPublicEnglishTextFor(id, catalog: delivery)!;
       expect(text.name, (original['name'] as Map)['en'], reason: id);
       expect(text.metadata, isNotEmpty, reason: id);
       expect(text.cues, copy.cues, reason: id);
@@ -130,7 +140,8 @@ void main() {
   test(
     'stop conditions and authored side counting remain explicit in English',
     () {
-      final support = hipPublicTextEn['abs-B']!;
+      final support = hipPublicEnglishTextFor('abs-B')!;
+      expect(support, same(hipPublicTextEn['abs-B']));
       expect(support.cautions.join(' ').toLowerCase(), contains('stop'));
       expect(support.cautions.join(' ').toLowerCase(), contains('numb'));
       expect(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:ugk_coach/ugk_coach.dart' as coach;
 
 import '../domain/hip_models.dart';
 import 'hip_public_catalog.dart';
@@ -13,7 +14,16 @@ const hipContentAsset = 'assets/hip/hip-content.json';
 /// plus this index.
 const actionKitIndexAsset = 'assets/action_kits/index.json';
 
-Future<HipContent> loadHipContent([AssetBundle? bundle]) async {
+Future<HipContent> loadHipContent([AssetBundle? bundle]) async =>
+    loadHipContentWithCatalog(
+      await loadHipPublicCatalog(bundle: bundle),
+      bundle,
+    );
+
+Future<HipContent> loadHipContentWithCatalog(
+  coach.PoseHubAppTestCatalog pack, [
+  AssetBundle? bundle,
+]) async {
   final b = bundle ?? rootBundle;
   final data = await b.load(hipContentAsset);
   final text = utf8.decode(
@@ -21,7 +31,13 @@ Future<HipContent> loadHipContent([AssetBundle? bundle]) async {
   );
   final content = HipContent.fromJson(jsonDecode(text) as Map<String, dynamic>);
   final authored = content.withKits(await loadActionKits(b));
-  final pack = await loadHipPublicCatalog(bundle: b);
+  return applyHipPublicTraining(authored, pack);
+}
+
+HipContent applyHipPublicTraining(
+  HipContent authored,
+  coach.PoseHubAppTestCatalog pack,
+) {
   final rhythms = hipPublicRhythms(pack);
   return authored.withPublicTraining(
     hipCoachCatalogFromPublic(pack, rhythms: rhythms),

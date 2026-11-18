@@ -18,7 +18,7 @@
 
 ## 新机器拉素材（Mac / Windows）
 
-从 Git 获取 `pubspec.yaml`、`pubspec.lock`、`assets/public_media/`、`assets/public_posters/r2-v11/` 和 `assets/coach/ai-tags/`。随包 `r2-v11` 目录包含 249 项，动作库开放 248 项，每项随包提供封面和缩略图。自测演示单列。校验通过的 stable 新目录在下次启动生效。视频由 SDK 按需下载并缓存，离线播放取决于已有缓存。
+从 Git 获取 `pubspec.yaml`、`pubspec.lock`、`assets/public_media/`、`assets/public_posters/` 和 `assets/coach/ai-tags/`。随包基线 `r2-v18` 的动作目录、语义目录及 249 张站位图取自 `ugk_trainer-v1.0.0`，封面和缩略图从同一目录声明的公开地址取得并逐文件核对字节数与 SHA-256。动作库开放 248 项，自测演示另列。新版目录在静态素材校验完成后生效。视频由 SDK 按需下载，离线播放使用已有文件。
 
 两端使用 Flutter **3.44.7 / Dart 3.12.2**。执行 `flutter pub get --enforce-lockfile`，保持锁文件的 `pub.dev` 源。已有依赖解析时可用 `--no-pub`。完整 SDK 固定版本和目录 SHA-256 见[版本管理](version-management.md#版本与来源身份)。
 

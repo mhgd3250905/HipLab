@@ -19,7 +19,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Action-library hot update: open the verified cache before the first
   // catalogue load, then check the channel pointer (launch + daily on resume).
-  await PoseHubCatalogUpdates.start(loadLocal: loadHipPublicCatalog);
+  final catalogUpdates = await PoseHubCatalogUpdates.start(
+    loadLocal: loadHipPublicCatalog,
+  );
   // Generate only for an AI-enabled build, before the AI page is opened. A coach
   // request awaits this same operation; storage errors keep offline use working
   // and can be retried before any network request sends a device ID.
@@ -45,5 +47,5 @@ Future<void> main() async {
       ),
     );
   }
-  runApp(HipApp(membership: membership));
+  runApp(HipApp(membership: membership, catalogUpdates: catalogUpdates));
 }

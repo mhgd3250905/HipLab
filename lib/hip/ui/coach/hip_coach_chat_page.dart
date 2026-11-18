@@ -11,6 +11,7 @@ import '../../coach/hip_coach_chat_storage.dart';
 import '../../coach/membership_gateway.dart';
 import '../../control/hip_ai_consent.dart';
 import '../../domain/hip_library.dart';
+import '../../domain/hip_models.dart' show HipContent;
 import '../../domain/hip_session.dart';
 import '../../trainer/hip_sdk_session_builder.dart';
 import '../../voice/hip_voice.dart';
@@ -261,47 +262,54 @@ Future<CoachChatController> loadHipChat(
   BuildContext context,
   LibraryActions actions,
 ) {
-  final voice = HipVoice.of(context);
   final store = actions.store;
-  final builder = hipSdkSessionBuilder(
-    store.content,
-    // The controller outlives settings routes. Read the current voice language
-    // for both SDK admission timing and the player's phase construction.
-    switchSecondsFor: (item, rhythm, side) => HipSessionScript(
-      lib: voice.lib,
-      lang: voice.settings.language.resolveClipLanguage(
-        actions.coach!.languageTag,
-      ),
-      steps: const [],
-      kits: store.content.kits,
-      useSdkPhases: true,
-    ).switchSecondsFor(item, rhythm, side),
-  );
+  trainer.SessionBuilder builderFor(HipContent content, HipVoice voice) =>
+      hipSdkSessionBuilder(
+        content,
+        switchSecondsFor: (item, rhythm, side) => HipSessionScript(
+          lib: voice.lib,
+          lang: voice.settings.language.resolveClipLanguage(
+            actions.coach!.languageTag,
+          ),
+          steps: const [],
+          kits: content.kits,
+          useSdkPhases: true,
+        ).switchSecondsFor(item, rhythm, side),
+      );
   return actions.coach!.load(
-    builder: builder,
+    builder: builderFor(store.content, HipVoice.of(context)),
     languageTag: HipText.of(context).languageTag,
     actions: CoachChatHostActions(
       onStartTraining: (context, request) async {
-        final plan = TrainingPlanner(store.content, sdkBuilder: builder)
-            .customPlan(
-              CustomRoutine(
-                id: 'coach-playback',
-                name: request.plan.plan.title,
-                steps: const [],
-                coachPlan: request.plan.plan.toJson(),
-              ),
-              store.profile,
-            );
+        final content = store.content;
+        final voice = HipVoice.of(context);
+        final builder = builderFor(content, voice);
+        final plan = TrainingPlanner(content, sdkBuilder: builder).customPlan(
+          CustomRoutine(
+            id: 'coach-playback',
+            name: request.plan.plan.title,
+            steps: const [],
+            coachPlan: request.plan.plan.toJson(),
+          ),
+          store.profile,
+        );
         if (plan == null || plan.sdkPlan == null) {
           throw StateError('The complete SDK plan cannot be played safely');
         }
         final profile = actions.coach!.controller.profile;
-        final policy = profile.mediaPolicy;
+        final policy =
+            trainer.TrainingMediaPolicyScope.read(context) ??
+            profile.mediaPolicy;
         final first = plan.steps.firstOrNull?.drill.id;
         return trainer.TrainerLauncher.open<trainer.SessionResult>(
           context,
-          builder: (_) =>
-              HipPlayerPage(store: store, plan: plan, sdkBuilder: builder),
+          builder: (_) => HipPlayerPage(
+            store: store,
+            plan: plan,
+            sdkBuilder: builder,
+            trainingContent: content,
+            trainingVoice: voice,
+          ),
           firstPosterAsset: first == null
               ? null
               : policy?.posterAssetFor(first),

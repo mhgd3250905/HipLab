@@ -8,9 +8,9 @@ import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 import '../data/hip_library_poster_bounds.dart';
 import '../data/hip_public_media.dart';
 import '../domain/hip_models.dart';
+import 'hip_action_artwork.dart';
 import 'hip_glass.dart';
 import 'hip_icons.dart';
-import 'hip_poster_bounds_fit.dart';
 import 'hip_theme.dart';
 import 'hip_widgets.dart' show HipCard, HipPressable;
 import 'library/lib_text.dart';
@@ -511,18 +511,14 @@ class _FolderArtwork extends StatelessWidget {
     final id = drill?.id;
     final asset = id == null
         ? null
-        : HipPublicMedia.current?.posterAssetFor(id);
-    final bounds = fitThumbnail ? libraryPosterBounds[id] : null;
-    final thumbnail = bounds == null || id == null
+        : HipActionArtwork.policyOf(context)?.posterAssetFor(id) ??
+              HipPublicMedia.coverAssetFor(id);
+    final thumbnail = !fitThumbnail || id == null
         ? null
         : HipPublicMedia.thumbnailAssetFor(id);
     final Widget artwork;
-    if (thumbnail != null && bounds != null) {
-      artwork = HipPosterBoundsFit(
-        sourceSize: const Size.square(libraryPosterPixels),
-        bounds: bounds,
-        child: trainer.TrainerPoster(asset: thumbnail),
-      );
+    if (thumbnail != null) {
+      artwork = trainer.TrainerPoster(asset: thumbnail);
     } else if (asset != null) {
       artwork = trainer.TrainerPoster(asset: asset);
     } else {
@@ -540,7 +536,14 @@ class _FolderArtwork extends StatelessWidget {
                       ? HipColors.mediaBackdrop
                       : const Color(0xfff1f3f2))
                   .withValues(alpha: fitThumbnail ? 0 : 1),
-          child: artwork,
+          child: HipActionArtwork(
+            actionId: id,
+            thumbnail: fitThumbnail,
+            bundledThumbnailBounds: thumbnail == null
+                ? null
+                : libraryPosterBounds[id],
+            fallback: artwork,
+          ),
         ),
       ),
     );

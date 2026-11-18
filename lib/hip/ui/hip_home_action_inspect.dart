@@ -36,6 +36,7 @@ class HipHomeActionFace extends StatefulWidget {
     this.rear = false,
     this.rearDepth = 0,
     this.contactShadow = false,
+    required this.videoRequested,
     this.revealPausedFrame = true,
     this.onFrameReadyChanged,
     this.expansion = 0,
@@ -55,6 +56,7 @@ class HipHomeActionFace extends StatefulWidget {
   final Size restingSize;
   final double expansion, rearDepth;
   final bool expanded, paused, compact, rear, contactShadow;
+  final bool videoRequested;
   final bool revealPausedFrame;
   final Key? mediaKey;
   final ValueChanged<bool>? onFrameReadyChanged;
@@ -730,6 +732,7 @@ class _HipHomeActionFaceState extends State<HipHomeActionFace> {
                           drill: drill,
                           play: widget.expanded && !widget.paused,
                           holdVideo: true,
+                          videoRequested: widget.videoRequested,
                           revealPausedFrame: widget.revealPausedFrame,
                           onFrameReadyChanged: widget.onFrameReadyChanged,
                           showPendingLabel: false,

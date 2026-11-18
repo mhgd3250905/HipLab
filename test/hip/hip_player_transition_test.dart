@@ -3,9 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hiplab/hip/control/hip_store.dart';
+import 'package:hiplab/hip/data/hip_content_loader.dart';
+import 'package:hiplab/hip/data/hip_shared_library.dart';
 import 'package:hiplab/hip/domain/hip_models.dart';
 import 'package:hiplab/hip/ui/hip_app.dart';
+import 'package:hiplab/hip/ui/hip_player_page.dart';
 import 'package:hiplab/hip/ui/hip_theme.dart';
+import 'package:hiplab/hip/ui/hip_widgets.dart' show HipMediaPolicy;
+import 'package:hiplab/hip/ui/library/library_actions.dart';
+import 'package:hiplab/hip/voice/hip_voice.dart';
+import 'package:hiplab/hip/voice/voice_library.dart';
+import 'package:hiplab/hip/voice/voice_queue.dart' show VoiceSettings;
 
 import 'package:ugk_trainer_runtime/ugk_trainer.dart' as trainer;
 
@@ -15,6 +23,93 @@ import 'public_media_fixture.dart';
 
 void main() {
   final content = loadContent();
+
+  testWidgets(
+    'a mounted player keeps its training cadence and media snapshot',
+    (tester) async {
+      const id = 'h-sumo-pry';
+      final original = installPublicMediaFixture(sharedLibrary: true);
+      final updated = original.withUpdatedThumbnail(id, 's-pigeon');
+      addTearDown(updated.dispose);
+      final trainingContent = applyHipPublicTraining(content, original.catalog);
+      final updatedContent = trainingContent.withPublicTraining(
+        trainingContent.publicCatalog!,
+        {...trainingContent.publicRhythms, id: trainer.Rhythm.selfPacedReps},
+      );
+      final store = HipStore(
+        content: trainingContent,
+        storage: MemoryStorage(),
+      );
+      await store.initialize();
+      final actions = LibraryActions(
+        store: store,
+        startPlan: (_, {from, radius = 52, originColor}) async {},
+      );
+      final plan = HipSharedLibrary.planFor(actions, id)!;
+      expect(plan.sdkPlan, isNotNull);
+
+      HipVoice voiceOf(String revision) => HipVoice(
+        lib: VoiceLibrary.empty,
+        output: const trainer.MutedVoiceOutput(),
+        settingsOf: () => const VoiceSettings(voice: false, chimes: false),
+        online: VoiceLibrary(const {}, const {}, const {}, {
+          'catalogue-marker': {'zh': revision},
+        }),
+      );
+      final newVoice = voiceOf('new');
+      final active = ValueNotifier((original.policy, voiceOf('old'), 0));
+      addTearDown(active.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ValueListenableBuilder(
+            valueListenable: active,
+            builder: (context, state, _) => trainer.TrainingMediaPolicyScope(
+              policy: state.$1,
+              child: HipVoiceScope(
+                voice: state.$2,
+                child: HipMediaPolicy(
+                  videoEnabled: false,
+                  child: HipPlayerPage(
+                    key: ValueKey(state.$3),
+                    store: store,
+                    plan: state.$3 == 0
+                        ? plan
+                        : HipSharedLibrary.planFor(actions, id)!,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final player = find.byType(trainer.TrainerPlayer);
+      trainer.TrainerPlayer current() => tester.widget(player);
+      trainer.TrainingMediaPolicy? policy() =>
+          trainer.TrainingMediaPolicyScope.read(tester.element(player));
+      String? voiceLine() =>
+          current().voice!.source.line('catalogue-marker', lang: 'zh');
+      final rhythm = current().sessionBuilder!.rhythms[id];
+      expect(rhythm, same(trainingContent.publicRhythms[id]));
+      expect(voiceLine(), 'old');
+      expect(policy(), same(original.policy));
+
+      store.usePublicTrainingContent(updatedContent);
+      active.value = (updated.policy, newVoice, 0);
+      await tester.pump();
+      expect(current().sessionBuilder!.rhythms[id], same(rhythm));
+      expect(voiceLine(), 'old');
+      expect(policy(), same(original.policy));
+
+      active.value = (updated.policy, newVoice, 1);
+      await tester.pump();
+      expect(
+        current().sessionBuilder!.rhythms[id],
+        trainer.Rhythm.selfPacedReps,
+      );
+      expect(voiceLine(), 'new');
+      expect(policy(), same(updated.policy));
+    },
+  );
 
   Future<HipStore> start(
     WidgetTester tester, {

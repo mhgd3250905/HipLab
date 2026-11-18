@@ -28,20 +28,26 @@ trainer.TrainingLibraryConfig hipSharedLibraryConfig(
   categoryOrder: const ['拉伸放松', '力量'],
   showStartAction: true,
   displayText: (languageTag ?? 'zh').split(RegExp('[-_]')).first == 'en'
-      ? hipEnglishPublicDisplay(catalog)
+      ? hipEnglishPublicDisplay(
+          catalog,
+          delivery: HipPublicMedia.current?.catalog,
+        )
       : null,
 );
 
 /// Shared by App routes and the Coach profile, which has no BuildContext.
 /// Translation is display-only and uses the same checked canonical catalogue.
 trainer.TrainingLibraryActionText? Function(String actionId)?
-hipEnglishPublicDisplay(coach.Catalog? catalog) {
+hipEnglishPublicDisplay(
+  coach.Catalog? catalog, {
+  coach.PoseHubAppTestCatalog? delivery,
+}) {
   if (catalog == null) return null;
   final definitions = {for (final drill in catalog.drills) drill.id: drill};
   return (id) {
     final definition = definitions[id];
     if (definition == null) return null;
-    final copy = hipPublicTextEn[id];
+    final copy = hipPublicEnglishTextFor(id, catalog: delivery);
     return trainer.TrainingLibraryActionText(
       name: definition.name.of('en'),
       metadata: HipPublicDisplay.metadata(definition.raw),
@@ -65,6 +71,11 @@ abstract final class HipSharedLibrary {
   static trainer.TrainingLibraryConfig localized(BuildContext context) {
     final source = current!;
     final english = Localizations.localeOf(context).languageCode == 'en';
+    final delivery = english
+        ? (trainer.TrainingMediaPolicyScope.maybeOf(context) ??
+                  HipPublicMedia.current)
+              ?.catalog
+        : null;
     return trainer.TrainingLibraryConfig(
       scopeManifest: source.scopeManifest,
       categoryOrder: source.categoryOrder,
@@ -72,9 +83,7 @@ abstract final class HipSharedLibrary {
       showStartAction: source.showStartAction,
       searchNames: source.searchNames,
       displayText: english
-          ? hipEnglishPublicDisplay(
-              HipPublicMedia.current?.catalog.toAiCatalog(),
-            )
+          ? hipEnglishPublicDisplay(delivery?.toAiCatalog(), delivery: delivery)
           : source.displayText,
       strings: trainer.TrainingLibraryStrings.forLanguage(
         Localizations.localeOf(context).languageCode,
@@ -201,17 +210,58 @@ abstract final class HipSharedLibrary {
     String id,
   ) async {
     final config = current;
-    final policy = HipPublicMedia.current;
-    if (config == null || policy == null) return;
-    await trainer.TrainingLibraryDetails.open(
-      context,
-      actionId: id,
-      config: localized(context),
-      mediaPolicy: HipPublicMedia.forLibrary(policy),
-      theme: theme(context),
-      canStart: (id) => canStart(actions, id),
-      onStart: (id) => start(actions, id),
+    final policy =
+        trainer.TrainingMediaPolicyScope.read(context) ??
+        HipPublicMedia.current;
+    if (config == null ||
+        policy == null ||
+        config.actions(policy.catalog).every((action) => action.id != id)) {
+      return;
+    }
+    final library = HipPublicMedia.forLibrary(policy);
+    final bundle = DefaultAssetBundle.of(context);
+    final poster = library.posterAssetFor(id);
+    if (poster != null) {
+      await trainer.TrainingPosterImages.prepareAsset(
+        context,
+        poster,
+        timeout: const trainer.TrainerExperienceConfig().posterWarmupTimeout,
+      );
+      if (!context.mounted) return;
+    }
+    final shouldStart = await showModalBottomSheet<bool>(
+      context: context,
+      routeSettings: RouteSettings(name: 'training_library_detail/$id'),
+      isScrollControlled: true,
+      backgroundColor: theme(context).surface,
+      sheetAnimationStyle: HipMotion.sheet,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final active = HipPublicMedia.forLibrary(
+          trainer.TrainingMediaPolicyScope.maybeOf(sheetContext) ?? policy,
+        );
+        final localizedConfig = localized(sheetContext);
+        final action = localizedConfig
+            .actions(active.catalog)
+            .where((action) => action.id == id)
+            .firstOrNull;
+        if (action == null) return Text(localizedConfig.strings.unavailable);
+        return DefaultAssetBundle(
+          bundle: bundle,
+          child: trainer.TrainingLibraryDetail(
+            action: action,
+            config: localizedConfig,
+            mediaPolicy: active,
+            theme: theme(sheetContext),
+            canStart: canStart(actions, id),
+          ),
+        );
+      },
     );
+    if (shouldStart == true && context.mounted) await start(actions, id);
   }
 }
 
@@ -230,7 +280,9 @@ class HipSharedLibraryPage extends StatelessWidget {
       Expanded(
         child: trainer.TrainingLibraryPage(
           config: HipSharedLibrary.localized(context),
-          mediaPolicy: HipPublicMedia.current!,
+          mediaPolicy:
+              trainer.TrainingMediaPolicyScope.maybeOf(context) ??
+              HipPublicMedia.current!,
           theme: HipSharedLibrary.theme(context),
           embedded: true,
           canStart: (id) => HipSharedLibrary.canStart(actions, id),

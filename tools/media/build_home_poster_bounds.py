@@ -58,7 +58,7 @@ def generate():
         ):
             continue
         standing = POSTERS / f"{name}.webp"
-        cover = POSTERS / "r2-v11/cover" / standing.name
+        cover = POSTERS / "r2-v18/cover" / standing.name
         # Use the same poster priority as HipPublicMedia.current.
         path = standing if standing.is_file() else cover
         with Image.open(path) as image:

@@ -13,11 +13,10 @@ import '../../data/hip_action_scope.dart';
 import '../../data/hip_library_poster_bounds.dart';
 import '../../data/hip_public_media.dart';
 import '../../data/hip_shared_library.dart';
-import '../../data/posehub_catalog_updates.dart';
 import '../../domain/hip_library.dart';
 import '../../domain/hip_models.dart';
+import '../hip_action_artwork.dart';
 import '../hip_icons.dart';
-import '../hip_poster_bounds_fit.dart';
 import '../hip_theme.dart';
 import '../hip_widgets.dart';
 import 'lib_text.dart';
@@ -893,7 +892,7 @@ class ActionCard extends StatelessWidget {
     );
     final chair = item.places.contains('椅子可做');
     final adv = item.level == 3;
-    final art = item.poster != null
+    final fallback = item.poster != null
         ? Image.asset(
             item.poster!,
             fit: BoxFit.cover,
@@ -905,6 +904,14 @@ class ActionCard extends StatelessWidget {
         : item.drill != null
         ? HipDrillArt(drill: item.drill!, showPendingLabel: false)
         : const SizedBox.shrink();
+    final art = ExcludeSemantics(
+      child: HipActionArtwork(
+        actionId: item.id,
+        fallback: fallback,
+        thumbnail: true,
+        fit: BoxFit.cover,
+      ),
+    );
     return Builder(
       builder: (cardContext) => HipPressable(
         semanticLabel: item.name,
@@ -1193,36 +1200,27 @@ class _LibraryPoster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final poster = item.poster;
-    if (poster == null) return const SizedBox.shrink();
-    final bounds = libraryPosterBounds[item.id];
+    if (poster == null) {
+      return ExcludeSemantics(
+        child: HipActionArtwork(
+          actionId: item.id,
+          thumbnail: true,
+          fallback: const SizedBox.shrink(),
+        ),
+      );
+    }
     final image = Image.asset(
       poster,
       fit: BoxFit.contain,
       excludeFromSemantics: true,
       errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
-    // The alpha bounds are measured from the bundled thumbnail.
-    final fallback = bounds == null
-        ? image
-        : HipPosterBoundsFit(
-            sourceSize: const Size.square(libraryPosterPixels),
-            bounds: bounds,
-            child: image,
-          );
-
-    final policy = HipPublicMedia.current;
-    final action = policy?.actionFor(item.id);
-    if (policy == null ||
-        action == null ||
-        trainer.poseHubPackVersionOf(policy.catalog) == hipBundledPoseHubPack) {
-      return fallback;
-    }
     return ExcludeSemantics(
-      child: trainer.PoseHubStandingImage(
-        action: action,
+      child: HipActionArtwork(
+        actionId: item.id,
         thumbnail: true,
-        repository: policy.repository,
-        legacyFallback: fallback,
+        bundledThumbnailBounds: libraryPosterBounds[item.id],
+        fallback: image,
       ),
     );
   }

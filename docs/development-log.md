@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-18 HipLab 1.2.0+77 展示素材持久化
+
+Android 候选基于 PR #40 的 +76。四个 SDK 依赖统一锁到 codex/v1.0.1-asset-persist 提交 85b57fda632f1f25eb94514d44e00e214cf9f7f5。随包目录、封面、缩略图和与视频对应的站位图同步到 r2-v18。展示素材由 SDK 校验完成后原子切换，原页面从目录变更通知刷新。首页只在动作打开后准备视频，训练按当前动作请求视频和语音，已开始的训练继续使用启动时的配置。
+
 ## 2026-11-18 HipLab 1.2.0 Android SDK 1.0.0 候选
 
 从真机已验收的 `codex/nav-unify-feedback-75@7348188` 建立候选，固定 `ugk_trainer-v1.0.0`（`89fb916`），设置页显示同一 SDK 提交号。SDK tag 的兼容包包含 `r2-v18`，HipLab 使用 SDK runtime，沿用自己的 `r2-v11` 离线目录和 stable 在线更新。Android 自用 arm64 目标版本码为 `2076`。
