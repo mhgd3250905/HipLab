@@ -230,13 +230,31 @@ void main() {
     );
     expect(find.text('即将开始 · ${content.drill(nextId).name}'), findsOneWidget);
     expect(find.text(content.drill(firstId).name), findsOneWidget);
-    expect(find.text('已记录'), findsOneWidget);
+    final editFeedback = find.byKey(
+      const ValueKey('player-v1-rest-feedback-edit'),
+    );
+    await pumpTrainerControl(tester, editFeedback);
+    expect(
+      find.descendant(
+        of: editFeedback,
+        matching: find.text(
+          trainer.TrainerStrings.zh().restFeedbackRecorded('疼'),
+        ),
+      ),
+      findsOneWidget,
+    );
 
     await finishNaturally(tester, store);
     final record = store.sessions.single;
     expect(record.feedback, {0: 'pain'});
-    expect(find.text('本次感受'), findsOneWidget);
-    expect(find.text('${content.drill(firstId).name} · 疼'), findsOneWidget);
+    final resultTag = find.byKey(
+      const ValueKey('completion-item-rest-feedback-0'),
+    );
+    expect(
+      find.descendant(of: resultTag, matching: find.text('疼')),
+      findsOneWidget,
+    );
+    expect(find.text('本次感受'), findsNothing);
     final events = (record.trainerResult!['discomfort'] as List).cast<Map>();
     expect(events, hasLength(1));
     expect(events.single['exerciseId'], firstId);
@@ -248,6 +266,7 @@ void main() {
       10,
       reason: 'completed work was neither halved retrospectively nor replayed',
     );
+    expect(items[0]['restFeedback'], 'pain');
     expect(items[1]['activeSeconds'], 8);
     expect(record.trainerResult!['full'], isTrue);
     await tester.pumpWidget(const SizedBox.shrink());

@@ -458,6 +458,7 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
           ? trainer.TrainerStrings.en()
           : trainer.TrainerStrings.zh(),
       theme: theme,
+      streakDays: widget.store.streak,
       notificationIcon: 'mipmap/ic_launcher_monochrome',
       voice: trainer.TrainerVoice(
         source: script.source,
@@ -565,40 +566,27 @@ class _HipPlayerPageState extends State<HipPlayerPage> {
               ),
               textAlign: TextAlign.center,
             ),
-          ] else
+          ] else if (widget.plan.source == PlanSource.single)
             Text(
-              widget.plan.source == PlanSource.single
-                  ? HipText.of(context).pick(
-                      '单练记入练习记录，不计连续天数',
-                      'Individual moves are logged without extending your streak',
-                    )
-                  : HipText.of(context).pick(
-                      '连续 ${widget.store.streak} 天',
-                      '${widget.store.streak}-day streak',
-                    ),
+              HipText.of(context).pick(
+                '单练记入练习记录，不计连续天数',
+                'Individual moves are logged without extending your streak',
+              ),
               key: const ValueKey('player-done-note'),
             ),
           if (_ladderCue != null) Text(_ladderCue!),
-          if (_felt.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(HipText.of(context).pick('本次感受', 'How you felt')),
-            for (final entry in _felt.entries)
-              Text(
-                '${_drillName(_steps[entry.key].drill.id)} · ${switch (entry.value) {
-                  'ok' => HipText.of(context).pick('舒服', 'Good'),
-                  'tight' => HipText.of(context).pick('有点紧', 'Tight'),
-                  _ => HipText.of(context).pick('疼', 'Pain'),
-                }}',
-              ),
-          ],
         ],
       ),
-      onFinished: (result) => widget.store.saveTrainerSession(
-        result,
-        plan: widget.plan,
-        ladder: _ladder,
-        feedback: _felt,
-      ),
+      onFinished: (result) async {
+        await widget.store.saveTrainerSession(
+          result,
+          plan: widget.plan,
+          ladder: _ladder,
+          feedback: _felt,
+        );
+        // The SDK completion card reads the updated streak after the save.
+        if (mounted) setState(() {});
+      },
     );
   }
 }

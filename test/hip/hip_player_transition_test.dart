@@ -89,12 +89,17 @@ void main() {
     final skip = find.byKey(const ValueKey('skip'));
     await tester.tap(skip); // prep → work
     await tester.pumpAndSettle();
-    await tester.tap(skip); // work → rest
+    final completeSet = find.byKey(const ValueKey('complete-set-button'));
+    final feedback = find.byKey(const ValueKey('player-v1-rest-comfortable'));
+    // A skipped work phase no longer offers feedback. Finish the set.
+    for (var second = 0; second < 40 && feedback.evaluate().isEmpty; second++) {
+      if (completeSet.hitTestable().evaluate().isNotEmpty) {
+        await tester.tap(completeSet);
+      }
+      await tester.pump(const Duration(seconds: 1));
+    }
     // V1 expands the dock before showing and enabling the feedback choices.
-    await pumpTrainerControl(
-      tester,
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    );
+    await pumpTrainerControl(tester, feedback);
   }
 
   testWidgets('prep: the top card and App demo follow the shared stage', (
@@ -129,7 +134,7 @@ void main() {
   testWidgets(
     'dark home start keeps the trainer dark from prep to completion',
     (tester) async {
-      await start(tester, theme: HipThemeChoice.dark);
+      final store = await start(tester, theme: HipThemeChoice.dark);
       final player = find.byType(trainer.TrainerPlayer);
       final dark = tester.widget<trainer.TrainerPlayer>(player).theme;
       expect(dark.brightness, Brightness.dark);
@@ -157,6 +162,10 @@ void main() {
       );
       expect(panel.theme, same(dark));
       expect(stage, findsOneWidget);
+      await tester.tap(
+        find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      );
+      await tester.pumpAndSettle();
 
       final finish = find.byKey(const ValueKey('finish'));
       final skip = find.byKey(const ValueKey('skip')).hitTestable();
@@ -171,6 +180,14 @@ void main() {
       );
       final gradient = (hero.decoration as BoxDecoration).gradient!;
       expect(gradient.colors, [dark.heroTop, dark.heroBottom]);
+      expect(store.streak, 1);
+      expect(tester.widget<trainer.TrainerPlayer>(player).streakDays, 1);
+      expect(
+        find.byKey(const ValueKey('completion-item-rest-feedback-0')),
+        findsOneWidget,
+      );
+      expect(find.text('本次感受'), findsNothing);
+      expect(find.byKey(const ValueKey('player-done-note')), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },
@@ -265,19 +282,25 @@ void main() {
     // The V1 header stays on the completed move while the rest clock runs.
     expect(
       find.byKey(const ValueKey('player-v1-rest-comfortable')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(completedNumber, findsOneWidget);
     expect(nextMove, findsOneWidget);
     final after = countdownSeconds(tester);
     expect(after, lessThan(before));
     expect(after, greaterThan(before - 4));
-    await tester.tap(find.byKey(const ValueKey('player-v1-rest-tight')));
-    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
+    );
+    final tight = find.byKey(const ValueKey('player-v1-rest-tight'));
+    await pumpTrainerControl(tester, tight);
+    await tester.tap(tight);
+    await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
       findsOneWidget,
     );
+    expect(tight, findsNothing);
     // the countdown ends on its own → the drill starts, the row goes away
     await tester.pump(Duration(seconds: after + 1));
     await tester.pump(
@@ -303,7 +326,7 @@ void main() {
     await tester.tapAt(const Offset(195, 80));
     await tester.pumpAndSettle();
     expect(
-      find.byKey(const ValueKey('player-v1-rest-comfortable')),
+      find.byKey(const ValueKey('player-v1-rest-feedback-edit')),
       findsOneWidget,
     );
     expect(countdownSeconds(tester), closeTo(before, 1));
