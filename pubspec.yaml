@@ -38,29 +38,40 @@ dependencies:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 85b57fda632f1f25eb94514d44e00e214cf9f7f5
+      ref: ugk_trainer-v1.0.1
   ugk_trainer_runtime:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 85b57fda632f1f25eb94514d44e00e214cf9f7f5
+      ref: ugk_trainer-v1.0.1
       path: packages/ugk_trainer_runtime
   ugk_coach_ui:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 85b57fda632f1f25eb94514d44e00e214cf9f7f5
+      ref: ugk_trainer-v1.0.1
       path: packages/ugk_coach_ui
   ugk_coach_chat:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 85b57fda632f1f25eb94514d44e00e214cf9f7f5
+      ref: ugk_trainer-v1.0.1
       path: packages/ugk_coach_chat
 
-# Keep SDK transitive dependencies on the same reviewed commit.
+# Pub resolves sibling paths inside a Git checkout to the commit SHA.
+# Use the same release tag for those packages in the host dependency graph.
 dependency_overrides:
   ugk_coach:
     git:
       url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
-      ref: 85b57fda632f1f25eb94514d44e00e214cf9f7f5
+      ref: ugk_trainer-v1.0.1
+  ugk_trainer_runtime:
+    git:
+      url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
+      ref: ugk_trainer-v1.0.1
+      path: packages/ugk_trainer_runtime
+  ugk_coach_ui:
+    git:
+      url: https://github.com/mhgd3250905/ugk-3d-pose-sdk.git
+      ref: ugk_trainer-v1.0.1
+      path: packages/ugk_coach_ui
 
 dev_dependencies:
   flutter_test:
