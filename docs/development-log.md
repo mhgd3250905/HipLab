@@ -1,5 +1,9 @@
 # 开发日志
 
+## 2026-11-18 HipLab 1.2.0 Android SDK 1.0.0 候选
+
+从真机已验收的 `codex/nav-unify-feedback-75@7348188` 建立候选，固定 `ugk_trainer-v1.0.0`（`89fb916`），设置页显示同一 SDK 提交号。SDK tag 的兼容包包含 `r2-v18`，HipLab 使用 SDK runtime，沿用自己的 `r2-v11` 离线目录和 stable 在线更新。Android 自用 arm64 目标版本码为 `2076`。
+
 ## 2026-11-18 Trainer 休息反馈与完成页
 
 `1.1.4+74` 从 `feat/nav-unify@a26a9ea` 接入 SDK `a5d55e96`。SDK 收起已提交的休息反馈并在完成页为动作显示已记录感受，HipLab 保存原练习记录后向 SDK 提供连续天数。宿主保留单练说明和安全提示。

@@ -83,7 +83,7 @@ Future<void> _dispose(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// A skip still rests before [next], without asking about the unfinished set.
+/// A skip still offers feedback during the rest before [next].
 Future<void> _restThenNext(
   WidgetTester tester,
   TrainingPlan plan,
@@ -95,10 +95,8 @@ Future<void> _restThenNext(
     findsOneWidget,
   );
   expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-  expect(
-    find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    findsNothing,
-  );
+  final feedback = find.byKey(const ValueKey('player-v1-rest-comfortable'));
+  await pumpTrainerControl(tester, feedback);
   final before = _secondsLeft(tester);
   expect(
     before,
@@ -106,18 +104,12 @@ Future<void> _restThenNext(
   );
   await tester.pump(const Duration(seconds: 2));
   expect(_secondsLeft(tester), inInclusiveRange(before - 3, before - 1));
-  expect(
-    find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    findsNothing,
-  );
+  expect(feedback.hitTestable(), findsOneWidget);
   await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
   await tester.pump(
     trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
   );
-  expect(
-    find.byKey(const ValueKey('player-v1-rest-comfortable')),
-    findsNothing,
-  );
+  expect(feedback, findsNothing);
   expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
   expect(find.text(next), findsOneWidget);
   expect(

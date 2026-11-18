@@ -106,10 +106,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
-      expect(
-        find.byKey(const ValueKey('player-v1-rest-comfortable')),
-        findsNothing,
-      );
+      final feedback = find.byKey(const ValueKey('player-v1-rest-comfortable'));
+      await pumpTrainerControl(tester, feedback);
       expect(
         find.textContaining(RegExp(r'(^| · )(右侧|左侧)( · |$)')),
         findsNothing,
@@ -124,19 +122,13 @@ void main() {
       expect(after, inInclusiveRange(before - 3, before - 1));
       expect(find.byKey(const ValueKey('discomfort')), findsNothing);
 
-      // No feedback is collected for the skipped exercise.
-      expect(
-        find.byKey(const ValueKey('player-v1-rest-comfortable')),
-        findsNothing,
-      );
+      // The skipped exercise remains eligible for optional rest feedback.
+      expect(feedback.hitTestable(), findsOneWidget);
       await tester.pump(Duration(seconds: _secondsLeft(tester) + 1));
       await tester.pump(
         trainer.TrainerMotion.calm + const Duration(milliseconds: 20),
       );
-      expect(
-        find.byKey(const ValueKey('player-v1-rest-comfortable')),
-        findsNothing,
-      );
+      expect(feedback, findsNothing);
       expect(find.byKey(const ValueKey('discomfort')), findsOneWidget);
       expect(find.text(next.drill.name), findsOneWidget);
       expect(

@@ -1074,7 +1074,7 @@ class _HipHomeState extends State<HipHome> {
 enum HipProgressSection { all, records, settings }
 
 // Keep this Settings label in sync with the trainer package in pubspec.lock.
-const _hipSdkRevision = 'a5d55e9';
+const _hipSdkRevision = '89fb916';
 
 class HipProgressPage extends StatelessWidget {
   const HipProgressPage({
