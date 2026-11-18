@@ -1,5 +1,11 @@
 # 版本交付台账
 
+## 2026-11-18 Android SDK 1.0.0 候选
+
+Android arm64 release 测试 APK 为 +76，版本名 1.2.0，版本码 2076，包名 com.ugk.hiplab。构建源 `86e4b2cde6b5ac95d03f0d0e2338e96167e6eaf9`，SDK 固定 ugk_trainer-v1.0.0（89fb916eca0c8a07b37d93988f51e52f57cf2ecb）。
+
+本机 APK 位于 `E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2076/hiplab-1.2.0+76-arm64-device-test-signed.apk`。SHA-256 为 `8dccec778fdd6c2656bd6b66f892afe674168b897eec8fd779e9c40b6e9a2ed4`。测试证书与 +75 一致，16 KB 对齐与重签前后 APK 载荷一致性均通过。[验证台账](verification.md#2026-11-18-android-sdk-100-候选)。
+
 ## 2026-11-16 Android SDK 基准 +71
 
 `1.1.4+71`，Android arm64 release 测试 APK，版本码 `2071`。构建源 `9ac638be4542ae2652a0a6566cf6080499a6052a`，SDK 固定 `4eb87ceabd39bfd132cd6c79c0474de3be683feb`。APK SHA-256 `e51c599822583c353a22ad8768b3c0b8205270894db508412975347b2ea1475f`，与模拟器安装后的 base.apk 一致。沿用 +70 测试证书 `3761270a4764157f0e389014a9e5b800b05403bfddce0f4f7f8c039f6a53bdc7`，16 KB 对齐和重签载荷一致性通过。

@@ -6,6 +6,8 @@
 
 ## 继续跟踪
 
+- Android SDK 1.0.0 候选 **1.2.0+76 / 2076** 已完成软件验证和测试包，待用户真机验收。[验证台账](verification.md#2026-11-18-android-sdk-100-候选)。
+
 - 顶栏与页面转场修正已在 `feat/nav-unify` 交付源码候选。设备实测与集成另行安排。[逐页核对](nav-unify-audit-2026-11-17.md)。
 - Android Play Alpha 目标包、正式版权限申请以及 iOS 审核与 TestFlight 各自按[渠道回执](version-ledger.md#2026-11-15-至-17-商店渠道回执)更新。
 - iOS 透明示范视频候选在 [Draft PR #38](https://github.com/mhgd3250905/HipLab/pull/38)。Build 70 的原机结果和 Build 71 的软件验证按各自构建记录。
