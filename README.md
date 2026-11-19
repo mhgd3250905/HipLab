@@ -18,7 +18,7 @@ flutter pub get --enforce-lockfile
 flutter analyze
 flutter test                                   # 单元 + 界面流程 + 资源边界测试
 flutter test test_screens/hip_shots_test.dart  # 可选：界面截图 → test/_shots/hip/（不提交）
-flutter test test_screens/hip_ios_shots_test.dart  # 可选：iPhone 15 Pro/SE 安全区截图 → test/_shots/ios/
+flutter test test/hip/hip_ios_test.dart          # iOS 界面与安全区的 Widget 测试
 python3 tools/ios/check_ios_project.py          # iOS 工程静态检查（plist / pbxproj / 图标）
 python3 tools/voice/build_voice.py             # 重新生成语音（edge-tts，需联网）→ assets/voice/
 
@@ -43,7 +43,7 @@ assets/hip/hip-content.json    内容包（脚本生成，不要手改）
 assets/hip/posters/            历史原型静帧
 assets/hip/assessment/         自测对比图（20 张）
 assets/public_media/           当前 SDK 公共目录与训练语义元数据
-assets/public_posters/         209 张授权动作封面；r2-v1目录249项，视频由SDK按需获取
+assets/public_posters/         随包封面、缩略图、站位图和索引
 assets/drill_media/            历史封面和 WebView 播放器源；当前包不内置 MP4
 assets/hip/onboarding/         三张friendly透明卡通安全图；旧六张留源追溯但不入包
 assets/voice/                  预生成语音 zh/ en/ chime/ + manifest.json（tools/voice/ 生成）
@@ -81,5 +81,5 @@ docs/                          当前状态、版本/验证/事项台账、工�
 
 ## 素材
 
-主线从 Git 获取锁定依赖、随包 `r2-v11` 公共目录、248 项封面和缩略图。稳定渠道验证取得 `r2-v16` 后，动作库可使用该目录对应的 SDK 默认缩略图，本地海报作为离线回退，视频由 SDK 按需下载并缓存。
+Git 提供锁定依赖和随包公共媒体。SDK 在检查到新版时下载并校验展示素材，再一次切换到新版，供下次启动离线使用。动作视频和动作语音随具体动作按需加载。
 [新机器准备](docs/README.md#新机器拉素材mac--windows)。

@@ -48,20 +48,20 @@ HipHomeActionDeck(
 
 ### 2.2 一个有界的暂停池
 
-当前只准备当前、前邻和后邻，最多 `min(3, N)` 个暂停媒体；深层牌与循环补牌仍用公共封面。反向邻牌用透明的暖节点准备，避免等用户选方向后才创建。
+冷牌显示当前目录图，首次主动展开时才准备这张牌的视频。保留范围是前牌及前后邻牌，只有用户打开过的位置才保留媒体节点，最多 `min(3, N)` 个。深层牌和循环补牌继续显示静态图。
 
-暖牌晋升时，occurrence 的同一媒体 `GlobalKey` 随它从后排移动到前排，继续使用原 State/controller/texture。离开相邻范围才异步释放；新计划只复用确有资格的当前 occurrence，不保留历次计划的整个 decoder 池。
+已经准备好的牌从后排移到前排时，按计划位置的 `GlobalKey` 继续使用原 State、controller 和 Texture。牌离开保留范围后释放。新计划只复用符合条件的可见媒体。
 
 ```text
-                    当前前牌
-                  [暂停媒体 B]
-                 /            \
-       [暖暂停媒体 A]          [暖暂停媒体 C]
+                      当前前牌
+                   [已打开的 B]
+                  /            \
+       [已打开的 A 可保留]    [未打开的 C 显示静态图]
 
-深层 D/E：封面，不创建更多 decoder
+深层 D/E：静态图
 ```
 
-在当前 SDK 合同里，`Offstage`/`TickerMode` 会触发媒体可见性或生命周期变化，不能拿它们替换这里保持节点的透明准备层。透明节点也不是“任意后台视频无限保活”：这是有限、暂停、仅邻牌的资源预算。
+`Offstage` 和 `TickerMode` 会影响 SDK 的媒体生命周期。已打开的邻牌通过透明保留层保持同一节点，播放和资源释放由首页与 SDK 的生命周期控制。
 
 ## 3. 展开与收回：同一父树，而非双面交班
 
@@ -82,8 +82,8 @@ Home 路由
 
 | 状态/事件 | 媒体配置与画面 | 下一步 |
 |---|---|---|
-| 首次冷小牌 | 封面可见，视频在下面准备真实首帧，暂停 | 首帧回调只记 ready，不能擅自换面 |
-| 主动点击展开 | 解除当前 occurrence 的封面锁，仍暂停 | 380ms 变形到大牌 |
+| 首次冷小牌 | 只显示静态图，等待用户打开 | 翻到前排时也保持静态图 |
+| 主动点击展开 | 允许当前牌请求视频并准备首帧 | 380ms 变形期间保持暂停 |
 | 展开动画完成且可播放 | 同一媒体自动播放 | 点击媒体可切暂停/继续 |
 | 点击关闭/遮罩/返回/Escape | 立即暂停当前帧，重置文字滚动，不 seek | 同一牌反向缩回 |
 | 收回完成 | 继续显示该暂停帧 | 再次展开沿用同一媒体 |
@@ -127,9 +127,12 @@ AnimatedBuilder(
 trainer.TrainingActionMedia(
   actionId: drill.id,
   policy: policy,
-  playing: (play || holdVideo) && !retired && videoEnabled,
+  playing: videoRequested &&
+      (play || holdVideo) &&
+      (!holdVideo || heldMediaForeground) &&
+      !retired && videoEnabled,
   paused: !play,
-  prepareFirstFrame: holdVideo,
+  prepareFirstFrame: holdVideo && videoRequested,
   showLoadingIndicator: !holdVideo,
   retainPausedSurfaceWhileCovered: holdVideo,
   nativeAlpha: holdVideo,
@@ -140,7 +143,7 @@ trainer.TrainingActionMedia(
 )
 ```
 
-这是从当前 App 适配抽取的配置摘要，其他 App 需要实现/接入同等能力；这些可选参数的 SDK 默认行为并不都与首页一致。不要为达到同样视觉而复制或改写 SDK 私有原生实现。本手册没有读取或导出外仓原生代码，也不把 Android 能力推广成已验收的 iOS 合同。
+这是从当前 App 适配抽取的配置摘要。`videoRequested` 由当前牌是否已主动打开决定，`heldMediaForeground` 由持帧媒体的前后台状态决定。其他 App 接入时需要确认这些可选参数和自己的生命周期规则。不要为达到同样视觉而复制或改写 SDK 私有原生实现。本手册没有读取或导出外仓原生代码，也不把 Android 能力推广成已验收的 iOS 合同。
 
 ## 4. 防止“下一张到顶闪一下”
 
@@ -149,14 +152,14 @@ trainer.TrainingActionMedia(
 ```text
                  尚未到顶                   已到顶
 暖邻牌：       同一暂停视频 ─────晋升────→ 同一暂停视频
-冷邻牌：       封面＋底下准备 ──晋升────→ 继续封面
+冷邻牌：       静态图 ─────────晋升────→ 继续静态图
                                             │
                                     用户主动展开
                                             ↓
-                                    解除锁，揭示同一视频
+                                    准备视频，首帧就绪后揭示
 ```
 
-当前 `_posterLocked` 的必要性：即便晚到的首帧是真的，也不一定是封面姿态。若用户已经看到这张小牌，首帧自动淡入仍会造成“闪一下”。先在后面准备、在合适的交互边界揭示，才是连续展示。
+`_posterLocked` 在冷牌首次出现和首帧就绪前关闭时保留静态图。晚到首帧可更新准备状态，只有用户再次展开才允许揭示画面。
 
 准备状态回调必须检查：`mounted`、当前 occurrence key、generation/source 仍对应本次请求。快速 A→B→A 时，旧 A 的晚回调不能误认成新 A 的当前状态。不要只比较 action ID，也不要轮询截图看有没有画面。
 
@@ -168,7 +171,7 @@ trainer.TrainingActionMedia(
 
 需要同时一致的有：资源路径、DefaultAssetBundle 的身份、decodeWidth，以及真实 renderer 的 provider 类型。只在另一个 bundle 或尺寸下调用过 `precacheImage`，不等于下一次实际渲染能够命中。
 
-窗口尺寸/bundle改变时重建预热命名空间；失败移除本轮预热标记，允许后续实际重建重试。不预载209张封面、不下载所有视频、不阻塞用户点击。内存压力仍可能驱逐缓存，不能承诺绝对零解码等待。
+窗口尺寸或 bundle 改变时重建预热命名空间。失败会移除本轮标记，后续渲染可以重试。首图预热只处理有限的本地图片解码，用户仍可操作。内存压力下，已解码图片可能被缓存回收。
 
 ## 6. 任意方向拖拽：先处理坐标，再处理速度
 
@@ -270,7 +273,7 @@ if (selected != null && currentChoices.any((c) => c.id == selected)) {
 |---|---|---|---|
 | 展开/收起闪一帧 | 是否在换Poster/Video子树、route或decoder | 常驻同一媒体、只变矩阵和paused | 加淡入掩盖双视频交接 |
 | 收起时动作跳回 | 是否seek/快放回首/恢复静帧 | 暂停当前位置并保留 | 把第一帧当唯一正确小牌图 |
-| 下一张到顶闪 | 后牌只有poster，到顶才建视频；或迟到首帧换姿态 | occurrence暖池；冷牌ready/reveal分离 | 无条件ready后120ms淡入 |
+| 下一张到顶闪 | 已打开的后牌重建了媒体，或迟到首帧换掉静态图 | 保留已打开的位置，未打开的牌保持静态图 | 翻到前排就请求视频，或首帧一到就淡入 |
 | 办公/居家切换闪 | 媒体键被全清、目标封面未解码 | 冷首牌锁图、同首动作有限复用、相同cache key预热 | 整计划永久缓存，或只比较action ID |
 | 进入更多闪 | 覆盖路由触发暂停decoder释放 | opt-in保留已暂停surface，覆盖只叠遮罩 | 仅给Flutter widget加Key |
 | 人体黑色错位影 | packed RGB/alpha受透视前后坐标影响 | 局部先合成；当前首页nativeAlpha路径 | RepaintBoundary当成坐标隔离保证 |
@@ -307,7 +310,7 @@ flutter test --no-pub --enable-impeller test/hip/hip_home_card_alpha_filter_test
 
 以下报告保留当时源码与证据，阅读时必须按版本区分，不能视作当前额外约束：
 
-- [+44同一视频表面](../home-card-live-surface-2026-11-06.md)：当时后牌仍封面；当前已增加occurrence暖池，GlobalKey会随晋升搬移。
+- [+44同一视频表面](../home-card-live-surface-2026-11-06.md)记录早期同一视频节点的做法。当前只保留已打开的牌，GlobalKey 随牌移到前排。
 - [+45局部合成](../home-card-alpha-alignment-2026-11-06.md)：说明Transform坐标隔离，但不能替代后续nativeRGBA对离屏裁剪的修复。
 - [+50原生RGBA与覆盖保持](../home-card-surface-stability-2026-11-06.md)、[+51接牌与竖向惯性](../home-card-handoff-motion-2026-11-06.md)、[+52计划切换连续性](../home-plan-media-continuity-2026-11-06.md)：当前防闪策略的主要形成过程。
 - [+48长按轻抬](../home-card-touch-motion-2026-11-06.md)：该路径已撤回；不要恢复300ms识别与吸附。

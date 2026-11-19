@@ -18,7 +18,7 @@
 - 状态实际变化更新 `docs/current-state.md`；构建/安装/发布追加 `docs/version-ledger.md`；检查结果维护 `docs/verification.md`；事项进展维护 `docs/development-roadmap.md`；关键成果写入 `docs/development-log.md`。保留历史记录并链接最新状态，不把旧结论改写成新验收。
 - `assets/hip/hip-content.json` 是生成文件：改 `tools/hip_content/source/` 后运行 `python3 tools/hip_content/build_hip_content.py`。
 - 动作姿态、脚向、高亮和渲染问题去 Pose-Hub 提 issue（App、动作 ID、问题、期望）。当前素材按 [文档入口](docs/README.md#新机器拉素材mac--windows) 准备。v0.2.0 ZIP 与旧同步工具用于历史分支追溯。
-- 高清同步使用已通过 QA 的批次和显式参数，当前流程见 `docs/development-workflow.md`。逐项来源以 `tools/hip_content/source/hip-media.json` 为准；保留绿幕/透明母帧、旧批次与修订来源，不覆盖冻结动作、模型或 QA。
+- 公共媒体按[新机器准备](docs/README.md#新机器拉素材mac--windows)与[开发工作流](docs/development-workflow.md#内容与素材)接入。旧媒体导入和 QA 来源留在历史记录。保留既有动作 ID、母版和修订证据。
 - `lib/core/` 是从 3D-Body 复制的公共代码，文件头注明来源；修改时保留来源注释并说明改了什么。
 - 包里只放 HipLab 自己用到的资源（`test/hip/hip_assets_test.dart` 会检查）。
 - Android 更新保持包名和签名连续，覆盖安装保留用户数据；不要清数据。用户数据备份、密钥、APK 和运行截图日志留 Git 忽略目录，文档路径不代表已备份到远端。

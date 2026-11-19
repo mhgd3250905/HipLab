@@ -1,16 +1,22 @@
 # 版本交付台账
 
+当前开发基线和渠道摘要见[当前状态](current-state.md)。本页按证据日期记录源码、制品和交付事件。
+
 ## 2026-11-18 Android 2077 展示素材候选
 
-HipLab 1.2.0+77 Android arm64 release 测试包，版本码 2077，包名 com.ugk.hiplab。构建源 0c53e0997c82c90870eeb7b756c39101e34d29c2，四个 SDK 依赖固定 codex/v1.0.1-asset-persist 的 85b57fda632f1f25eb94514d44e00e214cf9f7f5。与 +75 同一测试签名，验证了 16 KB 对齐和重签载荷一致性。
+HipLab **1.2.0+77** Android arm64 release 测试包，版本码 **2077**，包名 com.ugk.hiplab。构建源 0c53e0997c82c90870eeb7b756c39101e34d29c2，四个 SDK 依赖固定 85b57fda632f1f25eb94514d44e00e214cf9f7f5。与 2075 使用同一测试签名，16 KB 对齐和重签载荷一致性核验通过。
 
-本机 APK 位于 E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2077/hiplab-1.2.0+77-arm64-device-test-signed.apk。SHA-256 为 a3a47c84acfbd7c8385effa378cfbe4f6fd6383387f325e0b31e1d3e077f7363。APK 内的 r2-v18 两份目录、站位图索引和 747 张静态图已逐个核验。[验证台账](verification.md#2026-11-18-android-2077-展示素材候选)
+本机 APK 位于 E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2077/hiplab-1.2.0+77-arm64-device-test-signed.apk。SHA-256 为 a3a47c84acfbd7c8385effa378cfbe4f6fd6383387f325e0b31e1d3e077f7363。包内已逐个核验 r2-v18 两份目录、站位图索引和 747 张静态图。[验证台账](verification.md#2026-11-18-android-2077-展示素材候选)
+
+随包素材采用 SDK v1.0.0 同源的 r2-v18 动作目录、语义目录和 249 张站位图。另从 CDN 核对并内置 249 张封面和 249 张缩略图。动作目录 SHA-256 为 1de7303f94fe0441ed4d006d4a4aa7ceac0e160b1c2527ae0f875b112bb52203。SDK 实际依赖身份见下文主线记录。
+
+2026-11-18 17:11 用户确认 2077 真机验收通过。随后把四个 SDK 依赖改用正式标签 ugk_trainer-v1.0.1，四个 resolved-ref 仍为 85b57fda632f1f25eb94514d44e00e214cf9f7f5。测试源 adfaf87c33913e1bf838f303da35067d13afd96f 合入 main 后的完整文件树一致。2026-11-19 回读远端主线集成点与 v1.2.0+77 均指向 7ef08d3df5d937867ffda6d377d73ed98c9512a1。主线集成沿用上述已验收测试包，商店状态另见渠道回执。[PR #40](https://github.com/mhgd3250905/HipLab/pull/40) · [渠道回执](#2026-11-15-至-17-商店渠道回执)
 
 ## 2026-11-18 Android SDK 1.0.0 候选
 
 Android arm64 release 测试 APK 为 +76，版本名 1.2.0，版本码 2076，包名 com.ugk.hiplab。构建源 `86e4b2cde6b5ac95d03f0d0e2338e96167e6eaf9`，SDK 固定 ugk_trainer-v1.0.0（89fb916eca0c8a07b37d93988f51e52f57cf2ecb）。
 
-本机 APK 位于 `E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2076/hiplab-1.2.0+76-arm64-device-test-signed.apk`。SHA-256 为 `8dccec778fdd6c2656bd6b66f892afe674168b897eec8fd779e9c40b6e9a2ed4`。测试证书与 +75 一致，16 KB 对齐与重签前后 APK 载荷一致性均通过。[验证台账](verification.md#2026-11-18-android-sdk-100-候选)。
+本机 APK 位于 `E:/AII-3D/hiplab-releases/sdk-v1.0.0-20261118/device-2076/hiplab-1.2.0+76-arm64-device-test-signed.apk`。SHA-256 为 `8dccec778fdd6c2656bd6b66f892afe674168b897eec8fd779e9c40b6e9a2ed4`。测试证书与 +75 一致，16 KB 对齐与重签前后 APK 载荷一致性均通过。2026-11-18 验收目标改为 2077，本条保留 2076 制品记录。[验证台账](verification.md#2026-11-18-android-sdk-100-候选)
 
 ## 2026-11-16 Android SDK 基准 +71
 
@@ -31,7 +37,7 @@ Android arm64 release 测试 APK 为 +76，版本名 1.2.0，版本码 2076，�
 | Google Play Alpha | `1.1.3+70` / 商店版本码 `70`，来源 `ff351152f1b2bc3969f9636e87b3a43262b41171`，代码随 PR #37 合入 main。PR 中的轨道目标为封闭测试 Alpha | [PR #37](https://github.com/mhgd3250905/HipLab/pull/37) |
 | Google Play 正式版权限 | 2026-11-15 10:54（北京时间），`com.ugk.hiplab` 的权限申请已提交，后台当时回读已收件、审核中 | 当次 Play Console 回执及飞书原话题 |
 | iOS App Review 基线 | `1.1.0 (61)` 送审源码 `a359278f6bd04a8a8d55f8aff1587bff86cda0ba` | [PR #38 基线说明](https://github.com/mhgd3250905/HipLab/pull/38) |
-| iOS 透明视频候选 | `1.1.3 (71)`，源码 `d28169592a279867d67103ee1d656a23660c23cb`，SDK 固定 `63e24819406d843d6eabd5f95df98bbfdecc36f0`。2026-11-17 GitHub 回读仍为 Draft | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
+| iOS 透明视频候选 | `1.1.3 (71)`，源码 `d28169592a279867d67103ee1d656a23660c23cb`，SDK 固定 `63e24819406d843d6eabd5f95df98bbfdecc36f0`。2026-11-17 GitHub 回读为 Draft，2026-11-19 复查状态相同 | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
 
 本次渠道台账补记以所列证据日期为准。实际送审、审核通过、测试轨道发布和公开发布各自需要对应的控制台回执。
 

@@ -37,7 +37,7 @@ flutter analyze --no-pub
 flutter test --no-pub --concurrency=1
 ```
 
-新环境先按 [README](README.md#新机器拉素材mac--windows) 核对当前公共元数据和封面，使用指定 SDK 执行 `flutter pub get --enforce-lockfile`；依赖变动由 Windows 统一处理并审阅锁文件；`--no-pub` 只适用于已有依赖解析的环境。两端固定 Flutter 3.44.7 stable / Dart 3.12.2，本轮已对齐 lock；后续 SDK 升级需两端一起进行。Windows 管理 pubspec 依赖和版本号，Mac 不升依赖。
+新环境从 Git 恢复随包目录、静态图和依赖锁，再按文档入口执行严格依赖解析。已有依赖解析时可用 `--no-pub`。依赖变动由 Windows 统一审阅，两端使用同一 Flutter 版本与锁文件。[新机器准备](README.md#新机器拉素材mac--windows)
 
 提交前检查 `git diff --check` 与改动范围。PR 写明结果、检查和限制，随后更新对应事项与开发日志。只有状态变化才改当前状态，只有实际交付才追加版本台账。仅文档改动检查事实与链接即可。共用版本、产物来源和各类状态的登记方式见[版本管理说明](version-management.md)。
 
@@ -57,32 +57,11 @@ Windows 负责 `lib/`、`android/`、`assets/`、`tools/`、`pose-hub.lock.json`
 
 改内容源 `tools/hip_content/source/`，运行 `python tools/hip_content/build_hip_content.py`；不要直接改 `assets/hip/hip-content.json`。逐项媒体来源维护在 `hip-media.json`，不要另建一份人工 47 行来源表。
 
-以下为旧内置媒体分支历史流程，不在当前 main 执行。旧版取用 Pose-Hub v0.2.0，冻结 lock / manifest 仍保留；后续建模、动作、渲染和 QA 在 Pose-Hub 完成，按 [Pose-Hub 接入约定](pose-hub-adoption.md) 同步。当时视频1080、封面540，不改变原ID/文件名；标准顺序如下，使用[历史恢复步骤](README.md#冻结-v020-zip-恢复仅旧分支历史)中已校验并解压的 ZIP：
-
-```powershell
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --dry-run
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted
-python tools/pose_hub_sync.py --lock pose-hub.lock.json --from-dir build/pose-hub/v0.2.0/extracted --check
-python tools/hip_content/build_hip_content.py
-```
-
-每步退出码为 0 后再继续。保留自有剪辑和既有 still，不从 ZIP 臆造 light 资源。
+主线在 Git 中维护随包目录、语义、封面、缩略图和站位图。发布素材按已经审核的 Pose-Hub 版本和目录 SHA-256 对齐。随包基线用于离线回退，在线展示素材由 SDK 验证后一起切换。源问题在 Pose-Hub 对应动作上解决。[新机器准备](README.md#新机器拉素材mac--windows)
 
 ### 3D-Body 同步旧流程（历史兼容，不用于日常更新）
 
-以下旧流程仅保留作历史追溯，不自动导入新批次。历史上：建模、动作、渲染和 QA 在 3D-Body 完成。新修订用独立源和新输出目录，保留旧规格、模型、检查器与输出；最多两路 3D 渲染、每路 jobs 1。当前配方和三项修订见制作副本 `tools/hiplab-render/` 和[制作记录](local-hd-render-2026-10-17.md)。
-
-历史高清交付曾按已完成的 Android 派生片原字节导入，预览命令如下：
-
-```powershell
-python tools/sync_drill_media.py --copy-ready --force --size 1080 --crf 18 --poster-size 1080 --out E:/AII-3D/3D-Body/output/hiplab-android-20261017-v2 --dry-run
-```
-
-核对批次、来源和 QA 后移除 `--dry-run` 执行同一命令，再检查内容和差异，运行 `python -m unittest discover -s tools/tests` 与 Flutter 测试。导入其他新批次时替换 `--out`，不要把当前批次名当成永远固定的最新版。
-
-`--copy-ready` 验证交付清单、参数、QA 与 SHA，46 条主片不二次压缩，自测专用剪辑单独生成。旧转码路径默认仍为 720 / CRF27 / 540 封面并保留源帧时序；不能省略参数后声称高清导入。`--library` 是早期迁移兼容项，会从旧 App 库复制素材，不用于当前高清批次。
-
-绿幕和透明帧是后续合成母版；当前 App 不直接播放绿幕。生成输出未入 Git，保留制作副本和母版目录；如需清理，先核对可恢复的备份。
+旧 ZIP 和 3D-Body 导入命令已归入历史工作流，可按对应旧分支回溯。[Pose-Hub ZIP 恢复](README.md#冻结-v020-zip-恢复仅旧分支历史) · [旧导入及 QA 记录](https://github.com/mhgd3250905/HipLab/blob/60b16181e9d0002b9a8f44404db728df74fb5bef/docs/development-workflow.md#3d-body-同步旧流程历史兼容不用于日常更新)
 
 ## 更新 Android
 

@@ -10,14 +10,15 @@
 | 构建、安装、商店回执 | [版本交付台账](version-ledger.md) |
 | 检查结果、执行环境和源码身份 | [验证台账](verification.md) |
 | 待验收事项和完成项 | [开发事项](development-roadmap.md) |
+| 源码标签的目标 | Git 远端标签解引用结果，按集成提交登记在[版本交付台账](version-ledger.md) |
 | 决策和关键成果 | [开发日志](development-log.md) |
 | 分支、工作副本与操作步骤 | [开发工作流](development-workflow.md)和[协作约定](../AGENTS.md) |
 
 ## 版本与来源身份
 
 - 共用版本写成 `版本名+构建号`，由 Windows 维护。Android 商店 AAB 以共用构建号为基础，自用 arm64 split APK 使用 Flutter 的 ABI 版本码。iOS 按目标源码和归档结果登记版本与 build。各渠道采用包清单或控制台的实际回读。
-- 构建源码、PR 集成点与后续文档提交分别记 SHA。引用已有验证时核对原始源码及其到当前 HEAD 的差异。仅文档变更沿用原构建身份，校验事实、链接和 Git 差异即可。
-- App 版本、Pose SDK 和动作目录独立登记。当前 main 的 SDK 固定 `4eb87ceabd39bfd132cd6c79c0474de3be683feb`（0.9.0）。HipLab 随包的 `r2-v11` 目录 SHA-256 为 `6f46c0a3fc0b6546193e2e3d867d90add55ce21bf0b8f3c482edaa507cdcabc0`。Android +71 取得的 stable 目录与真实设备验收见[本轮验证](verification.md#2026-11-16-android-sdk-基准-71)。
+- 分别登记构建源码、验证源码、PR 集成点与后续文档提交。复用证据先核对源提交到当前 HEAD 的差异。仅文档收束校验事实、链接和 Git 差异。
+- App 版本、SDK 引用与解析提交、随包目录与在线渠道独立登记。当前版本从状态页进入，精确包身份和素材指纹查版本交付台账。[当前状态](current-state.md) · [版本交付台账](version-ledger.md)
 
 ## 交付如何登记
 

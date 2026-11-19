@@ -1,22 +1,18 @@
 # 当前状态
 
-Git 基线核对于 **2026-11-17（北京时间）**。设备和渠道分别附核验日期。
+Git 与 PR 于 **2026-11-19（北京时间）** 核验。真机验收和商店渠道按各自证据日期登记。
 
 | 对象 | 版本与状态 | 依据 |
 | --- | --- | --- |
-| 开发主线 | `main` · **1.1.4+71**。SDK 0.9.0 固定 `4eb87ce`，PR #39 已合并，集成点 `ba0d0c1` | [PR #39](https://github.com/mhgd3250905/HipLab/pull/39)、[版本规则](version-management.md#版本与来源身份) |
-| Android 自用真机 | 2602BRT18C，**1.1.4+71 / 2071**，同签覆盖 +70，2026-11-16 用户验收通过 | [包身份](version-ledger.md#2026-11-16-android-sdk-基准-71)、[验收](verification.md#2026-11-16-android-sdk-基准-71) |
-| Android Play 封闭测试 Alpha | **1.1.3+70 / 70** 为 PR #37 对应的 Alpha 目标版本。渠道送审结果以 Play Console 为准 | [PR #37](https://github.com/mhgd3250905/HipLab/pull/37)、[渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
-| Android Play 内部测试 | 台账有回执的版本 **1.1.2+67 / 67**，2026-11-12 对 `wrist-test` 发布 | [内部测试记录](version-ledger.md#2026-11-12-会员阶段收束-67) |
-| Android Play 正式版权限 | 2026-11-15 10:54 的回执为申请已收件、审核中 | [渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
-| iOS TestFlight 内部测试 | 台账有回执的构建 **1.1.2 (68)**，2026-11-12 回读内部组可用 | [内部测试记录](version-ledger.md#2026-11-12-首次-ai-数据共享同意-68-候选) |
+| 开发主线 | **1.2.0+77**。PR #40 已于 2026-11-18 合入 main，集成点和标签 v1.2.0+77 均指向 7ef08d3。四个 SDK 依赖使用 ugk_trainer-v1.0.1，解析为 85b57fd | [PR #40](https://github.com/mhgd3250905/HipLab/pull/40) · [版本台账](version-ledger.md#2026-11-18-android-2077-展示素材候选) |
+| Android 自用真机 | **1.2.0+77 / 2077**。用户于 2026-11-18 17:11 确认验收通过，沿用该轮签名 APK | [包身份](version-ledger.md#2026-11-18-android-2077-展示素材候选) · [验收](verification.md#2026-11-18-android-2077-展示素材候选) |
+| Android Play 封闭测试 Alpha | PR #37 的目标为 **1.1.3+70 / 70**。渠道状态以 Play Console 为准 | [渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
+| Android Play 内部测试 | 2026-11-12 台账记载 **1.1.2+67 / 67** 对 wrist-test 发布 | [内部测试记录](version-ledger.md#2026-11-12-会员阶段收束-67) |
+| Android Play 正式版权限 | 2026-11-15 10:54 回执为申请已收件、审核中 | [渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
+| iOS TestFlight 内部测试 | 2026-11-12 回读 **1.1.2 (68)** 在内部组可用 | [内部测试记录](version-ledger.md#2026-11-12-首次-ai-数据共享同意-68-候选) |
 | iOS App Store 审核 | iOS PR #38 以 **1.1.0 (61)** 的送审源码为基线，审核结果以 App Store Connect 为准 | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
-| iOS 开发候选 | 独立 Draft PR #38，**1.1.3 (71)**，SDK 固定 `63e2481` | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38)、[渠道记录](version-ledger.md#2026-11-15-至-17-商店渠道回执) |
+| iOS 开发候选 | 截至 2026-11-19，独立 PR #38 仍为 Draft，源码 d281695，版本 **1.1.3 (71)**，SDK 固定 63e2481 | [PR #38](https://github.com/mhgd3250905/HipLab/pull/38) |
 
-Android 展示素材候选 **1.2.0+77 / 2077** 已签包并通过软件检查。随包为 r2-v18，SDK 更新器会在检测到较新版本时下载展示素材并校验切换。真机验收改用 2077。[包身份](version-ledger.md#2026-11-18-android-2077-展示素材候选) · [验证台账](verification.md#2026-11-18-android-2077-展示素材候选)
+主线随包展示素材为 r2-v18。SDK 检测到新目录后会先持久化并校验展示文件，再切换当前目录。主动打开动作后才准备训练视频和语音。冷启动、失败重试及旧版本证据见[验证台账](verification.md#2026-11-18-android-2077-展示素材候选)。
 
-Android 候选 **1.2.0+76 / 2076** 位于 codex/sdk-v1.0.0，基于用户已验收的 +75，锁定 Trainer SDK 1.0.0。测试签名 APK 已通过包体验证，+76 真机验收暂缓。随包离线目录为 r2-v11，已核实 stable 在线目录为 r2-v18。[包身份](version-ledger.md#2026-11-18-android-sdk-100-候选)、[验证台账](verification.md#2026-11-18-android-sdk-100-候选)。
-
-Android +71 的应用内随包目录是 `r2-v11`，稳定渠道冷启动验证取得 `r2-v16`。动作库和训练视频均已抽样回读默认 V4 素材。模拟器透明轮廓在 +70/+71 均可复现，Android 真机验收结论来自用户的 +71 实际使用。[验证台账](verification.md#2026-11-16-android-sdk-基准-71)
-
-商店栏是最后可追溯的记录，日期与证据来源以各条回执为准。后续验收见[开发事项](development-roadmap.md)，早期状态见[历史快照](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/docs/current-state.md)。
+商店条目记录最后有据可查的状态。后续事项见[开发事项](development-roadmap.md)，旧阶段状态见[历史快照](https://github.com/mhgd3250905/HipLab/blob/ba0d0c16ae56d7b679572be3a380969f0679b2dd/docs/current-state.md)。
